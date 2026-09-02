@@ -1,0 +1,194 @@
+[
+  {
+    "id": "51ee01ed-c650-4c41-8a50-2e32a6c0cb60",
+    "organisation_id": null,
+    "asset_id": "71f266c1-0c5a-4346-8a15-313370594d83",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "a3956cf4-fa3d-4bfe-a865-32b49f363a50",
+    "organisation_id": null,
+    "asset_id": "cc5e5241-0cee-40f8-9161-c7ccd7845280",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "2732298d-0d0c-466b-9db3-54eeb3151fdf",
+    "organisation_id": null,
+    "asset_id": "940a70c6-3dd5-4c8d-8349-ed8cee3dc5d7",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "7fb3d96d-d607-4b08-9499-fcbf86da40ca",
+    "organisation_id": null,
+    "asset_id": "a715fc25-22f7-400b-a17f-63df2284eca9",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "b3f811c1-1af9-42dd-a3da-b3f0ab565039",
+    "organisation_id": null,
+    "asset_id": "d1cbb5bc-7179-4508-a108-6f224a38bfd9",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "1d6a3e12-9aa7-4307-acd5-70a8fa334ee3",
+    "organisation_id": null,
+    "asset_id": "79bb25cb-d218-4acb-8389-0a0145c2bffb",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "6d009047-90ef-4a1a-a04b-1b308d5c04fa",
+    "organisation_id": null,
+    "asset_id": "f442f14f-9e30-4825-b1be-2a762146801d",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "4a39ce31-4723-4078-947d-3b9ef3bb3aca",
+    "organisation_id": null,
+    "asset_id": "1c618a89-e456-4b01-adbd-fed1b0c46b2d",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "2df8d7e7-3359-4d5c-90de-eddb995abd60",
+    "organisation_id": null,
+    "asset_id": "0dc7d402-9cb0-4f34-8d9e-d8af1e3b976c",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "9cfd70af-8f94-40f9-a62d-c9e55babf573",
+    "organisation_id": null,
+    "asset_id": "3144a1ec-a443-403b-a81f-1d53a360583b",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "0cb64a50-412d-4c64-8252-1e256d1632ef",
+    "organisation_id": null,
+    "asset_id": "1ab9cbed-d653-49de-b555-b5a1de2d02be",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "0b5cfed4-da69-4e1d-848b-add8c63bcc8e",
+    "organisation_id": null,
+    "asset_id": "2a1dc965-fd7d-4b3c-bb75-68b803be4c51",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "96b35b77-acff-489a-88bf-7f3958730270",
+    "organisation_id": null,
+    "asset_id": "4cda7a16-afac-484b-9e59-e67197e9a8e7",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "27d625fa-ed70-44ca-b37c-c43b68537eed",
+    "organisation_id": null,
+    "asset_id": "cbb794f1-c678-4699-9dd2-19ba71d14373",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "de809b14-6c44-4e9e-8d11-dad0ee428a8a",
+    "organisation_id": null,
+    "asset_id": "69e32a6e-1e5e-4da6-84d3-4d6206bdef6d",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "e78bb332-382c-4a85-83d5-0fdd789f1741",
+    "organisation_id": null,
+    "asset_id": "1889dc60-214a-452c-acc4-1dc281947a88",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "5c50198d-40fe-43fd-b5ff-f70415c0c002",
+    "organisation_id": null,
+    "asset_id": "1e982e94-1649-4c3a-af39-4899bb587500",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "d64a1e3f-b002-4b58-be00-3f7c054c0e0c",
+    "organisation_id": null,
+    "asset_id": "295dce69-c6db-4d9e-8c70-a3af1865f1af",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "af44951c-4fd3-47f2-83c7-0e7234dc9154",
+    "organisation_id": null,
+    "asset_id": "33f10639-0207-4a8b-882f-a3027d2043bf",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "40b18bed-2b66-4707-9eb5-3806557d20e5",
+    "organisation_id": null,
+    "asset_id": "5d1f243b-9097-455d-a681-47570df03d96",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "efd105e4-dfde-401d-bf49-bafeda82a721",
+    "organisation_id": null,
+    "asset_id": "940a70c6-3dd5-4c8d-8349-ed8cee3dc5d7",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "5f6539fa-823c-46c9-985e-c367057407ce",
+    "organisation_id": null,
+    "asset_id": "f363f864-ab0b-49e7-87df-165b53aca34a",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "a8d23b4e-ff94-4951-b08c-56ed7ceee154",
+    "organisation_id": null,
+    "asset_id": "f6aba1c1-3f06-4edd-8e48-21a6e9660dd5",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  },
+  {
+    "id": "a8cfc6af-68f9-4a4f-ab6d-0adafba31da7",
+    "organisation_id": null,
+    "asset_id": "89475b1d-7a1c-47ba-9731-91cf7da057c2",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "unassigned"
+  }
+]

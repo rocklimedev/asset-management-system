@@ -1,0 +1,422 @@
+[
+  {
+    "id": "d767cf96-cb9a-4989-b187-3d88070f5767",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "SPRP-PC1"
+  },
+  {
+    "id": "836195f2-43d5-44a1-8198-ba9f5af2627f",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "Gigabyte : GS27QA"
+  },
+  {
+    "id": "73c3fffd-6609-4538-afc2-9692d4ba5134",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Cosmic Byte CB-GK-37"
+  },
+  {
+    "id": "cf135d4d-2ea9-4dfe-9462-6af1e286a6f7",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech G102"
+  },
+  {
+    "id": "9d168082-e23e-45a1-a462-8fcb158392d7",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "SPRP-PC2"
+  },
+  {
+    "id": "9ae38ee9-e2ca-4689-8a0e-6854786ae325",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "lenovo Q27h-10"
+  },
+  {
+    "id": "f972993d-221b-4315-a869-06d0d2652a92",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "RedGear MK853"
+  },
+  {
+    "id": "c8c2cc0e-078f-452d-9f67-cb9db0ca3b06",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "SPRP-PC3"
+  },
+  {
+    "id": "60139a7d-633e-4af2-a207-192d246b99e4",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG-24MR400-BA"
+  },
+  {
+    "id": "d4f8535b-59a4-4978-87eb-c44f0f56cc6a",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Cosmic Byte CB-GK-18"
+  },
+  {
+    "id": "cc31afec-255b-4ae1-b50e-295c4e6ce11f",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "HP Gaming Mouse G200"
+  },
+  {
+    "id": "7dc9bbc2-6e7b-4529-9fa4-80cec89a6ec9",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "SPRP-PC4"
+  },
+  {
+    "id": "f5604990-8a54-49ff-aa55-c754f211245d",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "K68 BT5.0"
+  },
+  {
+    "id": "f02ff2dc-1ebf-4262-9f79-a8a6bb45171a",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "Admin"
+  },
+  {
+    "id": "337ff236-417a-4049-a2d2-f4dccbb65d22",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG 22MP58VQ-P"
+  },
+  {
+    "id": "385c0ee8-2d17-43f5-8e3f-693b6f004bf2",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "LOGITECH K345"
+  },
+  {
+    "id": "153c5c4b-6dab-452b-89c0-85ad69f9706c",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "CMF by Nothing Phone1"
+  },
+  {
+    "id": "751ad2d0-40af-428f-8a4e-9d89163c9d09",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "MAC MINI M4"
+  },
+  {
+    "id": "df6df422-1a7a-4d1f-9274-dbb71c17c6e9",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG ULTRAFINE"
+  },
+  {
+    "id": "a43c1c51-931f-43bd-82e1-23bc40b97c68",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "EVOFOX RONIN WIRELESS"
+  },
+  {
+    "id": "a3196cf0-2156-42d1-a258-a95c6c24a66c",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech G304"
+  },
+  {
+    "id": "87caf01a-f245-42c0-abcc-c09dd5716f73",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "8fb08e68-d43d-4e2d-b2ed-62ab87456f12",
+    "name": "Ipad 7Gen"
+  },
+  {
+    "id": "70633f87-916e-4941-b5cd-83911783589b",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "MACBOOK AIR M1"
+  },
+  {
+    "id": "04cc319d-c705-47b8-9a33-312e52b458ed",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "OnePlus E24"
+  },
+  {
+    "id": "2a96ec39-e2bf-4c49-aa26-5eb41bbc0cfe",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Keychron K8"
+  },
+  {
+    "id": "1fb742d2-b9cb-477c-bb50-6755b5ea177f",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Apple Mouse"
+  },
+  {
+    "id": "3de61d96-af06-4250-a852-747aab4aadc4",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "8fb08e68-d43d-4e2d-b2ed-62ab87456f12",
+    "name": "Ipad 6Gen"
+  },
+  {
+    "id": "f4f00966-74a2-43c6-996d-e057a2be61d3",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "samsung galaxy note 10 lite"
+  },
+  {
+    "id": "ce7acb1a-b19a-4b4d-aa71-b6cc3e01e3c5",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "SPRL - PC1"
+  },
+  {
+    "id": "a29a1494-5498-4052-a852-863985270387",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG 29WL50S"
+  },
+  {
+    "id": "89de9a7f-b855-47fc-81b4-25d0ac36e194",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Cosmic Byte CB-GK-18"
+  },
+  {
+    "id": "2d7c2ba9-2100-4f6b-9da0-90baa0b823ad",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech G102"
+  },
+  {
+    "id": "67801ee1-3f8d-439b-84b2-70e3e31fab9c",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "HP EliteBook 840 G6"
+  },
+  {
+    "id": "0aff03d2-5af7-4313-90e5-dc4d2c5c9afc",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "CMF by Nothing Phone2 Pro"
+  },
+  {
+    "id": "cec2becd-e7b0-48a0-a154-f563b01d9ed3",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Portronics TOAD 23 Wireless Mouse"
+  },
+  {
+    "id": "52d81419-9cab-4af7-9c0c-79a57b708806",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "acer  TL04-S1M"
+  },
+  {
+    "id": "5ec41e0f-ef23-439b-a9a3-416b9c3a37df",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "CMF by Nothing Phone2 Pro"
+  },
+  {
+    "id": "b00ecdf6-d159-4dcf-815b-2af068ebb1a8",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech M171"
+  },
+  {
+    "id": "1d427034-4806-48e0-a28f-00fbc2df43a6",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Lenevo Thinkpad - PF42QRHA"
+  },
+  {
+    "id": "e9a7525b-8b52-403e-8c8b-9f9634c9b991",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Samsung F36"
+  },
+  {
+    "id": "2403f253-fee7-4827-9b02-b480c96e254f",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Rapoo Bluetooth"
+  },
+  {
+    "id": "a7aec7eb-90e1-46ef-965e-1ec537b724fe",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Lenovo L480"
+  },
+  {
+    "id": "1a58031d-732f-4d93-ba8e-383badd220b3",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Moto G45 5G"
+  },
+  {
+    "id": "0926e5f2-6a8d-425f-97fc-fc5a178f6f8a",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Samsung Galaxy Book 2"
+  },
+  {
+    "id": "86baaede-7847-415e-9508-28d6ea1aa00f",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Xiaomi 11"
+  },
+  {
+    "id": "0bf65f41-b30a-4566-926c-1516fb2979b9",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "One Plus Nord CE 3 Lite"
+  },
+  {
+    "id": "f71cc899-04d7-4d8e-bb13-4092fe9616d6",
+    "organisation_id": "81bb96cf-c3cb-4fa8-a888-9dd7dcd9c5c7",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Dell Latitude i7 - Touch Screen"
+  },
+  {
+    "id": "71f266c1-0c5a-4346-8a15-313370594d83",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "LEGION ( MOTHERBOARD DEAD )"
+  },
+  {
+    "id": "cc5e5241-0cee-40f8-9161-c7ccd7845280",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Ipad"
+  },
+  {
+    "id": "940a70c6-3dd5-4c8d-8349-ed8cee3dc5d7",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG - 22MP57HQ - P"
+  },
+  {
+    "id": "a715fc25-22f7-400b-a17f-63df2284eca9",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "Rocklime Storage PC"
+  },
+  {
+    "id": "d1cbb5bc-7179-4508-a108-6f224a38bfd9",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "APPLE  ( Not working )"
+  },
+  {
+    "id": "79bb25cb-d218-4acb-8389-0a0145c2bffb",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech - B100"
+  },
+  {
+    "id": "f442f14f-9e30-4825-b1be-2a762146801d",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "name": "Zebronics"
+  },
+  {
+    "id": "1c618a89-e456-4b01-adbd-fed1b0c46b2d",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "name": "Canon 600D"
+  },
+  {
+    "id": "0dc7d402-9cb0-4f34-8d9e-d8af1e3b976c",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "DELL ( SCREEN BROKEN)"
+  },
+  {
+    "id": "3144a1ec-a443-403b-a81f-1d53a360583b",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "iphone 5s"
+  },
+  {
+    "id": "1ab9cbed-d653-49de-b555-b5a1de2d02be",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "AOPEN LCD MONITOR 22CH1Q"
+  },
+  {
+    "id": "2a1dc965-fd7d-4b3c-bb75-68b803be4c51",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Zebronics - Zeb - Max Pro"
+  },
+  {
+    "id": "4cda7a16-afac-484b-9e59-e67197e9a8e7",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Logitech - B101"
+  },
+  {
+    "id": "cbb794f1-c678-4699-9dd2-19ba71d14373",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "name": "AKG K52 headphone"
+  },
+  {
+    "id": "69e32a6e-1e5e-4da6-84d3-4d6206bdef6d",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "name": "Canon 700D"
+  },
+  {
+    "id": "1889dc60-214a-452c-acc4-1dc281947a88",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "HP-AIO6TQ8"
+  },
+  {
+    "id": "1e982e94-1649-4c3a-af39-4899bb587500",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Galaxy F16 5G"
+  },
+  {
+    "id": "295dce69-c6db-4d9e-8c70-a3af1865f1af",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG - 24MP88HV"
+  },
+  {
+    "id": "33f10639-0207-4a8b-882f-a3027d2043bf",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Varna Pro ( Not working )"
+  },
+  {
+    "id": "5d1f243b-9097-455d-a681-47570df03d96",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Lenovo Thinkpad L14 - 256GB"
+  },
+  {
+    "id": "f363f864-ab0b-49e7-87df-165b53aca34a",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "SAMSUNG LC24F390FHWXXL"
+  },
+  {
+    "id": "f6aba1c1-3f06-4edd-8e48-21a6e9660dd5",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG-24QP550"
+  },
+  {
+    "id": "89475b1d-7a1c-47ba-9731-91cf7da057c2",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "LG 29WL50S"
+  }
+]

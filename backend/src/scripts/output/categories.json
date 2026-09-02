@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cat_4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "name": "Desktop PC"
+  },
+  {
+    "id": "cat_541446ba-d940-440d-bcbd-2024fd84cd98",
+    "name": "Monitor"
+  },
+  {
+    "id": "cat_fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "name": "Keyboard"
+  },
+  {
+    "id": "cat_6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "name": "Mouse"
+  },
+  {
+    "id": "cat_33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "name": "Mobile Phone"
+  },
+  {
+    "id": "cat_8fb08e68-d43d-4e2d-b2ed-62ab87456f12",
+    "name": "Tablet"
+  },
+  {
+    "id": "cat_76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "name": "Laptop"
+  },
+  {
+    "id": "cat_948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "name": "Speaker"
+  },
+  {
+    "id": "cat_dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "name": "Camera"
+  }
+]

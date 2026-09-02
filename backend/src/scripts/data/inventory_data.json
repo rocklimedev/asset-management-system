@@ -1,0 +1,527 @@
+[
+  {
+    "organisation": "Rippotai",
+    "holder_name": "DHAIRYA",
+    "category_name": "Desktop PC",
+    "asset_name": "SPRP-PC1",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "DHAIRYA",
+    "category_name": "Monitor",
+    "asset_name": "Gigabyte : GS27QA",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "DHAIRYA",
+    "category_name": "Keyboard",
+    "asset_name": "Cosmic Byte CB-GK-37",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "DHAIRYA",
+    "category_name": "Mouse",
+    "asset_name": "Logitech G102",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "SARTHI",
+    "category_name": "Desktop PC",
+    "asset_name": "SPRP-PC2",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "SARTHI",
+    "category_name": "Monitor",
+    "asset_name": "lenovo Q27h-10",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "SARTHI",
+    "category_name": "Keyboard",
+    "asset_name": "RedGear MK853",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "SARTHI",
+    "category_name": "Mouse",
+    "asset_name": "Logitech G102",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Desktop PC",
+    "asset_name": "SPRP-PC3",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Monitor",
+    "asset_name": "LG-24MR400-BA",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Keyboard",
+    "asset_name": "Cosmic Byte CB-GK-18",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Mouse",
+    "asset_name": "HP Gaming Mouse G200",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Desktop PC",
+    "asset_name": "SPRP-PC4",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Monitor",
+    "asset_name": "LG-24MR400-BA",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "NEW JOINING",
+    "category_name": "Keyboard",
+    "asset_name": "K68 BT5.0",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "Mamta",
+    "category_name": "Desktop PC",
+    "asset_name": "Admin",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "Mamta",
+    "category_name": "Monitor",
+    "asset_name": "LG 22MP58VQ-P",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "Mamta",
+    "category_name": "Keyboard",
+    "asset_name": "LOGITECH K345",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "Mamta",
+    "category_name": "Mouse",
+    "asset_name": "Logitech G102",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rippotai",
+    "holder_name": "Mamta",
+    "category_name": "Mobile Phone",
+    "asset_name": "CMF by Nothing Phone1",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Sajjan Dangaura",
+    "category_name": "Desktop PC",
+    "asset_name": "MAC MINI M4",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Sajjan Dangaura",
+    "category_name": "Monitor",
+    "asset_name": "LG ULTRAFINE",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Sajjan Dangaura",
+    "category_name": "Keyboard",
+    "asset_name": "EVOFOX RONIN WIRELESS",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Sajjan Dangaura",
+    "category_name": "Mouse",
+    "asset_name": "Logitech G304",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Sajjan Dangaura",
+    "category_name": "Tablet",
+    "asset_name": "Ipad 7Gen",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Laptop",
+    "asset_name": "MACBOOK AIR M1",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Monitor",
+    "asset_name": "OnePlus E24",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Keyboard",
+    "asset_name": "Keychron K8",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Mouse",
+    "asset_name": "Apple Mouse",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Tablet",
+    "asset_name": "Ipad 6Gen",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Bhav Lamba",
+    "category_name": "Mobile Phone",
+    "asset_name": "samsung galaxy note 10 lite",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "DHRUV",
+    "category_name": "Desktop PC",
+    "asset_name": "SPRL - PC1",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "DHRUV",
+    "category_name": "Monitor",
+    "asset_name": "LG 29WL50S",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "DHRUV",
+    "category_name": "Keyboard",
+    "asset_name": "Cosmic Byte CB-GK-18",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "DHRUV",
+    "category_name": "Mouse",
+    "asset_name": "Logitech G102",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Nitin",
+    "category_name": "Laptop",
+    "asset_name": "HP EliteBook 840 G6",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Nitin",
+    "category_name": "Mobile Phone",
+    "asset_name": "CMF by Nothing Phone2 Pro",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Rocklime",
+    "holder_name": "Nitin",
+    "category_name": "Mouse",
+    "asset_name": "Portronics TOAD 23 Wireless Mouse",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "PRIYA",
+    "category_name": "Laptop",
+    "asset_name": "acer  TL04-S1M",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "PRIYA",
+    "category_name": "Mobile Phone",
+    "asset_name": "CMF by Nothing Phone2 Pro",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "PRIYA",
+    "category_name": "Mouse",
+    "asset_name": "Logitech M171",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Lakshay",
+    "category_name": "Laptop",
+    "asset_name": "Lenevo Thinkpad - PF42QRHA",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Lakshay",
+    "category_name": "Mobile Phone",
+    "asset_name": "Samsung F36",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Lakshay",
+    "category_name": "Mouse",
+    "asset_name": "Rapoo Bluetooth",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Hemant",
+    "category_name": "Laptop",
+    "asset_name": "Lenovo L480",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Hemant",
+    "category_name": "Mobile Phone",
+    "asset_name": "Moto G45 5G",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "Hemant",
+    "category_name": "Mouse",
+    "asset_name": "Logitech M171",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "NITISH",
+    "category_name": "Laptop",
+    "asset_name": "Samsung Galaxy Book 2",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "NITISH",
+    "category_name": "Mobile Phone",
+    "asset_name": "Xiaomi 11",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "Chhabra Marble",
+    "holder_name": "SHIV KUMAR",
+    "category_name": "Mobile Phone",
+    "asset_name": "One Plus Nord CE 3 Lite",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "SP Syndicate",
+    "holder_name": "MAMTA MA'AM HR",
+    "category_name": "Laptop",
+    "asset_name": "Dell Latitude i7 - Touch Screen",
+    "status": "Assigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Laptop",
+    "asset_name": "LEGION ( MOTHERBOARD DEAD )",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Mobile Phone",
+    "asset_name": "Ipad",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "LG - 22MP57HQ - P",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Desktop PC",
+    "asset_name": "Rocklime Storage PC",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Keyboard",
+    "asset_name": "APPLE  ( Not working )",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Mouse",
+    "asset_name": "Logitech - B100",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Speaker",
+    "asset_name": "Zebronics",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Camera",
+    "asset_name": "Canon 600D",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Laptop",
+    "asset_name": "DELL ( SCREEN BROKEN)",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Mobile Phone",
+    "asset_name": "iphone 5s",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "AOPEN LCD MONITOR 22CH1Q",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Keyboard",
+    "asset_name": "Zebronics - Zeb - Max Pro",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Mouse",
+    "asset_name": "Logitech - B101",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Speaker",
+    "asset_name": "AKG K52 headphone",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Camera",
+    "asset_name": "Canon 700D",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Laptop",
+    "asset_name": "HP-AIO6TQ8",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Mobile Phone",
+    "asset_name": "Galaxy F16 5G",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "LG - 24MP88HV",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Keyboard",
+    "asset_name": "Varna Pro ( Not working )",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Laptop",
+    "asset_name": "Lenovo Thinkpad L14 - 256GB",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "LG - 22MP57HQ - P",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "SAMSUNG LC24F390FHWXXL",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "LG-24QP550",
+    "status": "Unassigned"
+  },
+  {
+    "organisation": "null",
+    "holder_name": "",
+    "category_name": "Monitor",
+    "asset_name": "LG 29WL50S",
+    "status": "Unassigned"
+  }
+]

@@ -1,0 +1,602 @@
+[
+  {
+    "id": "2fd15757-9d5a-4bd2-a5ca-3cf9be4c5ee4",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "d767cf96-cb9a-4989-b187-3d88070f5767",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "23a9cf14-7411-4699-b4ed-c0b12a7a6684",
+    "status": "assigned"
+  },
+  {
+    "id": "7d14d0b3-6c6b-4ea2-aa89-f50136744aeb",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "836195f2-43d5-44a1-8198-ba9f5af2627f",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "23a9cf14-7411-4699-b4ed-c0b12a7a6684",
+    "status": "assigned"
+  },
+  {
+    "id": "2f0efba0-cf24-48fa-a0ad-7d03f2f666d9",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "73c3fffd-6609-4538-afc2-9692d4ba5134",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "23a9cf14-7411-4699-b4ed-c0b12a7a6684",
+    "status": "assigned"
+  },
+  {
+    "id": "0294f198-57d4-4f47-84dd-98cd30fe7660",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "cf135d4d-2ea9-4dfe-9462-6af1e286a6f7",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "23a9cf14-7411-4699-b4ed-c0b12a7a6684",
+    "status": "assigned"
+  },
+  {
+    "id": "a4d78411-beee-47a4-b312-2606e1823297",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "9d168082-e23e-45a1-a462-8fcb158392d7",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "9900f723-faf9-4eab-94a1-e7e8aef492e8",
+    "status": "assigned"
+  },
+  {
+    "id": "eed6b18d-ec99-46c3-b752-90ba02447828",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "9ae38ee9-e2ca-4689-8a0e-6854786ae325",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "9900f723-faf9-4eab-94a1-e7e8aef492e8",
+    "status": "assigned"
+  },
+  {
+    "id": "ea20b8e3-f14a-44fb-bb36-68b315f20225",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "f972993d-221b-4315-a869-06d0d2652a92",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "9900f723-faf9-4eab-94a1-e7e8aef492e8",
+    "status": "assigned"
+  },
+  {
+    "id": "90a1e547-0841-4db2-96de-7307e2b9d296",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "cf135d4d-2ea9-4dfe-9462-6af1e286a6f7",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "9900f723-faf9-4eab-94a1-e7e8aef492e8",
+    "status": "assigned"
+  },
+  {
+    "id": "38cd0359-16cb-4f53-a502-82a391c03ed1",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "c8c2cc0e-078f-452d-9f67-cb9db0ca3b06",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "b57f7f5e-63cb-44a4-b3a3-4db34b062db6",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "60139a7d-633e-4af2-a207-192d246b99e4",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "d6cabaef-8f22-4f9e-bbdd-1be17c635eeb",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "d4f8535b-59a4-4978-87eb-c44f0f56cc6a",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "2c7c0761-3e13-4499-b9b7-626ab38f1f6e",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "cc31afec-255b-4ae1-b50e-295c4e6ce11f",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "61bc6733-f8a1-4ebf-9cb0-35cdb71b302a",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "7dc9bbc2-6e7b-4529-9fa4-80cec89a6ec9",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "ae9c06ad-d2ca-45f2-9333-ef31feed920a",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "60139a7d-633e-4af2-a207-192d246b99e4",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "ebbd0b64-e347-4091-8c8c-a5b721cf70cb",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "f5604990-8a54-49ff-aa55-c754f211245d",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "1c19fb97-8290-495d-8ec2-00dd31b2f30b",
+    "status": "assigned"
+  },
+  {
+    "id": "6664b5e1-56fa-435e-974d-f8bfee8718c8",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "f02ff2dc-1ebf-4262-9f79-a8a6bb45171a",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "536fa6a9-a97b-4af1-926c-26e4158b42cf",
+    "status": "assigned"
+  },
+  {
+    "id": "114d833c-8d13-4a97-a6e4-a57d12002492",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "337ff236-417a-4049-a2d2-f4dccbb65d22",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "536fa6a9-a97b-4af1-926c-26e4158b42cf",
+    "status": "assigned"
+  },
+  {
+    "id": "6bdbed53-89d9-4da7-bc4a-cd862b972164",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "385c0ee8-2d17-43f5-8e3f-693b6f004bf2",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "536fa6a9-a97b-4af1-926c-26e4158b42cf",
+    "status": "assigned"
+  },
+  {
+    "id": "88c0a054-ef3b-4db8-8522-7e00475b74e4",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "cf135d4d-2ea9-4dfe-9462-6af1e286a6f7",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "536fa6a9-a97b-4af1-926c-26e4158b42cf",
+    "status": "assigned"
+  },
+  {
+    "id": "af3881dc-bb8e-4de3-8546-a5f0e065f3f0",
+    "organisation_id": "5106be7e-2447-4d0c-901f-eb70952398c0",
+    "assetid": "153c5c4b-6dab-452b-89c0-85ad69f9706c",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "536fa6a9-a97b-4af1-926c-26e4158b42cf",
+    "status": "assigned"
+  },
+  {
+    "id": "25717a37-1094-4532-aa76-64663916905f",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "751ad2d0-40af-428f-8a4e-9d89163c9d09",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "9240050a-1ced-43b5-bf42-92b99ffd6a12",
+    "status": "assigned"
+  },
+  {
+    "id": "d0d687e9-eeb4-4210-a0b4-43e91ec0b4df",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "df6df422-1a7a-4d1f-9274-dbb71c17c6e9",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "9240050a-1ced-43b5-bf42-92b99ffd6a12",
+    "status": "assigned"
+  },
+  {
+    "id": "22b9d644-c871-45ce-9df7-0c289f197ef5",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "a43c1c51-931f-43bd-82e1-23bc40b97c68",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "9240050a-1ced-43b5-bf42-92b99ffd6a12",
+    "status": "assigned"
+  },
+  {
+    "id": "757578df-4342-460e-9e96-3a412ab5beb7",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "a3196cf0-2156-42d1-a258-a95c6c24a66c",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "9240050a-1ced-43b5-bf42-92b99ffd6a12",
+    "status": "assigned"
+  },
+  {
+    "id": "00fe6d9f-6bab-484d-9532-20a6fab638d5",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "87caf01a-f245-42c0-abcc-c09dd5716f73",
+    "category_id": "8fb08e68-d43d-4e2d-b2ed-62ab87456f12",
+    "holder_id": "9240050a-1ced-43b5-bf42-92b99ffd6a12",
+    "status": "assigned"
+  },
+  {
+    "id": "b5e3ce42-ee0e-421c-9ea8-276260969e7a",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "70633f87-916e-4941-b5cd-83911783589b",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "eaf70002-e52e-4d8c-b0fc-2f278bbd4a36",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "04cc319d-c705-47b8-9a33-312e52b458ed",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "ce267871-b912-4659-bfee-0ecb60ec5b2e",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "2a96ec39-e2bf-4c49-aa26-5eb41bbc0cfe",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "ab4d8d6a-e9ca-4e88-a857-e621d2a9f5bf",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "1fb742d2-b9cb-477c-bb50-6755b5ea177f",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "253da97a-c7cc-480e-89e4-4c8956ed2217",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "3de61d96-af06-4250-a852-747aab4aadc4",
+    "category_id": "8fb08e68-d43d-4e2d-b2ed-62ab87456f12",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "0a491e5f-394c-4d15-b8c7-d682d59f8a56",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "f4f00966-74a2-43c6-996d-e057a2be61d3",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "89f50d20-a6d0-4339-b679-e043f1c0f559",
+    "status": "assigned"
+  },
+  {
+    "id": "6c2c6637-e5da-4bdb-9a09-752a766177aa",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "ce7acb1a-b19a-4b4d-aa71-b6cc3e01e3c5",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": "6a99ae14-4696-4410-875d-c34ad3efdc53",
+    "status": "assigned"
+  },
+  {
+    "id": "c43e9008-8806-48ef-a190-220f186db1ed",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "a29a1494-5498-4052-a852-863985270387",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": "6a99ae14-4696-4410-875d-c34ad3efdc53",
+    "status": "assigned"
+  },
+  {
+    "id": "56bfbced-70e0-4f0a-bd6c-0b69f68ffd3c",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "89de9a7f-b855-47fc-81b4-25d0ac36e194",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": "6a99ae14-4696-4410-875d-c34ad3efdc53",
+    "status": "assigned"
+  },
+  {
+    "id": "1afcd774-ec9d-4d92-b60a-3f2da88d800d",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "2d7c2ba9-2100-4f6b-9da0-90baa0b823ad",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "6a99ae14-4696-4410-875d-c34ad3efdc53",
+    "status": "assigned"
+  },
+  {
+    "id": "52ebbe08-c263-4cf6-829c-79030eda0444",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "67801ee1-3f8d-439b-84b2-70e3e31fab9c",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "269c9d96-b869-408c-aefe-094d107d07f3",
+    "status": "assigned"
+  },
+  {
+    "id": "c809f322-697f-4f28-acf0-1bb5e9177ff9",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "0aff03d2-5af7-4313-90e5-dc4d2c5c9afc",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "269c9d96-b869-408c-aefe-094d107d07f3",
+    "status": "assigned"
+  },
+  {
+    "id": "142b805c-9f8e-4f93-a8dd-734a9a3ae57d",
+    "organisation_id": "e5401c68-4f86-4439-a090-52502aa09948",
+    "assetid": "cec2becd-e7b0-48a0-a154-f563b01d9ed3",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "269c9d96-b869-408c-aefe-094d107d07f3",
+    "status": "assigned"
+  },
+  {
+    "id": "86995ae3-65bc-477a-8b8f-63700b6f5f3c",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "52d81419-9cab-4af7-9c0c-79a57b708806",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "a42f9024-e780-4494-919f-65ff2c5e5cd2",
+    "status": "assigned"
+  },
+  {
+    "id": "6f4bc4a2-034f-4875-ac2c-c047d0930554",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "5ec41e0f-ef23-439b-a9a3-416b9c3a37df",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "a42f9024-e780-4494-919f-65ff2c5e5cd2",
+    "status": "assigned"
+  },
+  {
+    "id": "674d5d4b-e501-411b-be2d-5b3b960c3e40",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "b00ecdf6-d159-4dcf-815b-2af068ebb1a8",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "a42f9024-e780-4494-919f-65ff2c5e5cd2",
+    "status": "assigned"
+  },
+  {
+    "id": "160113bb-50cc-4af3-88a6-d2fcbf401e03",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "1d427034-4806-48e0-a28f-00fbc2df43a6",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "24a4f048-fa30-4400-b19c-1b4b183dc2e2",
+    "status": "assigned"
+  },
+  {
+    "id": "08cb215b-b1e4-444e-af26-a6413bc566ca",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "e9a7525b-8b52-403e-8c8b-9f9634c9b991",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "24a4f048-fa30-4400-b19c-1b4b183dc2e2",
+    "status": "assigned"
+  },
+  {
+    "id": "6485faea-4ca2-4887-80e0-dec5a76c9e07",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "2403f253-fee7-4827-9b02-b480c96e254f",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "24a4f048-fa30-4400-b19c-1b4b183dc2e2",
+    "status": "assigned"
+  },
+  {
+    "id": "2e3f8236-c1d7-45ae-bd44-cb395864ecd8",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "a7aec7eb-90e1-46ef-965e-1ec537b724fe",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "a7fbe76e-d37c-46e6-bb5c-cbd83ee09fa4",
+    "status": "assigned"
+  },
+  {
+    "id": "12e8e4a2-2ea8-4edb-8c4d-5a698dd55b00",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "1a58031d-732f-4d93-ba8e-383badd220b3",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "a7fbe76e-d37c-46e6-bb5c-cbd83ee09fa4",
+    "status": "assigned"
+  },
+  {
+    "id": "0ffcd6fc-5120-41c7-8827-87a46818c463",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "b00ecdf6-d159-4dcf-815b-2af068ebb1a8",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": "a7fbe76e-d37c-46e6-bb5c-cbd83ee09fa4",
+    "status": "assigned"
+  },
+  {
+    "id": "d1e58807-8cb2-4914-92b9-6a0b3d2383bf",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "0926e5f2-6a8d-425f-97fc-fc5a178f6f8a",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "a5b2f1f2-49c1-4aae-a5b7-e4c97420cf5a",
+    "status": "assigned"
+  },
+  {
+    "id": "4b78ab86-357a-4872-ab17-662b4407903d",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "86baaede-7847-415e-9508-28d6ea1aa00f",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "a5b2f1f2-49c1-4aae-a5b7-e4c97420cf5a",
+    "status": "assigned"
+  },
+  {
+    "id": "5c32d68c-4e05-49e3-92b6-5b3f9c782bf4",
+    "organisation_id": "3e18c163-b629-4f15-a96e-c8eb37e5dbbc",
+    "assetid": "0bf65f41-b30a-4566-926c-1516fb2979b9",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": "ef16e9d1-b169-456a-b77f-711846f9bbeb",
+    "status": "assigned"
+  },
+  {
+    "id": "2b280145-12e5-4bc1-98e5-aa450ccecbf6",
+    "organisation_id": "81bb96cf-c3cb-4fa8-a888-9dd7dcd9c5c7",
+    "assetid": "f71cc899-04d7-4d8e-bb13-4092fe9616d6",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": "13cd1ba3-a069-4f6c-9bfe-abd68bb92e47",
+    "status": "assigned"
+  },
+  {
+    "id": "51ee01ed-c650-4c41-8a50-2e32a6c0cb60",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "71f266c1-0c5a-4346-8a15-313370594d83",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "a3956cf4-fa3d-4bfe-a865-32b49f363a50",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "cc5e5241-0cee-40f8-9161-c7ccd7845280",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "2732298d-0d0c-466b-9db3-54eeb3151fdf",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "940a70c6-3dd5-4c8d-8349-ed8cee3dc5d7",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "7fb3d96d-d607-4b08-9499-fcbf86da40ca",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "a715fc25-22f7-400b-a17f-63df2284eca9",
+    "category_id": "4bf9258c-0b78-443b-a006-f095ecf1e3d7",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "b3f811c1-1af9-42dd-a3da-b3f0ab565039",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "d1cbb5bc-7179-4508-a108-6f224a38bfd9",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "1d6a3e12-9aa7-4307-acd5-70a8fa334ee3",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "79bb25cb-d218-4acb-8389-0a0145c2bffb",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "6d009047-90ef-4a1a-a04b-1b308d5c04fa",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "f442f14f-9e30-4825-b1be-2a762146801d",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "4a39ce31-4723-4078-947d-3b9ef3bb3aca",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "1c618a89-e456-4b01-adbd-fed1b0c46b2d",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "2df8d7e7-3359-4d5c-90de-eddb995abd60",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "0dc7d402-9cb0-4f34-8d9e-d8af1e3b976c",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "9cfd70af-8f94-40f9-a62d-c9e55babf573",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "3144a1ec-a443-403b-a81f-1d53a360583b",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "0cb64a50-412d-4c64-8252-1e256d1632ef",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "1ab9cbed-d653-49de-b555-b5a1de2d02be",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "0b5cfed4-da69-4e1d-848b-add8c63bcc8e",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "2a1dc965-fd7d-4b3c-bb75-68b803be4c51",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "96b35b77-acff-489a-88bf-7f3958730270",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "4cda7a16-afac-484b-9e59-e67197e9a8e7",
+    "category_id": "6794959b-1c91-48f9-8263-4d70b75a57b6",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "27d625fa-ed70-44ca-b37c-c43b68537eed",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "cbb794f1-c678-4699-9dd2-19ba71d14373",
+    "category_id": "948867de-c0d9-4154-8532-3ebb98f4fb7a",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "de809b14-6c44-4e9e-8d11-dad0ee428a8a",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "69e32a6e-1e5e-4da6-84d3-4d6206bdef6d",
+    "category_id": "dddd1bb5-df08-4468-a7b8-a29775a727f1",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "e78bb332-382c-4a85-83d5-0fdd789f1741",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "1889dc60-214a-452c-acc4-1dc281947a88",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "5c50198d-40fe-43fd-b5ff-f70415c0c002",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "1e982e94-1649-4c3a-af39-4899bb587500",
+    "category_id": "33b2a41a-bb48-495d-a1a2-4bfbf4754eba",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "d64a1e3f-b002-4b58-be00-3f7c054c0e0c",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "295dce69-c6db-4d9e-8c70-a3af1865f1af",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "af44951c-4fd3-47f2-83c7-0e7234dc9154",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "33f10639-0207-4a8b-882f-a3027d2043bf",
+    "category_id": "fff3c6ab-3471-4da6-ab01-fb20a193cbdf",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "40b18bed-2b66-4707-9eb5-3806557d20e5",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "5d1f243b-9097-455d-a681-47570df03d96",
+    "category_id": "76d8dec2-34c2-4ab8-88bb-cc9eba7c3fb8",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "efd105e4-dfde-401d-bf49-bafeda82a721",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "940a70c6-3dd5-4c8d-8349-ed8cee3dc5d7",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "5f6539fa-823c-46c9-985e-c367057407ce",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "f363f864-ab0b-49e7-87df-165b53aca34a",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "a8d23b4e-ff94-4951-b08c-56ed7ceee154",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "f6aba1c1-3f06-4edd-8e48-21a6e9660dd5",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  },
+  {
+    "id": "a8cfc6af-68f9-4a4f-ab6d-0adafba31da7",
+    "organisation_id": "f708e98e-97fa-42b1-8a99-708b69f8b986",
+    "assetid": "89475b1d-7a1c-47ba-9731-91cf7da057c2",
+    "category_id": "541446ba-d940-440d-bcbd-2024fd84cd98",
+    "holder_id": null,
+    "status": "Unassigned"
+  }
+]
