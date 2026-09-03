@@ -8,7 +8,7 @@ import {
   Post,
 } from "@nestjs/common";
 
-import { OrganisationsService } from "./organisations.service";
+import { OrganisationsService } from "./organisation.service";
 
 import { CreateOrganisationDto } from "./dto/create-organisation.dto";
 import { UpdateOrganisationDto } from "./dto/update-organisation.dto";

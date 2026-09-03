@@ -9,8 +9,11 @@ import {
 } from "@nestjs/common";
 import { IsEmail, IsInt, IsString, MinLength } from "class-validator";
 import { UsersService } from "./users.service";
-import { RequirePermissions } from "../auth/roles.decorator";
-import { CurrentUser, AuthUser } from "../auth/current-user.decorator";
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
+import {
+  CurrentUser,
+  AuthUser,
+} from "../../common/decorator/current-user.decorator";
 
 class CreateUserDto {
   @IsString() name!: string;

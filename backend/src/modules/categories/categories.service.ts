@@ -4,34 +4,48 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "../../prisma/prisma.service";
+import { InjectModel } from "@nestjs/sequelize";
+
+import { Category } from "./category.model";
+import { Organisation } from "../organisations/organisation.model";
 
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(Category)
+    private readonly categoryModel: typeof Category,
+
+    @InjectModel(Organisation)
+    private readonly organisationModel: typeof Organisation,
+  ) {}
 
   // ==========================================================
   // CREATE
   // ==========================================================
 
   async create(dto: CreateCategoryDto) {
-    const organisation = await this.prisma.organisation.findUnique({
-      where: {
-        id: dto.organisationId,
-      },
-    });
+    // --------------------------------------------------------
+    // Check organisation
+    // --------------------------------------------------------
+
+    const organisation = await this.organisationModel.findByPk(
+      dto.organisationId,
+    );
 
     if (!organisation) {
       throw new NotFoundException("Organisation not found");
     }
 
-    const existing = await this.prisma.category.findFirst({
+    // --------------------------------------------------------
+    // Check duplicate
+    // --------------------------------------------------------
+
+    const existing = await this.categoryModel.findOne({
       where: {
         organisationId: dto.organisationId,
-
         name: dto.name,
       },
     });
@@ -42,18 +56,25 @@ export class CategoriesService {
       );
     }
 
-    return this.prisma.category.create({
-      data: {
+    // --------------------------------------------------------
+    // Create category
+    // --------------------------------------------------------
+
+    return this.categoryModel.create(
+      {
         name: dto.name,
-        description: dto.description,
+        description: dto.description ?? null,
         organisationId: dto.organisationId,
         isActive: dto.isActive ?? true,
       },
-
-      include: {
-        organisation: true,
+      {
+        include: [
+          {
+            model: Organisation,
+          },
+        ],
       },
-    });
+    );
   }
 
   // ==========================================================
@@ -61,27 +82,22 @@ export class CategoriesService {
   // ==========================================================
 
   async findAll(organisationId?: string) {
-    return this.prisma.category.findMany({
-      where: organisationId
-        ? {
-            organisationId,
-          }
-        : undefined,
+    const where: any = {};
 
-      orderBy: {
-        name: "asc",
-      },
+    if (organisationId) {
+      where.organisationId = organisationId;
+    }
 
-      include: {
-        organisation: true,
+    return this.categoryModel.findAll({
+      where,
 
-        _count: {
-          select: {
-            assets: true,
-            inventory: true,
-          },
+      order: [["name", "ASC"]],
+
+      include: [
+        {
+          model: Organisation,
         },
-      },
+      ],
     });
   }
 
@@ -90,21 +106,12 @@ export class CategoriesService {
   // ==========================================================
 
   async findOne(id: string) {
-    const category = await this.prisma.category.findUnique({
-      where: {
-        id,
-      },
-
-      include: {
-        organisation: true,
-
-        _count: {
-          select: {
-            assets: true,
-            inventory: true,
-          },
+    const category = await this.categoryModel.findByPk(id, {
+      include: [
+        {
+          model: Organisation,
         },
-      },
+      ],
     });
 
     if (!category) {
@@ -119,75 +126,86 @@ export class CategoriesService {
   // ==========================================================
 
   async update(id: string, dto: UpdateCategoryDto) {
-    const existing = await this.prisma.category.findUnique({
-      where: {
-        id,
-      },
-    });
+    // --------------------------------------------------------
+    // Find existing category
+    // --------------------------------------------------------
+
+    const existing = await this.categoryModel.findByPk(id);
 
     if (!existing) {
       throw new NotFoundException("Category not found");
     }
 
+    // --------------------------------------------------------
+    // Determine organisation
+    // --------------------------------------------------------
+
     const organisationId = dto.organisationId ?? existing.organisationId;
 
+    // --------------------------------------------------------
+    // Check organisation if changed
+    // --------------------------------------------------------
+
     if (dto.organisationId) {
-      const organisation = await this.prisma.organisation.findUnique({
-        where: {
-          id: dto.organisationId,
-        },
-      });
+      const organisation = await this.organisationModel.findByPk(
+        dto.organisationId,
+      );
 
       if (!organisation) {
         throw new NotFoundException("Organisation not found");
       }
     }
 
-    if (dto.name) {
-      const duplicate = await this.prisma.category.findFirst({
+    // --------------------------------------------------------
+    // Check duplicate category name
+    // --------------------------------------------------------
+
+    if (dto.name !== undefined) {
+      const duplicate = await this.categoryModel.findOne({
         where: {
           organisationId,
           name: dto.name,
-
-          NOT: {
-            id,
-          },
         },
       });
 
-      if (duplicate) {
+      if (duplicate && duplicate.id !== id) {
         throw new ConflictException(
           "Category already exists in this organisation",
         );
       }
     }
 
-    return this.prisma.category.update({
-      where: {
-        id,
-      },
+    // --------------------------------------------------------
+    // Update
+    // --------------------------------------------------------
 
-      data: {
-        ...(dto.name !== undefined && {
-          name: dto.name,
-        }),
+    const updateData: Partial<Category> = {};
 
-        ...(dto.description !== undefined && {
-          description: dto.description,
-        }),
+    if (dto.name !== undefined) {
+      updateData.name = dto.name;
+    }
 
-        ...(dto.organisationId !== undefined && {
-          organisationId: dto.organisationId,
-        }),
+    if (dto.description !== undefined) {
+      updateData.description = dto.description;
+    }
 
-        ...(dto.isActive !== undefined && {
-          isActive: dto.isActive,
-        }),
-      },
+    if (dto.organisationId !== undefined) {
+      updateData.organisationId = dto.organisationId;
+    }
 
-      include: {
-        organisation: true,
-      },
+    if (dto.isActive !== undefined) {
+      updateData.isActive = dto.isActive;
+    }
+
+    await existing.update(updateData);
+
+    // Return updated record with organisation
+    return this.categoryModel.findByPk(id, {
+      include: [
+        {
+          model: Organisation,
+        },
+      ],
     });
   }
 
@@ -196,12 +214,12 @@ export class CategoriesService {
   // ==========================================================
 
   async remove(id: string) {
-    await this.findOne(id);
+    const category = await this.findOne(id);
 
-    return this.prisma.category.delete({
-      where: {
-        id,
-      },
-    });
+    await category.destroy();
+
+    return {
+      message: "Category deleted successfully",
+    };
   }
 }

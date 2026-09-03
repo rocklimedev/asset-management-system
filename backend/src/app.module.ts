@@ -4,15 +4,15 @@ import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { PrismaModule } from "./common/prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
-import { EmployeesModule } from "./modules/employees/employees.module";
+import { EmployeesModule } from "./modules/organisation/employees.module";
 import { AssetsModule } from "./modules/assets/assets.module";
-import { SoftwareModule } from "./modules/software/software.module";
+import { SoftwareModule } from "./modules/organisation/software.module";
 import { UsersModule } from "./modules/users/users.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { AuditModule } from "./modules/audit/audit.module";
-import { JwtAuthGuard } from "./modules/auth/jwt-auth.guard";
-import { RolesGuard } from "./modules/auth/roles.guard";
+import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
+import { RolesGuard } from "./common/guards/roles.guard";
 import { APP_GUARD as APP_GUARD_TOKEN } from "@nestjs/core";
 
 @Module({

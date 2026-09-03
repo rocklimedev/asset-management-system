@@ -12,8 +12,11 @@ import {
 import { EmployeesService } from "./employees.service";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
-import { RequirePermissions } from "../auth/roles.decorator";
-import { CurrentUser, AuthUser } from "../auth/current-user.decorator";
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
+import {
+  CurrentUser,
+  AuthUser,
+} from "../../common/decorator/current-user.decorator";
 
 @Controller("employees")
 export class EmployeesController {

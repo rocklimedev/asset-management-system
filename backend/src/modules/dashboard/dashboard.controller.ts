@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { DashboardService } from "./dashboard.service";
-import { RequirePermissions } from "../auth/roles.decorator";
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
 
 @Controller("dashboard")
 export class DashboardController {

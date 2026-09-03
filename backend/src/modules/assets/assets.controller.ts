@@ -13,8 +13,11 @@ import { CreateAssetDto } from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
 import { AssignAssetDto } from "./dto/assign-asset.dto";
 import { TransferAssetDto } from "./dto/transfer-asset.dto";
-import { RequirePermissions } from "../auth/roles.decorator";
-import { CurrentUser, AuthUser } from "../auth/current-user.decorator";
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
+import {
+  CurrentUser,
+  AuthUser,
+} from "../../common/decorator/current-user.decorator";
 
 @Controller("assets")
 export class AssetsController {

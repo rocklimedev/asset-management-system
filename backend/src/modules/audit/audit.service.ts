@@ -1,12 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
-import { Prisma } from "@prisma/client";
+import { InjectModel } from "@nestjs/sequelize";
+import { Transaction, WhereOptions } from "sequelize";
+
+import { AuditLog } from "./models/audit-log.model";
+import { User } from "../users/models/user.model";
 
 @Injectable()
 export class AuditService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectModel(AuditLog)
+    private readonly auditLogModel: typeof AuditLog,
+  ) {}
 
-  // Writes an audit entry. Accepts an optional Prisma transaction client so a caller
+  // Writes an audit entry. Accepts an optional Sequelize transaction so a caller
   // can include the audit write inside the same DB transaction as the business change.
   async log(
     params: {
@@ -16,17 +22,18 @@ export class AuditService {
       entityId: string | number;
       metadata?: Record<string, unknown>;
     },
-    tx: Prisma.TransactionClient | PrismaService = this.prisma,
+    transaction?: Transaction,
   ) {
-    return tx.auditLog.create({
-      data: {
+    return this.auditLogModel.create(
+      {
         userId: params.userId,
         action: params.action,
         entity: params.entity,
         entityId: String(params.entityId),
-        metadata: params.metadata as any,
-      },
-    });
+        metadata: params.metadata,
+      } as AuditLog,
+      { transaction },
+    );
   }
 
   async list(params: {
@@ -35,20 +42,26 @@ export class AuditService {
     take?: number;
     skip?: number;
   }) {
-    const where: Prisma.AuditLogWhereInput = {
-      entity: params.entity,
-      action: params.action,
+    const where: WhereOptions<AuditLog> = {
+      ...(params.entity !== undefined ? { entity: params.entity } : {}),
+      ...(params.action !== undefined ? { action: params.action } : {}),
     };
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.auditLog.findMany({
+
+    const { rows: items, count: total } =
+      await this.auditLogModel.findAndCountAll({
         where,
-        include: { user: { select: { id: true, name: true, email: true } } },
-        orderBy: { createdAt: "desc" },
-        take: params.take ?? 50,
-        skip: params.skip ?? 0,
-      }),
-      this.prisma.auditLog.count({ where }),
-    ]);
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "email"],
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+        limit: params.take ?? 50,
+        offset: params.skip ?? 0,
+      });
+
     return { items, total };
   }
 }

@@ -6,30 +6,52 @@ import {
   ParseIntPipe,
   Patch,
 } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { RequirePermissions } from "../auth/roles.decorator";
+import { InjectModel } from "@nestjs/sequelize";
+
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
 import { AuditService } from "../audit/audit.service";
-import { CurrentUser, AuthUser } from "../auth/current-user.decorator";
+import {
+  CurrentUser,
+  AuthUser,
+} from "../../common/decorator/current-user.decorator";
+
+import { Role } from "./models/role.model";
+import { Permission } from "./models/permission.model";
+import { RolePermission } from "./models/role-permission.model";
 
 @Controller("roles")
 export class RolesController {
   constructor(
-    private prisma: PrismaService,
-    private audit: AuditService,
+    @InjectModel(Role)
+    private readonly roleModel: typeof Role,
+
+    @InjectModel(Permission)
+    private readonly permissionModel: typeof Permission,
+
+    @InjectModel(RolePermission)
+    private readonly rolePermissionModel: typeof RolePermission,
+
+    private readonly audit: AuditService,
   ) {}
 
   @Get()
   @RequirePermissions("role.manage")
   findAll() {
-    return this.prisma.role.findMany({
-      include: { permissions: { include: { permission: true } } },
+    return this.roleModel.findAll({
+      include: [
+        {
+          model: RolePermission,
+          as: "permissions",
+          include: [{ model: Permission, as: "permission" }],
+        },
+      ],
     });
   }
 
   @Get("permissions")
   @RequirePermissions("role.manage")
   permissions() {
-    return this.prisma.permission.findMany();
+    return this.permissionModel.findAll();
   }
 
   @Patch(":id/permissions")
@@ -39,10 +61,15 @@ export class RolesController {
     @Body("permissionIds") permissionIds: number[],
     @CurrentUser() user: AuthUser,
   ) {
-    await this.prisma.rolePermission.deleteMany({ where: { roleId: id } });
-    await this.prisma.rolePermission.createMany({
-      data: permissionIds.map((permissionId) => ({ roleId: id, permissionId })),
-    });
+    await this.rolePermissionModel.destroy({ where: { roleId: id } });
+
+    await this.rolePermissionModel.bulkCreate(
+      permissionIds.map((permissionId) => ({
+        roleId: id,
+        permissionId,
+      })) as RolePermission[],
+    );
+
     await this.audit.log({
       userId: user.id,
       action: "PERMISSION_CHANGED",
@@ -50,9 +77,15 @@ export class RolesController {
       entityId: id,
       metadata: { permissionIds },
     });
-    return this.prisma.role.findUnique({
-      where: { id },
-      include: { permissions: { include: { permission: true } } },
+
+    return this.roleModel.findByPk(id, {
+      include: [
+        {
+          model: RolePermission,
+          as: "permissions",
+          include: [{ model: Permission, as: "permission" }],
+        },
+      ],
     });
   }
 }

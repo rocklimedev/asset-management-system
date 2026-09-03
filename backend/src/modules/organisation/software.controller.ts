@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { PrismaService } from "../../common/prisma/prisma.service";
-import { RequirePermissions } from "../auth/roles.decorator";
+import { RequirePermissions } from "../../common/decorator/roles.decorator";
 
 @Controller("software")
 export class SoftwareController {

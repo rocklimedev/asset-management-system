@@ -8,15 +8,14 @@ import {
 
 export class CreateCategoryDto {
   @IsString()
-  @MaxLength(100)
+  @MaxLength(255)
   name: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
   description?: string;
 
-  @IsString()
+  @IsUUID()
   organisationId: string;
 
   @IsOptional()

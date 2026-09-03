@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 
-import { OrganisationsController } from "./organisations.controller";
-import { OrganisationsService } from "./organisations.service";
+import { OrganisationsController } from "./organisation.controller";
+import { OrganisationsService } from "./organisation.service";
 
 @Module({
   controllers: [OrganisationsController],
