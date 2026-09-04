@@ -1,6 +1,11 @@
-import { Table, Column, Model, DataType, HasMany } from "sequelize-typescript";
-
-import { Employee } from "./employees.model";
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  Index,
+} from "sequelize-typescript";
 
 @Table({
   tableName: "departments",
@@ -8,13 +13,27 @@ import { Employee } from "./employees.model";
   updatedAt: false,
 })
 export class Department extends Model<Department> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // NAME
+  // ============================================================
+
+  @Index
+  @Column({
+    type: DataType.STRING(255),
     allowNull: false,
     unique: true,
   })
   name!: string;
-
-  @HasMany(() => Employee)
-  employees!: Employee[];
 }

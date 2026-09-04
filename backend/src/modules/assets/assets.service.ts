@@ -4,35 +4,42 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/sequelize";
-import { Sequelize } from "sequelize-typescript";
+import { InjectConnection, InjectModel } from "@nestjs/sequelize";
 import { Op, Transaction, WhereOptions } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
 
-import { AuditService } from "../audit/audit.service";
-import { AuthUser } from "../../common/decorator/current-user.decorator";
+import { AuditService } from "@/modules/audit/audit.service";
+import { AuthUser } from "@/common/decorator/current-user.decorator";
 
 import { CreateAssetDto } from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
 import { AssignAssetDto } from "./dto/assign-asset.dto";
 import { TransferAssetDto } from "./dto/transfer-asset.dto";
 
-import { Asset, AssetStatus, AssetCondition } from "./models/asset.model";
+import { Asset, AssetCondition, AssetStatus } from "./models/asset.model";
+
 import { AssetCategory } from "./models/asset-category.model";
+
 import { AssetHistory } from "./models/asset-history.model";
+
 import {
   AssetAssignment,
   AssignmentStatus,
 } from "./models/asset-assignment.model";
+
 import { AssetTransfer, TransferStatus } from "./models/asset-transfer.model";
+
 import { Vendor } from "./models/vendor.model";
 import { SoftwareLicense } from "./models/software-license.model";
 
 import { Organisation } from "../organisation/models/organisation.model";
-import { Location } from "../organisation/models/location.model";
+
 import {
   Employee,
   EmployeeStatus,
 } from "../organisation/models/employees.model";
+
+import { Location } from "@/modules/organisation/models/location.model";
 
 const NON_TRANSFERABLE_STATUSES: AssetStatus[] = [
   AssetStatus.RETIRED,
@@ -61,11 +68,17 @@ export class AssetsService {
     @InjectModel(SoftwareLicense)
     private readonly softwareLicenseModel: typeof SoftwareLicense,
 
+    @InjectModel(Vendor)
+    private readonly vendorModel: typeof Vendor,
+
     @InjectModel(Organisation)
     private readonly organisationModel: typeof Organisation,
 
     @InjectModel(Employee)
     private readonly employeeModel: typeof Employee,
+
+    @InjectModel(Location)
+    private readonly locationModel: typeof Location,
 
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -79,17 +92,44 @@ export class AssetsService {
 
   private get assetInclude() {
     return [
-      { model: Organisation, as: "organisation" },
-      { model: AssetCategory, as: "category" },
-      { model: Vendor, as: "vendor" },
-      { model: Location, as: "location" },
-      { model: SoftwareLicense, as: "license" },
+      {
+        model: Organisation,
+        as: "organisation",
+      },
+
+      {
+        model: AssetCategory,
+        as: "category",
+      },
+
+      {
+        model: Vendor,
+        as: "vendor",
+      },
+
+      {
+        model: Location,
+        as: "location",
+      },
+
+      {
+        model: SoftwareLicense,
+        as: "license",
+      },
+
       {
         model: AssetAssignment,
         as: "assignments",
-        where: { status: AssignmentStatus.ACTIVE },
+        where: {
+          status: AssignmentStatus.ACTIVE,
+        },
         required: false,
-        include: [{ model: Employee, as: "employee" }],
+        include: [
+          {
+            model: Employee,
+            as: "employee",
+          },
+        ],
       },
     ];
   }
@@ -100,12 +140,12 @@ export class AssetsService {
 
   async findAll(params: {
     search?: string;
-    organisationId?: number;
+    organisationId?: string;
     kind?: string;
     status?: string;
     condition?: string;
-    categoryId?: number;
-    locationId?: number;
+    categoryId?: string;
+    locationId?: string;
     assigned?: "assigned" | "unassigned";
     sortBy?: "assetTag" | "name" | "purchaseDate" | "warrantyExpiry" | "status";
     sortDir?: "asc" | "desc";
@@ -113,16 +153,19 @@ export class AssetsService {
     pageSize?: number;
   }) {
     const page = Math.max(params.page ?? 1, 1);
+
     const pageSize = Math.min(Math.max(params.pageSize ?? 25, 1), 100);
 
     const andConditions: WhereOptions<Asset>[] = [];
 
-    // --------------------------------------------------------
+    // ==========================================================
     // SEARCH
-    // --------------------------------------------------------
+    // ==========================================================
 
-    if (params.search) {
-      const like = { [Op.like]: `%${params.search}%` };
+    if (params.search?.trim()) {
+      const like = {
+        [Op.like]: `%${params.search.trim()}%`,
+      };
 
       andConditions.push({
         [Op.or]: [
@@ -131,8 +174,6 @@ export class AssetsService {
           { serialNumber: like },
           { manufacturer: like },
           { model: like },
-          // Nested-association filters rely on the include below and
-          // `$association.column$` dot-notation supported by Sequelize.
           { "$organisation.name$": like },
           { "$category.name$": like },
           { "$assignments.employee.name$": like },
@@ -140,64 +181,105 @@ export class AssetsService {
       } as WhereOptions<Asset>);
     }
 
-    // --------------------------------------------------------
+    // ==========================================================
     // ORGANISATION
-    // --------------------------------------------------------
+    // ==========================================================
 
     if (params.organisationId) {
-      andConditions.push({ organisationId: params.organisationId });
+      andConditions.push({
+        organisationId: params.organisationId,
+      });
     }
 
-    // --------------------------------------------------------
-    // FILTERS
-    // --------------------------------------------------------
+    // ==========================================================
+    // KIND
+    // ==========================================================
 
     if (params.kind) {
-      andConditions.push({ kind: params.kind as Asset["kind"] });
+      andConditions.push({
+        kind: params.kind as Asset["kind"],
+      });
     }
+
+    // ==========================================================
+    // STATUS
+    // ==========================================================
 
     if (params.status) {
-      andConditions.push({ status: params.status as AssetStatus });
+      andConditions.push({
+        status: params.status as AssetStatus,
+      });
     }
+
+    // ==========================================================
+    // CONDITION
+    // ==========================================================
 
     if (params.condition) {
-      andConditions.push({ condition: params.condition as AssetCondition });
+      andConditions.push({
+        condition: params.condition as AssetCondition,
+      });
     }
+
+    // ==========================================================
+    // CATEGORY
+    // ==========================================================
 
     if (params.categoryId) {
-      andConditions.push({ categoryId: params.categoryId });
+      andConditions.push({
+        categoryId: params.categoryId,
+      });
     }
+
+    // ==========================================================
+    // LOCATION
+    // ==========================================================
 
     if (params.locationId) {
-      andConditions.push({ locationId: params.locationId });
+      andConditions.push({
+        locationId: params.locationId,
+      });
     }
 
-    // --------------------------------------------------------
+    // ==========================================================
     // ASSIGNMENT FILTER
-    // --------------------------------------------------------
+    // ==========================================================
 
     if (params.assigned === "assigned") {
-      andConditions.push({ status: AssetStatus.ASSIGNED });
+      andConditions.push({
+        status: AssetStatus.ASSIGNED,
+      });
     }
 
     if (params.assigned === "unassigned") {
-      andConditions.push({ status: { [Op.ne]: AssetStatus.ASSIGNED } });
+      andConditions.push({
+        status: {
+          [Op.ne]: AssetStatus.ASSIGNED,
+        },
+      });
     }
 
-    const where: WhereOptions<Asset> = andConditions.length
-      ? { [Op.and]: andConditions }
-      : {};
+    const where: WhereOptions<Asset> =
+      andConditions.length > 0
+        ? {
+            [Op.and]: andConditions,
+          }
+        : {};
 
     const { rows: items, count: total } = await this.assetModel.findAndCountAll(
       {
         where,
+
         include: this.assetInclude,
+
         order: [[params.sortBy ?? "assetTag", params.sortDir ?? "asc"]],
+
         limit: pageSize,
+
         offset: (page - 1) * pageSize,
-        // Required with hasMany includes + limit/offset so pagination counts
-        // top-level Assets rather than joined rows.
+
         distinct: true,
+
         subQuery: false,
       },
     );
@@ -215,7 +297,7 @@ export class AssetsService {
   // FIND ONE
   // ============================================================
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const asset = await this.assetModel.findByPk(id, {
       include: this.assetInclude,
     });
@@ -231,11 +313,14 @@ export class AssetsService {
   // HISTORY
   // ============================================================
 
-  async history(id: number) {
+  async history(id: string) {
     await this.findOne(id);
 
     return this.assetHistoryModel.findAll({
-      where: { assetId: id },
+      where: {
+        assetId: id,
+      },
+
       order: [["createdAt", "DESC"]],
     });
   }
@@ -245,23 +330,27 @@ export class AssetsService {
   // ============================================================
 
   async create(dto: CreateAssetDto, actor: AuthUser) {
-    // ----------------------------------------------------------
+    // ==========================================================
     // ASSET TAG
-    // ----------------------------------------------------------
+    // ==========================================================
 
-    const existingTag = await this.assetModel.findOne({
-      where: { assetTag: dto.assetTag },
-    });
+    if (dto.assetTag) {
+      const existingTag = await this.assetModel.findOne({
+        where: {
+          assetTag: dto.assetTag,
+        },
+      });
 
-    if (existingTag) {
-      throw new ConflictException(
-        "An asset with this asset tag already exists.",
-      );
+      if (existingTag) {
+        throw new ConflictException(
+          "An asset with this asset tag already exists.",
+        );
+      }
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // ORGANISATION
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const organisation = await this.organisationModel.findByPk(
       dto.organisationId,
@@ -277,9 +366,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // CATEGORY
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const category = await this.assetCategoryModel.findByPk(dto.categoryId);
 
@@ -287,7 +376,20 @@ export class AssetsService {
       throw new NotFoundException("Asset category not found.");
     }
 
-    if (category.organisationId !== dto.organisationId) {
+    /*
+     * Categories may be global:
+     *
+     * organisation_id = NULL
+     *
+     * or organisation-specific:
+     *
+     * organisation_id = asset organisation
+     */
+
+    if (
+      category.organisationId !== null &&
+      category.organisationId !== dto.organisationId
+    ) {
       throw new BadRequestException(
         "The selected category does not belong to the selected organisation.",
       );
@@ -299,9 +401,42 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
+    // LOCATION
+    // ==========================================================
+
+    if (dto.locationId) {
+      const location = await this.locationModel.findByPk(dto.locationId);
+
+      if (!location) {
+        throw new NotFoundException("Location not found.");
+      }
+
+      if (
+        location.organisationId !== null &&
+        location.organisationId !== dto.organisationId
+      ) {
+        throw new BadRequestException(
+          "The selected location does not belong to the selected organisation.",
+        );
+      }
+    }
+
+    // ==========================================================
+    // VENDOR
+    // ==========================================================
+
+    if (dto.vendorId) {
+      const vendor = await this.vendorModel.findByPk(dto.vendorId);
+
+      if (!vendor) {
+        throw new NotFoundException("Vendor not found.");
+      }
+    }
+
+    // ==========================================================
     // EMPLOYEE IF ASSIGNED DURING CREATION
-    // ----------------------------------------------------------
+    // ==========================================================
 
     let employee: Employee | null = null;
 
@@ -333,103 +468,158 @@ export class AssetsService {
       const asset = await this.assetModel.create(
         {
           name: dto.name,
-          assetTag: dto.assetTag,
+
+          assetTag: dto.assetTag ?? null,
+
           kind: dto.kind,
+
           organisationId: dto.organisationId,
+
           categoryId: dto.categoryId,
-          manufacturer: dto.manufacturer,
-          model: dto.model,
-          serialNumber: dto.serialNumber,
+
+          manufacturer: dto.manufacturer ?? null,
+
+          model: dto.model ?? null,
+
+          serialNumber: dto.serialNumber ?? null,
+
           purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : null,
-          purchasePrice: dto.purchasePrice,
-          vendorId: dto.vendorId,
-          invoiceNumber: dto.invoiceNumber,
+
+          purchasePrice: dto.purchasePrice ?? null,
+
+          vendorId: dto.vendorId ?? null,
+
+          invoiceNumber: dto.invoiceNumber ?? null,
+
           warrantyStart: dto.warrantyStart ? new Date(dto.warrantyStart) : null,
+
           warrantyExpiry: dto.warrantyExpiry
             ? new Date(dto.warrantyExpiry)
             : null,
+
           status: dto.assignEmployeeId
             ? AssetStatus.ASSIGNED
             : (dto.status ?? AssetStatus.AVAILABLE),
+
           condition: dto.condition ?? AssetCondition.GOOD,
-          locationId: dto.locationId,
-          notes: dto.notes,
+
+          locationId: dto.locationId ?? null,
+
+          notes: dto.notes ?? null,
         } as Asset,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
-      // --------------------------------------------------------
+      // ======================================================
       // SOFTWARE LICENSE
-      // --------------------------------------------------------
+      // ======================================================
 
       if (dto.kind === "SOFTWARE" && dto.licenseVendor) {
         await this.softwareLicenseModel.create(
           {
             assetId: asset.id,
+
             vendor: dto.licenseVendor,
+
             licenseType: dto.licenseType ?? "Subscription",
+
             licenseReference: dto.licenseReference ?? "",
+
             totalSeats: dto.totalSeats ?? 1,
+
             assignedSeats: dto.assignEmployeeId ? 1 : 0,
+
             purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : null,
+
             expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+
             renewalDate: dto.renewalDate ? new Date(dto.renewalDate) : null,
-            cost: dto.purchasePrice,
+
+            cost: dto.purchasePrice ?? null,
           } as SoftwareLicense,
-          { transaction: t },
+
+          {
+            transaction: t,
+          },
         );
       }
 
-      // --------------------------------------------------------
+      // ======================================================
       // CREATED HISTORY
-      // --------------------------------------------------------
+      // ======================================================
 
       await this.assetHistoryModel.create(
         {
           assetId: asset.id,
+
           action: "CREATED",
+
           performedBy: actor.name,
+
           toValue: asset.status,
         } as AssetHistory,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
-      // --------------------------------------------------------
+      // ======================================================
       // INITIAL ASSIGNMENT
-      // --------------------------------------------------------
+      // ======================================================
 
       if (dto.assignEmployeeId && employee) {
         await this.assetAssignmentModel.create(
           {
             assetId: asset.id,
+
             employeeId: dto.assignEmployeeId,
+
             assignedBy: actor.id,
+
+            status: AssignmentStatus.ACTIVE,
           } as AssetAssignment,
-          { transaction: t },
+
+          {
+            transaction: t,
+          },
         );
 
         await this.assetHistoryModel.create(
           {
             assetId: asset.id,
+
             action: "ASSIGNED",
+
             performedBy: actor.name,
+
             toValue: employee.name,
           } as AssetHistory,
-          { transaction: t },
+
+          {
+            transaction: t,
+          },
         );
       }
 
-      // --------------------------------------------------------
+      // ======================================================
       // AUDIT
-      // --------------------------------------------------------
+      // ======================================================
 
       await this.audit.log(
         {
           userId: actor.id,
+
           action: "ASSET_CREATED",
+
           entity: "Asset",
-          entityId: asset.id.toString(),
+
+          entityId: asset.id,
         },
+
         t,
       );
 
@@ -444,12 +634,12 @@ export class AssetsService {
   // UPDATE
   // ============================================================
 
-  async update(id: number, dto: UpdateAssetDto, actor: AuthUser) {
+  async update(id: string, dto: UpdateAssetDto, actor: AuthUser) {
     const existing = await this.findOne(id);
 
-    // ----------------------------------------------------------
-    // ORGANISATION VALIDATION
-    // ----------------------------------------------------------
+    // ==========================================================
+    // ORGANISATION
+    // ==========================================================
 
     const organisationId = dto.organisationId ?? existing.organisationId;
 
@@ -469,9 +659,9 @@ export class AssetsService {
       }
     }
 
-    // ----------------------------------------------------------
-    // CATEGORY VALIDATION
-    // ----------------------------------------------------------
+    // ==========================================================
+    // CATEGORY
+    // ==========================================================
 
     if (dto.categoryId !== undefined || dto.organisationId !== undefined) {
       const categoryId = dto.categoryId ?? existing.categoryId;
@@ -482,7 +672,10 @@ export class AssetsService {
         throw new NotFoundException("Asset category not found.");
       }
 
-      if (category.organisationId !== organisationId) {
+      if (
+        category.organisationId !== null &&
+        category.organisationId !== organisationId
+      ) {
         throw new BadRequestException(
           "The selected category does not belong to the selected organisation.",
         );
@@ -493,15 +686,57 @@ export class AssetsService {
       }
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
+    // LOCATION
+    // ==========================================================
+
+    if (dto.locationId !== undefined || dto.organisationId !== undefined) {
+      const locationId = dto.locationId ?? existing.locationId;
+
+      if (locationId) {
+        const location = await this.locationModel.findByPk(locationId);
+
+        if (!location) {
+          throw new NotFoundException("Location not found.");
+        }
+
+        if (
+          location.organisationId !== null &&
+          location.organisationId !== organisationId
+        ) {
+          throw new BadRequestException(
+            "The selected location does not belong to the selected organisation.",
+          );
+        }
+      }
+    }
+
+    // ==========================================================
+    // VENDOR
+    // ==========================================================
+
+    if (dto.vendorId !== undefined) {
+      if (dto.vendorId) {
+        const vendor = await this.vendorModel.findByPk(dto.vendorId);
+
+        if (!vendor) {
+          throw new NotFoundException("Vendor not found.");
+        }
+      }
+    }
+
+    // ==========================================================
     // SERIAL NUMBER
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (dto.serialNumber && dto.serialNumber !== existing.serialNumber) {
       const duplicate = await this.assetModel.findOne({
         where: {
           serialNumber: dto.serialNumber,
-          id: { [Op.ne]: id },
+
+          id: {
+            [Op.ne]: id,
+          },
         },
       });
 
@@ -512,15 +747,18 @@ export class AssetsService {
       }
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // ASSET TAG
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (dto.assetTag && dto.assetTag !== existing.assetTag) {
       const duplicate = await this.assetModel.findOne({
         where: {
           assetTag: dto.assetTag,
-          id: { [Op.ne]: id },
+
+          id: {
+            [Op.ne]: id,
+          },
         },
       });
 
@@ -538,73 +776,137 @@ export class AssetsService {
     return this.sequelize.transaction(async (t: Transaction) => {
       const updateData: Partial<Asset> = {};
 
-      if (dto.name !== undefined) updateData.name = dto.name;
-      if (dto.assetTag !== undefined) updateData.assetTag = dto.assetTag;
-      if (dto.kind !== undefined) updateData.kind = dto.kind;
-      if (dto.organisationId !== undefined)
+      if (dto.name !== undefined) {
+        updateData.name = dto.name;
+      }
+
+      if (dto.assetTag !== undefined) {
+        updateData.assetTag = dto.assetTag;
+      }
+
+      if (dto.kind !== undefined) {
+        updateData.kind = dto.kind;
+      }
+
+      if (dto.organisationId !== undefined) {
         updateData.organisationId = dto.organisationId;
-      if (dto.categoryId !== undefined) updateData.categoryId = dto.categoryId;
-      if (dto.manufacturer !== undefined)
+      }
+
+      if (dto.categoryId !== undefined) {
+        updateData.categoryId = dto.categoryId;
+      }
+
+      if (dto.manufacturer !== undefined) {
         updateData.manufacturer = dto.manufacturer;
-      if (dto.model !== undefined) updateData.model = dto.model;
-      if (dto.serialNumber !== undefined)
+      }
+
+      if (dto.model !== undefined) {
+        updateData.model = dto.model;
+      }
+
+      if (dto.serialNumber !== undefined) {
         updateData.serialNumber = dto.serialNumber;
-      if (dto.purchaseDate !== undefined)
+      }
+
+      if (dto.purchaseDate !== undefined) {
         updateData.purchaseDate = dto.purchaseDate
           ? new Date(dto.purchaseDate)
           : null;
-      if (dto.purchasePrice !== undefined)
+      }
+
+      if (dto.purchasePrice !== undefined) {
         updateData.purchasePrice = dto.purchasePrice;
-      if (dto.vendorId !== undefined) updateData.vendorId = dto.vendorId;
-      if (dto.invoiceNumber !== undefined)
+      }
+
+      if (dto.vendorId !== undefined) {
+        updateData.vendorId = dto.vendorId;
+      }
+
+      if (dto.invoiceNumber !== undefined) {
         updateData.invoiceNumber = dto.invoiceNumber;
-      if (dto.warrantyStart !== undefined)
+      }
+
+      if (dto.warrantyStart !== undefined) {
         updateData.warrantyStart = dto.warrantyStart
           ? new Date(dto.warrantyStart)
           : null;
-      if (dto.warrantyExpiry !== undefined)
+      }
+
+      if (dto.warrantyExpiry !== undefined) {
         updateData.warrantyExpiry = dto.warrantyExpiry
           ? new Date(dto.warrantyExpiry)
           : null;
-      if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.condition !== undefined) updateData.condition = dto.condition;
-      if (dto.locationId !== undefined) updateData.locationId = dto.locationId;
-      if (dto.notes !== undefined) updateData.notes = dto.notes;
+      }
 
-      await this.assetModel.update(updateData, {
-        where: { id },
-        transaction: t,
-      });
+      if (dto.status !== undefined) {
+        updateData.status = dto.status;
+      }
 
-      // --------------------------------------------------------
+      if (dto.condition !== undefined) {
+        updateData.condition = dto.condition;
+      }
+
+      if (dto.locationId !== undefined) {
+        updateData.locationId = dto.locationId;
+      }
+
+      if (dto.notes !== undefined) {
+        updateData.notes = dto.notes;
+      }
+
+      await this.assetModel.update(
+        updateData,
+
+        {
+          where: {
+            id,
+          },
+
+          transaction: t,
+        },
+      );
+
+      // ======================================================
       // STATUS HISTORY
-      // --------------------------------------------------------
+      // ======================================================
 
       if (dto.status && dto.status !== existing.status) {
         await this.assetHistoryModel.create(
           {
             assetId: id,
+
             action: "STATUS_CHANGED",
+
             performedBy: actor.name,
+
             fromValue: existing.status,
+
             toValue: dto.status,
           } as AssetHistory,
-          { transaction: t },
+
+          {
+            transaction: t,
+          },
         );
       }
 
-      // --------------------------------------------------------
+      // ======================================================
       // AUDIT
-      // --------------------------------------------------------
+      // ======================================================
 
       await this.audit.log(
         {
           userId: actor.id,
+
           action: "ASSET_EDITED",
+
           entity: "Asset",
-          entityId: id.toString(),
+
+          entityId: id,
+
           metadata: dto as unknown as Record<string, unknown>,
         },
+
         t,
       );
 
@@ -619,12 +921,12 @@ export class AssetsService {
   // ASSIGN
   // ============================================================
 
-  async assign(id: number, dto: AssignAssetDto, actor: AuthUser) {
+  async assign(id: string, dto: AssignAssetDto, actor: AuthUser) {
     const asset = await this.findOne(id);
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // STATUS VALIDATION
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (asset.status === AssetStatus.ASSIGNED) {
       throw new BadRequestException(
@@ -638,9 +940,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // EMPLOYEE
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const employee = await this.employeeModel.findByPk(dto.employeeId);
 
@@ -654,9 +956,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // ORGANISATION MATCH
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (asset.organisationId !== employee.organisationId) {
       throw new BadRequestException(
@@ -672,37 +974,68 @@ export class AssetsService {
       await this.assetAssignmentModel.create(
         {
           assetId: id,
+
           employeeId: dto.employeeId,
+
           assignedBy: actor.id,
-          notes: dto.notes,
+
+          status: AssignmentStatus.ACTIVE,
+
+          notes: dto.notes ?? null,
         } as AssetAssignment,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       await this.assetModel.update(
-        { status: AssetStatus.ASSIGNED },
-        { where: { id }, transaction: t },
+        {
+          status: AssetStatus.ASSIGNED,
+        },
+
+        {
+          where: {
+            id,
+          },
+
+          transaction: t,
+        },
       );
 
       await this.assetHistoryModel.create(
         {
           assetId: id,
+
           action: "ASSIGNED",
+
           performedBy: actor.name,
+
           toValue: employee.name,
-          notes: dto.notes,
+
+          notes: dto.notes ?? null,
         } as AssetHistory,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       await this.audit.log(
         {
           userId: actor.id,
+
           action: "ASSET_ASSIGNED",
+
           entity: "Asset",
-          entityId: id.toString(),
-          metadata: { employeeId: dto.employeeId },
+
+          entityId: id,
+
+          metadata: {
+            employeeId: dto.employeeId,
+          },
         },
+
         t,
       );
 
@@ -717,16 +1050,18 @@ export class AssetsService {
   // TRANSFER
   // ============================================================
 
-  async transfer(id: number, dto: TransferAssetDto, actor: AuthUser) {
+  async transfer(id: string, dto: TransferAssetDto, actor: AuthUser) {
     const asset = await this.findOne(id);
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // STATUS
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (NON_TRANSFERABLE_STATUSES.includes(asset.status)) {
       throw new BadRequestException(
-        `${asset.status.charAt(0) + asset.status.slice(1).toLowerCase()} assets cannot be transferred.`,
+        `${
+          asset.status.charAt(0) + asset.status.slice(1).toLowerCase()
+        } assets cannot be transferred.`,
       );
     }
 
@@ -745,11 +1080,12 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // CURRENT ASSIGNMENT
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const currentAssignment = asset.assignments[0];
+
     const fromEmployeeId = currentAssignment.employeeId;
 
     if (fromEmployeeId === dto.toEmployeeId) {
@@ -758,9 +1094,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // DESTINATION EMPLOYEE
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const toEmployee = await this.employeeModel.findByPk(dto.toEmployeeId);
 
@@ -774,9 +1110,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // ORGANISATION MATCH
-    // ----------------------------------------------------------
+    // ==========================================================
 
     if (toEmployee.organisationId !== asset.organisationId) {
       throw new BadRequestException(
@@ -784,9 +1120,9 @@ export class AssetsService {
       );
     }
 
-    // ----------------------------------------------------------
+    // ==========================================================
     // CURRENT EMPLOYEE
-    // ----------------------------------------------------------
+    // ==========================================================
 
     const fromEmployee = await this.employeeModel.findByPk(fromEmployeeId);
 
@@ -800,8 +1136,19 @@ export class AssetsService {
       // ------------------------------------------------------
 
       await this.assetAssignmentModel.update(
-        { status: AssignmentStatus.RETURNED, returnedAt: new Date() },
-        { where: { id: currentAssignment.id }, transaction: t },
+        {
+          status: AssignmentStatus.RETURNED,
+
+          returnedAt: new Date(),
+        },
+
+        {
+          where: {
+            id: currentAssignment.id,
+          },
+
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
@@ -811,11 +1158,19 @@ export class AssetsService {
       await this.assetAssignmentModel.create(
         {
           assetId: id,
+
           employeeId: dto.toEmployeeId,
+
           assignedBy: actor.id,
-          notes: dto.notes,
+
+          status: AssignmentStatus.ACTIVE,
+
+          notes: dto.notes ?? null,
         } as AssetAssignment,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
@@ -825,16 +1180,27 @@ export class AssetsService {
       const transfer = await this.assetTransferModel.create(
         {
           assetId: id,
+
           fromEmployeeId,
+
           toEmployeeId: dto.toEmployeeId,
+
           requestedById: actor.id,
+
           approvedById: actor.id,
+
           status: TransferStatus.COMPLETED,
+
           reason: dto.reason ?? "Employee transfer",
-          notes: dto.notes,
+
+          notes: dto.notes ?? null,
+
           approvedAt: new Date(),
         } as AssetTransfer,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
@@ -842,8 +1208,17 @@ export class AssetsService {
       // ------------------------------------------------------
 
       await this.assetModel.update(
-        { status: AssetStatus.ASSIGNED },
-        { where: { id }, transaction: t },
+        {
+          status: AssetStatus.ASSIGNED,
+        },
+
+        {
+          where: {
+            id,
+          },
+
+          transaction: t,
+        },
       );
 
       const updatedAsset = await this.assetModel.findByPk(id, {
@@ -857,13 +1232,21 @@ export class AssetsService {
       await this.assetHistoryModel.create(
         {
           assetId: id,
+
           action: "TRANSFERRED",
+
           performedBy: actor.name,
+
           fromValue: fromEmployee?.name ?? "Unassigned",
+
           toValue: toEmployee.name,
-          notes: dto.notes,
+
+          notes: dto.notes ?? null,
         } as AssetHistory,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
@@ -873,21 +1256,30 @@ export class AssetsService {
       await this.audit.log(
         {
           userId: actor.id,
+
           action: "ASSET_TRANSFERRED",
+
           entity: "Asset",
-          entityId: id.toString(),
+
+          entityId: id,
+
           metadata: {
             fromEmployeeId,
+
             toEmployeeId: dto.toEmployeeId,
+
             transferId: transfer.id,
           },
         },
+
         t,
       );
 
       return {
         asset: updatedAsset,
+
         transfer,
+
         message: `Asset successfully transferred from ${
           fromEmployee?.name ?? "Unassigned"
         } to ${toEmployee.name}.`,
@@ -899,8 +1291,12 @@ export class AssetsService {
   // RETURN ASSET
   // ============================================================
 
-  async returnAsset(id: number, actor: AuthUser, notes?: string) {
+  async returnAsset(id: string, actor: AuthUser, notes?: string) {
     const asset = await this.findOne(id);
+
+    // ==========================================================
+    // VALIDATION
+    // ==========================================================
 
     if (
       asset.status !== AssetStatus.ASSIGNED ||
@@ -911,58 +1307,96 @@ export class AssetsService {
 
     const assignment = asset.assignments[0];
 
+    // ==========================================================
+    // TRANSACTION
+    // ==========================================================
+
     return this.sequelize.transaction(async (t: Transaction) => {
       // ------------------------------------------------------
-      // CLOSE ASSIGNMENT
+      // 1. CLOSE ASSIGNMENT
       // ------------------------------------------------------
 
       await this.assetAssignmentModel.update(
         {
           status: AssignmentStatus.RETURNED,
+
           returnedAt: new Date(),
-          notes,
+
+          notes: notes ?? null,
         },
-        { where: { id: assignment.id }, transaction: t },
+
+        {
+          where: {
+            id: assignment.id,
+          },
+
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
-      // MAKE AVAILABLE / UNASSIGNED
+      // 2. MAKE AVAILABLE
       // ------------------------------------------------------
 
       await this.assetModel.update(
-        { status: AssetStatus.AVAILABLE },
-        { where: { id }, transaction: t },
+        {
+          status: AssetStatus.AVAILABLE,
+        },
+
+        {
+          where: {
+            id,
+          },
+
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
-      // HISTORY
+      // 3. HISTORY
       // ------------------------------------------------------
 
       await this.assetHistoryModel.create(
         {
           assetId: id,
+
           action: "RETURNED",
+
           performedBy: actor.name,
-          fromValue: assignment.employee.name,
+
+          fromValue: assignment.employee?.name ?? "Assigned",
+
           toValue: "Unassigned",
-          notes,
+
+          notes: notes ?? null,
         } as AssetHistory,
-        { transaction: t },
+
+        {
+          transaction: t,
+        },
       );
 
       // ------------------------------------------------------
-      // AUDIT
+      // 4. AUDIT
       // ------------------------------------------------------
 
       await this.audit.log(
         {
           userId: actor.id,
+
           action: "ASSET_RETURNED",
+
           entity: "Asset",
-          entityId: id.toString(),
+
+          entityId: id,
         },
+
         t,
       );
+
+      // ------------------------------------------------------
+      // 5. RETURN UPDATED ASSET
+      // ------------------------------------------------------
 
       return this.assetModel.findByPk(id, {
         include: this.assetInclude,

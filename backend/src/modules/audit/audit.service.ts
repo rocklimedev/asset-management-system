@@ -3,7 +3,7 @@ import { InjectModel } from "@nestjs/sequelize";
 import { Transaction, WhereOptions } from "sequelize";
 
 import { AuditLog } from "./models/audit-log.model";
-import { User } from "../users/models/user.model";
+import { User } from "@/modules/users/models/user.model";
 
 @Injectable()
 export class AuditService {
@@ -12,30 +12,43 @@ export class AuditService {
     private readonly auditLogModel: typeof AuditLog,
   ) {}
 
-  // Writes an audit entry. Accepts an optional Sequelize transaction so a caller
-  // can include the audit write inside the same DB transaction as the business change.
+  /**
+   * Create an audit log entry.
+   *
+   * UUID-based:
+   * - userId -> string
+   * - entityId -> string
+   *
+   * The optional transaction allows the audit record to be committed
+   * or rolled back together with the business operation.
+   */
   async log(
     params: {
-      userId?: number;
+      userId?: string | null;
       action: string;
       entity: string;
-      entityId: string | number;
+      entityId: string;
       metadata?: Record<string, unknown>;
     },
     transaction?: Transaction,
-  ) {
+  ): Promise<AuditLog> {
     return this.auditLogModel.create(
       {
-        userId: params.userId,
+        userId: params.userId ?? null,
         action: params.action,
         entity: params.entity,
-        entityId: String(params.entityId),
-        metadata: params.metadata,
+        entityId: params.entityId,
+        metadata: params.metadata ?? null,
       } as AuditLog,
-      { transaction },
+      {
+        transaction,
+      },
     );
   }
 
+  /**
+   * List audit logs with optional filtering and pagination.
+   */
   async list(params: {
     entity?: string;
     action?: string;
@@ -44,12 +57,14 @@ export class AuditService {
   }) {
     const where: WhereOptions<AuditLog> = {
       ...(params.entity !== undefined ? { entity: params.entity } : {}),
+
       ...(params.action !== undefined ? { action: params.action } : {}),
     };
 
     const { rows: items, count: total } =
       await this.auditLogModel.findAndCountAll({
         where,
+
         include: [
           {
             model: User,
@@ -57,11 +72,16 @@ export class AuditService {
             attributes: ["id", "name", "email"],
           },
         ],
+
         order: [["createdAt", "DESC"]],
+
         limit: params.take ?? 50,
         offset: params.skip ?? 0,
       });
 
-    return { items, total };
+    return {
+      items,
+      total,
+    };
   }
 }

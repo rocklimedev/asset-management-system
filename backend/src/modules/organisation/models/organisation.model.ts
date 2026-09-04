@@ -5,11 +5,12 @@ import {
   DataType,
   HasMany,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
 
 import { Employee } from "./employees.model";
-import { AssetCategory } from "../../assets/models/asset-category.model";
-import { Asset } from "../../assets/models/asset.model";
+import { AssetCategory } from "@/modules/assets/models/asset-category.model";
+import { Asset } from "@/modules/assets/models/asset.model";
 import { Location } from "./location.model";
 
 @Table({
@@ -17,25 +18,53 @@ import { Location } from "./location.model";
   timestamps: true,
 })
 export class Organisation extends Model<Organisation> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // NAME
+  // ============================================================
+
+  @Column({
+    type: DataType.STRING(255),
     allowNull: false,
     unique: true,
   })
   name!: string;
 
+  // ============================================================
+  // CODE
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true,
     unique: true,
   })
-  code?: string;
+  code?: string | null;
+
+  // ============================================================
+  // DESCRIPTION
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  description?: string;
+  description?: string | null;
+
+  // ============================================================
+  // ACTIVE STATUS
+  // ============================================================
 
   @Index
   @Column({
@@ -45,15 +74,39 @@ export class Organisation extends Model<Organisation> {
   })
   isActive!: boolean;
 
-  @HasMany(() => Employee)
+  // ============================================================
+  // EMPLOYEES
+  // ============================================================
+
+  @HasMany(() => Employee, {
+    foreignKey: "organisation_id",
+  })
   employees!: Employee[];
 
-  @HasMany(() => AssetCategory)
+  // ============================================================
+  // ASSET CATEGORIES
+  // ============================================================
+
+  @HasMany(() => AssetCategory, {
+    foreignKey: "organisation_id",
+  })
   categories!: AssetCategory[];
 
-  @HasMany(() => Asset)
+  // ============================================================
+  // ASSETS
+  // ============================================================
+
+  @HasMany(() => Asset, {
+    foreignKey: "organisation_id",
+  })
   assets!: Asset[];
 
-  @HasMany(() => Location)
+  // ============================================================
+  // LOCATIONS
+  // ============================================================
+
+  @HasMany(() => Location, {
+    foreignKey: "organisation_id",
+  })
   locations!: Location[];
 }

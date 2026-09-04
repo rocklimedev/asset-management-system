@@ -3,7 +3,7 @@ import { IsBoolean, IsOptional, IsString, MaxLength } from "class-validator";
 export class CreateOrganisationDto {
   @IsString()
   @MaxLength(150)
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()

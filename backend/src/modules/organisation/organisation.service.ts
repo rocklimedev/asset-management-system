@@ -10,8 +10,8 @@ import { CreateOrganisationDto } from "./dto/create-organisation.dto";
 import { UpdateOrganisationDto } from "./dto/update-organisation.dto";
 
 import { Organisation } from "./models/organisation.model";
-import { AssetCategory } from "../assets/models/asset-category.model";
-import { Asset } from "../assets/models/asset.model";
+import { AssetCategory } from "@/modules/assets/models/asset-category.model";
+import { Asset } from "@/modules/assets/models/asset.model";
 import { Employee } from "./models/employees.model";
 
 @Injectable()

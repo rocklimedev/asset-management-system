@@ -6,11 +6,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
 
 import { Asset } from "./asset.model";
-import { Employee } from "../../organisation/models/employees.model";
-import { User } from "../../users/models/user.model";
+import { Employee } from "@/modules/organisation/models/employees.model";
+import { User } from "@/modules/users/models/user.model";
 
 export enum TransferStatus {
   PENDING = "PENDING",
@@ -25,82 +26,151 @@ export enum TransferStatus {
   timestamps: true,
 })
 export class AssetTransfer extends Model<AssetTransfer> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // ASSET
+  // ============================================================
+
   @Index
   @ForeignKey(() => Asset)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
+    field: "asset_id",
   })
-  assetId!: number;
+  assetId!: string;
 
-  @BelongsTo(() => Asset)
+  @BelongsTo(() => Asset, {
+    foreignKey: "asset_id",
+  })
   asset!: Asset;
 
+  // ============================================================
+  // FROM EMPLOYEE
+  // ============================================================
+
   @Index
   @ForeignKey(() => Employee)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: true,
+    field: "from_employee_id",
   })
-  fromEmployeeId?: number;
+  fromEmployeeId?: string | null;
 
-  @BelongsTo(() => Employee, "fromEmployeeId")
+  @BelongsTo(() => Employee, {
+    foreignKey: "from_employee_id",
+  })
   fromEmployee?: Employee;
 
+  // ============================================================
+  // TO EMPLOYEE
+  // ============================================================
+
   @Index
   @ForeignKey(() => Employee)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
+    field: "to_employee_id",
   })
-  toEmployeeId!: number;
+  toEmployeeId!: string;
 
-  @BelongsTo(() => Employee, "toEmployeeId")
+  @BelongsTo(() => Employee, {
+    foreignKey: "to_employee_id",
+  })
   toEmployee!: Employee;
 
+  // ============================================================
+  // REQUESTED BY
+  // ============================================================
+
+  @Index
   @ForeignKey(() => User)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
+    field: "requested_by_id",
   })
-  requestedById!: number;
+  requestedById!: string;
 
-  @BelongsTo(() => User, "requestedById")
+  @BelongsTo(() => User, {
+    foreignKey: "requested_by_id",
+  })
   requestedBy!: User;
 
+  // ============================================================
+  // APPROVED BY
+  // ============================================================
+
+  @Index
   @ForeignKey(() => User)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: true,
+    field: "approved_by_id",
   })
-  approvedById?: number;
+  approvedById?: string | null;
 
-  @BelongsTo(() => User, "approvedById")
+  @BelongsTo(() => User, {
+    foreignKey: "approved_by_id",
+  })
   approvedBy?: User;
+
+  // ============================================================
+  // STATUS
+  // ============================================================
 
   @Index
   @Column({
     type: DataType.ENUM(...Object.values(TransferStatus)),
     allowNull: false,
     defaultValue: TransferStatus.COMPLETED,
+    field: "status",
   })
   status!: TransferStatus;
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  reason?: string;
+  // ============================================================
+  // REASON
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    field: "reason",
   })
-  notes?: string;
+  reason?: string | null;
+
+  // ============================================================
+  // NOTES
+  // ============================================================
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+    field: "notes",
+  })
+  notes?: string | null;
+
+  // ============================================================
+  // APPROVED AT
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
+    field: "approvedAt",
   })
-  approvedAt?: Date;
+  approvedAt?: Date | null;
 }

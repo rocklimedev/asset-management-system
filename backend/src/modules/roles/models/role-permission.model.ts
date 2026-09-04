@@ -5,6 +5,7 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  Index,
 } from "sequelize-typescript";
 
 import { Role } from "./role.model";
@@ -15,25 +16,41 @@ import { Permission } from "./permission.model";
   timestamps: false,
 })
 export class RolePermission extends Model<RolePermission> {
+  // ============================================================
+  // ROLE
+  // ============================================================
+
+  @Index
   @ForeignKey(() => Role)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
     primaryKey: true,
+    field: "role_id",
   })
-  roleId!: number;
+  roleId!: string;
 
-  @BelongsTo(() => Role)
+  @BelongsTo(() => Role, {
+    foreignKey: "role_id",
+  })
   role!: Role;
 
+  // ============================================================
+  // PERMISSION
+  // ============================================================
+
+  @Index
   @ForeignKey(() => Permission)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
     primaryKey: true,
+    field: "permission_id",
   })
-  permissionId!: number;
+  permissionId!: string;
 
-  @BelongsTo(() => Permission)
+  @BelongsTo(() => Permission, {
+    foreignKey: "permission_id",
+  })
   permission!: Permission;
 }

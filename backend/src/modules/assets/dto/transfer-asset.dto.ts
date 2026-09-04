@@ -1,7 +1,14 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from "class-validator";
 
 export class TransferAssetDto {
-  @IsInt() toEmployeeId!: number;
-  @IsOptional() @IsString() reason?: string;
-  @IsOptional() @IsString() notes?: string;
+  @IsUUID("4")
+  toEmployeeId!: string;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

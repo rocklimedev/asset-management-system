@@ -1,9 +1,13 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { InjectModel } from "@nestjs/sequelize";
 
-import { AuditService } from "../audit/audit.service";
-import { AuthUser } from "../../common/decorator/current-user.decorator";
+import { AuditService } from "@/modules/audit/audit.service";
+import { AuthUser } from "@/common/decorator/current-user.decorator";
 
 import { User, UserStatus } from "./models/user.model";
 
@@ -16,7 +20,11 @@ export class UsersService {
     private readonly audit: AuditService,
   ) {}
 
-  findAll() {
+  // ============================================================
+  // FIND ALL
+  // ============================================================
+
+  async findAll() {
     return this.userModel.findAll({
       attributes: [
         "id",
@@ -27,16 +35,28 @@ export class UsersService {
         "roleId",
         "employeeId",
       ],
+
       order: [["name", "ASC"]],
     });
   }
 
+  // ============================================================
+  // CREATE USER
+  // ============================================================
+
   async create(
-    dto: { name: string; email: string; password: string; roleId: number },
+    dto: {
+      name: string;
+      email: string;
+      password: string;
+      roleId: string;
+    },
     actor: AuthUser,
   ) {
     const existing = await this.userModel.findOne({
-      where: { email: dto.email },
+      where: {
+        email: dto.email,
+      },
     });
 
     if (existing) {
@@ -54,40 +74,76 @@ export class UsersService {
 
     await this.audit.log({
       userId: actor.id,
+
       action: "USER_CREATED",
+
       entity: "User",
+
       entityId: user.id,
     });
 
     return user;
   }
 
-  async setStatus(id: number, status: UserStatus, actor: AuthUser) {
-    await this.userModel.update({ status }, { where: { id } });
+  // ============================================================
+  // SET USER STATUS
+  // ============================================================
 
+  async setStatus(id: string, status: UserStatus, actor: AuthUser) {
     const user = await this.userModel.findByPk(id);
+
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    await user.update({
+      status,
+    });
 
     await this.audit.log({
       userId: actor.id,
+
       action: status === UserStatus.DISABLED ? "USER_DISABLED" : "USER_ENABLED",
+
       entity: "User",
-      entityId: id,
+
+      entityId: user.id,
+
+      metadata: {
+        status,
+      },
     });
 
     return user;
   }
 
-  async changeRole(id: number, roleId: number, actor: AuthUser) {
-    await this.userModel.update({ roleId }, { where: { id } });
+  // ============================================================
+  // CHANGE USER ROLE
+  // ============================================================
 
+  async changeRole(id: string, roleId: string, actor: AuthUser) {
     const user = await this.userModel.findByPk(id);
+
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    await user.update({
+      roleId,
+    });
 
     await this.audit.log({
       userId: actor.id,
+
       action: "ROLE_CHANGED",
+
       entity: "User",
-      entityId: id,
-      metadata: { roleId },
+
+      entityId: user.id,
+
+      metadata: {
+        roleId,
+      },
     });
 
     return user;

@@ -1,19 +1,13 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 
-import { RequirePermissions } from "../../common/decorator/roles.decorator";
-import { AuditService } from "../audit/audit.service";
+import { RequirePermissions } from "@/common/decorator/roles.decorator";
+import { AuditService } from "@/modules/audit/audit.service";
+
 import {
   CurrentUser,
   AuthUser,
-} from "../../common/decorator/current-user.decorator";
+} from "@/common/decorator/current-user.decorator";
 
 import { Role } from "./models/role.model";
 import { Permission } from "./models/permission.model";
@@ -34,6 +28,10 @@ export class RolesController {
     private readonly audit: AuditService,
   ) {}
 
+  // ============================================================
+  // GET ALL ROLES
+  // ============================================================
+
   @Get()
   @RequirePermissions("role.manage")
   findAll() {
@@ -42,48 +40,99 @@ export class RolesController {
         {
           model: RolePermission,
           as: "permissions",
-          include: [{ model: Permission, as: "permission" }],
+          include: [
+            {
+              model: Permission,
+              as: "permission",
+            },
+          ],
         },
       ],
+      order: [["name", "ASC"]],
     });
   }
+
+  // ============================================================
+  // GET ALL PERMISSIONS
+  // ============================================================
 
   @Get("permissions")
   @RequirePermissions("role.manage")
   permissions() {
-    return this.permissionModel.findAll();
+    return this.permissionModel.findAll({
+      order: [["name", "ASC"]],
+    });
   }
+
+  // ============================================================
+  // SET ROLE PERMISSIONS
+  // ============================================================
 
   @Patch(":id/permissions")
   @RequirePermissions("role.manage")
   async setPermissions(
-    @Param("id", ParseIntPipe) id: number,
-    @Body("permissionIds") permissionIds: number[],
+    @Param("id") id: string,
+
+    @Body("permissionIds") permissionIds: string[],
+
     @CurrentUser() user: AuthUser,
   ) {
-    await this.rolePermissionModel.destroy({ where: { roleId: id } });
+    // Validate payload
+    if (!Array.isArray(permissionIds)) {
+      throw new Error("permissionIds must be an array.");
+    }
 
-    await this.rolePermissionModel.bulkCreate(
-      permissionIds.map((permissionId) => ({
+    // Make sure the role exists
+    const role = await this.roleModel.findByPk(id);
+
+    if (!role) {
+      throw new Error("Role not found.");
+    }
+
+    // Remove existing permissions
+    await this.rolePermissionModel.destroy({
+      where: {
         roleId: id,
-        permissionId,
-      })) as RolePermission[],
-    );
-
-    await this.audit.log({
-      userId: user.id,
-      action: "PERMISSION_CHANGED",
-      entity: "Role",
-      entityId: id,
-      metadata: { permissionIds },
+      },
     });
 
+    // Add new permissions
+    if (permissionIds.length > 0) {
+      await this.rolePermissionModel.bulkCreate(
+        permissionIds.map((permissionId) => ({
+          roleId: id,
+          permissionId,
+        })) as RolePermission[],
+      );
+    }
+
+    // Audit
+    await this.audit.log({
+      userId: user.id,
+
+      action: "PERMISSION_CHANGED",
+
+      entity: "Role",
+
+      entityId: id,
+
+      metadata: {
+        permissionIds,
+      },
+    });
+
+    // Return updated role
     return this.roleModel.findByPk(id, {
       include: [
         {
           model: RolePermission,
           as: "permissions",
-          include: [{ model: Permission, as: "permission" }],
+          include: [
+            {
+              model: Permission,
+              as: "permission",
+            },
+          ],
         },
       ],
     });

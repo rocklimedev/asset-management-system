@@ -6,6 +6,7 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
 
 import { Asset } from "./asset.model";
@@ -15,46 +16,89 @@ import { Asset } from "./asset.model";
   timestamps: false,
 })
 export class AssetHistory extends Model<AssetHistory> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // ASSET
+  // ============================================================
+
   @Index
   @ForeignKey(() => Asset)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
+    field: "asset_id",
   })
-  assetId!: number;
+  assetId!: string;
 
-  @BelongsTo(() => Asset)
+  @BelongsTo(() => Asset, {
+    foreignKey: "asset_id",
+  })
   asset!: Asset;
 
+  // ============================================================
+  // ACTION
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   action!: string;
 
+  // ============================================================
+  // PERFORMED BY
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   performedBy!: string;
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  fromValue?: string;
+  // ============================================================
+  // FROM VALUE
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  toValue?: string;
+  fromValue?: string | null;
+
+  // ============================================================
+  // TO VALUE
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  notes?: string;
+  toValue?: string | null;
+
+  // ============================================================
+  // NOTES
+  // ============================================================
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  notes?: string | null;
+
+  // ============================================================
+  // CREATED AT
+  // ============================================================
 
   @Index
   @Column({

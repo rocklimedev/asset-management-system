@@ -1,32 +1,48 @@
 import {
   IsDateString,
   IsEnum,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
 } from "class-validator";
 
-import { AssetCondition, AssetKind, AssetStatus } from "@prisma/client";
+import { AssetCondition, AssetStatus } from "../models/asset.model";
+
+import { AssetKind } from "../models/asset-category.model";
 
 export class CreateAssetDto {
+  // ----------------------------------------------------------
+  // BASIC ASSET INFORMATION
+  // ----------------------------------------------------------
+
   @IsString()
   @MaxLength(150)
-  name?: string;
+  name!: string;
 
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   assetTag?: string;
 
   @IsEnum(AssetKind)
-  kind?: AssetKind;
+  kind!: AssetKind;
 
-  @IsInt()
-  organisationId?: number;
+  // ----------------------------------------------------------
+  // ORGANISATION / CATEGORY
+  // ----------------------------------------------------------
 
-  @IsInt()
-  categoryId?: number;
+  @IsOptional()
+  @IsUUID("4")
+  organisationId?: string;
+
+  @IsUUID("4")
+  categoryId!: string;
+
+  // ----------------------------------------------------------
+  // ASSET DETAILS
+  // ----------------------------------------------------------
 
   @IsOptional()
   @IsString()
@@ -48,13 +64,21 @@ export class CreateAssetDto {
   @IsNumber()
   purchasePrice?: number;
 
+  // ----------------------------------------------------------
+  // VENDOR
+  // ----------------------------------------------------------
+
   @IsOptional()
-  @IsInt()
-  vendorId?: number;
+  @IsUUID("4")
+  vendorId?: string;
 
   @IsOptional()
   @IsString()
   invoiceNumber?: string;
+
+  // ----------------------------------------------------------
+  // WARRANTY
+  // ----------------------------------------------------------
 
   @IsOptional()
   @IsDateString()
@@ -64,6 +88,10 @@ export class CreateAssetDto {
   @IsDateString()
   warrantyExpiry?: string;
 
+  // ----------------------------------------------------------
+  // STATUS
+  // ----------------------------------------------------------
+
   @IsOptional()
   @IsEnum(AssetStatus)
   status?: AssetStatus;
@@ -72,9 +100,13 @@ export class CreateAssetDto {
   @IsEnum(AssetCondition)
   condition?: AssetCondition;
 
+  // ----------------------------------------------------------
+  // LOCATION
+  // ----------------------------------------------------------
+
   @IsOptional()
-  @IsInt()
-  locationId?: number;
+  @IsUUID("4")
+  locationId?: string;
 
   @IsOptional()
   @IsString()
@@ -85,11 +117,11 @@ export class CreateAssetDto {
   // ----------------------------------------------------------
 
   @IsOptional()
-  @IsInt()
-  assignEmployeeId?: number;
+  @IsUUID("4")
+  assignEmployeeId?: string;
 
   // ----------------------------------------------------------
-  // SOFTWARE
+  // SOFTWARE LICENSE
   // ----------------------------------------------------------
 
   @IsOptional()
@@ -105,7 +137,7 @@ export class CreateAssetDto {
   licenseReference?: string;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
   totalSeats?: number;
 
   @IsOptional()

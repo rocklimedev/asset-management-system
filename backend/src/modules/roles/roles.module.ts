@@ -1,6 +1,20 @@
 import { Module } from "@nestjs/common";
-import { RolesController } from "./roles.controller";
-import { AuditModule } from "../audit/audit.module";
+import { SequelizeModule } from "@nestjs/sequelize";
 
-@Module({ imports: [AuditModule], controllers: [RolesController] })
+import { RolesController } from "./roles.controller";
+import { AuditModule } from "@/modules/audit/audit.module";
+
+import { Role } from "./models/role.model";
+import { Permission } from "./models/permission.model";
+import { RolePermission } from "./models/role-permission.model";
+
+@Module({
+  imports: [
+    SequelizeModule.forFeature([Role, Permission, RolePermission]),
+
+    AuditModule,
+  ],
+
+  controllers: [RolesController],
+})
 export class RolesModule {}

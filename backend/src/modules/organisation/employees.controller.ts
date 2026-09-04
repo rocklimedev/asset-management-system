@@ -4,23 +4,28 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
 } from "@nestjs/common";
+
 import { EmployeesService } from "./employees.service";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
-import { RequirePermissions } from "../../common/decorator/roles.decorator";
+
+import { RequirePermissions } from "@/common/decorator/roles.decorator";
 import {
   CurrentUser,
   AuthUser,
-} from "../../common/decorator/current-user.decorator";
+} from "@/common/decorator/current-user.decorator";
 
-@Controller("employees")
+@Controller("organisations/employees")
 export class EmployeesController {
-  constructor(private service: EmployeesService) {}
+  constructor(private readonly service: EmployeesService) {}
+
+  // ============================================================
+  // GET ALL EMPLOYEES
+  // ============================================================
 
   @Get()
   @RequirePermissions("employee.view")
@@ -32,17 +37,30 @@ export class EmployeesController {
   ) {
     return this.service.findAll({
       search,
-      departmentId: departmentId ? Number(departmentId) : undefined,
+
+      // UUID - do NOT convert to Number()
+      departmentId: departmentId || undefined,
+
       status,
+
+      // Pagination is still numeric
       page: page ? Number(page) : undefined,
     });
   }
 
+  // ============================================================
+  // GET SINGLE EMPLOYEE
+  // ============================================================
+
   @Get(":id")
   @RequirePermissions("employee.view")
-  findOne(@Param("id", ParseIntPipe) id: number) {
+  findOne(@Param("id") id: string) {
     return this.service.findOne(id);
   }
+
+  // ============================================================
+  // CREATE EMPLOYEE
+  // ============================================================
 
   @Post()
   @RequirePermissions("employee.manage")
@@ -50,19 +68,27 @@ export class EmployeesController {
     return this.service.create(dto, user);
   }
 
+  // ============================================================
+  // UPDATE EMPLOYEE
+  // ============================================================
+
   @Patch(":id")
   @RequirePermissions("employee.manage")
   update(
-    @Param("id", ParseIntPipe) id: number,
+    @Param("id") id: string,
     @Body() dto: UpdateEmployeeDto,
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.update(id, dto, user);
   }
 
+  // ============================================================
+  // REMOVE / EXIT EMPLOYEE
+  // ============================================================
+
   @Delete(":id")
   @RequirePermissions("employee.manage")
-  remove(@Param("id", ParseIntPipe) id: number, @CurrentUser() user: AuthUser) {
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user);
   }
 }

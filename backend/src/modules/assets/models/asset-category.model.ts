@@ -7,9 +7,10 @@ import {
   BelongsTo,
   HasMany,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
 
-import { Organisation } from "../../organisation/models/organisation.model";
+import { Organisation } from "@/modules/organisation/models/organisation.model";
 import { Asset } from "./asset.model";
 
 export enum AssetKind {
@@ -22,17 +23,41 @@ export enum AssetKind {
   timestamps: true,
 })
 export class AssetCategory extends Model<AssetCategory> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // NAME
+  // ============================================================
+
+  @Column({
+    type: DataType.STRING(255),
     allowNull: false,
   })
   name!: string;
+
+  // ============================================================
+  // DESCRIPTION
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  description?: string;
+  description?: string | null;
+
+  // ============================================================
+  // TYPE
+  // ============================================================
 
   @Index
   @Column({
@@ -41,16 +66,27 @@ export class AssetCategory extends Model<AssetCategory> {
   })
   type!: AssetKind;
 
+  // ============================================================
+  // ORGANISATION
+  // ============================================================
+
   @Index
   @ForeignKey(() => Organisation)
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
+    type: DataType.CHAR(36),
+    allowNull: true,
+    field: "organisation_id",
   })
-  organisationId!: number;
+  organisationId!: string | null;
 
-  @BelongsTo(() => Organisation)
+  @BelongsTo(() => Organisation, {
+    foreignKey: "organisation_id",
+  })
   organisation!: Organisation;
+
+  // ============================================================
+  // ACTIVE
+  // ============================================================
 
   @Index
   @Column({
@@ -60,6 +96,12 @@ export class AssetCategory extends Model<AssetCategory> {
   })
   isActive!: boolean;
 
-  @HasMany(() => Asset)
+  // ============================================================
+  // ASSETS
+  // ============================================================
+
+  @HasMany(() => Asset, {
+    foreignKey: "category_id",
+  })
   assets!: Asset[];
 }

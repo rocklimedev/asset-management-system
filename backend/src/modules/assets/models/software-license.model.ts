@@ -5,6 +5,8 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  PrimaryKey,
+  Index,
 } from "sequelize-typescript";
 
 import { Asset } from "./asset.model";
@@ -14,34 +16,70 @@ import { Asset } from "./asset.model";
   timestamps: false,
 })
 export class SoftwareLicense extends Model<SoftwareLicense> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: false,
+    defaultValue: DataType.UUIDV4,
+  })
+  id!: string;
+
+  // ============================================================
+  // ASSET
+  // ============================================================
+
+  @Index
   @ForeignKey(() => Asset)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
     unique: true,
+    field: "asset_id",
   })
-  assetId!: number;
+  assetId!: string;
 
-  @BelongsTo(() => Asset)
+  @BelongsTo(() => Asset, {
+    foreignKey: "asset_id",
+  })
   asset!: Asset;
 
+  // ============================================================
+  // VENDOR
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   vendor!: string;
 
+  // ============================================================
+  // LICENSE TYPE
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   licenseType!: string;
 
+  // ============================================================
+  // LICENSE REFERENCE
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   licenseReference!: string;
+
+  // ============================================================
+  // TOTAL SEATS
+  // ============================================================
 
   @Column({
     type: DataType.INTEGER,
@@ -50,6 +88,10 @@ export class SoftwareLicense extends Model<SoftwareLicense> {
   })
   totalSeats!: number;
 
+  // ============================================================
+  // ASSIGNED SEATS
+  // ============================================================
+
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -57,27 +99,43 @@ export class SoftwareLicense extends Model<SoftwareLicense> {
   })
   assignedSeats!: number;
 
-  @Column({
-    type: DataType.DATE,
-    allowNull: true,
-  })
-  purchaseDate?: Date;
+  // ============================================================
+  // PURCHASE DATE
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  expiryDate?: Date;
+  purchaseDate?: Date | null;
+
+  // ============================================================
+  // EXPIRY DATE
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  renewalDate?: Date;
+  expiryDate?: Date | null;
+
+  // ============================================================
+  // RENEWAL DATE
+  // ============================================================
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  renewalDate?: Date | null;
+
+  // ============================================================
+  // COST
+  // ============================================================
 
   @Column({
     type: DataType.DECIMAL(12, 2),
     allowNull: true,
   })
-  cost?: number;
+  cost?: number | null;
 }

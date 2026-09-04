@@ -8,19 +8,20 @@ import {
   HasOne,
   HasMany,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
 
-import { Organisation } from "../../organisation/models/organisation.model";
+import { Organisation } from "@/modules/organisation/models/organisation.model";
 import { AssetCategory } from "./asset-category.model";
 import { Vendor } from "./vendor.model";
-import { Location } from "../../organisation/models/location.model";
+import { Location } from "@/modules/organisation/models/location.model";
 
 import { SoftwareLicense } from "./software-license.model";
 import { AssetAssignment } from "./asset-assignment.model";
 import { AssetTransfer } from "./asset-transfer.model";
 import { AssetHistory } from "./asset-history.model";
 
-import { AssetKind } from "./asset-category.model";
+import { AssetKind } from "@/common/enums/assets.enums";
 
 export enum AssetStatus {
   AVAILABLE = "AVAILABLE",
@@ -44,18 +45,42 @@ export enum AssetCondition {
   timestamps: true,
 })
 export class Asset extends Model<Asset> {
+  // ============================================================
+  // ID
+  // ============================================================
+
+  @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.CHAR(36),
     allowNull: false,
-    unique: true,
+    defaultValue: DataType.UUIDV4,
   })
-  assetTag!: string;
+  id!: string;
+
+  // ============================================================
+  // ASSET TAG
+  // ============================================================
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
+    allowNull: true,
+    unique: true,
+  })
+  assetTag?: string | null;
+
+  // ============================================================
+  // NAME
+  // ============================================================
+
+  @Column({
+    type: DataType.STRING(255),
     allowNull: false,
   })
   name!: string;
+
+  // ============================================================
+  // KIND
+  // ============================================================
 
   @Index
   @Column({
@@ -64,86 +89,144 @@ export class Asset extends Model<Asset> {
   })
   kind!: AssetKind;
 
+  // ============================================================
+  // ORGANISATION
+  // ============================================================
+
   @Index
   @ForeignKey(() => Organisation)
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
+    type: DataType.CHAR(36),
+    allowNull: true,
+    field: "organisation_id",
   })
-  organisationId!: number;
+  organisationId!: string | null;
 
-  @BelongsTo(() => Organisation)
+  @BelongsTo(() => Organisation, {
+    foreignKey: "organisation_id",
+  })
   organisation!: Organisation;
+
+  // ============================================================
+  // CATEGORY
+  // ============================================================
 
   @Index
   @ForeignKey(() => AssetCategory)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: false,
+    field: "category_id",
   })
-  categoryId!: number;
+  categoryId!: string;
 
-  @BelongsTo(() => AssetCategory)
+  @BelongsTo(() => AssetCategory, {
+    foreignKey: "category_id",
+  })
   category!: AssetCategory;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  manufacturer?: string;
+  // ============================================================
+  // MANUFACTURER
+  // ============================================================
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true,
   })
-  model?: string;
+  manufacturer?: string | null;
+
+  // ============================================================
+  // MODEL
+  // ============================================================
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
+    allowNull: true,
+  })
+  model?: string | null;
+
+  // ============================================================
+  // SERIAL NUMBER
+  // ============================================================
+
+  @Column({
+    type: DataType.STRING(255),
     allowNull: true,
     unique: true,
   })
-  serialNumber?: string;
+  serialNumber?: string | null;
+
+  // ============================================================
+  // PURCHASE DATE
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  purchaseDate?: Date;
+  purchaseDate?: Date | null;
+
+  // ============================================================
+  // PURCHASE PRICE
+  // ============================================================
 
   @Column({
     type: DataType.DECIMAL(12, 2),
     allowNull: true,
   })
-  purchasePrice?: number;
+  purchasePrice?: number | null;
 
+  // ============================================================
+  // VENDOR
+  // ============================================================
+
+  @Index
   @ForeignKey(() => Vendor)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: true,
+    field: "vendor_id",
   })
-  vendorId?: number;
+  vendorId?: string | null;
 
-  @BelongsTo(() => Vendor)
+  @BelongsTo(() => Vendor, {
+    foreignKey: "vendor_id",
+  })
   vendor?: Vendor;
 
+  // ============================================================
+  // INVOICE NUMBER
+  // ============================================================
+
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true,
   })
-  invoiceNumber?: string;
+  invoiceNumber?: string | null;
+
+  // ============================================================
+  // WARRANTY START
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  warrantyStart?: Date;
+  warrantyStart?: Date | null;
+
+  // ============================================================
+  // WARRANTY EXPIRY
+  // ============================================================
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  warrantyExpiry?: Date;
+  warrantyExpiry?: Date | null;
+
+  // ============================================================
+  // STATUS
+  // ============================================================
 
   @Index
   @Column({
@@ -153,6 +236,10 @@ export class Asset extends Model<Asset> {
   })
   status!: AssetStatus;
 
+  // ============================================================
+  // CONDITION
+  // ============================================================
+
   @Column({
     type: DataType.ENUM(...Object.values(AssetCondition)),
     allowNull: false,
@@ -160,32 +247,65 @@ export class Asset extends Model<Asset> {
   })
   condition!: AssetCondition;
 
+  // ============================================================
+  // LOCATION
+  // ============================================================
+
   @Index
   @ForeignKey(() => Location)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.CHAR(36),
     allowNull: true,
+    field: "location_id",
   })
-  locationId?: number;
+  locationId?: string | null;
 
-  @BelongsTo(() => Location)
+  @BelongsTo(() => Location, {
+    foreignKey: "location_id",
+  })
   location?: Location;
+
+  // ============================================================
+  // NOTES
+  // ============================================================
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  notes?: string;
+  notes?: string | null;
+
+  // ============================================================
+  // SOFTWARE LICENSE
+  // ============================================================
 
   @HasOne(() => SoftwareLicense)
   license?: SoftwareLicense;
 
-  @HasMany(() => AssetAssignment)
+  // ============================================================
+  // ASSIGNMENTS
+  // ============================================================
+
+  @HasMany(() => AssetAssignment, {
+    foreignKey: "asset_id",
+  })
   assignments!: AssetAssignment[];
 
-  @HasMany(() => AssetTransfer)
+  // ============================================================
+  // TRANSFERS
+  // ============================================================
+
+  @HasMany(() => AssetTransfer, {
+    foreignKey: "asset_id",
+  })
   transfers!: AssetTransfer[];
 
-  @HasMany(() => AssetHistory)
+  // ============================================================
+  // HISTORY
+  // ============================================================
+
+  @HasMany(() => AssetHistory, {
+    foreignKey: "asset_id",
+  })
   history!: AssetHistory[];
 }
