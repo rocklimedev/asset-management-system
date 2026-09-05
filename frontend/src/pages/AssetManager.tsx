@@ -33,8 +33,8 @@ import {
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 
-import type { Asset, Employee } from "../types";
-
+import type { Asset } from "../services/api/asset.api";
+import type { Employee } from "../services/api/employees.api";
 // ============================================================
 // TYPES
 // ============================================================
@@ -148,10 +148,8 @@ export default function AssetManager() {
   // NORMALIZE EMPLOYEE RESPONSE
   // ============================================================
 
-  const employees = Array.isArray(data)
-    ? data
-    : data?.items ?? [];
-
+// still wrong — EmployeesResponse exposes the array as `data`, not `items`
+const employees = Array.isArray(data) ? data : data?.data ?? [];
   // ============================================================
   // DND SENSORS
   // ============================================================

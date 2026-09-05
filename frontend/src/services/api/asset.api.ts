@@ -2,33 +2,79 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 
 // ============================================================
-// TYPES
+// ENUMS
 // ============================================================
 
-export type AssetKind =
-  | "HARDWARE"
-  | "SOFTWARE"
-  | "hardware"
-  | "software"
-  | "accessory"
-  | "other"
-  | string;
+export type AssetKind = "HARDWARE" | "SOFTWARE";
 
 export type AssetStatus =
-  | "available"
-  | "assigned"
-  | "maintenance"
-  | "retired"
-  | "lost"
-  | string;
+  | "AVAILABLE"
+  | "ASSIGNED"
+  | "REPAIR"
+  | "LOST"
+  | "DAMAGED"
+  | "RETIRED"
+  | "DISPOSED";
 
-export type AssetCondition =
-  | "new"
-  | "good"
-  | "fair"
-  | "poor"
-  | "damaged"
-  | string;
+export type AssetCondition = "NEW" | "GOOD" | "FAIR" | "POOR";
+
+export type AssignmentStatus = "ACTIVE" | "RETURNED";
+
+export type TransferStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+// ============================================================
+// ORGANISATION
+// ============================================================
+
+export interface AssetOrganisation {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+// ============================================================
+// EMPLOYEE
+// ============================================================
+
+export interface AssetEmployee {
+  id: string;
+
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+
+  employeeId?: string;
+  email?: string;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// LOCATION
+// ============================================================
+
+export interface AssetLocation {
+  id: string;
+  name?: string;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// VENDOR
+// ============================================================
+
+export interface AssetVendor {
+  id: string;
+  name: string;
+
+  [key: string]: unknown;
+}
 
 // ============================================================
 // ASSET CATEGORY
@@ -52,40 +98,124 @@ export interface AssetCategory {
   createdAt?: string;
   updatedAt?: string;
 
+  organisation?: AssetOrganisation;
+
   [key: string]: unknown;
 }
 
 // ============================================================
-// ASSET
+// SOFTWARE LICENSE
 // ============================================================
 
-export interface Asset {
+export interface AssetLicense {
   id: string;
 
-  name?: string;
-  assetTag?: string;
-  serialNumber?: string;
+  assetId: string;
 
-  kind?: AssetKind;
-  status?: AssetStatus;
-  condition?: AssetCondition;
+  vendor: string;
 
-  organisationId?: string;
-  categoryId?: string;
-  locationId?: string;
+  licenseType: string;
 
-  assignedTo?: string;
-  assignedEmployeeId?: string;
+  licenseReference: string;
 
-  purchaseDate?: string;
-  purchasePrice?: number;
+  totalSeats: number;
 
-  notes?: string;
+  assignedSeats: number;
+
+  purchaseDate?: string | null;
+
+  expiryDate?: string | null;
+
+  renewalDate?: string | null;
+
+  cost?: number | null;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// ASSET ASSIGNMENT
+// ============================================================
+
+export interface AssetAssignment {
+  id: string;
+
+  assetId: string;
+
+  employeeId: string;
+
+  assignedAt: string;
+
+  returnedAt?: string | null;
+
+  assignedBy: string;
+
+  status: AssignmentStatus;
+
+  notes?: string | null;
+
+  employee?: AssetEmployee;
+
+  asset?: Asset;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// ASSET TRANSFER
+// ============================================================
+
+export interface AssetTransfer {
+  id: string;
+
+  assetId: string;
+
+  fromEmployeeId?: string | null;
+
+  toEmployeeId: string;
+
+  requestedById: string;
+
+  approvedById?: string | null;
+
+  status: TransferStatus;
+
+  reason?: string | null;
+
+  notes?: string | null;
+
+  approvedAt?: string | null;
 
   createdAt?: string;
   updatedAt?: string;
 
-  category?: AssetCategory;
+  asset?: Asset;
+
+  fromEmployee?: AssetEmployee;
+
+  toEmployee?: AssetEmployee;
+
+  requestedBy?: AssetUser;
+
+  approvedBy?: AssetUser;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+export interface AssetUser {
+  id: string;
+
+  name?: string;
+
+  firstName?: string;
+
+  lastName?: string;
+
+  email?: string;
 
   [key: string]: unknown;
 }
@@ -96,18 +226,104 @@ export interface Asset {
 
 export interface AssetHistory {
   id: string;
+
   assetId: string;
 
-  action?: string;
-  notes?: string;
+  action: string;
 
-  fromEmployeeId?: string;
-  toEmployeeId?: string;
+  performedBy: string;
 
-  fromLocationId?: string;
-  toLocationId?: string;
+  fromValue?: string | null;
 
+  toValue?: string | null;
+
+  notes?: string | null;
+
+  createdAt: string;
+
+  asset?: Asset;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// ASSET
+// ============================================================
+
+export interface Asset {
+  id: string;
+
+  // Basic
+  name: string;
+
+  assetTag?: string | null;
+
+  serialNumber?: string | null;
+
+  kind: AssetKind;
+
+  // Organisation
+  organisationId?: string | null;
+
+  organisation?: AssetOrganisation;
+
+  // Category
+  categoryId: string;
+
+  category?: AssetCategory;
+
+  // Manufacturer
+  manufacturer?: string | null;
+
+  model?: string | null;
+
+  // Vendor
+  vendorId?: string | null;
+
+  vendor?: AssetVendor;
+
+  // Invoice
+  invoiceNumber?: string | null;
+
+  // Purchase
+  purchaseDate?: string | null;
+
+  purchasePrice?: number | null;
+
+  // Warranty
+  warrantyStart?: string | null;
+
+  warrantyExpiry?: string | null;
+
+  // Status
+  status: AssetStatus;
+
+  // Condition
+  condition: AssetCondition;
+
+  // Location
+  locationId?: string | null;
+
+  location?: AssetLocation;
+
+  // Notes
+  notes?: string | null;
+
+  // Software
+  license?: AssetLicense | null;
+
+  // Assignment history
+  assignments?: AssetAssignment[];
+
+  // Transfer history
+  transfers?: AssetTransfer[];
+
+  // Audit history
+  history?: AssetHistory[];
+
+  // Timestamps
   createdAt?: string;
+
   updatedAt?: string;
 
   [key: string]: unknown;
@@ -118,11 +334,9 @@ export interface AssetHistory {
 // ============================================================
 
 export interface SoftwareAsset extends Asset {
-  licenseKey?: string;
-  licenseType?: string;
-  expiryDate?: string;
-  seats?: number;
-  usedSeats?: number;
+  kind: "SOFTWARE";
+
+  license?: AssetLicense | null;
 }
 
 // ============================================================
@@ -131,9 +345,13 @@ export interface SoftwareAsset extends Asset {
 
 export interface AssetsResponse {
   data: Asset[];
+
   total?: number;
+
   page?: number;
+
   pageSize?: number;
+
   totalPages?: number;
 
   [key: string]: unknown;
@@ -141,6 +359,7 @@ export interface AssetsResponse {
 
 export interface AssetResponse {
   data: Asset;
+
   message?: string;
 
   [key: string]: unknown;
@@ -148,13 +367,31 @@ export interface AssetResponse {
 
 export interface AssetHistoryResponse {
   data: AssetHistory[];
+
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export interface AssetTransfersResponse {
+  data: AssetTransfer[];
+
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export interface AssetAssignmentsResponse {
+  data: AssetAssignment[];
+
   message?: string;
 
   [key: string]: unknown;
 }
 
 export interface SoftwareAssetsResponse {
-  data?: SoftwareAsset[];
+  data: SoftwareAsset[];
+
   message?: string;
 
   [key: string]: unknown;
@@ -166,6 +403,7 @@ export interface SoftwareAssetsResponse {
 
 export interface AssetCategoriesResponse {
   data: AssetCategory[];
+
   message?: string;
 
   [key: string]: unknown;
@@ -173,13 +411,34 @@ export interface AssetCategoriesResponse {
 
 export interface AssetCategoryResponse {
   data: AssetCategory;
+
   message?: string;
 
   [key: string]: unknown;
 }
 
 // ============================================================
-// ASSET CATEGORY REQUEST TYPES
+// VENDOR RESPONSE TYPES
+// ============================================================
+
+export interface VendorsResponse {
+  data: AssetVendor[];
+
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export interface VendorResponse {
+  data: AssetVendor;
+
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+// ============================================================
+// CATEGORY REQUEST TYPES
 // ============================================================
 
 export interface CreateAssetCategoryRequest {
@@ -203,6 +462,8 @@ export interface UpdateAssetCategoryRequest {
 
   type?: AssetKind;
 
+  organisationId?: string | null;
+
   isActive?: boolean;
 }
 
@@ -215,94 +476,187 @@ export interface GetAssetCategoriesParams {
 }
 
 // ============================================================
-// QUERY PARAMS
+// ASSET QUERY PARAMS
 // ============================================================
 
 export interface GetAssetsParams {
   search?: string;
+
   organisationId?: string;
+
   kind?: AssetKind;
+
   status?: AssetStatus;
+
   condition?: AssetCondition;
 
   categoryId?: string;
+
   locationId?: string;
+
+  vendorId?: string;
 
   assigned?: boolean;
 
   sortBy?: string;
-  sortDir?: "ASC" | "DESC" | "asc" | "desc";
+
+  sortDir?: "ASC" | "DESC";
 
   page?: number;
+
   pageSize?: number;
 }
 
 // ============================================================
-// MUTATION TYPES
+// CREATE ASSET
 // ============================================================
 
 export interface CreateAssetRequest {
-  name?: string;
-  assetTag?: string;
-  serialNumber?: string;
+  name: string;
 
-  kind?: AssetKind;
+  assetTag?: string | null;
+
+  serialNumber?: string | null;
+
+  kind: AssetKind;
+
+  organisationId?: string | null;
+
+  categoryId: string;
+
+  manufacturer?: string | null;
+
+  model?: string | null;
+
+  vendorId?: string | null;
+
+  invoiceNumber?: string | null;
+
+  purchaseDate?: string | null;
+
+  purchasePrice?: number | null;
+
+  warrantyStart?: string | null;
+
+  warrantyExpiry?: string | null;
+
   status?: AssetStatus;
+
   condition?: AssetCondition;
 
-  organisationId?: string;
-  categoryId?: string;
-  locationId?: string;
+  locationId?: string | null;
+
+  notes?: string | null;
 
   [key: string]: unknown;
 }
+
+// ============================================================
+// UPDATE ASSET
+// ============================================================
 
 export interface UpdateAssetRequest {
   id: string;
 
   name?: string;
-  assetTag?: string;
-  serialNumber?: string;
+
+  assetTag?: string | null;
+
+  serialNumber?: string | null;
 
   kind?: AssetKind;
+
+  organisationId?: string | null;
+
+  categoryId?: string;
+
+  manufacturer?: string | null;
+
+  model?: string | null;
+
+  vendorId?: string | null;
+
+  invoiceNumber?: string | null;
+
+  purchaseDate?: string | null;
+
+  purchasePrice?: number | null;
+
+  warrantyStart?: string | null;
+
+  warrantyExpiry?: string | null;
+
   status?: AssetStatus;
+
   condition?: AssetCondition;
 
-  organisationId?: string;
-  categoryId?: string;
-  locationId?: string;
+  locationId?: string | null;
+
+  notes?: string | null;
 
   [key: string]: unknown;
 }
+
+// ============================================================
+// ASSIGN ASSET
+// ============================================================
 
 export interface AssignAssetRequest {
   id: string;
 
-  employeeId?: string;
-  assignedTo?: string;
+  employeeId: string;
 
-  notes?: string;
-
-  [key: string]: unknown;
+  notes?: string | null;
 }
+
+// ============================================================
+// TRANSFER ASSET
+// ============================================================
 
 export interface TransferAssetRequest {
   id: string;
 
-  employeeId?: string;
-  assignedTo?: string;
+  employeeId: string;
 
-  fromLocationId?: string;
-  locationId?: string;
+  reason?: string | null;
 
-  notes?: string;
-
-  [key: string]: unknown;
+  notes?: string | null;
 }
+
+// ============================================================
+// RETURN ASSET
+// ============================================================
 
 export interface ReturnAssetRequest {
   id: string;
-  notes?: string;
+
+  notes?: string | null;
+}
+
+// ============================================================
+// CREATE SOFTWARE LICENSE
+// ============================================================
+
+export interface CreateSoftwareLicenseRequest {
+  assetId: string;
+
+  vendor: string;
+
+  licenseType: string;
+
+  licenseReference: string;
+
+  totalSeats?: number;
+
+  assignedSeats?: number;
+
+  purchaseDate?: string | null;
+
+  expiryDate?: string | null;
+
+  renewalDate?: string | null;
+
+  cost?: number | null;
 }
 
 // ============================================================
@@ -320,6 +674,9 @@ export const assetApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
+      // Keep state available for future auth implementation.
+      void state;
+
       const token = localStorage.getItem("accessToken");
 
       if (token) {
@@ -332,14 +689,21 @@ export const assetApi = createApi({
     },
   }),
 
-  tagTypes: ["Asset", "AssetHistory", "SoftwareAsset", "AssetCategory"],
+  tagTypes: [
+    "Asset",
+    "AssetHistory",
+    "AssetAssignment",
+    "AssetTransfer",
+    "SoftwareAsset",
+    "AssetCategory",
+    "Vendor",
+  ],
 
   endpoints: (builder) => ({
     // ============================================================
     // ASSET CATEGORIES
     // ============================================================
 
-    // GET /asset-categories
     getAssetCategories: builder.query<
       AssetCategoriesResponse,
       GetAssetCategoriesParams | undefined
@@ -350,9 +714,7 @@ export const assetApi = createApi({
 
         params: {
           organisationId: params.organisationId || undefined,
-
           type: params.type || undefined,
-
           isActive: params.isActive !== undefined ? params.isActive : undefined,
         },
       }),
@@ -378,11 +740,6 @@ export const assetApi = createApi({
             ],
     }),
 
-    // ============================================================
-    // GET SINGLE CATEGORY
-    // GET /asset-categories/:id
-    // ============================================================
-
     getAssetCategory: builder.query<AssetCategoryResponse, string>({
       query: (id) => `/asset-categories/${id}`,
 
@@ -393,11 +750,6 @@ export const assetApi = createApi({
         },
       ],
     }),
-
-    // ============================================================
-    // CREATE CATEGORY
-    // POST /asset-categories
-    // ============================================================
 
     createAssetCategory: builder.mutation<
       AssetCategoryResponse,
@@ -415,14 +767,12 @@ export const assetApi = createApi({
           id: "LIST",
         },
 
-        "Asset",
+        {
+          type: "Asset",
+          id: "LIST",
+        },
       ],
     }),
-
-    // ============================================================
-    // UPDATE CATEGORY
-    // PATCH /asset-categories/:id
-    // ============================================================
 
     updateAssetCategory: builder.mutation<
       AssetCategoryResponse,
@@ -436,23 +786,21 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "AssetCategory" as const,
+          type: "AssetCategory",
           id,
         },
 
         {
-          type: "AssetCategory" as const,
+          type: "AssetCategory",
           id: "LIST",
         },
 
-        "Asset",
+        {
+          type: "Asset",
+          id: "LIST",
+        },
       ],
     }),
-
-    // ============================================================
-    // TOGGLE CATEGORY ACTIVE
-    // PATCH /asset-categories/:id/toggle-active
-    // ============================================================
 
     toggleAssetCategory: builder.mutation<AssetCategoryResponse, string>({
       query: (id) => ({
@@ -462,21 +810,16 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, id) => [
         {
-          type: "AssetCategory" as const,
+          type: "AssetCategory",
           id,
         },
 
         {
-          type: "AssetCategory" as const,
+          type: "AssetCategory",
           id: "LIST",
         },
       ],
     }),
-
-    // ============================================================
-    // DELETE CATEGORY
-    // DELETE /asset-categories/:id
-    // ============================================================
 
     deleteAssetCategory: builder.mutation<{ message: string }, string>({
       query: (id) => ({
@@ -490,13 +833,15 @@ export const assetApi = createApi({
           id: "LIST",
         },
 
-        "Asset",
+        {
+          type: "Asset",
+          id: "LIST",
+        },
       ],
     }),
 
     // ============================================================
-    // GET ALL ASSETS
-    // GET /assets
+    // ASSETS
     // ============================================================
 
     getAssets: builder.query<AssetsResponse, GetAssetsParams | undefined>({
@@ -506,22 +851,29 @@ export const assetApi = createApi({
 
         params: {
           search: params.search || undefined,
+
           organisationId: params.organisationId || undefined,
 
           kind: params.kind || undefined,
+
           status: params.status || undefined,
+
           condition: params.condition || undefined,
 
           categoryId: params.categoryId || undefined,
 
           locationId: params.locationId || undefined,
 
+          vendorId: params.vendorId || undefined,
+
           assigned: params.assigned !== undefined ? params.assigned : undefined,
 
           sortBy: params.sortBy || undefined,
+
           sortDir: params.sortDir || undefined,
 
           page: params.page || undefined,
+
           pageSize: params.pageSize || undefined,
         },
       }),
@@ -547,11 +899,6 @@ export const assetApi = createApi({
             ],
     }),
 
-    // ============================================================
-    // GET SINGLE ASSET
-    // GET /assets/:id
-    // ============================================================
-
     getAsset: builder.query<AssetResponse, string>({
       query: (id) => `/assets/${id}`,
 
@@ -563,11 +910,6 @@ export const assetApi = createApi({
       ],
     }),
 
-    // ============================================================
-    // GET ASSET HISTORY
-    // GET /assets/:id/history
-    // ============================================================
-
     getAssetHistory: builder.query<AssetHistoryResponse, string>({
       query: (id) => `/assets/${id}/history`,
 
@@ -578,11 +920,6 @@ export const assetApi = createApi({
         },
       ],
     }),
-
-    // ============================================================
-    // CREATE ASSET
-    // POST /assets
-    // ============================================================
 
     createAsset: builder.mutation<AssetResponse, CreateAssetRequest>({
       query: (body) => ({
@@ -598,14 +935,15 @@ export const assetApi = createApi({
         },
 
         "SoftwareAsset",
-        "AssetCategory",
+
+        {
+          type: "AssetCategory",
+          id: "LIST",
+        },
+
+        "Vendor",
       ],
     }),
-
-    // ============================================================
-    // UPDATE ASSET
-    // PATCH /assets/:id
-    // ============================================================
 
     updateAsset: builder.mutation<AssetResponse, UpdateAssetRequest>({
       query: ({ id, ...body }) => ({
@@ -616,23 +954,28 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Asset" as const,
+          type: "Asset",
           id,
         },
 
         {
-          type: "Asset" as const,
+          type: "Asset",
           id: "LIST",
         },
 
         "SoftwareAsset",
-        "AssetCategory",
+
+        {
+          type: "AssetCategory",
+          id: "LIST",
+        },
+
+        "Vendor",
       ],
     }),
 
     // ============================================================
-    // ASSIGN ASSET
-    // POST /assets/:id/assign
+    // ASSIGN
     // ============================================================
 
     assignAsset: builder.mutation<AssetResponse, AssignAssetRequest>({
@@ -644,18 +987,23 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Asset" as const,
+          type: "Asset",
           id,
         },
 
         {
-          type: "AssetHistory" as const,
-          id,
-        },
-
-        {
-          type: "Asset" as const,
+          type: "Asset",
           id: "LIST",
+        },
+
+        {
+          type: "AssetHistory",
+          id,
+        },
+
+        {
+          type: "AssetAssignment",
+          id,
         },
 
         "SoftwareAsset",
@@ -663,8 +1011,7 @@ export const assetApi = createApi({
     }),
 
     // ============================================================
-    // TRANSFER ASSET
-    // POST /assets/:id/transfer
+    // TRANSFER
     // ============================================================
 
     transferAsset: builder.mutation<AssetResponse, TransferAssetRequest>({
@@ -676,18 +1023,23 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Asset" as const,
+          type: "Asset",
           id,
         },
 
         {
-          type: "AssetHistory" as const,
-          id,
-        },
-
-        {
-          type: "Asset" as const,
+          type: "Asset",
           id: "LIST",
+        },
+
+        {
+          type: "AssetHistory",
+          id,
+        },
+
+        {
+          type: "AssetTransfer",
+          id,
         },
 
         "SoftwareAsset",
@@ -695,8 +1047,7 @@ export const assetApi = createApi({
     }),
 
     // ============================================================
-    // RETURN ASSET
-    // POST /assets/:id/return
+    // RETURN
     // ============================================================
 
     returnAsset: builder.mutation<AssetResponse, ReturnAssetRequest>({
@@ -711,18 +1062,23 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Asset" as const,
+          type: "Asset",
           id,
         },
 
         {
-          type: "AssetHistory" as const,
-          id,
-        },
-
-        {
-          type: "Asset" as const,
+          type: "Asset",
           id: "LIST",
+        },
+
+        {
+          type: "AssetHistory",
+          id,
+        },
+
+        {
+          type: "AssetAssignment",
+          id,
         },
 
         "SoftwareAsset",
@@ -730,8 +1086,7 @@ export const assetApi = createApi({
     }),
 
     // ============================================================
-    // GET SOFTWARE ASSETS
-    // GET /assets/software
+    // SOFTWARE ASSETS
     // ============================================================
 
     getSoftwareAssets: builder.query<SoftwareAsset[], void>({
@@ -783,7 +1138,7 @@ export const {
   // Software
   useGetSoftwareAssetsQuery,
 
-  // Asset Categories
+  // Categories
   useGetAssetCategoriesQuery,
   useGetAssetCategoryQuery,
 

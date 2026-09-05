@@ -2,7 +2,9 @@ import { useDroppable } from '@dnd-kit/core';
 import { clsx } from 'clsx';
 import { Laptop, AppWindow, MoreHorizontal, MapPin } from 'lucide-react';
 import { useState } from 'react';
-import type { Asset, Employee } from '../../types';
+
+import type { Asset } from "../../services/api/asset.api";
+import type { Employee } from "../../services/api/employees.api";
 import { AssetChip } from './AssetChip';
 import { EmptyState } from '../ui/EmptyState';
 

@@ -2,7 +2,8 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Laptop, Monitor, Keyboard, Mouse, Headphones, Smartphone, Tablet, Printer, Server, AppWindow, GripVertical } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { Asset } from '../../types';
+
+import type { Asset } from "../../services/api/asset.api";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Laptop, Monitor, Keyboard, Mouse, Headset: Headphones, Mobile: Smartphone, Tablet, Printer, Server,

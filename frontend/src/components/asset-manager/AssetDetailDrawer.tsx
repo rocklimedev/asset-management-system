@@ -5,8 +5,7 @@ import { createPortal } from "react-dom";
 import { useGetAssetHistoryQuery } from "../../services/api/asset.api";
 import { StatusBadge } from "../ui/Badge";
 
-import type { Asset } from "../../types";
-
+import type { Asset, AssetHistory } from "../../services/api/asset.api";
 // ============================================================
 // FIELD
 // ============================================================
@@ -39,27 +38,32 @@ interface AssetDetailDrawerProps {
   asset: Asset | null;
   onClose: () => void;
   onTransfer: (asset: Asset) => void;
+  onEdit: (asset: Asset) => void;   // add this
 }
 
 export function AssetDetailDrawer({
   asset,
   onClose,
   onTransfer,
+  onEdit,           // add this
 }: AssetDetailDrawerProps) {
-  // ==========================================================
+
+  // ============================================history = [],==============
   // ASSET HISTORY
   // ==========================================================
 
-  const {
-    data: historyResponse,
-    isLoading: historyLoading,
-    isFetching: historyFetching,
-  } = useGetAssetHistoryQuery(asset?.id ?? "", {
-    skip: !asset?.id,
-  });
+const {
+  data: historyResponse,
+  isLoading: historyLoading,
+  isFetching: historyFetching,
+} = useGetAssetHistoryQuery(
+  asset?.id != null ? String(asset.id) : "",
+  {
+    skip: asset?.id == null,
+  }
+);
 
-  const history = historyResponse?.data ?? [];
-
+const history = historyResponse?.data ?? [];
   // ==========================================================
   // DON'T RENDER
   // ==========================================================
@@ -139,7 +143,13 @@ export function AssetDetailDrawer({
               {asset.assetTag || "No asset tag"}
             </p>
           </div>
-
+<button
+  type="button"
+  onClick={() => onEdit(asset)}
+  className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
+>
+  Edit
+</button>
           <button
             type="button"
             onClick={onClose}
@@ -197,16 +207,6 @@ export function AssetDetailDrawer({
               <Field
                 label="Serial number"
                 value={asset.serialNumber}
-              />
-
-              <Field
-                label="Purchase date"
-                value={formatDate(asset.purchaseDate)}
-              />
-
-              <Field
-                label="Warranty expiry"
-                value={formatDate(asset.warrantyExpiry)}
               />
 
               <Field
@@ -285,12 +285,6 @@ export function AssetDetailDrawer({
                   value={`${asset.license.assignedSeats} / ${asset.license.totalSeats}`}
                 />
 
-                <Field
-                  label="Expires"
-                  value={formatDate(
-                    asset.license.expiryDate
-                  )}
-                />
               </div>
 
               <p className="mt-2 text-xs text-slate-400">
@@ -381,32 +375,23 @@ export function AssetDetailDrawer({
 // HISTORY ACTION FORMATTER
 // ============================================================
 
-function formatHistoryAction(
-  history: {
-    action?: string;
-    fromEmployeeId?: string;
-    toEmployeeId?: string;
-    fromLocationId?: string;
-    toLocationId?: string;
-    notes?: string;
-  }
-) {
+function formatHistoryAction(history: AssetHistory) {
   switch (history.action?.toUpperCase()) {
     case "TRANSFERRED":
       return `Asset transferred${
-        history.fromLocationId
-          ? ` from ${history.fromLocationId}`
+        history.fromValue
+          ? ` from ${history.fromValue}`
           : ""
       }${
-        history.toLocationId
-          ? ` to ${history.toLocationId}`
+        history.toValue
+          ? ` to ${history.toValue}`
           : ""
       }`;
 
     case "ASSIGNED":
       return `Asset assigned${
-        history.toEmployeeId
-          ? ` to employee ${history.toEmployeeId}`
+        history.toValue
+          ? ` to ${history.toValue}`
           : ""
       }`;
 
@@ -414,7 +399,22 @@ function formatHistoryAction(
       return "Asset returned to inventory";
 
     case "STATUS_CHANGED":
-      return "Asset status changed";
+      return `Asset status changed${
+        history.toValue
+          ? ` to ${history.toValue}`
+          : ""
+      }`;
+
+    case "LOCATION_CHANGED":
+      return `Asset location changed${
+        history.fromValue
+          ? ` from ${history.fromValue}`
+          : ""
+      }${
+        history.toValue
+          ? ` to ${history.toValue}`
+          : ""
+      }`;
 
     case "CREATED":
       return "Asset added to inventory";

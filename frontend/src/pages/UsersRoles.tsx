@@ -357,30 +357,7 @@ export default function UsersRoles() {
                         </p>
 
                         <div className="flex flex-wrap gap-1.5">
-                          {permissions
-                            .slice(0, 6)
-                            .map((permission, index) => {
-                              const permissionName =
-                                typeof permission ===
-                                "object"
-                                  ? permission.permission
-                                      ?.key
-                                  : undefined;
-
-                              return (
-                                <span
-                                  key={
-                                    permissionName ??
-                                    index
-                                  }
-                                  className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500"
-                                >
-                                  {permissionName ??
-                                    "Unknown"}
-                                </span>
-                              );
-                            })}
-
+                          
                           {permissions.length > 6 && (
                             <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500">
                               +

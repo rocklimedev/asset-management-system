@@ -3,8 +3,9 @@ import { ArrowRight } from 'lucide-react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Select, Textarea } from '../ui/Input';
-import type { Asset, Employee } from '../../types';
 
+import type { Asset } from "../../services/api/asset.api";
+import type { Employee } from "../../services/api/employees.api";
 const REASONS = ['Employee transfer', 'Team reassignment', 'Manager request', 'Equipment upgrade', 'Other'];
 
 export function TransferModal({

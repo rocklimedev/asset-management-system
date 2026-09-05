@@ -1,37 +1,65 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
+import type { AssetAssignment } from "./asset.api";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+export type EmployeeStatus = "ACTIVE" | "ON_LEAVE" | "INACTIVE" | "EXITED";
 
 // ============================================================
 // TYPES
 // ============================================================
 
+export interface EmployeeDepartment {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface EmployeeLocation {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface EmployeeManager {
+  id: string;
+  name?: string;
+  employeeCode?: string;
+  [key: string]: unknown;
+}
+
 export interface Employee {
   id: string;
 
-  name?: string;
-  firstName?: string;
-  lastName?: string;
+  employeeCode: string;
+  name: string;
 
-  email?: string;
-  phone?: string;
+  email?: string | null;
+  phone?: string | null;
+  avatarUrl?: string | null;
 
-  employeeId?: string;
+  organisationId?: string | null;
 
-  departmentId?: string;
-  department?: {
-    id: string;
-    name?: string;
-  };
+  departmentId?: string | null;
+  department?: EmployeeDepartment;
 
-  roleId?: string;
-  role?: {
-    id: string;
-    name?: string;
-  };
+  designation?: string | null;
 
-  status?: string;
+  managerId?: string | null;
+  manager?: EmployeeManager;
+  reports?: Employee[];
 
-  organisationId?: string;
+  locationId?: string | null;
+  location?: EmployeeLocation;
+
+  status: EmployeeStatus;
+
+  joiningDate?: string | null;
+
+  assignments?: AssetAssignment[];
 
   createdAt?: string;
   updatedAt?: string;
@@ -46,7 +74,7 @@ export interface Employee {
 export interface GetEmployeesParams {
   search?: string;
   departmentId?: string;
-  status?: string;
+  status?: EmployeeStatus;
   page?: number;
 }
 
@@ -78,19 +106,22 @@ export interface EmployeeResponse {
 // ============================================================
 
 export interface CreateEmployeeRequest {
-  name?: string;
-  firstName?: string;
-  lastName?: string;
+  employeeCode: string;
+  name: string;
 
   email?: string;
   phone?: string;
-
-  employeeId?: string;
+  avatarUrl?: string;
 
   departmentId?: string;
-  roleId?: string;
+  designation?: string;
 
-  status?: string;
+  managerId?: string;
+  locationId?: string;
+
+  status?: EmployeeStatus;
+
+  joiningDate?: string;
 
   organisationId?: string;
 
@@ -104,19 +135,22 @@ export interface CreateEmployeeRequest {
 export interface UpdateEmployeeRequest {
   id: string;
 
+  employeeCode?: string;
   name?: string;
-  firstName?: string;
-  lastName?: string;
 
   email?: string;
   phone?: string;
-
-  employeeId?: string;
+  avatarUrl?: string;
 
   departmentId?: string;
-  roleId?: string;
+  designation?: string;
 
-  status?: string;
+  managerId?: string;
+  locationId?: string;
+
+  status?: EmployeeStatus;
+
+  joiningDate?: string;
 
   organisationId?: string;
 
@@ -142,6 +176,7 @@ export const employeesApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
+      // Keep this if your app stores the token in localStorage.
       const token = localStorage.getItem("accessToken");
 
       if (token) {
@@ -159,7 +194,7 @@ export const employeesApi = createApi({
   endpoints: (builder) => ({
     // ============================================================
     // GET ALL EMPLOYEES
-    // GET /organisations/employees
+    // GET /employees
     // ============================================================
 
     getEmployees: builder.query<
@@ -204,7 +239,7 @@ export const employeesApi = createApi({
 
     // ============================================================
     // GET SINGLE EMPLOYEE
-    // GET /organisations/employees/:id
+    // GET /employees/:id
     // ============================================================
 
     getEmployee: builder.query<EmployeeResponse | Employee, string>({
@@ -223,7 +258,7 @@ export const employeesApi = createApi({
 
     // ============================================================
     // CREATE EMPLOYEE
-    // POST /organisations/employees
+    // POST /employees
     // ============================================================
 
     createEmployee: builder.mutation<EmployeeResponse, CreateEmployeeRequest>({
@@ -243,7 +278,7 @@ export const employeesApi = createApi({
 
     // ============================================================
     // UPDATE EMPLOYEE
-    // PATCH /organisations/employees/:id
+    // PATCH /employees/:id
     // ============================================================
 
     updateEmployee: builder.mutation<EmployeeResponse, UpdateEmployeeRequest>({
@@ -268,7 +303,7 @@ export const employeesApi = createApi({
 
     // ============================================================
     // REMOVE / EXIT EMPLOYEE
-    // DELETE /organisations/employees/:id
+    // DELETE /employees/:id
     // ============================================================
 
     removeEmployee: builder.mutation<unknown, string>({

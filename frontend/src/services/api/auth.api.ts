@@ -24,7 +24,8 @@ export interface AuthUser {
   [key: string]: unknown;
 }
 
-export interface LoginResponse {
+export interface LoginApiResponse {
+  accessToken?: string;
   access_token?: string;
   token?: string;
 
@@ -34,7 +35,6 @@ export interface LoginResponse {
 
   [key: string]: unknown;
 }
-
 // ============================================================
 // CONFIG
 // ============================================================
@@ -71,7 +71,7 @@ export const authApi = createApi({
     // POST /auth/login
     // ============================================================
 
-    login: builder.mutation<LoginResponse, LoginRequest>({
+    login: builder.mutation<LoginApiResponse, LoginRequest>({
       query: ({ email, password }) => ({
         url: "/auth/login",
         method: "POST",

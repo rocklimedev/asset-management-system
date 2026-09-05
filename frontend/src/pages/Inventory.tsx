@@ -12,7 +12,7 @@ import {
 } from "../components/ui/EmptyState";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 
-import type { Asset } from "../types";
+import type { Asset} from "../services/api/asset.api";
 
 // ============================================================
 // CONSTANTS

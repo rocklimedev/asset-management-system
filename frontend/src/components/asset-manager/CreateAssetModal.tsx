@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from "react";
-
 import { X, Plus } from "lucide-react";
 
 import {
@@ -71,11 +69,19 @@ interface CreateAssetModalProps {
   open: boolean;
   onClose: () => void;
 
-  // Presence of `asset` puts the modal in edit mode
+  /**
+   * If asset is provided, modal works in edit mode.
+   */
   asset?: Asset | null;
 
-  // Categories are now fetched internally
+  /**
+   * Optional location options.
+   */
   locations?: SelectOption[];
+
+  /**
+   * Optional vendor options.
+   */
   vendors?: SelectOption[];
 }
 
@@ -83,45 +89,51 @@ interface CreateAssetModalProps {
 // CONSTANTS
 // ============================================================
 
-const KIND_OPTIONS: { value: AssetKind; label: string }[] = [
+const KIND_OPTIONS: {
+  value: AssetKind;
+  label: string;
+}[] = [
   {
-    value: "hardware",
+    value: "HARDWARE",
     label: "Hardware",
   },
   {
-    value: "software",
+    value: "SOFTWARE",
     label: "Software",
-  },
-  {
-    value: "accessory",
-    label: "Accessory",
-  },
-  {
-    value: "other",
-    label: "Other",
   },
 ];
 
-const STATUS_OPTIONS: { value: AssetStatus; label: string }[] = [
+const STATUS_OPTIONS: {
+  value: AssetStatus;
+  label: string;
+}[] = [
   {
-    value: "available",
+    value: "AVAILABLE",
     label: "Available",
   },
   {
-    value: "assigned",
+    value: "ASSIGNED",
     label: "Assigned",
   },
   {
-    value: "maintenance",
-    label: "Maintenance",
+    value: "REPAIR",
+    label: "Repair",
   },
   {
-    value: "retired",
+    value: "LOST",
+    label: "Lost",
+  },
+  {
+    value: "DAMAGED",
+    label: "Damaged",
+  },
+  {
+    value: "RETIRED",
     label: "Retired",
   },
   {
-    value: "lost",
-    label: "Lost",
+    value: "DISPOSED",
+    label: "Disposed",
   },
 ];
 
@@ -130,24 +142,20 @@ const CONDITION_OPTIONS: {
   label: string;
 }[] = [
   {
-    value: "new",
+    value: "NEW",
     label: "New",
   },
   {
-    value: "good",
+    value: "GOOD",
     label: "Good",
   },
   {
-    value: "fair",
+    value: "FAIR",
     label: "Fair",
   },
   {
-    value: "poor",
+    value: "POOR",
     label: "Poor",
-  },
-  {
-    value: "damaged",
-    label: "Damaged",
   },
 ];
 
@@ -210,26 +218,41 @@ function assetToFormValues(
 ): AssetFormValues {
   return {
     name: asset.name ?? "",
-    assetTag: asset.assetTag ?? "",
-    serialNumber: asset.serialNumber ?? "",
 
-    kind: (asset.kind as AssetKind) ?? "",
-    status: (asset.status as AssetStatus) ?? "",
-    condition: (asset.condition as AssetCondition) ?? "",
+    assetTag:
+      asset.assetTag ?? "",
 
-    categoryId: asset.categoryId ?? "",
-    locationId: asset.locationId ?? "",
-    vendorId: (asset.vendorId as string) ?? "",
+    serialNumber:
+      asset.serialNumber ?? "",
+
+    kind:
+      asset.kind ?? "",
+
+    status:
+      asset.status ?? "",
+
+    condition:
+      asset.condition ?? "",
+
+    categoryId:
+      asset.categoryId ?? "",
+
+    locationId:
+      asset.locationId ?? "",
+
+    vendorId:
+      asset.vendorId ?? "",
 
     manufacturer:
-      (asset.manufacturer as string) ?? "",
+      asset.manufacturer ?? "",
 
     model:
-      (asset.model as string) ?? "",
+      asset.model ?? "",
 
-    purchaseDate: asset.purchaseDate
-      ? String(asset.purchaseDate).slice(0, 10)
-      : "",
+    purchaseDate:
+      asset.purchaseDate
+        ? String(asset.purchaseDate).slice(0, 10)
+        : "",
 
     purchasePrice:
       asset.purchasePrice !== undefined &&
@@ -238,17 +261,20 @@ function assetToFormValues(
         : "",
 
     invoiceNumber:
-      (asset.invoiceNumber as string) ?? "",
+      asset.invoiceNumber ?? "",
 
-    warrantyStart: asset.warrantyStart
-      ? String(asset.warrantyStart).slice(0, 10)
-      : "",
+    warrantyStart:
+      asset.warrantyStart
+        ? String(asset.warrantyStart).slice(0, 10)
+        : "",
 
-    warrantyExpiry: asset.warrantyExpiry
-      ? String(asset.warrantyExpiry).slice(0, 10)
-      : "",
+    warrantyExpiry:
+      asset.warrantyExpiry
+        ? String(asset.warrantyExpiry).slice(0, 10)
+        : "",
 
-    notes: asset.notes ?? "",
+    notes:
+      asset.notes ?? "",
   };
 }
 
@@ -263,15 +289,15 @@ export function CreateAssetModal({
   locations = [],
   vendors = [],
 }: CreateAssetModalProps) {
-  // ============================================================
+  // ==========================================================
   // MODE
-  // ============================================================
+  // ==========================================================
 
   const isEditMode = Boolean(asset?.id);
 
-  // ============================================================
-  // ASSET FORM STATE
-  // ============================================================
+  // ==========================================================
+  // FORM STATE
+  // ==========================================================
 
   const [values, setValues] =
     useState<AssetFormValues>(EMPTY_FORM);
@@ -279,9 +305,9 @@ export function CreateAssetModal({
   const [formError, setFormError] =
     useState<string | null>(null);
 
-  // ============================================================
+  // ==========================================================
   // CATEGORY MODAL STATE
-  // ============================================================
+  // ==========================================================
 
   const [showCategoryModal, setShowCategoryModal] =
     useState(false);
@@ -293,14 +319,14 @@ export function CreateAssetModal({
     useState("");
 
   const [newCategoryType, setNewCategoryType] =
-    useState<AssetKind>("hardware");
+    useState<AssetKind>("HARDWARE");
 
   const [categoryError, setCategoryError] =
     useState<string | null>(null);
 
-  // ============================================================
+  // ==========================================================
   // RESET / HYDRATE FORM
-  // ============================================================
+  // ==========================================================
 
   useEffect(() => {
     if (!open) {
@@ -312,13 +338,13 @@ export function CreateAssetModal({
     setValues(
       asset
         ? assetToFormValues(asset)
-        : EMPTY_FORM
+        : { ...EMPTY_FORM }
     );
   }, [open, asset]);
 
-  // ============================================================
+  // ==========================================================
   // CATEGORY API
-  // ============================================================
+  // ==========================================================
 
   const {
     data: categoriesResponse,
@@ -338,9 +364,9 @@ export function CreateAssetModal({
     },
   ] = useCreateAssetCategoryMutation();
 
-  // ============================================================
+  // ==========================================================
   // ASSET API
-  // ============================================================
+  // ==========================================================
 
   const [
     createAsset,
@@ -359,16 +385,16 @@ export function CreateAssetModal({
   const isSubmitting =
     isCreating || isUpdating;
 
-  // ============================================================
+  // ==========================================================
   // TOAST
-  // ============================================================
+  // ==========================================================
 
   const pushToast =
     useToastStore((state) => state.push);
 
-  // ============================================================
-  // FIELD HELPERS
-  // ============================================================
+  // ==========================================================
+  // FIELD HELPER
+  // ==========================================================
 
   function setField<K extends keyof AssetFormValues>(
     key: K,
@@ -380,19 +406,79 @@ export function CreateAssetModal({
     }));
   }
 
-  // ============================================================
-  // BUILD ASSET PAYLOAD
-  // ============================================================
+  // ==========================================================
+  // BUILD CREATE PAYLOAD
+  // ==========================================================
 
-  function buildPayload():
-    | CreateAssetRequest
-    | UpdateAssetRequest {
+  function buildCreatePayload(): CreateAssetRequest {
     return {
-      ...(isEditMode && asset
-        ? {
-            id: asset.id,
-          }
-        : {}),
+      name: values.name.trim(),
+
+      assetTag:
+        values.assetTag.trim() || undefined,
+
+      serialNumber:
+        values.serialNumber.trim() || undefined,
+
+      kind:
+        values.kind || undefined,
+
+      status:
+        values.status || undefined,
+
+      condition:
+        values.condition || undefined,
+
+      categoryId:
+        values.categoryId || undefined,
+
+      locationId:
+        values.locationId || undefined,
+
+      vendorId:
+        values.vendorId || undefined,
+
+      manufacturer:
+        values.manufacturer.trim() || undefined,
+
+      model:
+        values.model.trim() || undefined,
+
+      purchaseDate:
+        values.purchaseDate || undefined,
+
+      purchasePrice:
+        values.purchasePrice.trim()
+          ? Number(values.purchasePrice)
+          : undefined,
+
+      invoiceNumber:
+        values.invoiceNumber.trim() || undefined,
+
+      warrantyStart:
+        values.warrantyStart || undefined,
+
+      warrantyExpiry:
+        values.warrantyExpiry || undefined,
+
+      notes:
+        values.notes.trim() || undefined,
+    };
+  }
+
+  // ==========================================================
+  // BUILD UPDATE PAYLOAD
+  // ==========================================================
+
+  function buildUpdatePayload(): UpdateAssetRequest {
+    if (!asset?.id) {
+      throw new Error(
+        "Asset ID is required for update."
+      );
+    }
+
+    return {
+      id: asset.id,
 
       name: values.name.trim(),
 
@@ -430,7 +516,7 @@ export function CreateAssetModal({
         values.purchaseDate || undefined,
 
       purchasePrice:
-        values.purchasePrice
+        values.purchasePrice.trim()
           ? Number(values.purchasePrice)
           : undefined,
 
@@ -448,9 +534,9 @@ export function CreateAssetModal({
     };
   }
 
-  // ============================================================
+  // ==========================================================
   // VALIDATION
-  // ============================================================
+  // ==========================================================
 
   function validate(): string | null {
     if (!values.name.trim()) {
@@ -465,12 +551,28 @@ export function CreateAssetModal({
       return "Please select a category.";
     }
 
+    if (
+      values.purchasePrice &&
+      Number.isNaN(
+        Number(values.purchasePrice)
+      )
+    ) {
+      return "Purchase price must be a valid number.";
+    }
+
+    if (
+      values.purchasePrice &&
+      Number(values.purchasePrice) < 0
+    ) {
+      return "Purchase price cannot be negative.";
+    }
+
     return null;
   }
 
-  // ============================================================
+  // ==========================================================
   // CREATE CATEGORY
-  // ============================================================
+  // ==========================================================
 
   async function handleCreateCategory(
     event: React.FormEvent
@@ -508,8 +610,13 @@ export function CreateAssetModal({
       const createdCategory =
         response.data;
 
-      // Automatically select the
-      // newly created category.
+      if (!createdCategory?.id) {
+        throw new Error(
+          "Category was created but no category ID was returned."
+        );
+      }
+
+      // Automatically select newly created category.
       setField(
         "categoryId",
         createdCategory.id
@@ -518,7 +625,7 @@ export function CreateAssetModal({
       // Reset category form.
       setNewCategoryName("");
       setNewCategoryDescription("");
-      setNewCategoryType("hardware");
+      setNewCategoryType("HARDWARE");
 
       setShowCategoryModal(false);
 
@@ -536,9 +643,9 @@ export function CreateAssetModal({
     }
   }
 
-  // ============================================================
+  // ==========================================================
   // SUBMIT ASSET
-  // ============================================================
+  // ==========================================================
 
   async function handleSubmit(
     event: React.FormEvent
@@ -558,16 +665,13 @@ export function CreateAssetModal({
 
     setFormError(null);
 
-    const payload =
-      buildPayload();
-
     try {
-      if (
-        isEditMode &&
-        asset
-      ) {
+      if (isEditMode) {
+        const payload =
+          buildUpdatePayload();
+
         await updateAsset(
-          payload as UpdateAssetRequest
+          payload
         ).unwrap();
 
         pushToast(
@@ -575,8 +679,11 @@ export function CreateAssetModal({
           "success"
         );
       } else {
+        const payload =
+          buildCreatePayload();
+
         await createAsset(
-          payload as CreateAssetRequest
+          payload
         ).unwrap();
 
         pushToast(
@@ -599,9 +706,40 @@ export function CreateAssetModal({
     }
   }
 
-  // ============================================================
+  // ==========================================================
+  // OPEN CATEGORY MODAL
+  // ==========================================================
+
+  function openCategoryModal() {
+    setCategoryError(null);
+
+    setNewCategoryName("");
+    setNewCategoryDescription("");
+    setNewCategoryType(
+      values.kind === "SOFTWARE"
+        ? "SOFTWARE"
+        : "HARDWARE"
+    );
+
+    setShowCategoryModal(true);
+  }
+
+  // ==========================================================
+  // CLOSE CATEGORY MODAL
+  // ==========================================================
+
+  function closeCategoryModal() {
+    if (isCreatingCategory) {
+      return;
+    }
+
+    setShowCategoryModal(false);
+    setCategoryError(null);
+  }
+
+  // ==========================================================
   // RENDER
-  // ============================================================
+  // ==========================================================
 
   if (!open) {
     return null;
@@ -609,6 +747,7 @@ export function CreateAssetModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+
       {/* ======================================================
           MAIN ASSET MODAL
       ====================================================== */}
@@ -705,15 +844,14 @@ export function CreateAssetModal({
               </label>
 
               <Input
-                value={
-                  values.serialNumber
-                }
+                value={values.serialNumber}
                 onChange={(event) =>
                   setField(
                     "serialNumber",
                     event.target.value
                   )
                 }
+                placeholder="Serial number"
                 disabled={isSubmitting}
               />
             </div>
@@ -745,12 +883,8 @@ export function CreateAssetModal({
                 {KIND_OPTIONS.map(
                   (option) => (
                     <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
+                      key={option.value}
+                      value={option.value}
                     >
                       {option.label}
                     </option>
@@ -786,12 +920,8 @@ export function CreateAssetModal({
                 {STATUS_OPTIONS.map(
                   (option) => (
                     <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
+                      key={option.value}
+                      value={option.value}
                     >
                       {option.label}
                     </option>
@@ -810,9 +940,7 @@ export function CreateAssetModal({
               </label>
 
               <select
-                value={
-                  values.condition
-                }
+                value={values.condition}
                 onChange={(event) =>
                   setField(
                     "condition",
@@ -829,12 +957,8 @@ export function CreateAssetModal({
                 {CONDITION_OPTIONS.map(
                   (option) => (
                     <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
+                      key={option.value}
+                      value={option.value}
                     >
                       {option.label}
                     </option>
@@ -854,9 +978,7 @@ export function CreateAssetModal({
 
               <div className="flex gap-2">
                 <select
-                  value={
-                    values.categoryId
-                  }
+                  value={values.categoryId}
                   onChange={(event) =>
                     setField(
                       "categoryId",
@@ -878,12 +1000,8 @@ export function CreateAssetModal({
                   {categories.map(
                     (category) => (
                       <option
-                        key={
-                          category.id
-                        }
-                        value={
-                          category.id
-                        }
+                        key={category.id}
+                        value={category.id}
                       >
                         {category.name}
                       </option>
@@ -891,33 +1009,10 @@ export function CreateAssetModal({
                   )}
                 </select>
 
-                {/* Add Category */}
                 <button
                   type="button"
-                  onClick={() => {
-                    setCategoryError(
-                      null
-                    );
-
-                    setNewCategoryName(
-                      ""
-                    );
-
-                    setNewCategoryDescription(
-                      ""
-                    );
-
-                    setNewCategoryType(
-                      "hardware"
-                    );
-
-                    setShowCategoryModal(
-                      true
-                    );
-                  }}
-                  disabled={
-                    isSubmitting
-                  }
+                  onClick={openCategoryModal}
+                  disabled={isSubmitting}
                   title="Create new category"
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -944,18 +1039,14 @@ export function CreateAssetModal({
 
               {locations.length > 0 ? (
                 <select
-                  value={
-                    values.locationId
-                  }
+                  value={values.locationId}
                   onChange={(event) =>
                     setField(
                       "locationId",
                       event.target.value
                     )
                   }
-                  disabled={
-                    isSubmitting
-                  }
+                  disabled={isSubmitting}
                   className={SELECT_CLASSES}
                 >
                   <option value="">
@@ -965,12 +1056,8 @@ export function CreateAssetModal({
                   {locations.map(
                     (location) => (
                       <option
-                        key={
-                          location.id
-                        }
-                        value={
-                          location.id
-                        }
+                        key={location.id}
+                        value={location.id}
                       >
                         {location.name}
                       </option>
@@ -979,9 +1066,7 @@ export function CreateAssetModal({
                 </select>
               ) : (
                 <Input
-                  value={
-                    values.locationId
-                  }
+                  value={values.locationId}
                   onChange={(event) =>
                     setField(
                       "locationId",
@@ -989,9 +1074,7 @@ export function CreateAssetModal({
                     )
                   }
                   placeholder="Location ID"
-                  disabled={
-                    isSubmitting
-                  }
+                  disabled={isSubmitting}
                 />
               )}
             </div>
@@ -1007,18 +1090,14 @@ export function CreateAssetModal({
 
               {vendors.length > 0 ? (
                 <select
-                  value={
-                    values.vendorId
-                  }
+                  value={values.vendorId}
                   onChange={(event) =>
                     setField(
                       "vendorId",
                       event.target.value
                     )
                   }
-                  disabled={
-                    isSubmitting
-                  }
+                  disabled={isSubmitting}
                   className={SELECT_CLASSES}
                 >
                   <option value="">
@@ -1028,12 +1107,8 @@ export function CreateAssetModal({
                   {vendors.map(
                     (vendor) => (
                       <option
-                        key={
-                          vendor.id
-                        }
-                        value={
-                          vendor.id
-                        }
+                        key={vendor.id}
+                        value={vendor.id}
                       >
                         {vendor.name}
                       </option>
@@ -1042,9 +1117,7 @@ export function CreateAssetModal({
                 </select>
               ) : (
                 <Input
-                  value={
-                    values.vendorId
-                  }
+                  value={values.vendorId}
                   onChange={(event) =>
                     setField(
                       "vendorId",
@@ -1052,9 +1125,7 @@ export function CreateAssetModal({
                     )
                   }
                   placeholder="Vendor ID"
-                  disabled={
-                    isSubmitting
-                  }
+                  disabled={isSubmitting}
                 />
               )}
             </div>
@@ -1069,18 +1140,15 @@ export function CreateAssetModal({
               </label>
 
               <Input
-                value={
-                  values.manufacturer
-                }
+                value={values.manufacturer}
                 onChange={(event) =>
                   setField(
                     "manufacturer",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                placeholder="e.g. Apple"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1101,9 +1169,8 @@ export function CreateAssetModal({
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                placeholder="e.g. MacBook Pro"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1118,18 +1185,14 @@ export function CreateAssetModal({
 
               <Input
                 type="date"
-                value={
-                  values.purchaseDate
-                }
+                value={values.purchaseDate}
                 onChange={(event) =>
                   setField(
                     "purchaseDate",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1144,19 +1207,17 @@ export function CreateAssetModal({
 
               <Input
                 type="number"
+                min="0"
                 step="0.01"
-                value={
-                  values.purchasePrice
-                }
+                value={values.purchasePrice}
                 onChange={(event) =>
                   setField(
                     "purchasePrice",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                placeholder="0.00"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1170,18 +1231,15 @@ export function CreateAssetModal({
               </label>
 
               <Input
-                value={
-                  values.invoiceNumber
-                }
+                value={values.invoiceNumber}
                 onChange={(event) =>
                   setField(
                     "invoiceNumber",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                placeholder="Invoice number"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1196,18 +1254,14 @@ export function CreateAssetModal({
 
               <Input
                 type="date"
-                value={
-                  values.warrantyStart
-                }
+                value={values.warrantyStart}
                 onChange={(event) =>
                   setField(
                     "warrantyStart",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1222,18 +1276,14 @@ export function CreateAssetModal({
 
               <Input
                 type="date"
-                value={
-                  values.warrantyExpiry
-                }
+                value={values.warrantyExpiry}
                 onChange={(event) =>
                   setField(
                     "warrantyExpiry",
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                disabled={isSubmitting}
               />
             </div>
 
@@ -1254,17 +1304,16 @@ export function CreateAssetModal({
                     event.target.value
                   )
                 }
-                disabled={
-                  isSubmitting
-                }
+                disabled={isSubmitting}
                 rows={3}
+                placeholder="Additional notes about this asset..."
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
             </div>
           </div>
 
           {/* ====================================================
-              ASSET FORM ERROR
+              FORM ERROR
           ==================================================== */}
 
           {formError ? (
@@ -1274,7 +1323,7 @@ export function CreateAssetModal({
           ) : null}
 
           {/* ====================================================
-              ASSET FOOTER
+              FOOTER
           ==================================================== */}
 
           <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
@@ -1282,18 +1331,14 @@ export function CreateAssetModal({
               type="button"
               variant="secondary"
               onClick={onClose}
-              disabled={
-                isSubmitting
-              }
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
 
             <Button
               type="submit"
-              disabled={
-                isSubmitting
-              }
+              disabled={isSubmitting}
             >
               {isSubmitting
                 ? isEditMode
@@ -1332,14 +1377,8 @@ export function CreateAssetModal({
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowCategoryModal(
-                    false
-                  )
-                }
-                disabled={
-                  isCreatingCategory
-                }
+                onClick={closeCategoryModal}
+                disabled={isCreatingCategory}
                 className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
               >
                 <X className="h-4 w-4" />
@@ -1350,77 +1389,51 @@ export function CreateAssetModal({
                 CATEGORY FORM
             ================================================== */}
 
-            <form
-              onSubmit={
-                handleCreateCategory
-              }
-            >
+            <form onSubmit={handleCreateCategory}>
               <div className="space-y-4 px-5 py-5">
 
                 {/* Category Name */}
 
                 <div>
-                  <label
-                    className={
-                      LABEL_CLASSES
-                    }
-                  >
+                  <label className={LABEL_CLASSES}>
                     Category name *
                   </label>
 
                   <Input
                     autoFocus
-                    value={
-                      newCategoryName
-                    }
+                    value={newCategoryName}
                     onChange={(event) =>
                       setNewCategoryName(
                         event.target.value
                       )
                     }
                     placeholder="e.g. Laptops"
-                    disabled={
-                      isCreatingCategory
-                    }
+                    disabled={isCreatingCategory}
                   />
                 </div>
 
                 {/* Category Type */}
 
                 <div>
-                  <label
-                    className={
-                      LABEL_CLASSES
-                    }
-                  >
+                  <label className={LABEL_CLASSES}>
                     Category type *
                   </label>
 
                   <select
-                    value={
-                      newCategoryType
-                    }
+                    value={newCategoryType}
                     onChange={(event) =>
                       setNewCategoryType(
                         event.target.value as AssetKind
                       )
                     }
-                    disabled={
-                      isCreatingCategory
-                    }
-                    className={
-                      SELECT_CLASSES
-                    }
+                    disabled={isCreatingCategory}
+                    className={SELECT_CLASSES}
                   >
                     {KIND_OPTIONS.map(
                       (option) => (
                         <option
-                          key={
-                            option.value
-                          }
-                          value={
-                            option.value
-                          }
+                          key={option.value}
+                          value={option.value}
                         >
                           {option.label}
                         </option>
@@ -1432,11 +1445,7 @@ export function CreateAssetModal({
                 {/* Description */}
 
                 <div>
-                  <label
-                    className={
-                      LABEL_CLASSES
-                    }
-                  >
+                  <label className={LABEL_CLASSES}>
                     Description
                   </label>
 
@@ -1449,9 +1458,7 @@ export function CreateAssetModal({
                         event.target.value
                       )
                     }
-                    disabled={
-                      isCreatingCategory
-                    }
+                    disabled={isCreatingCategory}
                     rows={3}
                     placeholder="Optional description"
                     className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50"
@@ -1475,23 +1482,15 @@ export function CreateAssetModal({
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() =>
-                    setShowCategoryModal(
-                      false
-                    )
-                  }
-                  disabled={
-                    isCreatingCategory
-                  }
+                  onClick={closeCategoryModal}
+                  disabled={isCreatingCategory}
                 >
                   Cancel
                 </Button>
 
                 <Button
                   type="submit"
-                  disabled={
-                    isCreatingCategory
-                  }
+                  disabled={isCreatingCategory}
                 >
                   {isCreatingCategory
                     ? "Creating..."
