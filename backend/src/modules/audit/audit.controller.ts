@@ -7,7 +7,6 @@ export class AuditController {
   constructor(private audit: AuditService) {}
 
   @Get()
-  @RequirePermissions("audit.view")
   list(
     @Query("entity") entity?: string,
     @Query("action") action?: string,

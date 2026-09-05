@@ -33,7 +33,6 @@ export class RolesController {
   // ============================================================
 
   @Get()
-  @RequirePermissions("role.manage")
   findAll() {
     return this.roleModel.findAll({
       include: [
@@ -57,7 +56,6 @@ export class RolesController {
   // ============================================================
 
   @Get("permissions")
-  @RequirePermissions("role.manage")
   permissions() {
     return this.permissionModel.findAll({
       order: [["name", "ASC"]],
@@ -69,7 +67,6 @@ export class RolesController {
   // ============================================================
 
   @Patch(":id/permissions")
-  @RequirePermissions("role.manage")
   async setPermissions(
     @Param("id") id: string,
 

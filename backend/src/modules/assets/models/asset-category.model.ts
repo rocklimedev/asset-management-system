@@ -8,8 +8,14 @@ import {
   HasMany,
   Index,
   PrimaryKey,
+  CreatedAt,
+  UpdatedAt,
 } from "sequelize-typescript";
-
+import {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
 import { Organisation } from "@/modules/organisation/models/organisation.model";
 import { Asset } from "./asset.model";
 
@@ -22,7 +28,10 @@ export enum AssetKind {
   tableName: "asset_categories",
   timestamps: true,
 })
-export class AssetCategory extends Model<AssetCategory> {
+export class AssetCategory extends Model<
+  InferAttributes<AssetCategory>,
+  InferCreationAttributes<AssetCategory>
+> {
   // ============================================================
   // ID
   // ============================================================
@@ -33,7 +42,7 @@ export class AssetCategory extends Model<AssetCategory> {
     allowNull: false,
     defaultValue: DataType.UUIDV4,
   })
-  id!: string;
+  declare id: CreationOptional<string>;
 
   // ============================================================
   // NAME
@@ -43,7 +52,7 @@ export class AssetCategory extends Model<AssetCategory> {
     type: DataType.STRING(255),
     allowNull: false,
   })
-  name!: string;
+  declare name: string;
 
   // ============================================================
   // DESCRIPTION
@@ -53,7 +62,7 @@ export class AssetCategory extends Model<AssetCategory> {
     type: DataType.TEXT,
     allowNull: true,
   })
-  description?: string | null;
+  declare description: string | null;
 
   // ============================================================
   // TYPE
@@ -64,7 +73,7 @@ export class AssetCategory extends Model<AssetCategory> {
     type: DataType.ENUM(...Object.values(AssetKind)),
     allowNull: false,
   })
-  type!: AssetKind;
+  declare type: AssetKind;
 
   // ============================================================
   // ORGANISATION
@@ -77,12 +86,12 @@ export class AssetCategory extends Model<AssetCategory> {
     allowNull: true,
     field: "organisation_id",
   })
-  organisationId!: string | null;
+  declare organisationId: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisation_id",
+    foreignKey: "organisationId",
   })
-  organisation!: Organisation;
+  declare organisation?: Organisation;
 
   // ============================================================
   // ACTIVE
@@ -94,14 +103,24 @@ export class AssetCategory extends Model<AssetCategory> {
     allowNull: false,
     defaultValue: true,
   })
-  isActive!: boolean;
+  declare isActive: CreationOptional<boolean>;
 
   // ============================================================
   // ASSETS
   // ============================================================
 
   @HasMany(() => Asset, {
-    foreignKey: "category_id",
+    foreignKey: "categoryId",
   })
-  assets!: Asset[];
+  declare assets?: Asset[];
+
+  // ============================================================
+  // TIMESTAMPS
+  // ============================================================
+
+  @CreatedAt
+  declare createdAt: CreationOptional<Date>;
+
+  @UpdatedAt
+  declare updatedAt: CreationOptional<Date>;
 }

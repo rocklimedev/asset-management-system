@@ -3,6 +3,12 @@ import { SequelizeModule } from "@nestjs/sequelize";
 
 import { AssetsService } from "./assets.service";
 import { AssetsController } from "./assets.controller";
+
+import { AssetCategoryService } from "./asset-category.service";
+import { AssetCategoryController } from "./asset-category.controller";
+
+import { SoftwareController } from "./software.controller";
+
 import { AuditModule } from "@/modules/audit/audit.module";
 
 import { Asset } from "./models/asset.model";
@@ -31,13 +37,14 @@ import { Location } from "@/modules/organisation/models/location.model";
       Employee,
       Location,
     ]),
+
     AuditModule,
   ],
 
-  providers: [AssetsService],
+  providers: [AssetsService, AssetCategoryService],
 
-  controllers: [AssetsController],
+  controllers: [AssetsController, AssetCategoryController, SoftwareController],
 
-  exports: [AssetsService],
+  exports: [AssetsService, AssetCategoryService],
 })
 export class AssetsModule {}

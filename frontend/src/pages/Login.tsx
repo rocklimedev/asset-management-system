@@ -1,49 +1,47 @@
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LockKeyhole, Mail } from "lucide-react";
 
-import { FormEvent, useState } from 'react';
-import { LockKeyhole, Mail } from 'lucide-react';
-
-import { api } from '../lib/api';
-import { Button } from '../components/ui/Button';
+import { Button } from "../components/ui/Button";
+import { useAuth } from "../services/context/AuthContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  // ============================================================
+  // LOGIN
+  // ============================================================
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', {
-        email,
-        password,
-      });
+      await login(email, password);
 
-      const { accessToken, user } = response.data;
-
-      /*
-       * Store authentication data.
-       *
-       * If your backend uses httpOnly cookies instead,
-       * remove this and let the API handle the session.
-       */
-      localStorage.setItem('accessToken', accessToken);
-
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
-
-      // Redirect after successful login
-      window.location.href = '/';
+      // In-app navigation only — no full page reload.
+      // By the time login() resolves, AuthContext has already
+      // flushSync'd isAuthenticated to true, so this is safe
+      // and instant. (RequireGuest in App.tsx would also catch
+      // this on its own, but navigating explicitly here keeps
+      // intent clear and leaves room for a "redirect to
+      // originally requested page" feature later.)
+      navigate("/", { replace: true });
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-          'Invalid email or password.',
+          "Invalid email or password.",
       );
     } finally {
       setLoading(false);
@@ -101,7 +99,9 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               placeholder="you@company.com"
               autoComplete="email"
               required
@@ -138,7 +138,9 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
               placeholder="Enter your password"
               autoComplete="current-password"
               required
@@ -160,7 +162,7 @@ export default function LoginPage() {
           disabled={loading}
           className="h-11 w-full justify-center"
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
 
@@ -174,4 +176,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

@@ -19,7 +19,7 @@ import {
   AuthUser,
 } from "@/common/decorator/current-user.decorator";
 
-@Controller("organisations/employees")
+@Controller("employees")
 export class EmployeesController {
   constructor(private readonly service: EmployeesService) {}
 
@@ -28,7 +28,6 @@ export class EmployeesController {
   // ============================================================
 
   @Get()
-  @RequirePermissions("employee.view")
   findAll(
     @Query("search") search?: string,
     @Query("departmentId") departmentId?: string,
@@ -53,7 +52,6 @@ export class EmployeesController {
   // ============================================================
 
   @Get(":id")
-  @RequirePermissions("employee.view")
   findOne(@Param("id") id: string) {
     return this.service.findOne(id);
   }
@@ -63,7 +61,6 @@ export class EmployeesController {
   // ============================================================
 
   @Post()
-  @RequirePermissions("employee.manage")
   create(@Body() dto: CreateEmployeeDto, @CurrentUser() user: AuthUser) {
     return this.service.create(dto, user);
   }
@@ -73,7 +70,6 @@ export class EmployeesController {
   // ============================================================
 
   @Patch(":id")
-  @RequirePermissions("employee.manage")
   update(
     @Param("id") id: string,
     @Body() dto: UpdateEmployeeDto,
@@ -87,7 +83,6 @@ export class EmployeesController {
   // ============================================================
 
   @Delete(":id")
-  @RequirePermissions("employee.manage")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user);
   }

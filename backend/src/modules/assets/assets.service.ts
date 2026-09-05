@@ -1051,11 +1051,15 @@ export class AssetsService {
   // ============================================================
 
   async transfer(id: string, dto: TransferAssetDto, actor: AuthUser) {
+    // ============================================================
+    // GET ASSET
+    // ============================================================
+
     const asset = await this.findOne(id);
 
-    // ==========================================================
-    // STATUS
-    // ==========================================================
+    // ============================================================
+    // STATUS VALIDATION
+    // ============================================================
 
     if (NON_TRANSFERABLE_STATUSES.includes(asset.status)) {
       throw new BadRequestException(
@@ -1080,13 +1084,17 @@ export class AssetsService {
       );
     }
 
-    // ==========================================================
+    // ============================================================
     // CURRENT ASSIGNMENT
-    // ==========================================================
+    // ============================================================
 
     const currentAssignment = asset.assignments[0];
 
     const fromEmployeeId = currentAssignment.employeeId;
+
+    // ============================================================
+    // SAME EMPLOYEE CHECK
+    // ============================================================
 
     if (fromEmployeeId === dto.toEmployeeId) {
       throw new BadRequestException(
@@ -1094,9 +1102,9 @@ export class AssetsService {
       );
     }
 
-    // ==========================================================
+    // ============================================================
     // DESTINATION EMPLOYEE
-    // ==========================================================
+    // ============================================================
 
     const toEmployee = await this.employeeModel.findByPk(dto.toEmployeeId);
 
@@ -1110,181 +1118,195 @@ export class AssetsService {
       );
     }
 
-    // ==========================================================
-    // ORGANISATION MATCH
-    // ==========================================================
-
-    if (toEmployee.organisationId !== asset.organisationId) {
-      throw new BadRequestException(
-        "Asset and destination employee must belong to the same organisation.",
-      );
-    }
-
-    // ==========================================================
+    // ============================================================
     // CURRENT EMPLOYEE
-    // ==========================================================
+    // ============================================================
 
     const fromEmployee = await this.employeeModel.findByPk(fromEmployeeId);
 
-    // ==========================================================
+    // ============================================================
+    // ACTOR VALIDATION
+    // ============================================================
+
+    if (!actor?.id) {
+      throw new BadRequestException(
+        "Unable to determine the user performing this transfer.",
+      );
+    }
+
+    // ============================================================
     // TRANSACTION
-    // ==========================================================
+    // ============================================================
 
-    return this.sequelize.transaction(async (t: Transaction) => {
-      // ------------------------------------------------------
-      // 1. CLOSE CURRENT ASSIGNMENT
-      // ------------------------------------------------------
+    try {
+      return await this.sequelize.transaction(async (t: Transaction) => {
+        // --------------------------------------------------------
+        // 1. CLOSE CURRENT ASSIGNMENT
+        // --------------------------------------------------------
 
-      await this.assetAssignmentModel.update(
-        {
-          status: AssignmentStatus.RETURNED,
-
-          returnedAt: new Date(),
-        },
-
-        {
-          where: {
-            id: currentAssignment.id,
+        await this.assetAssignmentModel.update(
+          {
+            status: AssignmentStatus.RETURNED,
+            returnedAt: new Date(),
           },
-
-          transaction: t,
-        },
-      );
-
-      // ------------------------------------------------------
-      // 2. CREATE NEW ASSIGNMENT
-      // ------------------------------------------------------
-
-      await this.assetAssignmentModel.create(
-        {
-          assetId: id,
-
-          employeeId: dto.toEmployeeId,
-
-          assignedBy: actor.id,
-
-          status: AssignmentStatus.ACTIVE,
-
-          notes: dto.notes ?? null,
-        } as AssetAssignment,
-
-        {
-          transaction: t,
-        },
-      );
-
-      // ------------------------------------------------------
-      // 3. TRANSFER RECORD
-      // ------------------------------------------------------
-
-      const transfer = await this.assetTransferModel.create(
-        {
-          assetId: id,
-
-          fromEmployeeId,
-
-          toEmployeeId: dto.toEmployeeId,
-
-          requestedById: actor.id,
-
-          approvedById: actor.id,
-
-          status: TransferStatus.COMPLETED,
-
-          reason: dto.reason ?? "Employee transfer",
-
-          notes: dto.notes ?? null,
-
-          approvedAt: new Date(),
-        } as AssetTransfer,
-
-        {
-          transaction: t,
-        },
-      );
-
-      // ------------------------------------------------------
-      // 4. KEEP ASSET ASSIGNED
-      // ------------------------------------------------------
-
-      await this.assetModel.update(
-        {
-          status: AssetStatus.ASSIGNED,
-        },
-
-        {
-          where: {
-            id,
+          {
+            where: {
+              id: currentAssignment.id,
+              status: AssignmentStatus.ACTIVE,
+            },
+            transaction: t,
           },
+        );
 
-          transaction: t,
-        },
-      );
+        // --------------------------------------------------------
+        // 2. CREATE NEW ASSIGNMENT
+        // --------------------------------------------------------
 
-      const updatedAsset = await this.assetModel.findByPk(id, {
-        transaction: t,
-      });
+        const newAssignment = await this.assetAssignmentModel.create(
+          {
+            assetId: id,
 
-      // ------------------------------------------------------
-      // 5. HISTORY
-      // ------------------------------------------------------
+            employeeId: dto.toEmployeeId,
 
-      await this.assetHistoryModel.create(
-        {
-          assetId: id,
+            assignedAt: new Date(),
 
-          action: "TRANSFERRED",
+            assignedBy: actor.id,
 
-          performedBy: actor.name,
+            status: AssignmentStatus.ACTIVE,
 
-          fromValue: fromEmployee?.name ?? "Unassigned",
+            notes: dto.notes ?? null,
+          },
+          {
+            transaction: t,
+          },
+        );
 
-          toValue: toEmployee.name,
+        // --------------------------------------------------------
+        // 3. CREATE TRANSFER RECORD
+        // --------------------------------------------------------
 
-          notes: dto.notes ?? null,
-        } as AssetHistory,
+        const transfer = await this.assetTransferModel.create(
+          {
+            assetId: id,
 
-        {
-          transaction: t,
-        },
-      );
-
-      // ------------------------------------------------------
-      // 6. AUDIT
-      // ------------------------------------------------------
-
-      await this.audit.log(
-        {
-          userId: actor.id,
-
-          action: "ASSET_TRANSFERRED",
-
-          entity: "Asset",
-
-          entityId: id,
-
-          metadata: {
             fromEmployeeId,
 
             toEmployeeId: dto.toEmployeeId,
 
-            transferId: transfer.id,
+            requestedById: actor.id,
+
+            approvedById: actor.id,
+
+            status: TransferStatus.COMPLETED,
+
+            reason: dto.reason ?? "Employee transfer",
+
+            notes: dto.notes ?? null,
+
+            approvedAt: new Date(),
+          } as AssetTransfer,
+          {
+            transaction: t,
           },
-        },
+        );
 
-        t,
-      );
+        // --------------------------------------------------------
+        // 4. KEEP ASSET ASSIGNED
+        // --------------------------------------------------------
 
-      return {
-        asset: updatedAsset,
+        await this.assetModel.update(
+          {
+            status: AssetStatus.ASSIGNED,
+          },
+          {
+            where: {
+              id,
+            },
+            transaction: t,
+          },
+        );
 
-        transfer,
+        // --------------------------------------------------------
+        // 5. GET UPDATED ASSET
+        // --------------------------------------------------------
 
-        message: `Asset successfully transferred from ${
-          fromEmployee?.name ?? "Unassigned"
-        } to ${toEmployee.name}.`,
-      };
-    });
+        const updatedAsset = await this.assetModel.findByPk(id, {
+          transaction: t,
+        });
+
+        if (!updatedAsset) {
+          throw new NotFoundException("Asset not found after transfer.");
+        }
+
+        // --------------------------------------------------------
+        // 6. CREATE HISTORY
+        // --------------------------------------------------------
+
+        await this.assetHistoryModel.create(
+          {
+            assetId: id,
+
+            action: "TRANSFERRED",
+
+            performedBy: actor.name,
+
+            fromValue: fromEmployee?.name ?? "Unassigned",
+
+            toValue: toEmployee.name,
+
+            notes: dto.notes ?? null,
+          } as AssetHistory,
+          {
+            transaction: t,
+          },
+        );
+
+        // --------------------------------------------------------
+        // 7. AUDIT
+        // --------------------------------------------------------
+
+        await this.audit.log(
+          {
+            userId: actor.id,
+
+            action: "ASSET_TRANSFERRED",
+
+            entity: "Asset",
+
+            entityId: id,
+
+            metadata: {
+              fromEmployeeId,
+
+              toEmployeeId: dto.toEmployeeId,
+
+              transferId: transfer.id,
+
+              assignmentId: newAssignment.id,
+            },
+          },
+          t,
+        );
+
+        // --------------------------------------------------------
+        // 8. RETURN RESULT
+        // --------------------------------------------------------
+
+        return {
+          asset: updatedAsset,
+
+          transfer,
+
+          assignment: newAssignment,
+
+          message: `Asset successfully transferred from ${
+            fromEmployee?.name ?? "Unassigned"
+          } to ${toEmployee.name}.`,
+        };
+      });
+    } catch (error: any) {
+      throw error;
+    }
   }
 
   // ============================================================

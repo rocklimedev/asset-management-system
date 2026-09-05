@@ -6,8 +6,14 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
+  PrimaryKey,
+  Default,
 } from "sequelize-typescript";
-
+import {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
 import { Asset } from "./asset.model";
 import { Employee } from "@/modules/organisation/models/employees.model";
 
@@ -20,7 +26,22 @@ export enum AssignmentStatus {
   tableName: "asset_assignments",
   timestamps: false,
 })
-export class AssetAssignment extends Model<AssetAssignment> {
+export class AssetAssignment extends Model<
+  InferAttributes<AssetAssignment>,
+  InferCreationAttributes<AssetAssignment>
+> {
+  // ============================================================
+  // PRIMARY KEY
+  // ============================================================
+
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: false,
+  })
+  declare id: CreationOptional<string>;
+
   // ============================================================
   // ASSET
   // ============================================================
@@ -32,12 +53,13 @@ export class AssetAssignment extends Model<AssetAssignment> {
     allowNull: false,
     field: "asset_id",
   })
-  assetId!: string;
+  declare assetId: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "asset_id",
+    foreignKey: "assetId",
+    targetKey: "id",
   })
-  asset!: Asset;
+  declare asset?: Asset;
 
   // ============================================================
   // EMPLOYEE
@@ -50,12 +72,13 @@ export class AssetAssignment extends Model<AssetAssignment> {
     allowNull: false,
     field: "employee_id",
   })
-  employeeId!: string;
+  declare employeeId: string;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "employee_id",
+    foreignKey: "employeeId",
+    targetKey: "id",
   })
-  employee!: Employee;
+  declare employee?: Employee;
 
   // ============================================================
   // ASSIGNED AT
@@ -67,7 +90,7 @@ export class AssetAssignment extends Model<AssetAssignment> {
     defaultValue: DataType.NOW,
     field: "assignedAt",
   })
-  assignedAt!: Date;
+  declare assignedAt: CreationOptional<Date>;
 
   // ============================================================
   // RETURNED AT
@@ -78,7 +101,7 @@ export class AssetAssignment extends Model<AssetAssignment> {
     allowNull: true,
     field: "returnedAt",
   })
-  returnedAt?: Date | null;
+  declare returnedAt: Date | null;
 
   // ============================================================
   // ASSIGNED BY
@@ -90,7 +113,7 @@ export class AssetAssignment extends Model<AssetAssignment> {
     allowNull: false,
     field: "assigned_by",
   })
-  assignedBy!: string;
+  declare assignedBy: string;
 
   // ============================================================
   // STATUS
@@ -103,7 +126,7 @@ export class AssetAssignment extends Model<AssetAssignment> {
     defaultValue: AssignmentStatus.ACTIVE,
     field: "status",
   })
-  status!: AssignmentStatus;
+  declare status: CreationOptional<AssignmentStatus>;
 
   // ============================================================
   // NOTES
@@ -114,5 +137,5 @@ export class AssetAssignment extends Model<AssetAssignment> {
     allowNull: true,
     field: "notes",
   })
-  notes?: string | null;
+  declare notes: string | null;
 }

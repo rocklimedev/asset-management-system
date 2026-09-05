@@ -100,7 +100,7 @@ export class EmployeesService {
 
           {
             model: Department,
-            as: "departments",
+            as: "department",
           },
 
           // ------------------------------------------------------
@@ -148,7 +148,6 @@ export class EmployeesService {
         offset: (page - 1) * take,
 
         distinct: true,
-        subQuery: false,
       });
 
     return {
@@ -172,7 +171,7 @@ export class EmployeesService {
 
         {
           model: Department,
-          as: "departments",
+          as: "department",
         },
 
         // --------------------------------------------------------

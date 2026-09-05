@@ -56,7 +56,6 @@ export class UsersController {
   // ============================================================
 
   @Get()
-  @RequirePermissions("user.manage")
   findAll() {
     return this.service.findAll();
   }
@@ -66,7 +65,6 @@ export class UsersController {
   // ============================================================
 
   @Post()
-  @RequirePermissions("user.manage")
   create(@Body() dto: CreateUserDto, @CurrentUser() user: AuthUser) {
     return this.service.create(dto, user);
   }
@@ -76,7 +74,6 @@ export class UsersController {
   // ============================================================
 
   @Patch(":id/status")
-  @RequirePermissions("user.manage")
   setStatus(
     @Param("id") id: string,
     @Body() dto: UpdateUserStatusDto,
@@ -90,7 +87,6 @@ export class UsersController {
   // ============================================================
 
   @Patch(":id/role")
-  @RequirePermissions("user.manage")
   changeRole(
     @Param("id") id: string,
     @Body() dto: ChangeUserRoleDto,

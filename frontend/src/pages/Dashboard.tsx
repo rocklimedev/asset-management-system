@@ -1,7 +1,7 @@
 import {
   Boxes, CheckCircle2, PackageOpen, Users, Laptop, AppWindow, Wrench, ShieldAlert,
 } from 'lucide-react';
-import { useDashboard } from '../lib/hooks';
+import { useGetDashboardQuery } from '../services/api/dashboard.api';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -24,13 +24,26 @@ function BarRow({ label, count, max }: { label: string; count: number; max: numb
 }
 
 export default function Dashboard() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading, isError, error, refetch } = useGetDashboardQuery();
 
   if (isLoading || !data) {
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-slate-100" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          Couldn't load dashboard data.{' '}
+          <button onClick={() => refetch()} className="font-medium underline">
+            Try again
+          </button>
         </div>
       </div>
     );

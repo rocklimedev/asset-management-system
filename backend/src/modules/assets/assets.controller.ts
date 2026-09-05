@@ -29,7 +29,6 @@ export class AssetsController {
   // ============================================================
 
   @Get()
-  @RequirePermissions("asset.view")
   findAll(@Query() query: Record<string, string>) {
     return this.service.findAll({
       search: query.search,
@@ -57,7 +56,6 @@ export class AssetsController {
   // ============================================================
 
   @Get(":id")
-  @RequirePermissions("asset.view")
   findOne(@Param("id") id: string) {
     return this.service.findOne(id);
   }
@@ -67,7 +65,6 @@ export class AssetsController {
   // ============================================================
 
   @Get(":id/history")
-  @RequirePermissions("asset.history.view")
   history(@Param("id") id: string) {
     return this.service.history(id);
   }
@@ -77,7 +74,6 @@ export class AssetsController {
   // ============================================================
 
   @Post()
-  @RequirePermissions("asset.create")
   create(@Body() dto: CreateAssetDto, @CurrentUser() user: AuthUser) {
     return this.service.create(dto, user);
   }
@@ -87,7 +83,6 @@ export class AssetsController {
   // ============================================================
 
   @Patch(":id")
-  @RequirePermissions("asset.edit")
   update(
     @Param("id") id: string,
     @Body() dto: UpdateAssetDto,
@@ -101,7 +96,6 @@ export class AssetsController {
   // ============================================================
 
   @Post(":id/assign")
-  @RequirePermissions("asset.transfer")
   assign(
     @Param("id") id: string,
     @Body() dto: AssignAssetDto,
@@ -115,7 +109,6 @@ export class AssetsController {
   // ============================================================
 
   @Post(":id/transfer")
-  @RequirePermissions("asset.transfer")
   transfer(
     @Param("id") id: string,
     @Body() dto: TransferAssetDto,
@@ -129,7 +122,6 @@ export class AssetsController {
   // ============================================================
 
   @Post(":id/return")
-  @RequirePermissions("asset.transfer")
   returnAsset(
     @Param("id") id: string,
     @Body("notes") notes: string,

@@ -18,7 +18,6 @@ export class SoftwareController {
   // ============================================================
 
   @Get()
-  @RequirePermissions("software.view")
   async findAll() {
     const assets = await this.assetModel.findAll({
       where: {
