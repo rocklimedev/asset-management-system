@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
+import { BACKEND } from "../../lib/api";
 
 // ============================================================
 // ENUMS
@@ -344,19 +345,18 @@ export interface SoftwareAsset extends Asset {
 // ============================================================
 
 export interface AssetsResponse {
-  data: Asset[];
+  items: Asset[];
 
-  total?: number;
+  total: number;
 
-  page?: number;
+  page: number;
 
-  pageSize?: number;
+  pageSize: number;
 
-  totalPages?: number;
+  totalPages: number;
 
   [key: string]: unknown;
 }
-
 export interface AssetResponse {
   data: Asset;
 
@@ -663,8 +663,6 @@ export interface CreateSoftwareLicenseRequest {
 // API
 // ============================================================
 
-const BACKEND = "http://localhost:4000/api";
-
 export const assetApi = createApi({
   reducerPath: "assetApi",
 
@@ -848,44 +846,30 @@ export const assetApi = createApi({
       query: (params = {}) => ({
         url: "/assets",
         method: "GET",
-
         params: {
           search: params.search || undefined,
-
           organisationId: params.organisationId || undefined,
-
           kind: params.kind || undefined,
-
           status: params.status || undefined,
-
           condition: params.condition || undefined,
-
           categoryId: params.categoryId || undefined,
-
           locationId: params.locationId || undefined,
-
           vendorId: params.vendorId || undefined,
-
           assigned: params.assigned !== undefined ? params.assigned : undefined,
-
           sortBy: params.sortBy || undefined,
-
           sortDir: params.sortDir || undefined,
-
           page: params.page || undefined,
-
           pageSize: params.pageSize || undefined,
         },
       }),
 
       providesTags: (result) =>
-        result?.data
+        result?.items
           ? [
-              ...result.data.map(({ id }) => ({
+              ...result.items.map(({ id }) => ({
                 type: "Asset" as const,
                 id,
               })),
-
               {
                 type: "Asset" as const,
                 id: "LIST",

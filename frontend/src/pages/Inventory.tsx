@@ -83,7 +83,7 @@ const [sortDir, setSortDir] =
   // NORMALIZE RESPONSE
   // ============================================================
 
-  const items = data?.data ?? [];
+  const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const pageSize = data?.pageSize ?? 25;
 

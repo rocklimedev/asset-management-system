@@ -71,13 +71,13 @@ export function CommandPalette({
 
   const employees = Array.isArray(employeesResponse)
     ? employeesResponse
-    : employeesResponse?.data ?? [];
+    : employeesResponse?.items ?? [];
 
   // ==========================================================
   // NORMALIZE ASSETS RESPONSE
   // ==========================================================
 
-  const assets = assetsResponse?.data ?? [];
+  const assets = assetsResponse?.items ?? [];
 
   // ==========================================================
   // RESET SEARCH WHEN CLOSED

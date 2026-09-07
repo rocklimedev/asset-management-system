@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BACKEND } from "../../lib/api";
 
 // ============================================================
 // TYPES
@@ -59,12 +60,6 @@ export interface DashboardResponse {
     warrantyExpirations: WarrantyExpiration[];
   };
 }
-
-// ============================================================
-// CONFIG
-// ============================================================
-
-const BACKEND = "http://localhost:4000/api";
 
 // ============================================================
 // DASHBOARD API

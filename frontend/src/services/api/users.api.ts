@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
+import { BACKEND } from "../../lib/api";
 
 // ============================================================
 // TYPES
@@ -83,12 +84,6 @@ export interface ChangeUserRoleRequest {
   id: string;
   roleId: string;
 }
-
-// ============================================================
-// CONFIG
-// ============================================================
-
-const BACKEND = "http://localhost:4000/api";
 
 // ============================================================
 // USERS API

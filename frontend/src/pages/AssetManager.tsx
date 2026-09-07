@@ -149,7 +149,7 @@ export default function AssetManager() {
   // ============================================================
 
 // still wrong — EmployeesResponse exposes the array as `data`, not `items`
-const employees = Array.isArray(data) ? data : data?.data ?? [];
+const employees = Array.isArray(data) ? data : data?.items ?? [];
   // ============================================================
   // DND SENSORS
   // ============================================================

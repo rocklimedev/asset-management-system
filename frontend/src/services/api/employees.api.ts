@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 import type { AssetAssignment } from "./asset.api";
+import { BACKEND } from "../../lib/api";
 
 // ============================================================
 // ENUMS
@@ -83,7 +84,7 @@ export interface GetEmployeesParams {
 // ============================================================
 
 export interface EmployeesResponse {
-  data?: Employee[];
+  items?: Employee[];
   total?: number;
   page?: number;
   pageSize?: number;
@@ -158,12 +159,6 @@ export interface UpdateEmployeeRequest {
 }
 
 // ============================================================
-// CONFIG
-// ============================================================
-
-const BACKEND = "http://localhost:4000/api";
-
-// ============================================================
 // EMPLOYEES API
 // ============================================================
 
@@ -221,7 +216,7 @@ export const employeesApi = createApi({
       providesTags: (result) => {
         const employees: Employee[] = Array.isArray(result)
           ? result
-          : result?.data || [];
+          : result?.items || [];
 
         return [
           ...employees.map(({ id }) => ({
