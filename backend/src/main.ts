@@ -8,14 +8,27 @@ async function bootstrap() {
   // ============================
   // CORS
   // ============================
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://rocklime-asset-manager.vercel.app",
+  ];
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN
-      ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-      : [
-          "http://localhost:3000",
-          "http://localhost:5173",
-          "https://rocklime-asset-manager.vercel.app",
-        ],
+    origin: (origin, callback) => {
+      // Allow requests without an Origin header
+      // (Postman, curl, server-to-server, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("CORS blocked origin:", origin);
+      return callback(new Error("Not allowed by CORS"), false);
+    },
 
     credentials: true,
 
@@ -53,7 +66,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  console.log(`API running on http://localhost:${port}/api`);
+  console.log(`API running on port ${port}`);
 }
 
 bootstrap();
