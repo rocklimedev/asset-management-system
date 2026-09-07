@@ -410,61 +410,67 @@ export function CreateAssetModal({
   // BUILD CREATE PAYLOAD
   // ==========================================================
 
-  function buildCreatePayload(): CreateAssetRequest {
-    return {
-      name: values.name.trim(),
-
-      assetTag:
-        values.assetTag.trim() || undefined,
-
-      serialNumber:
-        values.serialNumber.trim() || undefined,
-
-      kind:
-        values.kind || undefined,
-
-      status:
-        values.status || undefined,
-
-      condition:
-        values.condition || undefined,
-
-      categoryId:
-        values.categoryId || undefined,
-
-      locationId:
-        values.locationId || undefined,
-
-      vendorId:
-        values.vendorId || undefined,
-
-      manufacturer:
-        values.manufacturer.trim() || undefined,
-
-      model:
-        values.model.trim() || undefined,
-
-      purchaseDate:
-        values.purchaseDate || undefined,
-
-      purchasePrice:
-        values.purchasePrice.trim()
-          ? Number(values.purchasePrice)
-          : undefined,
-
-      invoiceNumber:
-        values.invoiceNumber.trim() || undefined,
-
-      warrantyStart:
-        values.warrantyStart || undefined,
-
-      warrantyExpiry:
-        values.warrantyExpiry || undefined,
-
-      notes:
-        values.notes.trim() || undefined,
-    };
+function buildCreatePayload(): CreateAssetRequest {
+  if (!values.kind) {
+    throw new Error("Asset kind is required.");
   }
+
+  if (!values.categoryId) {
+    throw new Error("Asset category is required.");
+  }
+
+  return {
+    name: values.name.trim(),
+
+    assetTag:
+      values.assetTag.trim() || undefined,
+
+    serialNumber:
+      values.serialNumber.trim() || undefined,
+
+    kind: values.kind,
+
+    status:
+      values.status || undefined,
+
+    condition:
+      values.condition || undefined,
+
+    categoryId: values.categoryId,
+
+    locationId:
+      values.locationId.trim() || undefined,
+
+    vendorId:
+      values.vendorId.trim() || undefined,
+
+    manufacturer:
+      values.manufacturer.trim() || undefined,
+
+    model:
+      values.model.trim() || undefined,
+
+    purchaseDate:
+      values.purchaseDate || undefined,
+
+    purchasePrice:
+      values.purchasePrice.trim()
+        ? Number(values.purchasePrice)
+        : undefined,
+
+    invoiceNumber:
+      values.invoiceNumber.trim() || undefined,
+
+    warrantyStart:
+      values.warrantyStart || undefined,
+
+    warrantyExpiry:
+      values.warrantyExpiry || undefined,
+
+    notes:
+      values.notes.trim() || undefined,
+  };
+}
 
   // ==========================================================
   // BUILD UPDATE PAYLOAD

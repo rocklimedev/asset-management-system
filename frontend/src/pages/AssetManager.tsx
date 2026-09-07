@@ -340,14 +340,12 @@ const employees = Array.isArray(data) ? data : data?.data ?? [];
     } = pendingTransfer;
 
     try {
-      await transferAsset({
-        id: String(asset.id),
-        toEmployeeId: String(to.id),
-        reason,
-        notes:
-          notes || undefined,
-      }).unwrap();
-
+  await transferAsset({
+  id: String(asset.id),
+  employeeId: String(to.id),
+  reason,
+  notes: notes || undefined,
+}).unwrap();
       pushToast(
         `${asset.name} transferred to ${to.name}.`,
         "success"
@@ -566,24 +564,17 @@ const employees = Array.isArray(data) ? data : data?.data ?? [];
           >
             {employees.map(
               (employee) => (
-                <EmployeeCard
-                  key={
-                    employee.id
-                  }
-                  employee={
-                    employee
-                  }
-                  activeAssetId={
-                    activeAsset?.id ??
-                    null
-                  }
-                  onOpenDetail={
-                    setDetailAsset
-                  }
-                  onTransferClick={
-                    handleManualTransfer
-                  }
-                />
+              <EmployeeCard
+  key={employee.id}
+  employee={employee}
+  activeAssetId={
+    activeAsset?.id
+      ? Number(activeAsset.id)
+      : null
+  }
+  onOpenDetail={setDetailAsset}
+  onTransferClick={handleManualTransfer}
+/>
               )
             )}
           </div>

@@ -12,8 +12,11 @@ import {
 } from "../components/ui/EmptyState";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 
-import type { Asset} from "../services/api/asset.api";
-
+import type {
+  Asset,
+  AssetKind,
+  AssetStatus,
+} from "../services/api/asset.api";
 // ============================================================
 // CONSTANTS
 // ============================================================
@@ -49,12 +52,11 @@ const COLUMNS: {
 
 export default function Inventory() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [kind, setKind] = useState("");
-
+const [status, setStatus] = useState<AssetStatus | "">("");
+const [kind, setKind] = useState<AssetKind | "">("");
   const [sortBy, setSortBy] = useState("assetTag");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-
+const [sortDir, setSortDir] =
+  useState<"ASC" | "DESC">("ASC");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Asset | null>(null);
 
@@ -81,7 +83,7 @@ export default function Inventory() {
   // NORMALIZE RESPONSE
   // ============================================================
 
-  const items = data?.items ?? [];
+  const items = data?.data ?? [];
   const total = data?.total ?? 0;
   const pageSize = data?.pageSize ?? 25;
 
@@ -92,18 +94,18 @@ export default function Inventory() {
   // SORT
   // ============================================================
 
-  function toggleSort(key: string) {
-    if (sortBy === key) {
-      setSortDir((current) =>
-        current === "asc" ? "desc" : "asc"
-      );
-    } else {
-      setSortBy(key);
-      setSortDir("asc");
-    }
-
-    setPage(1);
+function toggleSort(key: string) {
+  if (sortBy === key) {
+    setSortDir((current) =>
+      current === "ASC" ? "DESC" : "ASC"
+    );
+  } else {
+    setSortBy(key);
+    setSortDir("ASC");
   }
+
+  setPage(1);
+}
 
   // ============================================================
   // FILTER HANDLERS
@@ -114,16 +116,15 @@ export default function Inventory() {
     setPage(1);
   }
 
-  function handleKindChange(value: string) {
-    setKind(value);
-    setPage(1);
-  }
+function handleKindChange(value: string) {
+  setKind(value as AssetKind | "");
+  setPage(1);
+}
 
-  function handleStatusChange(value: string) {
-    setStatus(value);
-    setPage(1);
-  }
-
+function handleStatusChange(value: string) {
+  setStatus(value as AssetStatus | "");
+  setPage(1);
+}
   // ============================================================
   // PAGINATION
   // ============================================================
@@ -409,11 +410,12 @@ export default function Inventory() {
           ASSET DETAIL DRAWER
       ====================================================== */}
 
-      <AssetDetailDrawer
-        asset={selected}
-        onClose={() => setSelected(null)}
-        onTransfer={() => {}}
-      />
+   <AssetDetailDrawer
+  asset={selected}
+  onClose={() => setSelected(null)}
+  onTransfer={() => {}}
+  onEdit={() => {}}
+/>
     </div>
   );
 }

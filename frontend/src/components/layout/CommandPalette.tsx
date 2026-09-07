@@ -217,11 +217,6 @@ export function CommandPalette({
                       )}
                     </div>
 
-                    {employee.employeeId && (
-                      <span className="shrink-0 text-xs tabular-nums text-slate-400">
-                        {employee.employeeId}
-                      </span>
-                    )}
                   </button>
                 ))}
               </div>
