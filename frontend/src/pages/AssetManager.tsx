@@ -340,9 +340,9 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
     } = pendingTransfer;
 
     try {
-  await transferAsset({
+await transferAsset({
   id: String(asset.id),
-  employeeId: String(to.id),
+  toEmployeeId: String(to.id),
   reason,
   notes: notes || undefined,
 }).unwrap();

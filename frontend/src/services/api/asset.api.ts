@@ -998,36 +998,20 @@ export const assetApi = createApi({
     // TRANSFER
     // ============================================================
 
-    transferAsset: builder.mutation<AssetResponse, TransferAssetRequest>({
+    transferAsset: builder.mutation<
+      Asset,
+      {
+        id: string;
+        toEmployeeId: string;
+        reason: string;
+        notes?: string;
+      }
+    >({
       query: ({ id, ...body }) => ({
         url: `/assets/${id}/transfer`,
         method: "POST",
         body,
       }),
-
-      invalidatesTags: (result, error, { id }) => [
-        {
-          type: "Asset",
-          id,
-        },
-
-        {
-          type: "Asset",
-          id: "LIST",
-        },
-
-        {
-          type: "AssetHistory",
-          id,
-        },
-
-        {
-          type: "AssetTransfer",
-          id,
-        },
-
-        "SoftwareAsset",
-      ],
     }),
 
     // ============================================================
