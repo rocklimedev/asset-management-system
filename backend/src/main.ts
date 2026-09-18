@@ -12,6 +12,7 @@ async function bootstrap() {
     "http://localhost:3000",
     "http://localhost:5173",
     "https://rocklime-asset-manager.vercel.app",
+    "https://itos.spsyndicate.net",
   ];
 
   app.enableCors({
