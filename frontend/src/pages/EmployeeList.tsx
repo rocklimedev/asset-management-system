@@ -1412,7 +1412,7 @@ const EmployeeList: React.FC = () => {
 
       <Dialog
         open={modalOpen}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           if (!open) {
             closeModal();
           }
