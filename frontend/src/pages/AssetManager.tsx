@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 
 import {
@@ -15,31 +14,33 @@ import {
 import { Laptop, Plus, Search } from "lucide-react";
 
 import { useGetEmployeesQuery } from "../services/api/employees.api";
-import { useTransferAssetMutation } from "../services/api/asset.api";
+import {
+  useTransferAssetMutation,
+  useReleaseAssetsForEmployeeMutation,
+} from "../services/api/asset.api";
 
-import { useToastStore } from "../components/ui/Toast";
+import { toast } from "../components/ui/toast";
 
 import { EmployeeCard } from "../components/asset-manager/EmployeeCard";
 import { AssetChip } from "../components/asset-manager/AssetChip";
 import { TransferModal } from "../components/asset-manager/TransferModal";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
+import { AssetPool } from "../components/asset-manager/AssetPool";
 
-import {
-  SkeletonCard,
-  EmptyState,
-} from "../components/ui/EmptyState";
+import { SkeletonCard, EmptyState } from "../components/ui/EmptyState";
 
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 
 import type { Asset } from "../services/api/asset.api";
 import type { Employee } from "../services/api/employees.api";
+
 // ============================================================
 // TYPES
 // ============================================================
 
-interface TransferError {
+interface ApiError {
   data?: {
     message?: string;
     error?: string;
@@ -51,15 +52,12 @@ interface TransferError {
 // HELPERS
 // ============================================================
 
-function getErrorMessage(
-  error: unknown,
-  fallback: string
-): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   if (!error) {
     return fallback;
   }
 
-  const apiError = error as TransferError;
+  const apiError = error as ApiError;
 
   return (
     apiError.data?.message ||
@@ -81,25 +79,25 @@ export default function AssetManager() {
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("");
 
-  const [activeAsset, setActiveAsset] =
-    useState<Asset | null>(null);
+  const [activeAsset, setActiveAsset] = useState<Asset | null>(null);
 
-  const [detailAsset, setDetailAsset] =
-    useState<Asset | null>(null);
+  const [detailAsset, setDetailAsset] = useState<Asset | null>(null);
 
-  const [pendingTransfer, setPendingTransfer] =
-    useState<{
-      asset: Asset;
-      from: Employee | null;
-      to: Employee | null;
-      pickMode: boolean;
-    } | null>(null);
+  const [pendingTransfer, setPendingTransfer] = useState<{
+    asset: Asset;
+    from: Employee | null;
+    to: Employee | null;
+    pickMode: boolean;
+  } | null>(null);
+
+  // ------------------------------------------------------------
+  // Asset pool
+  // ------------------------------------------------------------
+
+  const [poolTarget, setPoolTarget] = useState<Employee | null>(null);
 
   // ------------------------------------------------------------
   // Create / Edit asset modal
-  //
-  // assetModal.asset === null -> create mode
-  // assetModal.asset !== null -> edit mode
   // ------------------------------------------------------------
 
   const [assetModal, setAssetModal] = useState<{
@@ -114,42 +112,35 @@ export default function AssetManager() {
   // API - EMPLOYEES
   // ============================================================
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-  } = useGetEmployeesQuery({
+  const { data, isLoading, isFetching } = useGetEmployeesQuery({
     search: search || undefined,
-    departmentId: department
-      ? department
-      : undefined,
+    departmentId: department ? department : undefined,
   });
 
   // ============================================================
   // API - TRANSFER
   // ============================================================
 
-  const [
-    transferAsset,
-    {
-      isLoading: isTransferLoading,
-    },
-  ] = useTransferAssetMutation();
+  const [transferAsset, { isLoading: isTransferLoading }] =
+    useTransferAssetMutation();
 
   // ============================================================
-  // TOAST
+  // API - RELEASE ASSETS
   // ============================================================
 
-  const pushToast = useToastStore(
-    (state) => state.push
-  );
+  const [releaseAssetsForEmployee, { isLoading: isReleasing }] =
+    useReleaseAssetsForEmployeeMutation();
 
   // ============================================================
   // NORMALIZE EMPLOYEE RESPONSE
   // ============================================================
 
-// still wrong — EmployeesResponse exposes the array as `data`, not `items`
-const employees = Array.isArray(data) ? data : data?.items ?? [];
+  const employees = Array.isArray(data)
+    ? data
+    : ((data as { data?: Employee[]; items?: Employee[] } | undefined)?.data ??
+      (data as { items?: Employee[] } | undefined)?.items ??
+      []);
+
   // ============================================================
   // DND SENSORS
   // ============================================================
@@ -166,7 +157,7 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
         delay: 150,
         tolerance: 8,
       },
-    })
+    }),
   );
 
   // ============================================================
@@ -175,10 +166,7 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
 
   const employeeById = useMemo(() => {
     return new Map<string, Employee>(
-      employees.map((employee) => [
-        String(employee.id),
-        employee,
-      ])
+      employees.map((employee) => [String(employee.id), employee]),
     );
   }, [employees]);
 
@@ -186,12 +174,8 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
   // DRAG START
   // ============================================================
 
-  function handleDragStart(
-    event: DragStartEvent
-  ) {
-    const asset =
-      event.active.data.current
-        ?.asset as Asset | undefined;
+  function handleDragStart(event: DragStartEvent) {
+    const asset = event.active.data.current?.asset as Asset | undefined;
 
     if (!asset) {
       return;
@@ -204,28 +188,18 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
   // DRAG END
   // ============================================================
 
-  function handleDragEnd(
-    event: DragEndEvent
-  ) {
+  function handleDragEnd(event: DragEndEvent) {
     setActiveAsset(null);
 
-    const {
-      active,
-      over,
-    } = event;
+    const { active, over } = event;
 
     if (!over) {
       return;
     }
 
-    const asset =
-      active.data.current
-        ?.asset as Asset | undefined;
+    const asset = active.data.current?.asset as Asset | undefined;
 
-    const targetEmployee =
-      over.data.current?.employee as
-        | Employee
-        | undefined;
+    const targetEmployee = over.data.current?.employee as Employee | undefined;
 
     if (!asset || !targetEmployee) {
       return;
@@ -235,14 +209,11 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
     // Current owner
     // ----------------------------------------------------------
 
-    const currentAssignment =
-      asset.assignments?.find(
-        (assignment) =>
-          assignment.status === "ACTIVE"
-      );
+    const currentAssignment = asset.assignments?.find(
+      (assignment) => assignment.status === "ACTIVE",
+    );
 
-    const fromEmployeeId =
-      currentAssignment?.employeeId ?? null;
+    const fromEmployeeId = currentAssignment?.employeeId ?? null;
 
     // ----------------------------------------------------------
     // Same employee = no-op
@@ -250,8 +221,7 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
 
     if (
       fromEmployeeId !== null &&
-      String(fromEmployeeId) ===
-        String(targetEmployee.id)
+      String(fromEmployeeId) === String(targetEmployee.id)
     ) {
       return;
     }
@@ -262,15 +232,13 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
 
     if (asset.status !== "ASSIGNED") {
       const statusLabel =
-        asset.status.charAt(0) +
-        asset.status
-          .slice(1)
-          .toLowerCase();
+        asset.status.charAt(0) + asset.status.slice(1).toLowerCase();
 
-      pushToast(
-        `${statusLabel} assets cannot be transferred.`,
-        "error"
-      );
+      toast.add({
+        type: "error",
+        title: "Transfer unavailable",
+        description: `${statusLabel} assets cannot be transferred.`,
+      });
 
       return;
     }
@@ -279,13 +247,12 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
     // Destination employee validation
     // ----------------------------------------------------------
 
-    if (
-      targetEmployee.status === "EXITED"
-    ) {
-      pushToast(
-        "Cannot transfer an asset to an employee who has exited.",
-        "error"
-      );
+    if (targetEmployee.status === "EXITED") {
+      toast.add({
+        type: "error",
+        title: "Transfer unavailable",
+        description: "Cannot transfer an asset to an employee who has exited.",
+      });
 
       return;
     }
@@ -294,12 +261,9 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
     // Source employee
     // ----------------------------------------------------------
 
-    const fromEmployee =
-      fromEmployeeId
-        ? employeeById.get(
-            String(fromEmployeeId)
-          ) ?? null
-        : null;
+    const fromEmployee = fromEmployeeId
+      ? (employeeById.get(String(fromEmployeeId)) ?? null)
+      : null;
 
     // ----------------------------------------------------------
     // Open transfer confirmation
@@ -317,49 +281,47 @@ const employees = Array.isArray(data) ? data : data?.items ?? [];
   // CONFIRM TRANSFER
   // ============================================================
 
-  async function confirmTransfer(
-    reason: string,
-    notes: string
-  ) {
+  async function confirmTransfer(reason: string, notes: string) {
     if (!pendingTransfer) {
       return;
     }
 
     if (!pendingTransfer.to) {
-      pushToast(
-        "Please select a destination employee.",
-        "error"
-      );
+      toast.add({
+        type: "error",
+        title: "Employee required",
+        description: "Please select a destination employee.",
+      });
 
       return;
     }
 
-    const {
-      asset,
-      to,
-    } = pendingTransfer;
+    const { asset, to } = pendingTransfer;
 
     try {
-await transferAsset({
-  id: String(asset.id),
-  toEmployeeId: String(to.id),
-  reason,
-  notes: notes || undefined,
-}).unwrap();
-      pushToast(
-        `${asset.name} transferred to ${to.name}.`,
-        "success"
-      );
+      await transferAsset({
+        id: String(asset.id),
+        toEmployeeId: String(to.id),
+        reason,
+        notes: notes || undefined,
+      }).unwrap();
+
+      toast.add({
+        type: "success",
+        title: "Asset transferred",
+        description: `${asset.name} transferred to ${to.name}.`,
+      });
 
       setPendingTransfer(null);
     } catch (error) {
-      pushToast(
-        getErrorMessage(
+      toast.add({
+        type: "error",
+        title: "Transfer failed",
+        description: getErrorMessage(
           error,
-          "Transfer failed. The asset remains with its previous owner."
+          "Transfer failed. The asset remains with its previous owner.",
         ),
-        "error"
-      );
+      });
     }
   }
 
@@ -367,24 +329,16 @@ await transferAsset({
   // OPEN MANUAL TRANSFER
   // ============================================================
 
-  function handleManualTransfer(
-    asset: Asset
-  ) {
-    const currentAssignment =
-      asset.assignments?.find(
-        (assignment) =>
-          assignment.status === "ACTIVE"
-      );
+  function handleManualTransfer(asset: Asset) {
+    const currentAssignment = asset.assignments?.find(
+      (assignment) => assignment.status === "ACTIVE",
+    );
 
-    const fromEmployeeId =
-      currentAssignment?.employeeId ?? null;
+    const fromEmployeeId = currentAssignment?.employeeId ?? null;
 
-    const fromEmployee =
-      fromEmployeeId
-        ? employeeById.get(
-            String(fromEmployeeId)
-          ) ?? null
-        : null;
+    const fromEmployee = fromEmployeeId
+      ? (employeeById.get(String(fromEmployeeId)) ?? null)
+      : null;
 
     // ----------------------------------------------------------
     // Validate asset status
@@ -392,15 +346,13 @@ await transferAsset({
 
     if (asset.status !== "ASSIGNED") {
       const statusLabel =
-        asset.status.charAt(0) +
-        asset.status
-          .slice(1)
-          .toLowerCase();
+        asset.status.charAt(0) + asset.status.slice(1).toLowerCase();
 
-      pushToast(
-        `${statusLabel} assets cannot be transferred.`,
-        "error"
-      );
+      toast.add({
+        type: "error",
+        title: "Transfer unavailable",
+        description: `${statusLabel} assets cannot be transferred.`,
+      });
 
       return;
     }
@@ -413,6 +365,68 @@ await transferAsset({
       to: null,
       pickMode: true,
     });
+  }
+
+  // ============================================================
+  // OPEN ASSET POOL
+  // ============================================================
+
+  function handleAssignFromPool(employee: Employee) {
+    setDetailAsset(null);
+    setPoolTarget(employee);
+  }
+
+  // ============================================================
+  // RELEASE ASSETS FOR AN EXITED EMPLOYEE
+  // ============================================================
+
+  async function handleReleaseAssets(employee: Employee) {
+    const hasActiveAssets = Boolean(
+      employee.assignments?.some(
+        (assignment) => assignment.status === "ACTIVE",
+      ),
+    );
+
+    if (!hasActiveAssets) {
+      toast.add({
+        type: "info",
+        title: "No assets to release",
+        description: `${employee.name} has no assets to release.`,
+      });
+
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Return every asset currently assigned to ${employee.name}? This can't be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const result = await releaseAssetsForEmployee(
+        String(employee.id),
+      ).unwrap();
+
+      toast.add({
+        type: "success",
+        title: "Assets released",
+        description: `${result.releasedCount} asset${
+          result.releasedCount === 1 ? "" : "s"
+        } returned from ${employee.name}.`,
+      });
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: "Release failed",
+        description: getErrorMessage(
+          error,
+          "Could not release this employee's assets. Please try again.",
+        ),
+      });
+    }
   }
 
   // ============================================================
@@ -430,9 +444,7 @@ await transferAsset({
   // EDIT ASSET
   // ============================================================
 
-  function openEditAsset(
-    asset: Asset
-  ) {
+  function openEditAsset(asset: Asset) {
     setDetailAsset(null);
 
     setAssetModal({
@@ -458,27 +470,23 @@ await transferAsset({
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
-
       {/* ======================================================
           HEADER
       ====================================================== */}
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">
+          <h1 className="text-lg font-semibold text-foreground">
             Asset Manager
           </h1>
 
-          <p className="text-sm text-slate-500">
-            Drag an assigned asset onto another employee
-            to transfer it.
+          <p className="text-sm text-muted-foreground">
+            Drag an assigned asset onto another employee to transfer it, or
+            assign a new one from the pool.
           </p>
         </div>
 
-        <Button
-          className="w-fit"
-          onClick={openCreateAsset}
-        >
+        <Button className="w-fit" onClick={openCreateAsset}>
           <Plus className="h-4 w-4" />
           Add Asset
         </Button>
@@ -489,19 +497,14 @@ await transferAsset({
       ====================================================== */}
 
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-
         {/* Search */}
 
         <div className="relative flex-1 sm:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
           <Input
             value={search}
-            onChange={(event) =>
-              setSearch(
-                event.target.value
-              )
-            }
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search employees or assets..."
             className="pl-9"
           />
@@ -511,16 +514,10 @@ await transferAsset({
 
         <select
           value={department}
-          onChange={(event) =>
-            setDepartment(
-              event.target.value
-            )
-          }
-          className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400 sm:w-48"
+          onChange={(event) => setDepartment(event.target.value)}
+          className="h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring sm:w-48"
         >
-          <option value="">
-            All departments
-          </option>
+          <option value="">All departments</option>
         </select>
       </div>
 
@@ -530,21 +527,15 @@ await transferAsset({
 
       <DndContext
         sensors={sensors}
-        onDragStart={
-          handleDragStart
-        }
-        onDragEnd={
-          handleDragEnd
-        }
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({
               length: 8,
             }).map((_, index) => (
-              <SkeletonCard
-                key={index}
-              />
+              <SkeletonCard key={index} />
             ))}
           </div>
         ) : employees.length === 0 ? (
@@ -557,26 +548,21 @@ await transferAsset({
           <div
             className={
               "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 " +
-              (isFetching
-                ? "opacity-70"
-                : "")
+              (isFetching ? "opacity-70" : "")
             }
           >
-            {employees.map(
-              (employee) => (
+            {employees.map((employee) => (
               <EmployeeCard
-  key={employee.id}
-  employee={employee}
-  activeAssetId={
-    activeAsset?.id
-      ? Number(activeAsset.id)
-      : null
-  }
-  onOpenDetail={setDetailAsset}
-  onTransferClick={handleManualTransfer}
-/>
-              )
-            )}
+                key={employee.id}
+                employee={employee}
+                activeAssetId={activeAsset?.id ? String(activeAsset.id) : null}
+                onOpenDetail={setDetailAsset}
+                onTransferClick={handleManualTransfer}
+                onAssignClick={handleAssignFromPool}
+                onReleaseClick={handleReleaseAssets}
+                releasingAssets={isReleasing}
+              />
+            ))}
           </div>
         )}
 
@@ -588,9 +574,7 @@ await transferAsset({
           {activeAsset ? (
             <div className="w-56 rotate-2 shadow-xl">
               <AssetChip
-                asset={
-                  activeAsset
-                }
+                asset={activeAsset}
                 onOpenDetail={() => {}}
                 transferrable
               />
@@ -604,73 +588,47 @@ await transferAsset({
       ====================================================== */}
 
       <TransferModal
-        open={
-          Boolean(
-            pendingTransfer
-          )
-        }
+        open={Boolean(pendingTransfer)}
         onClose={() => {
-          if (
-            !isTransferLoading
-          ) {
-            setPendingTransfer(
-              null
-            );
+          if (!isTransferLoading) {
+            setPendingTransfer(null);
           }
         }}
-        asset={
-          pendingTransfer?.asset ??
-          null
-        }
-        fromEmployee={
-          pendingTransfer?.from ??
-          null
-        }
-        toEmployee={
-          pendingTransfer?.to ??
-          null
-        }
+        asset={pendingTransfer?.asset ?? null}
+        fromEmployee={pendingTransfer?.from ?? null}
+        toEmployee={pendingTransfer?.to ?? null}
         employeeOptions={
           pendingTransfer?.pickMode
             ? employees.filter(
                 (employee) =>
-                  String(
-                    employee.id
-                  ) !==
-                  String(
-                    pendingTransfer
-                      .from?.id
-                  )
+                  String(employee.id) !== String(pendingTransfer.from?.id),
               )
             : undefined
         }
-        onSelectEmployee={(
-          employeeId
-        ) => {
-          setPendingTransfer(
-            (current) => {
-              if (!current) {
-                return current;
-              }
-
-              return {
-                ...current,
-                to:
-                  employeeById.get(
-                    String(
-                      employeeId
-                    )
-                  ) ?? null,
-              };
+        onSelectEmployee={(employeeId) => {
+          setPendingTransfer((current) => {
+            if (!current) {
+              return current;
             }
-          );
+
+            return {
+              ...current,
+              to: employeeById.get(String(employeeId)) ?? null,
+            };
+          });
         }}
-        onConfirm={
-          confirmTransfer
-        }
-        loading={
-          isTransferLoading
-        }
+        onConfirm={confirmTransfer}
+        loading={isTransferLoading}
+      />
+
+      {/* ======================================================
+          ASSET POOL
+      ====================================================== */}
+
+      <AssetPool
+        open={Boolean(poolTarget)}
+        employee={poolTarget}
+        onClose={() => setPoolTarget(null)}
       />
 
       {/* ======================================================
@@ -679,17 +637,9 @@ await transferAsset({
 
       <AssetDetailDrawer
         asset={detailAsset}
-        onClose={() =>
-          setDetailAsset(
-            null
-          )
-        }
-        onTransfer={
-          handleManualTransfer
-        }
-        onEdit={
-          openEditAsset
-        }
+        onClose={() => setDetailAsset(null)}
+        onTransfer={handleManualTransfer}
+        onEdit={openEditAsset}
       />
 
       {/* ======================================================
@@ -697,15 +647,9 @@ await transferAsset({
       ====================================================== */}
 
       <CreateAssetModal
-        open={
-          assetModal.open
-        }
-        onClose={
-          closeAssetModal
-        }
-        asset={
-          assetModal.asset
-        }
+        open={assetModal.open}
+        onClose={closeAssetModal}
+        asset={assetModal.asset}
         locations={[]}
         vendors={[]}
       />

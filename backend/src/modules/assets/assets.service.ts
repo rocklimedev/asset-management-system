@@ -7,15 +7,21 @@ import {
 import { InjectConnection, InjectModel } from "@nestjs/sequelize";
 import { Op, Transaction, WhereOptions } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
-
+import { OnEvent } from "@nestjs/event-emitter";
 import { AuditService } from "@/modules/audit/audit.service";
 import { AuthUser } from "@/common/decorator/current-user.decorator";
-
+import { CdnUploadFile } from "../cdn/cdn.service";
 import { CreateAssetDto } from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
 import { AssignAssetDto } from "./dto/assign-asset.dto";
 import { TransferAssetDto } from "./dto/transfer-asset.dto";
-
+import { CdnService } from "../cdn/cdn.service";
+import {
+  InventoryHistory,
+  InventoryChangeType,
+} from "./models/inventory-history.model";
+import { AssetPoolQueryDto } from "./dto/asset-pool-query.dto";
+import { AdjustInventoryDto } from "./dto/adjust-inventory.dto";
 import { Asset, AssetCondition, AssetStatus } from "./models/asset.model";
 
 import { AssetCategory } from "./models/asset-category.model";
@@ -82,6 +88,11 @@ export class AssetsService {
 
     @InjectConnection()
     private readonly sequelize: Sequelize,
+
+    @InjectModel(InventoryHistory)
+    private readonly inventoryHistoryModel: typeof InventoryHistory,
+
+    private readonly cdn: CdnService,
 
     private readonly audit: AuditService,
   ) {}
@@ -1425,5 +1436,304 @@ export class AssetsService {
         transaction: t,
       });
     });
+  }
+  // ============================================================
+  // ASSET POOL
+  //
+  // Searchable list of assets that can actually be handed out right
+  // now: AVAILABLE status (or pooled stock with spare quantity), not
+  // retired/lost/disposed. This backs the "assign from pool" flow in
+  // Asset Manager, separate from `findAll` which lists everything.
+  // ============================================================
+
+  async findPool(params: AssetPoolQueryDto) {
+    const page = Math.max(params.page ?? 1, 1);
+    const pageSize = Math.min(Math.max(params.pageSize ?? 25, 1), 100);
+
+    const andConditions: WhereOptions<Asset>[] = [
+      {
+        status: {
+          [Op.notIn]: [
+            AssetStatus.RETIRED,
+            AssetStatus.LOST,
+            AssetStatus.DISPOSED,
+            AssetStatus.DAMAGED,
+            AssetStatus.REPAIR,
+          ],
+        },
+      },
+      // Either a 1:1 asset sitting AVAILABLE, or pooled stock that
+      // still has spare units to hand out.
+      {
+        [Op.or]: [
+          { status: AssetStatus.AVAILABLE },
+          {
+            [Op.and]: [
+              this.sequelize.where(
+                this.sequelize.literal("`Asset`.`quantity`"),
+                Op.gt,
+                this.sequelize.literal("`Asset`.`quantityAssigned`"),
+              ),
+            ],
+          },
+        ],
+      } as WhereOptions<Asset>,
+    ];
+
+    if (params.search?.trim()) {
+      const like = { [Op.like]: `%${params.search.trim()}%` };
+
+      andConditions.push({
+        [Op.or]: [
+          { assetTag: like },
+          { name: like },
+          { serialNumber: like },
+          { manufacturer: like },
+          { model: like },
+        ],
+      } as WhereOptions<Asset>);
+    }
+
+    if (params.organisationId) {
+      andConditions.push({ organisationId: params.organisationId });
+    }
+
+    if (params.kind) {
+      andConditions.push({ kind: params.kind as Asset["kind"] });
+    }
+
+    if (params.categoryId) {
+      andConditions.push({ categoryId: params.categoryId });
+    }
+
+    if (params.locationId) {
+      andConditions.push({ locationId: params.locationId });
+    }
+
+    const { rows: items, count: total } = await this.assetModel.findAndCountAll(
+      {
+        where: { [Op.and]: andConditions },
+        include: [
+          { model: AssetCategory, as: "category" },
+          { model: Location, as: "location" },
+        ],
+        order: [["name", "ASC"]],
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        distinct: true,
+      },
+    );
+
+    return {
+      items: items.map((asset) => ({
+        ...asset.toJSON(),
+        quantityAvailable:
+          (asset.quantity ?? 1) - (asset.quantityAssigned ?? 0),
+      })),
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  // ============================================================
+  // RELEASE ASSETS FOR AN EXITED EMPLOYEE
+  //
+  // Bulk-returns every asset currently checked out to an employee.
+  // Call this directly from EmployeesService right after it flips an
+  // employee's status to EXITED, OR rely on the @OnEvent listener
+  // below if EmployeesService emits "employee.exited" instead (avoids
+  // a hard module dependency between Employees and Assets).
+  // ============================================================
+
+  async releaseAssetsForExitedEmployee(employeeId: string, actor: AuthUser) {
+    const activeAssignments = await this.assetAssignmentModel.findAll({
+      where: {
+        employeeId,
+        status: AssignmentStatus.ACTIVE,
+      },
+    });
+
+    const released: Awaited<ReturnType<typeof this.returnAsset>>[] = [];
+
+    for (const assignment of activeAssignments) {
+      const result = await this.returnAsset(
+        assignment.assetId,
+        actor,
+        "Auto-returned: employee exited",
+      );
+
+      released.push(result);
+    }
+
+    return {
+      employeeId,
+      releasedCount: released.length,
+      assets: released,
+    };
+  }
+
+  @OnEvent("employee.exited")
+  async handleEmployeeExited(payload: { employeeId: string; actor: AuthUser }) {
+    return this.releaseAssetsForExitedEmployee(
+      payload.employeeId,
+      payload.actor,
+    );
+  }
+
+  // ============================================================
+  // SET / REPLACE ASSET IMAGE (via in-house CDN)
+  // ============================================================
+
+  async setImage(id: string, file: CdnUploadFile | undefined, actor: AuthUser) {
+    const asset = await this.findOne(id);
+
+    const uploaded = await this.cdn.uploadAssetImage(file);
+
+    // Best-effort cleanup of the old image so the CDN volume doesn't
+    // accumulate orphaned files. Not part of the DB transaction since
+    // a failed unlink shouldn't roll back the successful re-point.
+    if (asset.imageKey) {
+      await this.cdn.deleteAssetImage(asset.imageKey);
+    }
+
+    await this.assetModel.update(
+      {
+        imageKey: uploaded.key,
+        imageUrl: uploaded.url,
+      },
+      {
+        where: { id },
+      },
+    );
+
+    await this.audit.log({
+      userId: actor.id,
+      action: "ASSET_IMAGE_UPDATED",
+      entity: "Asset",
+      entityId: id,
+    });
+
+    return this.findOne(id);
+  }
+
+  async removeImage(id: string, actor: AuthUser) {
+    const asset = await this.findOne(id);
+
+    if (asset.imageKey) {
+      await this.cdn.deleteAssetImage(asset.imageKey);
+    }
+
+    await this.assetModel.update(
+      { imageKey: null, imageUrl: null },
+      { where: { id } },
+    );
+
+    await this.audit.log({
+      userId: actor.id,
+      action: "ASSET_IMAGE_REMOVED",
+      entity: "Asset",
+      entityId: id,
+    });
+
+    return this.findOne(id);
+  }
+
+  // ============================================================
+  // ADJUST INVENTORY QUANTITY (pooled/consumable stock)
+  // ============================================================
+
+  async adjustInventory(id: string, dto: AdjustInventoryDto, actor: AuthUser) {
+    const asset = await this.findOne(id);
+
+    const signedDelta = this.signedInventoryDelta(
+      dto.changeType,
+      dto.quantity,
+      dto.direction,
+    );
+    const newQuantity = (asset.quantity ?? 1) + signedDelta;
+
+    if (newQuantity < 0) {
+      throw new BadRequestException(
+        "This adjustment would take total quantity below zero.",
+      );
+    }
+
+    if (newQuantity < (asset.quantityAssigned ?? 0)) {
+      throw new BadRequestException(
+        "Cannot reduce quantity below the number of units currently assigned.",
+      );
+    }
+
+    return this.sequelize.transaction(async (t: Transaction) => {
+      await this.assetModel.update(
+        { quantity: newQuantity },
+        { where: { id }, transaction: t },
+      );
+
+      await this.inventoryHistoryModel.create(
+        {
+          assetId: id,
+          changeType: dto.changeType,
+          quantityDelta: signedDelta,
+          quantityAfter: newQuantity,
+          quantityAssignedAfter: asset.quantityAssigned ?? 0,
+          performedBy: actor.name,
+          reason: dto.reason ?? null,
+        } as InventoryHistory,
+        { transaction: t },
+      );
+
+      await this.audit.log(
+        {
+          userId: actor.id,
+          action: "ASSET_INVENTORY_ADJUSTED",
+          entity: "Asset",
+          entityId: id,
+          metadata: { changeType: dto.changeType, delta: signedDelta },
+        },
+        t,
+      );
+
+      return this.assetModel.findByPk(id, {
+        include: this.assetInclude,
+        transaction: t,
+      });
+    });
+  }
+
+  async inventoryHistory(id: string) {
+    await this.findOne(id);
+
+    return this.inventoryHistoryModel.findAll({
+      where: { assetId: id },
+      order: [["createdAt", "DESC"]],
+    });
+  }
+
+  private signedInventoryDelta(
+    changeType: InventoryChangeType,
+    magnitude: number,
+    direction?: "increase" | "decrease",
+  ): number {
+    switch (changeType) {
+      case InventoryChangeType.RESTOCK:
+      case InventoryChangeType.RETURNED:
+        return magnitude;
+
+      case InventoryChangeType.CONSUMED:
+      case InventoryChangeType.WRITE_OFF:
+        return -magnitude;
+
+      case InventoryChangeType.ADJUSTMENT:
+        // Manual stock correction — direction decides the sign, since a
+        // count correction can go either way and `quantity` is always
+        // a positive magnitude.
+        return direction === "decrease" ? -magnitude : magnitude;
+
+      default:
+        return 0;
+    }
   }
 }

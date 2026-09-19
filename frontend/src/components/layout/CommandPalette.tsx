@@ -1,4 +1,3 @@
-
 import { Search, User, Package } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,10 +18,7 @@ interface CommandPaletteProps {
 // COMPONENT
 // ============================================================
 
-export function CommandPalette({
-  open,
-  onClose,
-}: CommandPaletteProps) {
+export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
 
   const navigate = useNavigate();
@@ -31,28 +27,23 @@ export function CommandPalette({
   // EMPLOYEES
   // ==========================================================
 
-  const {
-    data: employeesResponse,
-    isFetching: employeesLoading,
-  } = useGetEmployeesQuery(
-    query
-      ? {
-          search: query,
-        }
-      : undefined,
-    {
-      skip: !open,
-    }
-  );
+  const { data: employeesResponse, isFetching: employeesLoading } =
+    useGetEmployeesQuery(
+      query
+        ? {
+            search: query,
+          }
+        : undefined,
+      {
+        skip: !open,
+      },
+    );
 
   // ==========================================================
   // ASSETS
   // ==========================================================
 
-  const {
-    data: assetsResponse,
-    isFetching: assetsLoading,
-  } = useGetAssetsQuery(
+  const { data: assetsResponse, isFetching: assetsLoading } = useGetAssetsQuery(
     query
       ? {
           search: query,
@@ -62,7 +53,7 @@ export function CommandPalette({
       : undefined,
     {
       skip: !open,
-    }
+    },
   );
 
   // ==========================================================
@@ -71,7 +62,7 @@ export function CommandPalette({
 
   const employees = Array.isArray(employeesResponse)
     ? employeesResponse
-    : employeesResponse?.items ?? [];
+    : (employeesResponse?.items ?? []);
 
   // ==========================================================
   // NORMALIZE ASSETS RESPONSE
@@ -138,26 +129,23 @@ export function CommandPalette({
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center pt-24">
       {/* BACKDROP */}
-      <div
-        className="absolute inset-0 bg-slate-900/40"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-scrim" onClick={onClose} />
 
       {/* PALETTE */}
-      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+      <div className="relative w-full max-w-xl rounded-xl border border-border bg-popover text-popover-foreground shadow-overlay">
         {/* SEARCH INPUT */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-          <Search className="h-4 w-4 shrink-0 text-slate-400" />
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
 
           <input
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search employees or assets..."
-            className="w-full text-sm outline-none placeholder:text-slate-400"
+            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
 
-          <kbd className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-400">
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
             Esc
           </kbd>
         </div>
@@ -166,14 +154,14 @@ export function CommandPalette({
         <div className="max-h-80 overflow-y-auto p-2">
           {/* EMPTY SEARCH */}
           {query.length === 0 && (
-            <p className="px-3 py-6 text-center text-sm text-slate-400">
+            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
               Start typing to search across the workspace.
             </p>
           )}
 
           {/* LOADING */}
           {query.length > 0 && isLoading && (
-            <div className="px-3 py-6 text-center text-sm text-slate-400">
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
               Searching...
             </div>
           )}
@@ -182,88 +170,81 @@ export function CommandPalette({
               EMPLOYEES
           ================================================== */}
 
-          {query.length > 0 &&
-            !employeesLoading &&
-            employees.length > 0 && (
-              <div className="mb-2">
-                <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-400">
-                  Employees
-                </p>
+          {query.length > 0 && !employeesLoading && employees.length > 0 && (
+            <div className="mb-2">
+              <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Employees
+              </p>
 
-                {employees.slice(0, 5).map((employee) => (
-                  <button
-                    key={employee.id}
-                    type="button"
-                    onClick={() =>
-                      handleEmployeeClick(employee.id)
-                    }
-                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50"
-                  >
-                    <User className="h-4 w-4 shrink-0 text-slate-400" />
+              {employees.slice(0, 5).map((employee) => (
+                <button
+                  key={employee.id}
+                  type="button"
+                  onClick={() => handleEmployeeClick(employee.id)}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  <User className="h-4 w-4 shrink-0 text-muted-foreground" />
 
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium text-slate-800">
-                        {employee.name ||
-                          `${employee.firstName ?? ""} ${
-                            employee.lastName ?? ""
-                          }`.trim() ||
-                          "Unnamed employee"}
-                      </div>
-
-                      {employee.department?.name && (
-                        <div className="truncate text-xs text-slate-400">
-                          {employee.department.name}
-                        </div>
-                      )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-foreground">
+                      {employee.name ||
+                        `${employee.firstName ?? ""} ${
+                          employee.lastName ?? ""
+                        }`.trim() ||
+                        "Unnamed employee"}
                     </div>
 
-                  </button>
-                ))}
-              </div>
-            )}
+                    {employee.department?.name && (
+                      <div className="truncate text-xs text-muted-foreground">
+                        {employee.department.name}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ==================================================
               ASSETS
           ================================================== */}
 
-          {query.length > 0 &&
-            !assetsLoading &&
-            assets.length > 0 && (
-              <div>
-                <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-400">
-                  Assets
-                </p>
+          {query.length > 0 && !assetsLoading && assets.length > 0 && (
+            <div>
+              <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Assets
+              </p>
 
-                {assets.slice(0, 5).map((asset) => (
-                  <button
-                    key={asset.id}
-                    type="button"
-                    onClick={() => handleAssetClick(asset.id)}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50"
-                  >
-                    <Package className="h-4 w-4 shrink-0 text-slate-400" />
+              {assets.slice(0, 5).map((asset) => (
+                <button
+                  key={asset.id}
+                  type="button"
+                  onClick={() => handleAssetClick(asset.id)}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  <Package className="h-4 w-4 shrink-0 text-muted-foreground" />
 
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium text-slate-800">
-                        {asset.name || "Unnamed asset"}
-                      </div>
-
-                      {asset.serialNumber && (
-                        <div className="truncate text-xs text-slate-400">
-                          Serial: {asset.serialNumber}
-                        </div>
-                      )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-foreground">
+                      {asset.name || "Unnamed asset"}
                     </div>
 
-                    {asset.assetTag && (
-                      <span className="shrink-0 text-xs tabular-nums text-slate-400">
-                        {asset.assetTag}
-                      </span>
+                    {asset.serialNumber && (
+                      <div className="truncate text-xs text-muted-foreground">
+                        Serial: {asset.serialNumber}
+                      </div>
                     )}
-                  </button>
-                ))}
-              </div>
-            )}
+                  </div>
+
+                  {asset.assetTag && (
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                      {asset.assetTag}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ==================================================
               NO RESULTS
@@ -274,13 +255,13 @@ export function CommandPalette({
             employees.length === 0 &&
             assets.length === 0 && (
               <div className="px-3 py-8 text-center">
-                <Search className="mx-auto mb-2 h-5 w-5 text-slate-300" />
+                <Search className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
 
-                <p className="text-sm font-medium text-slate-600">
+                <p className="text-sm font-medium text-foreground">
                   No results found
                 </p>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Try searching for an employee, asset name, or asset tag.
                 </p>
               </div>

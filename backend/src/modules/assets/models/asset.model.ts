@@ -20,6 +20,7 @@ import { SoftwareLicense } from "./software-license.model";
 import { AssetAssignment } from "./asset-assignment.model";
 import { AssetTransfer } from "./asset-transfer.model";
 import { AssetHistory } from "./asset-history.model";
+import { InventoryHistory } from "./inventory-history.model";
 
 import { AssetKind } from "@/common/enums/assets.enums";
 
@@ -205,7 +206,7 @@ export class Asset extends Model<Asset> {
   invoiceNumber?: string | null;
 
   // ============================================================
-  // WARRANTY START
+  // WARRANTY START / EXPIRY
   // ============================================================
 
   @Column({
@@ -213,10 +214,6 @@ export class Asset extends Model<Asset> {
     allowNull: true,
   })
   warrantyStart?: Date | null;
-
-  // ============================================================
-  // WARRANTY EXPIRY
-  // ============================================================
 
   @Column({
     type: DataType.DATE,
@@ -276,6 +273,55 @@ export class Asset extends Model<Asset> {
   notes?: string | null;
 
   // ============================================================
+  // INVENTORY / QUANTITY
+  //
+  // For serialized 1:1 hardware (a laptop), quantity stays 1 and
+  // quantityAssigned tracks 0/1 in lockstep with `status`. For
+  // pooled/consumable stock (cables, mice, license seats bought in
+  // bulk) quantity can be N and quantityAssigned tracks how many
+  // units are currently checked out, independent of `status`.
+  // ============================================================
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+  })
+  quantity!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  quantityAssigned!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    field: "reorder_level",
+  })
+  reorderLevel?: number | null;
+
+  // ============================================================
+  // IMAGE (served from in-house CDN — see CdnModule)
+  // ============================================================
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+    field: "image_key",
+  })
+  imageKey?: string | null;
+
+  @Column({
+    type: DataType.STRING(1000),
+    allowNull: true,
+    field: "image_url",
+  })
+  imageUrl?: string | null;
+
+  // ============================================================
   // SOFTWARE LICENSE
   // ============================================================
 
@@ -301,11 +347,20 @@ export class Asset extends Model<Asset> {
   transfers!: AssetTransfer[];
 
   // ============================================================
-  // HISTORY
+  // HISTORY (status / assignment / lifecycle events)
   // ============================================================
 
   @HasMany(() => AssetHistory, {
     foreignKey: "asset_id",
   })
   history!: AssetHistory[];
+
+  // ============================================================
+  // INVENTORY HISTORY (quantity movements: restock, consume, etc.)
+  // ============================================================
+
+  @HasMany(() => InventoryHistory, {
+    foreignKey: "asset_id",
+  })
+  inventoryHistory!: InventoryHistory[];
 }

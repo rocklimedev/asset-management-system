@@ -6,8 +6,13 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 
+import { AssetPoolQueryDto } from "./dto/asset-pool-query.dto";
+import { AdjustInventoryDto } from "./dto/adjust-inventory.dto";
 import { AssetsService } from "./assets.service";
 import { CreateAssetDto } from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
@@ -19,6 +24,8 @@ import {
   CurrentUser,
   AuthUser,
 } from "@/common/decorator/current-user.decorator";
+
+import { CdnUploadFile } from "../cdn/cdn.service";
 
 @Controller("assets")
 export class AssetsController {
@@ -49,6 +56,44 @@ export class AssetsController {
       page: query.page ? Number(query.page) : undefined,
       pageSize: query.pageSize ? Number(query.pageSize) : undefined,
     });
+  }
+
+  // ============================================================
+  // ASSET POOL — searchable, assignable-right-now inventory
+  //
+  // IMPORTANT:
+  // This must be ABOVE `@Get(":id")` so "pool" is not treated
+  // as an asset ID.
+  // ============================================================
+
+  @Get("pool")
+  findPool(@Query() query: AssetPoolQueryDto) {
+    return this.service.findPool({
+      search: query.search,
+      organisationId: query.organisationId,
+      kind: query.kind,
+      categoryId: query.categoryId,
+      locationId: query.locationId,
+      page: query.page ? Number(query.page) : undefined,
+      pageSize: query.pageSize ? Number(query.pageSize) : undefined,
+    });
+  }
+
+  // ============================================================
+  // EMPLOYEE EXIT — bulk release
+  //
+  // Prefer calling this from EmployeesService directly on exit,
+  // or via the "employee.exited" event.
+  //
+  // This route exists for manual/admin use.
+  // ============================================================
+
+  @Post("release-for-employee/:employeeId")
+  releaseForExitedEmployee(
+    @Param("employeeId") employeeId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.releaseAssetsForExitedEmployee(employeeId, user);
   }
 
   // ============================================================
@@ -128,5 +173,42 @@ export class AssetsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.returnAsset(id, user, notes);
+  }
+
+  // ============================================================
+  // ASSET IMAGE (IN-HOUSE CDN)
+  // ============================================================
+
+  @Post(":id/image")
+  @UseInterceptors(FileInterceptor("file"))
+  setImage(
+    @Param("id") id: string,
+    @UploadedFile() file: CdnUploadFile | undefined,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.setImage(id, file, user);
+  }
+
+  @Post(":id/image/remove")
+  removeImage(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.service.removeImage(id, user);
+  }
+
+  // ============================================================
+  // INVENTORY ADJUSTMENT
+  // ============================================================
+
+  @Post(":id/inventory/adjust")
+  adjustInventory(
+    @Param("id") id: string,
+    @Body() dto: AdjustInventoryDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.adjustInventory(id, dto, user);
+  }
+
+  @Get(":id/inventory/history")
+  inventoryHistory(@Param("id") id: string) {
+    return this.service.inventoryHistory(id);
   }
 }

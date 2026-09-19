@@ -1,31 +1,25 @@
-
 import { X, Clock, ArrowRightLeft } from "lucide-react";
-import { createPortal } from "react-dom";
 
 import { useGetAssetHistoryQuery } from "../../services/api/asset.api";
-import { StatusBadge } from "../ui/Badge";
+import { Badge } from "../ui/badge";
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 import type { Asset, AssetHistory } from "../../services/api/asset.api";
+
 // ============================================================
 // FIELD
 // ============================================================
 
-function Field({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+    <div className="min-w-0">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
 
-      <p className="mt-0.5 text-sm text-slate-800">
-        {value ?? "—"}
-      </p>
+      <p className="mt-0.5 truncate text-sm text-foreground">{value ?? "—"}</p>
     </div>
   );
 }
@@ -38,32 +32,29 @@ interface AssetDetailDrawerProps {
   asset: Asset | null;
   onClose: () => void;
   onTransfer: (asset: Asset) => void;
-  onEdit: (asset: Asset) => void;   // add this
+  onEdit: (asset: Asset) => void;
 }
 
 export function AssetDetailDrawer({
   asset,
   onClose,
   onTransfer,
-  onEdit,           // add this
+  onEdit,
 }: AssetDetailDrawerProps) {
-
-  // ============================================history = [],==============
+  // ==========================================================
   // ASSET HISTORY
   // ==========================================================
 
-const {
-  data: historyResponse,
-  isLoading: historyLoading,
-  isFetching: historyFetching,
-} = useGetAssetHistoryQuery(
-  asset?.id != null ? String(asset.id) : "",
-  {
+  const {
+    data: historyResponse,
+    isLoading: historyLoading,
+    isFetching: historyFetching,
+  } = useGetAssetHistoryQuery(asset?.id != null ? String(asset.id) : "", {
     skip: asset?.id == null,
-  }
-);
+  });
 
-const history = historyResponse?.data ?? [];
+  const history = historyResponse?.data ?? [];
+
   // ==========================================================
   // DON'T RENDER
   // ==========================================================
@@ -81,12 +72,19 @@ const history = historyResponse?.data ?? [];
   // ==========================================================
 
   const condition = asset.condition
-    ? asset.condition.charAt(0) +
-      asset.condition.slice(1).toLowerCase()
+    ? asset.condition.charAt(0) + asset.condition.slice(1).toLowerCase()
     : "Unknown";
 
   // ==========================================================
-  // DATE HELPER
+  // STATUS
+  // ==========================================================
+
+  const status = asset.status
+    ? asset.status.charAt(0) + asset.status.slice(1).toLowerCase()
+    : "Unknown";
+
+  // ==========================================================
+  // DATE HELPERS
   // ==========================================================
 
   const formatDate = (date?: string) => {
@@ -117,235 +115,225 @@ const history = historyResponse?.data ?? [];
   // RENDER
   // ==========================================================
 
-  return createPortal(
+  return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* BACKDROP */}
 
-      <div
-        className="absolute inset-0 bg-slate-900/40"
+      <button
+        type="button"
+        aria-label="Close asset details"
+        className="absolute inset-0 cursor-default bg-black/20"
         onClick={onClose}
       />
 
-      {/* DRAWER */}
+      {/* PANEL */}
 
-      <div className="relative flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-2xl">
+      <aside className="relative z-10 flex h-full w-full flex-col border-l bg-background shadow-xl sm:max-w-md">
         {/* ==================================================
             HEADER
         ================================================== */}
 
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-4">
-          <div className="min-w-0">
-            <h2 className="truncate text-base font-semibold text-slate-900">
+        <div className="flex items-start justify-between border-b px-6 py-4">
+          <div className="min-w-0 pr-4">
+            <h2 className="truncate text-base font-semibold text-foreground">
               {asset.name || "Unnamed asset"}
             </h2>
 
-            <p className="text-xs tabular-nums text-slate-500">
+            <p className="text-xs tabular-nums text-muted-foreground">
               {asset.assetTag || "No asset tag"}
             </p>
           </div>
-<button
-  type="button"
-  onClick={() => onEdit(asset)}
-  className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
->
-  Edit
-</button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close asset details"
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
-          >
-            <X className="h-4 w-4" />
-          </button>
+
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(asset)}
+            >
+              Edit
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              aria-label="Close asset details"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* ==================================================
             CONTENT
         ================================================== */}
 
-        <div className="flex-1 space-y-6 px-6 py-5">
-          {/* ==================================================
-              STATUS
-          ================================================== */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="space-y-6">
+            {/* ==================================================
+                STATUS
+            ================================================== */}
 
-          <div className="flex items-center gap-2">
-            <StatusBadge status={asset.status} />
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{status}</Badge>
 
-            <span className="text-xs text-slate-400">·</span>
+              <span className="text-xs text-muted-foreground">·</span>
 
-            <span className="text-xs text-slate-500">
-              {condition} condition
-            </span>
-          </div>
-
-          {/* ==================================================
-              ASSET INFORMATION
-          ================================================== */}
-
-          <section>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Asset information
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field
-                label="Category"
-                value={asset.category?.name}
-              />
-
-              <Field
-                label="Manufacturer"
-                value={asset.manufacturer}
-              />
-
-              <Field
-                label="Model"
-                value={asset.model}
-              />
-
-              <Field
-                label="Serial number"
-                value={asset.serialNumber}
-              />
-
-              <Field
-                label="Location"
-                value={asset.location?.name}
-              />
+              <span className="text-xs text-muted-foreground">
+                {condition} condition
+              </span>
             </div>
-          </section>
 
-          {/* ==================================================
-              ASSIGNMENT
-          ================================================== */}
+            <Separator />
 
-          <section>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Assignment
-            </h3>
+            {/* ==================================================
+                ASSET INFORMATION
+            ================================================== */}
 
-            {currentAssignee ? (
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-800">
-                    {currentAssignee.name}
-                  </p>
-
-                  <p className="text-xs text-slate-500">
-                    Assigned{" "}
-                    {formatDate(
-                      asset.assignments?.[0]?.assignedAt
-                    )}
-                  </p>
-                </div>
-
-                {asset.status?.toUpperCase() === "ASSIGNED" && (
-                  <button
-                    type="button"
-                    onClick={() => onTransfer(asset)}
-                    className="ml-3 flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                  >
-                    <ArrowRightLeft className="h-3.5 w-3.5" />
-
-                    Transfer
-                  </button>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">
-                This asset is not currently assigned to anyone.
-              </p>
-            )}
-          </section>
-
-          {/* ==================================================
-              SOFTWARE LICENSE
-          ================================================== */}
-
-          {asset.license && (
             <section>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Software license
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Asset information
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field
-                  label="Vendor"
-                  value={asset.license.vendor}
-                />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                <Field label="Category" value={asset.category?.name} />
 
-                <Field
-                  label="Type"
-                  value={asset.license.licenseType}
-                />
+                <Field label="Manufacturer" value={asset.manufacturer} />
 
-                <Field
-                  label="Seats"
-                  value={`${asset.license.assignedSeats} / ${asset.license.totalSeats}`}
-                />
+                <Field label="Model" value={asset.model} />
 
+                <Field label="Serial number" value={asset.serialNumber} />
+
+                <Field label="Location" value={asset.location?.name} />
               </div>
-
-              <p className="mt-2 text-xs text-slate-400">
-                License reference hidden — visible to roles with
-                license view permission.
-              </p>
             </section>
-          )}
 
-          {/* ==================================================
-              ASSET HISTORY
-          ================================================== */}
+            <Separator />
 
-          <section>
-            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              <Clock className="h-3.5 w-3.5" />
+            {/* ==================================================
+                ASSIGNMENT
+            ================================================== */}
 
-              Asset history
-            </h3>
+            <section>
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Assignment
+              </h3>
 
-            {/* LOADING */}
+              {currentAssignee ? (
+                <div className="rounded-lg border bg-muted/20 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {currentAssignee.name}
+                      </p>
 
-            {(historyLoading || historyFetching) && (
-              <div className="space-y-3 border-l border-slate-200 pl-4">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="animate-pulse">
-                    <div className="h-2.5 w-24 rounded bg-slate-200" />
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Assigned{" "}
+                        {formatDate(asset.assignments?.[0]?.assignedAt)}
+                      </p>
+                    </div>
 
-                    <div className="mt-2 h-3 w-48 rounded bg-slate-200" />
-
-                    <div className="mt-1 h-2.5 w-20 rounded bg-slate-100" />
+                    {asset.status?.toUpperCase() === "ASSIGNED" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onTransfer(asset)}
+                        className="shrink-0"
+                      >
+                        <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                        Transfer
+                      </Button>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed p-4">
+                  <p className="text-sm text-muted-foreground">
+                    This asset is not currently assigned to anyone.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            {/* ==================================================
+                SOFTWARE LICENSE
+            ================================================== */}
+
+            {asset.license && (
+              <>
+                <Separator />
+
+                <section>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Software license
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                    <Field label="Vendor" value={asset.license.vendor} />
+
+                    <Field label="Type" value={asset.license.licenseType} />
+
+                    <Field
+                      label="Seats"
+                      value={`${asset.license.assignedSeats} / ${asset.license.totalSeats}`}
+                    />
+                  </div>
+
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    License reference hidden — visible to roles with license
+                    view permission.
+                  </p>
+                </section>
+              </>
             )}
 
-            {/* HISTORY */}
+            {/* ==================================================
+                ASSET HISTORY
+            ================================================== */}
 
-            {!historyLoading &&
-              !historyFetching &&
-              history.length > 0 && (
-                <ol className="space-y-3 border-l border-slate-200 pl-4">
+            <Separator />
+
+            <section>
+              <h3 className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                Asset history
+              </h3>
+
+              {/* ==================================================
+                  LOADING
+              ================================================== */}
+
+              {(historyLoading || historyFetching) && (
+                <div className="rounded-lg border border-dashed p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Loading asset history...
+                  </p>
+                </div>
+              )}
+
+              {/* ==================================================
+                  HISTORY
+              ================================================== */}
+
+              {!historyLoading && !historyFetching && history.length > 0 && (
+                <ol className="space-y-4 border-l pl-4">
                   {history.map((item) => (
-                    <li
-                      key={item.id}
-                      className="relative"
-                    >
-                      <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-brand-500" />
+                    <li key={item.id} className="relative">
+                      <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-primary ring-4 ring-background" />
 
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground">
                         {formatDateTime(item.createdAt)}
                       </p>
 
-                      <p className="text-sm text-slate-800">
+                      <p className="mt-0.5 text-sm text-foreground">
                         {formatHistoryAction(item)}
                       </p>
 
-                      {/* NOTES */}
-
                       {item.notes && (
-                        <p className="mt-0.5 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {item.notes}
                         </p>
                       )}
@@ -354,20 +342,22 @@ const history = historyResponse?.data ?? [];
                 </ol>
               )}
 
-            {/* EMPTY */}
+              {/* ==================================================
+                  EMPTY
+              ================================================== */}
 
-            {!historyLoading &&
-              !historyFetching &&
-              history.length === 0 && (
-                <p className="text-sm text-slate-400">
-                  No history yet.
-                </p>
+              {!historyLoading && !historyFetching && history.length === 0 && (
+                <div className="rounded-lg border border-dashed p-4">
+                  <p className="text-sm text-muted-foreground">
+                    No history yet.
+                  </p>
+                </div>
               )}
-          </section>
+            </section>
+          </div>
         </div>
-      </div>
-    </div>,
-    document.body
+      </aside>
+    </div>
   );
 }
 
@@ -379,42 +369,24 @@ function formatHistoryAction(history: AssetHistory) {
   switch (history.action?.toUpperCase()) {
     case "TRANSFERRED":
       return `Asset transferred${
-        history.fromValue
-          ? ` from ${history.fromValue}`
-          : ""
-      }${
-        history.toValue
-          ? ` to ${history.toValue}`
-          : ""
-      }`;
+        history.fromValue ? ` from ${history.fromValue}` : ""
+      }${history.toValue ? ` to ${history.toValue}` : ""}`;
 
     case "ASSIGNED":
-      return `Asset assigned${
-        history.toValue
-          ? ` to ${history.toValue}`
-          : ""
-      }`;
+      return `Asset assigned${history.toValue ? ` to ${history.toValue}` : ""}`;
 
     case "RETURNED":
       return "Asset returned to inventory";
 
     case "STATUS_CHANGED":
       return `Asset status changed${
-        history.toValue
-          ? ` to ${history.toValue}`
-          : ""
+        history.toValue ? ` to ${history.toValue}` : ""
       }`;
 
     case "LOCATION_CHANGED":
       return `Asset location changed${
-        history.fromValue
-          ? ` from ${history.fromValue}`
-          : ""
-      }${
-        history.toValue
-          ? ` to ${history.toValue}`
-          : ""
-      }`;
+        history.fromValue ? ` from ${history.fromValue}` : ""
+      }${history.toValue ? ` to ${history.toValue}` : ""}`;
 
     case "CREATED":
       return "Asset added to inventory";

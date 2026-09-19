@@ -54,7 +54,47 @@ export interface AssetEmployee {
 
   [key: string]: unknown;
 }
+export interface AssetPoolParams {
+  search?: string;
+  organisationId?: string;
+  kind?: AssetKind;
+  categoryId?: string;
+  locationId?: string;
+  page?: number;
+  pageSize?: number;
+}
 
+export interface AssetPoolItem extends Asset {
+  quantityAvailable: number;
+}
+
+export interface AssetPoolResponse {
+  items: AssetPoolItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface AdjustInventoryRequest {
+  id: string;
+  changeType: "RESTOCK" | "CONSUMED" | "RETURNED" | "ADJUSTMENT" | "WRITE_OFF";
+  quantity: number;
+  direction?: "increase" | "decrease";
+  reason?: string;
+}
+
+export interface InventoryHistoryEntry {
+  id: string;
+  assetId: string;
+  changeType: string;
+  quantityDelta: number;
+  quantityAfter: number;
+  quantityAssignedAfter: number;
+  performedBy: string;
+  reason?: string | null;
+  createdAt: string;
+}
 // ============================================================
 // LOCATION
 // ============================================================
@@ -326,6 +366,13 @@ export interface Asset {
   createdAt?: string;
 
   updatedAt?: string;
+  quantity?: number;
+  quantityAssigned?: number;
+  reorderLevel?: number | null;
+
+  // Image, served from the in-house CDN.
+  imageKey?: string | null;
+  imageUrl?: string | null;
 
   [key: string]: unknown;
 }
@@ -1083,6 +1130,92 @@ export const assetApi = createApi({
               },
             ],
     }),
+
+    /**
+     * 2. Add these endpoints inside `endpoints: (builder) => ({ ... })`,
+     *    alongside the existing asset endpoints:
+     */
+
+    // ASSET POOL — searchable, ready-to-assign inventory
+    getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>(
+      {
+        query: (params = {}) => ({
+          url: "/assets/pool",
+          method: "GET",
+          params: {
+            search: params.search || undefined,
+            organisationId: params.organisationId || undefined,
+            kind: params.kind || undefined,
+            categoryId: params.categoryId || undefined,
+            locationId: params.locationId || undefined,
+            page: params.page || undefined,
+            pageSize: params.pageSize || undefined,
+          },
+        }),
+        providesTags: [{ type: "Asset" as const, id: "POOL" }],
+      },
+    ),
+
+    // RELEASE ASSETS FOR AN EXITED EMPLOYEE
+    releaseAssetsForEmployee: builder.mutation<
+      { employeeId: string; releasedCount: number },
+      string
+    >({
+      query: (employeeId) => ({
+        url: `/assets/release-for-employee/${employeeId}`,
+        method: "POST",
+      }),
+      invalidatesTags: [
+        { type: "Asset" as const, id: "LIST" },
+        { type: "Asset" as const, id: "POOL" },
+      ],
+    }),
+
+    // ASSET IMAGE
+    setAssetImage: builder.mutation<AssetResponse, { id: string; file: File }>({
+      query: ({ id, file }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return {
+          url: `/assets/${id}/image`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Asset" as const, id },
+      ],
+    }),
+
+    removeAssetImage: builder.mutation<AssetResponse, string>({
+      query: (id) => ({
+        url: `/assets/${id}/image/remove`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "Asset" as const, id }],
+    }),
+
+    // INVENTORY
+    adjustInventory: builder.mutation<AssetResponse, AdjustInventoryRequest>({
+      query: ({ id, ...body }) => ({
+        url: `/assets/${id}/inventory/adjust`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Asset" as const, id },
+        { type: "Asset" as const, id: "LIST" },
+        { type: "Asset" as const, id: "POOL" },
+      ],
+    }),
+
+    getInventoryHistory: builder.query<InventoryHistoryEntry[], string>({
+      query: (id) => `/assets/${id}/inventory/history`,
+      providesTags: (result, error, id) => [
+        { type: "AssetHistory" as const, id },
+      ],
+    }),
   }),
 });
 
@@ -1115,6 +1248,13 @@ export const {
 
   useToggleAssetCategoryMutation,
   useDeleteAssetCategoryMutation,
+
+  useGetAssetPoolQuery,
+  useReleaseAssetsForEmployeeMutation,
+  useSetAssetImageMutation,
+  useRemoveAssetImageMutation,
+  useAdjustInventoryMutation,
+  useGetInventoryHistoryQuery,
 } = assetApi;
 
 export default assetApi;

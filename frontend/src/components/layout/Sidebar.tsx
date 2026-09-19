@@ -1,57 +1,130 @@
-import { clsx } from 'clsx';
+import { NavLink } from "react-router-dom";
 import {
-  LayoutGrid, Boxes, Archive, Users, Settings, ChevronsLeft, ChevronsRight, Laptop2,
-} from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+  Archive,
+  BarChart3,
+  Boxes,
+  ChevronsLeft,
+  ChevronsRight,
+  LayoutGrid,
+  Settings,
+  Users,
+  UserSquare2,
+} from "lucide-react";
 
-const NAV = [
-  { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
-  { to: '/asset-manager', label: 'Asset Manager', icon: Boxes },
-  { to: '/inventory', label: 'Inventory', icon: Archive },
-  { to: '/users-roles', label: 'Users & Roles', icon: Users },
-  { to: '/settings', label: 'Settings', icon: Settings },
+import { cn } from "@/lib/utils";
+import { AppMark } from "./AppMark";
+
+export const NAV_ITEMS = [
+  { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
+  { to: "/asset-manager", label: "Asset Manager", icon: Boxes },
+  { to: "/inventory", label: "Inventory", icon: Archive },
+  { to: "/employees", label: "Employees", icon: UserSquare2 },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/users-roles", label: "Users & Roles", icon: Users },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+export function Sidebar({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   return (
     <aside
-      className={clsx(
-        'hidden shrink-0 flex-col border-r border-slate-200 bg-white transition-all duration-200 md:flex',
-        collapsed ? 'w-[68px]' : 'w-60',
+      className={cn(
+        "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 md:flex",
+        collapsed ? "w-sidebar-collapsed" : "w-sidebar",
       )}
     >
-      <div className="flex h-14 items-center gap-2 border-b border-slate-100 px-4">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <Laptop2 className="h-4 w-4" />
-        </div>
-        {!collapsed && <span className="text-sm font-semibold tracking-tight text-slate-900">ITAM</span>}
+      {/* ======================================================
+          BRAND
+      ====================================================== */}
+
+      <div
+        className={cn(
+          "flex h-header shrink-0 items-center gap-2.5 border-b border-sidebar-border",
+          collapsed ? "justify-center px-0" : "px-4",
+        )}
+      >
+        <AppMark />
+
+        {!collapsed && (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold leading-tight tracking-tight text-foreground">
+              ITAM
+            </p>
+            <p className="truncate text-2xs leading-tight text-muted-foreground">
+              Asset Management
+            </p>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-2 py-3">
-        {NAV.map((item) => (
+      {/* ======================================================
+          NAVIGATION
+      ====================================================== */}
+
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
+        {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
+            title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
-              clsx(
-                'flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+              cn(
+                "group relative flex items-center rounded-md text-sm font-medium transition-colors duration-150",
+                "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+                collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-2.5 py-2",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-muted hover:text-foreground",
               )
             }
-            title={collapsed ? item.label : undefined}
           >
-            <item.icon className="h-4.5 w-4.5 shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
+                  />
+                )}
+
+                <item.icon className="h-4.5 w-4.5 shrink-0" />
+
+                {!collapsed && <span className="truncate">{item.label}</span>}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
+      {/* ======================================================
+          COLLAPSE
+      ====================================================== */}
+
       <button
+        type="button"
         onClick={onToggle}
-        className="flex items-center gap-2 border-t border-slate-100 px-4 py-3 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className={cn(
+          "flex h-11 shrink-0 items-center gap-2 border-t border-sidebar-border text-xs font-medium",
+          "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+          "outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sidebar-ring",
+          collapsed ? "justify-center px-0" : "px-4",
+        )}
       >
-        {collapsed ? <ChevronsRight className="h-4 w-4" /> : <><ChevronsLeft className="h-4 w-4" /> Collapse</>}
+        {collapsed ? (
+          <ChevronsRight className="h-4 w-4" />
+        ) : (
+          <>
+            <ChevronsLeft className="h-4 w-4" />
+            Collapse
+          </>
+        )}
       </button>
     </aside>
   );

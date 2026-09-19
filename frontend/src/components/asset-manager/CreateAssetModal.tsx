@@ -8,10 +8,10 @@ import {
   useCreateAssetCategoryMutation,
 } from "../../services/api/asset.api";
 
-import { useToastStore } from "../ui/Toast";
+import { toast } from "../ui/toast";
 
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 import type {
   Asset,
@@ -186,19 +186,15 @@ const EMPTY_FORM: AssetFormValues = {
 };
 
 const SELECT_CLASSES =
-  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400";
+  "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground";
 
-const LABEL_CLASSES =
-  "mb-1 block text-xs font-medium text-slate-500";
+const LABEL_CLASSES = "mb-1 block text-xs font-medium text-muted-foreground";
 
 // ============================================================
 // HELPERS
 // ============================================================
 
-function getErrorMessage(
-  error: unknown,
-  fallback: string
-): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   if (!error) {
     return fallback;
   }
@@ -213,68 +209,50 @@ function getErrorMessage(
   );
 }
 
-function assetToFormValues(
-  asset: Asset
-): AssetFormValues {
+function assetToFormValues(asset: Asset): AssetFormValues {
   return {
     name: asset.name ?? "",
 
-    assetTag:
-      asset.assetTag ?? "",
+    assetTag: asset.assetTag ?? "",
 
-    serialNumber:
-      asset.serialNumber ?? "",
+    serialNumber: asset.serialNumber ?? "",
 
-    kind:
-      asset.kind ?? "",
+    kind: asset.kind ?? "",
 
-    status:
-      asset.status ?? "",
+    status: asset.status ?? "",
 
-    condition:
-      asset.condition ?? "",
+    condition: asset.condition ?? "",
 
-    categoryId:
-      asset.categoryId ?? "",
+    categoryId: asset.categoryId ?? "",
 
-    locationId:
-      asset.locationId ?? "",
+    locationId: asset.locationId ?? "",
 
-    vendorId:
-      asset.vendorId ?? "",
+    vendorId: asset.vendorId ?? "",
 
-    manufacturer:
-      asset.manufacturer ?? "",
+    manufacturer: asset.manufacturer ?? "",
 
-    model:
-      asset.model ?? "",
+    model: asset.model ?? "",
 
-    purchaseDate:
-      asset.purchaseDate
-        ? String(asset.purchaseDate).slice(0, 10)
-        : "",
+    purchaseDate: asset.purchaseDate
+      ? String(asset.purchaseDate).slice(0, 10)
+      : "",
 
     purchasePrice:
-      asset.purchasePrice !== undefined &&
-      asset.purchasePrice !== null
+      asset.purchasePrice !== undefined && asset.purchasePrice !== null
         ? String(asset.purchasePrice)
         : "",
 
-    invoiceNumber:
-      asset.invoiceNumber ?? "",
+    invoiceNumber: asset.invoiceNumber ?? "",
 
-    warrantyStart:
-      asset.warrantyStart
-        ? String(asset.warrantyStart).slice(0, 10)
-        : "",
+    warrantyStart: asset.warrantyStart
+      ? String(asset.warrantyStart).slice(0, 10)
+      : "",
 
-    warrantyExpiry:
-      asset.warrantyExpiry
-        ? String(asset.warrantyExpiry).slice(0, 10)
-        : "",
+    warrantyExpiry: asset.warrantyExpiry
+      ? String(asset.warrantyExpiry).slice(0, 10)
+      : "",
 
-    notes:
-      asset.notes ?? "",
+    notes: asset.notes ?? "",
   };
 }
 
@@ -299,30 +277,23 @@ export function CreateAssetModal({
   // FORM STATE
   // ==========================================================
 
-  const [values, setValues] =
-    useState<AssetFormValues>(EMPTY_FORM);
+  const [values, setValues] = useState<AssetFormValues>(EMPTY_FORM);
 
-  const [formError, setFormError] =
-    useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // ==========================================================
   // CATEGORY MODAL STATE
   // ==========================================================
 
-  const [showCategoryModal, setShowCategoryModal] =
-    useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-  const [newCategoryName, setNewCategoryName] =
-    useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
 
-  const [newCategoryDescription, setNewCategoryDescription] =
-    useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState("");
 
-  const [newCategoryType, setNewCategoryType] =
-    useState<AssetKind>("HARDWARE");
+  const [newCategoryType, setNewCategoryType] = useState<AssetKind>("HARDWARE");
 
-  const [categoryError, setCategoryError] =
-    useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
   // ==========================================================
   // RESET / HYDRATE FORM
@@ -335,11 +306,7 @@ export function CreateAssetModal({
 
     setFormError(null);
 
-    setValues(
-      asset
-        ? assetToFormValues(asset)
-        : { ...EMPTY_FORM }
-    );
+    setValues(asset ? assetToFormValues(asset) : { ...EMPTY_FORM });
   }, [open, asset]);
 
   // ==========================================================
@@ -354,43 +321,20 @@ export function CreateAssetModal({
     isActive: true,
   });
 
-  const categories =
-    categoriesResponse?.data ?? [];
+  const categories = categoriesResponse?.data ?? [];
 
-  const [
-    createAssetCategory,
-    {
-      isLoading: isCreatingCategory,
-    },
-  ] = useCreateAssetCategoryMutation();
+  const [createAssetCategory, { isLoading: isCreatingCategory }] =
+    useCreateAssetCategoryMutation();
 
   // ==========================================================
   // ASSET API
   // ==========================================================
 
-  const [
-    createAsset,
-    {
-      isLoading: isCreating,
-    },
-  ] = useCreateAssetMutation();
+  const [createAsset, { isLoading: isCreating }] = useCreateAssetMutation();
 
-  const [
-    updateAsset,
-    {
-      isLoading: isUpdating,
-    },
-  ] = useUpdateAssetMutation();
+  const [updateAsset, { isLoading: isUpdating }] = useUpdateAssetMutation();
 
-  const isSubmitting =
-    isCreating || isUpdating;
-
-  // ==========================================================
-  // TOAST
-  // ==========================================================
-
-  const pushToast =
-    useToastStore((state) => state.push);
+  const isSubmitting = isCreating || isUpdating;
 
   // ==========================================================
   // FIELD HELPER
@@ -398,7 +342,7 @@ export function CreateAssetModal({
 
   function setField<K extends keyof AssetFormValues>(
     key: K,
-    value: AssetFormValues[K]
+    value: AssetFormValues[K],
   ) {
     setValues((current) => ({
       ...current,
@@ -410,67 +354,53 @@ export function CreateAssetModal({
   // BUILD CREATE PAYLOAD
   // ==========================================================
 
-function buildCreatePayload(): CreateAssetRequest {
-  if (!values.kind) {
-    throw new Error("Asset kind is required.");
-  }
+  function buildCreatePayload(): CreateAssetRequest {
+    if (!values.kind) {
+      throw new Error("Asset kind is required.");
+    }
 
-  if (!values.categoryId) {
-    throw new Error("Asset category is required.");
-  }
+    if (!values.categoryId) {
+      throw new Error("Asset category is required.");
+    }
 
-  return {
-    name: values.name.trim(),
+    return {
+      name: values.name.trim(),
 
-    assetTag:
-      values.assetTag.trim() || undefined,
+      assetTag: values.assetTag.trim() || undefined,
 
-    serialNumber:
-      values.serialNumber.trim() || undefined,
+      serialNumber: values.serialNumber.trim() || undefined,
 
-    kind: values.kind,
+      kind: values.kind,
 
-    status:
-      values.status || undefined,
+      status: values.status || undefined,
 
-    condition:
-      values.condition || undefined,
+      condition: values.condition || undefined,
 
-    categoryId: values.categoryId,
+      categoryId: values.categoryId,
 
-    locationId:
-      values.locationId.trim() || undefined,
+      locationId: values.locationId.trim() || undefined,
 
-    vendorId:
-      values.vendorId.trim() || undefined,
+      vendorId: values.vendorId.trim() || undefined,
 
-    manufacturer:
-      values.manufacturer.trim() || undefined,
+      manufacturer: values.manufacturer.trim() || undefined,
 
-    model:
-      values.model.trim() || undefined,
+      model: values.model.trim() || undefined,
 
-    purchaseDate:
-      values.purchaseDate || undefined,
+      purchaseDate: values.purchaseDate || undefined,
 
-    purchasePrice:
-      values.purchasePrice.trim()
+      purchasePrice: values.purchasePrice.trim()
         ? Number(values.purchasePrice)
         : undefined,
 
-    invoiceNumber:
-      values.invoiceNumber.trim() || undefined,
+      invoiceNumber: values.invoiceNumber.trim() || undefined,
 
-    warrantyStart:
-      values.warrantyStart || undefined,
+      warrantyStart: values.warrantyStart || undefined,
 
-    warrantyExpiry:
-      values.warrantyExpiry || undefined,
+      warrantyExpiry: values.warrantyExpiry || undefined,
 
-    notes:
-      values.notes.trim() || undefined,
-  };
-}
+      notes: values.notes.trim() || undefined,
+    };
+  }
 
   // ==========================================================
   // BUILD UPDATE PAYLOAD
@@ -478,9 +408,7 @@ function buildCreatePayload(): CreateAssetRequest {
 
   function buildUpdatePayload(): UpdateAssetRequest {
     if (!asset?.id) {
-      throw new Error(
-        "Asset ID is required for update."
-      );
+      throw new Error("Asset ID is required for update.");
     }
 
     return {
@@ -488,55 +416,39 @@ function buildCreatePayload(): CreateAssetRequest {
 
       name: values.name.trim(),
 
-      assetTag:
-        values.assetTag.trim() || undefined,
+      assetTag: values.assetTag.trim() || undefined,
 
-      serialNumber:
-        values.serialNumber.trim() || undefined,
+      serialNumber: values.serialNumber.trim() || undefined,
 
-      kind:
-        values.kind || undefined,
+      kind: values.kind || undefined,
 
-      status:
-        values.status || undefined,
+      status: values.status || undefined,
 
-      condition:
-        values.condition || undefined,
+      condition: values.condition || undefined,
 
-      categoryId:
-        values.categoryId || undefined,
+      categoryId: values.categoryId || undefined,
 
-      locationId:
-        values.locationId || undefined,
+      locationId: values.locationId || undefined,
 
-      vendorId:
-        values.vendorId || undefined,
+      vendorId: values.vendorId || undefined,
 
-      manufacturer:
-        values.manufacturer.trim() || undefined,
+      manufacturer: values.manufacturer.trim() || undefined,
 
-      model:
-        values.model.trim() || undefined,
+      model: values.model.trim() || undefined,
 
-      purchaseDate:
-        values.purchaseDate || undefined,
+      purchaseDate: values.purchaseDate || undefined,
 
-      purchasePrice:
-        values.purchasePrice.trim()
-          ? Number(values.purchasePrice)
-          : undefined,
+      purchasePrice: values.purchasePrice.trim()
+        ? Number(values.purchasePrice)
+        : undefined,
 
-      invoiceNumber:
-        values.invoiceNumber.trim() || undefined,
+      invoiceNumber: values.invoiceNumber.trim() || undefined,
 
-      warrantyStart:
-        values.warrantyStart || undefined,
+      warrantyStart: values.warrantyStart || undefined,
 
-      warrantyExpiry:
-        values.warrantyExpiry || undefined,
+      warrantyExpiry: values.warrantyExpiry || undefined,
 
-      notes:
-        values.notes.trim() || undefined,
+      notes: values.notes.trim() || undefined,
     };
   }
 
@@ -557,19 +469,11 @@ function buildCreatePayload(): CreateAssetRequest {
       return "Please select a category.";
     }
 
-    if (
-      values.purchasePrice &&
-      Number.isNaN(
-        Number(values.purchasePrice)
-      )
-    ) {
+    if (values.purchasePrice && Number.isNaN(Number(values.purchasePrice))) {
       return "Purchase price must be a valid number.";
     }
 
-    if (
-      values.purchasePrice &&
-      Number(values.purchasePrice) < 0
-    ) {
+    if (values.purchasePrice && Number(values.purchasePrice) < 0) {
       return "Purchase price cannot be negative.";
     }
 
@@ -580,18 +484,13 @@ function buildCreatePayload(): CreateAssetRequest {
   // CREATE CATEGORY
   // ==========================================================
 
-  async function handleCreateCategory(
-    event: React.FormEvent
-  ) {
+  async function handleCreateCategory(event: React.FormEvent) {
     event.preventDefault();
 
-    const name =
-      newCategoryName.trim();
+    const name = newCategoryName.trim();
 
     if (!name) {
-      setCategoryError(
-        "Category name is required."
-      );
+      setCategoryError("Category name is required.");
 
       return;
     }
@@ -599,34 +498,26 @@ function buildCreatePayload(): CreateAssetRequest {
     setCategoryError(null);
 
     try {
-      const response =
-        await createAssetCategory({
-          name,
+      const response = await createAssetCategory({
+        name,
 
-          description:
-            newCategoryDescription.trim() ||
-            undefined,
+        description: newCategoryDescription.trim() || undefined,
 
-          type:
-            newCategoryType,
+        type: newCategoryType,
 
-          isActive: true,
-        }).unwrap();
+        isActive: true,
+      }).unwrap();
 
-      const createdCategory =
-        response.data;
+      const createdCategory = response.data;
 
       if (!createdCategory?.id) {
         throw new Error(
-          "Category was created but no category ID was returned."
+          "Category was created but no category ID was returned.",
         );
       }
 
       // Automatically select newly created category.
-      setField(
-        "categoryId",
-        createdCategory.id
-      );
+      setField("categoryId", createdCategory.id);
 
       // Reset category form.
       setNewCategoryName("");
@@ -635,17 +526,13 @@ function buildCreatePayload(): CreateAssetRequest {
 
       setShowCategoryModal(false);
 
-      pushToast(
-        `${createdCategory.name} category created.`,
-        "success"
-      );
+      toast.add({
+        title: "Category created",
+        description: `${createdCategory.name} category created.`,
+        type: "success",
+      });
     } catch (error) {
-      setCategoryError(
-        getErrorMessage(
-          error,
-          "Failed to create category."
-        )
-      );
+      setCategoryError(getErrorMessage(error, "Failed to create category."));
     }
   }
 
@@ -653,18 +540,13 @@ function buildCreatePayload(): CreateAssetRequest {
   // SUBMIT ASSET
   // ==========================================================
 
-  async function handleSubmit(
-    event: React.FormEvent
-  ) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    const validationError =
-      validate();
+    const validationError = validate();
 
     if (validationError) {
-      setFormError(
-        validationError
-      );
+      setFormError(validationError);
 
       return;
     }
@@ -673,42 +555,37 @@ function buildCreatePayload(): CreateAssetRequest {
 
     try {
       if (isEditMode) {
-        const payload =
-          buildUpdatePayload();
+        const payload = buildUpdatePayload();
 
-        await updateAsset(
-          payload
-        ).unwrap();
+        await updateAsset(payload).unwrap();
 
-        pushToast(
-          `${values.name} updated.`,
-          "success"
-        );
+        toast.add({
+          title: "Asset updated",
+          description: `${values.name} updated.`,
+          type: "success",
+        });
       } else {
-        const payload =
-          buildCreatePayload();
+        const payload = buildCreatePayload();
 
-        await createAsset(
-          payload
-        ).unwrap();
+        await createAsset(payload).unwrap();
 
-        pushToast(
-          `${values.name} created.`,
-          "success"
-        );
+        toast.add({
+          title: "Asset created",
+          description: `${values.name} created.`,
+          type: "success",
+        });
       }
 
       onClose();
     } catch (error) {
-      pushToast(
-        getErrorMessage(
+      toast.add({
+        title: isEditMode ? "Update failed" : "Creation failed",
+        description: getErrorMessage(
           error,
-          isEditMode
-            ? "Failed to update asset."
-            : "Failed to create asset."
+          isEditMode ? "Failed to update asset." : "Failed to create asset.",
         ),
-        "error"
-      );
+        type: "error",
+      });
     }
   }
 
@@ -721,11 +598,8 @@ function buildCreatePayload(): CreateAssetRequest {
 
     setNewCategoryName("");
     setNewCategoryDescription("");
-    setNewCategoryType(
-      values.kind === "SOFTWARE"
-        ? "SOFTWARE"
-        : "HARDWARE"
-    );
+
+    setNewCategoryType(values.kind === "SOFTWARE" ? "SOFTWARE" : "HARDWARE");
 
     setShowCategoryModal(true);
   }
@@ -752,27 +626,23 @@ function buildCreatePayload(): CreateAssetRequest {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4">
       {/* ======================================================
           MAIN ASSET MODAL
       ====================================================== */}
 
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
-
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card shadow-xl">
         {/* ====================================================
             HEADER
         ==================================================== */}
 
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              {isEditMode
-                ? "Edit Asset"
-                : "Add Asset"}
+            <h2 className="text-sm font-semibold text-foreground">
+              {isEditMode ? "Edit Asset" : "Add Asset"}
             </h2>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {isEditMode
                 ? "Update the details for this asset."
                 : "Add a new asset to the inventory."}
@@ -783,7 +653,7 @@ function buildCreatePayload(): CreateAssetRequest {
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+            className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X className="h-4 w-4" />
           </button>
@@ -795,206 +665,128 @@ function buildCreatePayload(): CreateAssetRequest {
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2">
-
-            {/* ==================================================
-                NAME
-            ================================================== */}
+            {/* NAME */}
 
             <div className="sm:col-span-2">
-              <label className={LABEL_CLASSES}>
-                Asset name *
-              </label>
+              <label className={LABEL_CLASSES}>Asset name *</label>
 
               <Input
                 value={values.name}
-                onChange={(event) =>
-                  setField(
-                    "name",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setField("name", event.target.value)}
                 placeholder='e.g. MacBook Pro 14"'
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                ASSET TAG
-            ================================================== */}
+            {/* ASSET TAG */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Asset tag
-              </label>
+              <label className={LABEL_CLASSES}>Asset tag</label>
 
               <Input
                 value={values.assetTag}
-                onChange={(event) =>
-                  setField(
-                    "assetTag",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setField("assetTag", event.target.value)}
                 placeholder="e.g. AST-0042"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                SERIAL NUMBER
-            ================================================== */}
+            {/* SERIAL NUMBER */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Serial number
-              </label>
+              <label className={LABEL_CLASSES}>Serial number</label>
 
               <Input
                 value={values.serialNumber}
                 onChange={(event) =>
-                  setField(
-                    "serialNumber",
-                    event.target.value
-                  )
+                  setField("serialNumber", event.target.value)
                 }
                 placeholder="Serial number"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                KIND
-            ================================================== */}
+            {/* KIND */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Kind *
-              </label>
+              <label className={LABEL_CLASSES}>Kind *</label>
 
               <select
                 value={values.kind}
                 onChange={(event) =>
-                  setField(
-                    "kind",
-                    event.target.value as AssetKind
-                  )
+                  setField("kind", event.target.value as AssetKind)
                 }
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
-                <option value="">
-                  Select kind
-                </option>
+                <option value="">Select kind</option>
 
-                {KIND_OPTIONS.map(
-                  (option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  )
-                )}
+                {KIND_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* ==================================================
-                STATUS
-            ================================================== */}
+            {/* STATUS */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Status
-              </label>
+              <label className={LABEL_CLASSES}>Status</label>
 
               <select
                 value={values.status}
                 onChange={(event) =>
-                  setField(
-                    "status",
-                    event.target.value as AssetStatus
-                  )
+                  setField("status", event.target.value as AssetStatus)
                 }
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
-                <option value="">
-                  Select status
-                </option>
+                <option value="">Select status</option>
 
-                {STATUS_OPTIONS.map(
-                  (option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  )
-                )}
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* ==================================================
-                CONDITION
-            ================================================== */}
+            {/* CONDITION */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Condition
-              </label>
+              <label className={LABEL_CLASSES}>Condition</label>
 
               <select
                 value={values.condition}
                 onChange={(event) =>
-                  setField(
-                    "condition",
-                    event.target.value as AssetCondition
-                  )
+                  setField("condition", event.target.value as AssetCondition)
                 }
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
-                <option value="">
-                  Select condition
-                </option>
+                <option value="">Select condition</option>
 
-                {CONDITION_OPTIONS.map(
-                  (option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  )
-                )}
+                {CONDITION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* ==================================================
-                CATEGORY
-            ================================================== */}
+            {/* CATEGORY */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Category *
-              </label>
+              <label className={LABEL_CLASSES}>Category *</label>
 
               <div className="flex gap-2">
                 <select
                   value={values.categoryId}
                   onChange={(event) =>
-                    setField(
-                      "categoryId",
-                      event.target.value
-                    )
+                    setField("categoryId", event.target.value)
                   }
-                  disabled={
-                    isSubmitting ||
-                    isCategoriesLoading
-                  }
+                  disabled={isSubmitting || isCategoriesLoading}
                   className={`${SELECT_CLASSES} flex-1`}
                 >
                   <option value="">
@@ -1003,16 +795,11 @@ function buildCreatePayload(): CreateAssetRequest {
                       : "Select category"}
                   </option>
 
-                  {categories.map(
-                    (category) => (
-                      <option
-                        key={category.id}
-                        value={category.id}
-                      >
-                        {category.name}
-                      </option>
-                    )
-                  )}
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
 
                 <button
@@ -1020,64 +807,46 @@ function buildCreatePayload(): CreateAssetRequest {
                   onClick={openCategoryModal}
                   disabled={isSubmitting}
                   title="Create new category"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition hover:border-input hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
 
-              {isCategoriesFetching &&
-              !isCategoriesLoading ? (
-                <p className="mt-1 text-[10px] text-slate-400">
+              {isCategoriesFetching && !isCategoriesLoading ? (
+                <p className="mt-1 text-[10px] text-muted-foreground">
                   Updating categories...
                 </p>
               ) : null}
             </div>
 
-            {/* ==================================================
-                LOCATION
-            ================================================== */}
+            {/* LOCATION */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Location
-              </label>
+              <label className={LABEL_CLASSES}>Location</label>
 
               {locations.length > 0 ? (
                 <select
                   value={values.locationId}
                   onChange={(event) =>
-                    setField(
-                      "locationId",
-                      event.target.value
-                    )
+                    setField("locationId", event.target.value)
                   }
                   disabled={isSubmitting}
                   className={SELECT_CLASSES}
                 >
-                  <option value="">
-                    Select location
-                  </option>
+                  <option value="">Select location</option>
 
-                  {locations.map(
-                    (location) => (
-                      <option
-                        key={location.id}
-                        value={location.id}
-                      >
-                        {location.name}
-                      </option>
-                    )
-                  )}
+                  {locations.map((location) => (
+                    <option key={location.id} value={location.id}>
+                      {location.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <Input
                   value={values.locationId}
                   onChange={(event) =>
-                    setField(
-                      "locationId",
-                      event.target.value
-                    )
+                    setField("locationId", event.target.value)
                   }
                   placeholder="Location ID"
                   disabled={isSubmitting}
@@ -1085,131 +854,83 @@ function buildCreatePayload(): CreateAssetRequest {
               )}
             </div>
 
-            {/* ==================================================
-                VENDOR
-            ================================================== */}
+            {/* VENDOR */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Vendor
-              </label>
+              <label className={LABEL_CLASSES}>Vendor</label>
 
               {vendors.length > 0 ? (
                 <select
                   value={values.vendorId}
-                  onChange={(event) =>
-                    setField(
-                      "vendorId",
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setField("vendorId", event.target.value)}
                   disabled={isSubmitting}
                   className={SELECT_CLASSES}
                 >
-                  <option value="">
-                    Select vendor
-                  </option>
+                  <option value="">Select vendor</option>
 
-                  {vendors.map(
-                    (vendor) => (
-                      <option
-                        key={vendor.id}
-                        value={vendor.id}
-                      >
-                        {vendor.name}
-                      </option>
-                    )
-                  )}
+                  {vendors.map((vendor) => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <Input
                   value={values.vendorId}
-                  onChange={(event) =>
-                    setField(
-                      "vendorId",
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setField("vendorId", event.target.value)}
                   placeholder="Vendor ID"
                   disabled={isSubmitting}
                 />
               )}
             </div>
 
-            {/* ==================================================
-                MANUFACTURER
-            ================================================== */}
+            {/* MANUFACTURER */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Manufacturer
-              </label>
+              <label className={LABEL_CLASSES}>Manufacturer</label>
 
               <Input
                 value={values.manufacturer}
                 onChange={(event) =>
-                  setField(
-                    "manufacturer",
-                    event.target.value
-                  )
+                  setField("manufacturer", event.target.value)
                 }
                 placeholder="e.g. Apple"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                MODEL
-            ================================================== */}
+            {/* MODEL */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Model
-              </label>
+              <label className={LABEL_CLASSES}>Model</label>
 
               <Input
                 value={values.model}
-                onChange={(event) =>
-                  setField(
-                    "model",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setField("model", event.target.value)}
                 placeholder="e.g. MacBook Pro"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                PURCHASE DATE
-            ================================================== */}
+            {/* PURCHASE DATE */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Purchase date
-              </label>
+              <label className={LABEL_CLASSES}>Purchase date</label>
 
               <Input
                 type="date"
                 value={values.purchaseDate}
                 onChange={(event) =>
-                  setField(
-                    "purchaseDate",
-                    event.target.value
-                  )
+                  setField("purchaseDate", event.target.value)
                 }
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                PURCHASE PRICE
-            ================================================== */}
+            {/* PURCHASE PRICE */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Purchase price
-              </label>
+              <label className={LABEL_CLASSES}>Purchase price</label>
 
               <Input
                 type="number"
@@ -1217,103 +938,70 @@ function buildCreatePayload(): CreateAssetRequest {
                 step="0.01"
                 value={values.purchasePrice}
                 onChange={(event) =>
-                  setField(
-                    "purchasePrice",
-                    event.target.value
-                  )
+                  setField("purchasePrice", event.target.value)
                 }
                 placeholder="0.00"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                INVOICE NUMBER
-            ================================================== */}
+            {/* INVOICE NUMBER */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Invoice number
-              </label>
+              <label className={LABEL_CLASSES}>Invoice number</label>
 
               <Input
                 value={values.invoiceNumber}
                 onChange={(event) =>
-                  setField(
-                    "invoiceNumber",
-                    event.target.value
-                  )
+                  setField("invoiceNumber", event.target.value)
                 }
                 placeholder="Invoice number"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                WARRANTY START
-            ================================================== */}
+            {/* WARRANTY START */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Warranty start
-              </label>
+              <label className={LABEL_CLASSES}>Warranty start</label>
 
               <Input
                 type="date"
                 value={values.warrantyStart}
                 onChange={(event) =>
-                  setField(
-                    "warrantyStart",
-                    event.target.value
-                  )
+                  setField("warrantyStart", event.target.value)
                 }
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                WARRANTY EXPIRY
-            ================================================== */}
+            {/* WARRANTY EXPIRY */}
 
             <div>
-              <label className={LABEL_CLASSES}>
-                Warranty expiry
-              </label>
+              <label className={LABEL_CLASSES}>Warranty expiry</label>
 
               <Input
                 type="date"
                 value={values.warrantyExpiry}
                 onChange={(event) =>
-                  setField(
-                    "warrantyExpiry",
-                    event.target.value
-                  )
+                  setField("warrantyExpiry", event.target.value)
                 }
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* ==================================================
-                NOTES
-            ================================================== */}
+            {/* NOTES */}
 
             <div className="sm:col-span-2">
-              <label className={LABEL_CLASSES}>
-                Notes
-              </label>
+              <label className={LABEL_CLASSES}>Notes</label>
 
               <textarea
                 value={values.notes}
-                onChange={(event) =>
-                  setField(
-                    "notes",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setField("notes", event.target.value)}
                 disabled={isSubmitting}
                 rows={3}
                 placeholder="Additional notes about this asset..."
-                className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50"
+                className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted"
               />
             </div>
           </div>
@@ -1323,7 +1011,7 @@ function buildCreatePayload(): CreateAssetRequest {
           ==================================================== */}
 
           {formError ? (
-            <div className="mx-5 mb-4 rounded-md bg-red-50 px-3 py-2 text-xs text-red-600">
+            <div className="mx-5 mb-4 rounded-md bg-destructive-muted px-3 py-2 text-xs text-destructive-strong">
               {formError}
             </div>
           ) : null}
@@ -1332,7 +1020,7 @@ function buildCreatePayload(): CreateAssetRequest {
               FOOTER
           ==================================================== */}
 
-          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
+          <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
             <Button
               type="button"
               variant="secondary"
@@ -1342,10 +1030,7 @@ function buildCreatePayload(): CreateAssetRequest {
               Cancel
             </Button>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? isEditMode
                   ? "Saving..."
@@ -1363,20 +1048,17 @@ function buildCreatePayload(): CreateAssetRequest {
       ====================================================== */}
 
       {showCategoryModal ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 px-4">
-          <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4">
+          <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
+            {/* CATEGORY HEADER */}
 
-            {/* ==================================================
-                CATEGORY HEADER
-            ================================================== */}
-
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">
+                <h3 className="text-sm font-semibold text-foreground">
                   Create Asset Category
                 </h3>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Add a new category for your assets.
                 </p>
               </div>
@@ -1385,34 +1067,25 @@ function buildCreatePayload(): CreateAssetRequest {
                 type="button"
                 onClick={closeCategoryModal}
                 disabled={isCreatingCategory}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+                className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* ==================================================
-                CATEGORY FORM
-            ================================================== */}
+            {/* CATEGORY FORM */}
 
             <form onSubmit={handleCreateCategory}>
               <div className="space-y-4 px-5 py-5">
-
                 {/* Category Name */}
 
                 <div>
-                  <label className={LABEL_CLASSES}>
-                    Category name *
-                  </label>
+                  <label className={LABEL_CLASSES}>Category name *</label>
 
                   <Input
                     autoFocus
                     value={newCategoryName}
-                    onChange={(event) =>
-                      setNewCategoryName(
-                        event.target.value
-                      )
-                    }
+                    onChange={(event) => setNewCategoryName(event.target.value)}
                     placeholder="e.g. Laptops"
                     disabled={isCreatingCategory}
                   />
@@ -1421,70 +1094,53 @@ function buildCreatePayload(): CreateAssetRequest {
                 {/* Category Type */}
 
                 <div>
-                  <label className={LABEL_CLASSES}>
-                    Category type *
-                  </label>
+                  <label className={LABEL_CLASSES}>Category type *</label>
 
                   <select
                     value={newCategoryType}
                     onChange={(event) =>
-                      setNewCategoryType(
-                        event.target.value as AssetKind
-                      )
+                      setNewCategoryType(event.target.value as AssetKind)
                     }
                     disabled={isCreatingCategory}
                     className={SELECT_CLASSES}
                   >
-                    {KIND_OPTIONS.map(
-                      (option) => (
-                        <option
-                          key={option.value}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </option>
-                      )
-                    )}
+                    {KIND_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 {/* Description */}
 
                 <div>
-                  <label className={LABEL_CLASSES}>
-                    Description
-                  </label>
+                  <label className={LABEL_CLASSES}>Description</label>
 
                   <textarea
-                    value={
-                      newCategoryDescription
-                    }
+                    value={newCategoryDescription}
                     onChange={(event) =>
-                      setNewCategoryDescription(
-                        event.target.value
-                      )
+                      setNewCategoryDescription(event.target.value)
                     }
                     disabled={isCreatingCategory}
                     rows={3}
                     placeholder="Optional description"
-                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50"
+                    className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted"
                   />
                 </div>
 
                 {/* Category Error */}
 
                 {categoryError ? (
-                  <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-600">
+                  <div className="rounded-md bg-destructive-muted px-3 py-2 text-xs text-destructive-strong">
                     {categoryError}
                   </div>
                 ) : null}
               </div>
 
-              {/* ==================================================
-                  CATEGORY FOOTER
-              ================================================== */}
+              {/* CATEGORY FOOTER */}
 
-              <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
+              <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
                 <Button
                   type="button"
                   variant="secondary"
@@ -1494,13 +1150,8 @@ function buildCreatePayload(): CreateAssetRequest {
                   Cancel
                 </Button>
 
-                <Button
-                  type="submit"
-                  disabled={isCreatingCategory}
-                >
-                  {isCreatingCategory
-                    ? "Creating..."
-                    : "Create category"}
+                <Button type="submit" disabled={isCreatingCategory}>
+                  {isCreatingCategory ? "Creating..." : "Create category"}
                 </Button>
               </div>
             </form>

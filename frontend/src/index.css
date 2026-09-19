@@ -2,17 +2,317 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root { height: 100%; }
-body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+/* ============================================================
+   DESIGN TOKENS
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
-::-webkit-scrollbar-track { background: transparent; }
+   All colours are opaque HSL triplets. Surfaces are solid —
+   no translucency, no backdrop blur, no glassmorphism.
 
-.tabular-nums { font-variant-numeric: tabular-nums; }
+   To rebrand: edit the BRAND RAMP block only. Everything else
+   is derived from it.
+============================================================ */
 
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+:root {
+  /* ----------------------------------------------------------
+     BRAND RAMP
+     Swap these eleven values to match the company logo.
+  ---------------------------------------------------------- */
+
+  --brand-50: 210 40% 97%;
+  --brand-100: 210 38% 93%;
+  --brand-200: 211 34% 85%;
+  --brand-300: 212 30% 72%;
+  --brand-400: 214 28% 56%;
+  --brand-500: 216 34% 44%;
+  --brand-600: 218 42% 35%;
+  --brand-700: 220 46% 28%;
+  --brand-800: 222 48% 21%;
+  --brand-900: 224 50% 15%;
+  --brand-950: 226 54% 10%;
+
+  /* ----------------------------------------------------------
+     NEUTRAL RAMP
+  ---------------------------------------------------------- */
+
+  --neutral-50: 210 40% 98%;
+  --neutral-100: 210 36% 96%;
+  --neutral-200: 214 28% 91%;
+  --neutral-300: 213 24% 84%;
+  --neutral-400: 215 18% 65%;
+  --neutral-500: 215 16% 47%;
+  --neutral-600: 215 20% 37%;
+  --neutral-700: 217 24% 27%;
+  --neutral-800: 218 30% 18%;
+  --neutral-900: 221 39% 11%;
+  --neutral-950: 224 47% 7%;
+
+  /* ----------------------------------------------------------
+     SURFACES
+  ---------------------------------------------------------- */
+
+  --background: var(--neutral-50);
+  --foreground: var(--neutral-900);
+
+  --card: 0 0% 100%;
+  --card-foreground: var(--neutral-900);
+
+  --popover: 0 0% 100%;
+  --popover-foreground: var(--neutral-900);
+
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-500);
+
+  --accent: var(--brand-50);
+  --accent-foreground: var(--brand-700);
+  --accent-hover: var(--brand-100);
+
+  /* ----------------------------------------------------------
+     ACTIONS
+  ---------------------------------------------------------- */
+
+  --primary: var(--brand-600);
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: var(--brand-700);
+  --primary-strong: var(--brand-800);
+  --primary-muted: var(--brand-50);
+  --primary-border: var(--brand-200);
+
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-800);
+  --secondary-hover: var(--neutral-200);
+
+  /* ----------------------------------------------------------
+     STATUS
+  ---------------------------------------------------------- */
+
+  --success: 152 62% 32%;
+  --success-foreground: 0 0% 100%;
+  --success-muted: 150 56% 95%;
+  --success-strong: 154 66% 24%;
+  --success-border: 150 42% 82%;
+
+  --warning: 32 84% 42%;
+  --warning-foreground: 0 0% 100%;
+  --warning-muted: 40 92% 95%;
+  --warning-strong: 26 78% 32%;
+  --warning-border: 38 70% 80%;
+
+  --destructive: 0 68% 47%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-hover: 0 70% 40%;
+  --destructive-muted: 0 80% 96%;
+  --destructive-strong: 0 66% 38%;
+  --destructive-border: 0 60% 86%;
+
+  --info: 205 78% 42%;
+  --info-foreground: 0 0% 100%;
+  --info-muted: 204 84% 95%;
+  --info-strong: 207 72% 32%;
+  --info-border: 204 62% 82%;
+
+  /* ----------------------------------------------------------
+     LINES, FOCUS, OVERLAYS
+  ---------------------------------------------------------- */
+
+  --border: var(--neutral-200);
+  --input: var(--neutral-300);
+  --ring: var(--brand-500);
+
+  /* The modal scrim is the one intentionally translucent layer —
+     it dims the page behind a dialog. It carries no blur. */
+  --scrim: 221 39% 11%;
+  --scrim-opacity: 0.55;
+
+  /* ----------------------------------------------------------
+     SIDEBAR
+  ---------------------------------------------------------- */
+
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: var(--neutral-600);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-accent: var(--brand-50);
+  --sidebar-accent-foreground: var(--brand-700);
+  --sidebar-ring: var(--brand-500);
+
+  /* ----------------------------------------------------------
+     CHARTS
+  ---------------------------------------------------------- */
+
+  --chart-1: var(--brand-600);
+  --chart-2: 188 62% 38%;
+  --chart-3: 32 84% 46%;
+  --chart-4: 264 44% 52%;
+  --chart-5: 152 52% 36%;
+  --chart-6: 340 62% 50%;
+
+  --chart-grid: var(--neutral-200);
+  --chart-axis: var(--neutral-400);
+
+  /* ----------------------------------------------------------
+     SHAPE
+  ---------------------------------------------------------- */
+
+  --radius: 0.625rem;
 }
-.animate-toast-in { animation: toast-in 0.18s ease-out; }
+
+/* ============================================================
+   DARK THEME
+============================================================ */
+
+.dark {
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-100);
+
+  --card: var(--neutral-900);
+  --card-foreground: var(--neutral-100);
+
+  --popover: var(--neutral-800);
+  --popover-foreground: var(--neutral-100);
+
+  --muted: var(--neutral-800);
+  --muted-foreground: var(--neutral-400);
+
+  --accent: var(--brand-900);
+  --accent-foreground: var(--brand-100);
+  --accent-hover: var(--brand-800);
+
+  --primary: var(--brand-400);
+  --primary-foreground: var(--neutral-950);
+  --primary-hover: var(--brand-300);
+  --primary-strong: var(--brand-200);
+  --primary-muted: var(--brand-900);
+  --primary-border: var(--brand-700);
+
+  --secondary: var(--neutral-800);
+  --secondary-foreground: var(--neutral-100);
+  --secondary-hover: var(--neutral-700);
+
+  --success: 152 48% 46%;
+  --success-muted: 154 40% 16%;
+  --success-strong: 150 52% 72%;
+  --success-border: 154 34% 26%;
+
+  --warning: 36 78% 54%;
+  --warning-muted: 30 52% 16%;
+  --warning-strong: 40 84% 72%;
+  --warning-border: 32 44% 28%;
+
+  --destructive: 0 62% 55%;
+  --destructive-hover: 0 62% 48%;
+  --destructive-muted: 0 44% 17%;
+  --destructive-strong: 0 74% 78%;
+  --destructive-border: 0 40% 30%;
+
+  --info: 205 66% 56%;
+  --info-muted: 207 48% 17%;
+  --info-strong: 204 74% 76%;
+  --info-border: 206 40% 28%;
+
+  --border: var(--neutral-800);
+  --input: var(--neutral-700);
+  --ring: var(--brand-400);
+
+  --scrim: 224 47% 4%;
+  --scrim-opacity: 0.7;
+
+  --sidebar: var(--neutral-900);
+  --sidebar-foreground: var(--neutral-400);
+  --sidebar-border: var(--neutral-800);
+  --sidebar-accent: var(--brand-900);
+  --sidebar-accent-foreground: var(--brand-100);
+  --sidebar-ring: var(--brand-400);
+
+  --chart-1: var(--brand-400);
+  --chart-2: 188 56% 52%;
+  --chart-3: 36 78% 58%;
+  --chart-4: 264 52% 66%;
+  --chart-5: 152 46% 50%;
+  --chart-6: 340 60% 62%;
+
+  --chart-grid: var(--neutral-800);
+  --chart-axis: var(--neutral-600);
+}
+
+/* ============================================================
+   BASE
+============================================================ */
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-feature-settings:
+      "cv02" 1,
+      "cv03" 1,
+      "cv04" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Numeric columns line up across rows. */
+  .tabular-nums,
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ============================================================
+   NO TRANSPARENCY / NO GLASSMORPHISM
+
+   Hard guard. Any blur that slips in from a component library
+   or a copied snippet is neutralised here. The modal scrim is
+   the single exception and is excluded by name.
+============================================================ */
+
+@layer utilities {
+  [class*="backdrop-blur"],
+  [class*="backdrop-filter"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ============================================================
+   SCROLLBARS
+============================================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--neutral-300));
+  border: 3px solid hsl(var(--background));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--neutral-400));
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--background));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--neutral-700));
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--neutral-600));
+}

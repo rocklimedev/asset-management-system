@@ -9,6 +9,7 @@ import { AuditService } from "@/modules/audit/audit.service";
 import { AuthUser } from "@/common/decorator/current-user.decorator";
 
 import { Employee, EmployeeStatus } from "./models/employees.model";
+import { Organisation } from "./models/organisation.model";
 import { Department } from "./models/department.model";
 import { Location } from "./models/location.model";
 
@@ -95,6 +96,15 @@ export class EmployeesService {
 
         include: [
           // ------------------------------------------------------
+          // ORGANISATION
+          // ------------------------------------------------------
+
+          {
+            model: Organisation,
+            as: "organisation",
+          },
+
+          // ------------------------------------------------------
           // DEPARTMENT
           // ------------------------------------------------------
 
@@ -165,6 +175,15 @@ export class EmployeesService {
   async findOne(id: string) {
     const employee = await this.employeeModel.findByPk(id, {
       include: [
+        // --------------------------------------------------------
+        // ORGANISATION
+        // --------------------------------------------------------
+
+        {
+          model: Organisation,
+          as: "organisation",
+        },
+
         // --------------------------------------------------------
         // DEPARTMENT
         // --------------------------------------------------------

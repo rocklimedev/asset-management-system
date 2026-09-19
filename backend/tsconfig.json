@@ -6,6 +6,10 @@
     "rootDir": "./src",
     "outDir": "./dist",
 
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     "declaration": false,
     "removeComments": true,
     "sourceMap": true,
@@ -16,17 +20,14 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
-    "incremental": true,
+    "incremental": false,
     "skipLibCheck": true,
 
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": true,
-
-    "paths": {
-      "@/common/*": ["./src/common/*"],
-      "@/modules/*": ["./src/modules/*"]
-    }
-  }
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

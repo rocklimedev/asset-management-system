@@ -24,8 +24,8 @@ import { AuditLog } from "@/modules/audit/models/audit-log.model";
 export const databaseConfig = new Sequelize({
   dialect: "mysql",
 
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT || 3306),
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
 
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,

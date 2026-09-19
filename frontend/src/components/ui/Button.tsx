@@ -1,34 +1,99 @@
-import { clsx } from 'clsx';
-import { Loader2 } from 'lucide-react';
-import React from 'react';
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md';
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+  [
+    "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap",
+    "rounded-md border border-transparent text-sm font-medium",
+    "transition-colors duration-150 outline-none select-none",
+    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "disabled:pointer-events-none disabled:opacity-60",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:h-4 [&_svg]:w-4",
+  ].join(" "),
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        outline:
+          "border-border bg-card text-foreground hover:bg-muted hover:text-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary-hover",
+        ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive-hover",
+        subtle: "bg-accent text-accent-foreground hover:bg-accent-hover",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-3.5",
+        sm: "h-8 px-3 text-[13px]",
+        lg: "h-10 px-5",
+        icon: "h-9 w-9 px-0",
+        "icon-sm": "h-8 w-8 px-0",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  },
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  /** Shows an inline spinner and blocks interaction while true. */
   loading?: boolean;
 }
 
-export function Button({ variant = 'primary', size = 'md', loading, className, children, disabled, ...rest }: ButtonProps) {
-  const variants = {
-    primary: 'bg-brand-600 text-white hover:bg-brand-700 focus-visible:outline-brand-600',
-    secondary: 'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus-visible:outline-brand-600',
-    ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:outline-brand-600',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:outline-rose-600',
-  }[variant];
-  const sizes = { sm: 'px-2.5 py-1.5 text-xs', md: 'px-3.5 py-2 text-sm' }[size];
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      disabled,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          data-slot="button"
+          className={cn(buttonVariants({ variant, size }), className)}
+          {...props}
+        >
+          {children}
+        </Slot>
+      );
+    }
 
-  return (
-    <button
-      className={clsx(
-        'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none',
-        variants, sizes, className,
-      )}
-      disabled={disabled || loading}
-      {...rest}
-    >
-      {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-      {children}
-    </button>
-  );
-}
+    return (
+      <button
+        ref={ref}
+        data-slot="button"
+        data-loading={loading || undefined}
+        disabled={disabled || loading}
+        className={cn(buttonVariants({ variant, size }), className)}
+        {...props}
+      >
+        {loading && <Loader2 className="animate-spin" aria-hidden="true" />}
+        {children}
+      </button>
+    );
+  },
+);
+
+Button.displayName = "Button";
+
+export { Button, buttonVariants };
