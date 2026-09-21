@@ -65,7 +65,6 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
     {
       search: search || undefined,
       kind: kind || undefined,
-      organisationId: employee?.organisationId ?? undefined,
       pageSize: 20,
     },
     {

@@ -463,12 +463,6 @@ export class AssetsService {
           "Cannot assign an asset to an employee who has exited.",
         );
       }
-
-      if (employee.organisationId !== dto.organisationId) {
-        throw new BadRequestException(
-          "Asset and employee must belong to the same organisation.",
-        );
-      }
     }
 
     // ==========================================================
@@ -971,12 +965,6 @@ export class AssetsService {
     // ORGANISATION MATCH
     // ==========================================================
 
-    if (asset.organisationId !== employee.organisationId) {
-      throw new BadRequestException(
-        "Asset and employee must belong to the same organisation.",
-      );
-    }
-
     // ==========================================================
     // TRANSACTION
     // ==========================================================
@@ -1445,43 +1433,33 @@ export class AssetsService {
   // retired/lost/disposed. This backs the "assign from pool" flow in
   // Asset Manager, separate from `findAll` which lists everything.
   // ============================================================
-
   async findPool(params: AssetPoolQueryDto) {
     const page = Math.max(params.page ?? 1, 1);
     const pageSize = Math.min(Math.max(params.pageSize ?? 25, 1), 100);
 
     const andConditions: WhereOptions<Asset>[] = [
+      // Only assets currently marked as AVAILABLE.
       {
-        status: {
-          [Op.notIn]: [
-            AssetStatus.RETIRED,
-            AssetStatus.LOST,
-            AssetStatus.DISPOSED,
-            AssetStatus.DAMAGED,
-            AssetStatus.REPAIR,
-          ],
-        },
+        status: AssetStatus.AVAILABLE,
       },
-      // Either a 1:1 asset sitting AVAILABLE, or pooled stock that
-      // still has spare units to hand out.
+
+      // Only assets that have inventory available.
       {
-        [Op.or]: [
-          { status: AssetStatus.AVAILABLE },
-          {
-            [Op.and]: [
-              this.sequelize.where(
-                this.sequelize.literal("`Asset`.`quantity`"),
-                Op.gt,
-                this.sequelize.literal("`Asset`.`quantityAssigned`"),
-              ),
-            ],
-          },
+        [Op.and]: [
+          this.sequelize.where(
+            this.sequelize.literal("`Asset`.`quantity`"),
+            Op.gt,
+            this.sequelize.literal("`Asset`.`quantityAssigned`"),
+          ),
         ],
       } as WhereOptions<Asset>,
     ];
 
+    // Search
     if (params.search?.trim()) {
-      const like = { [Op.like]: `%${params.search.trim()}%` };
+      const like = {
+        [Op.like]: `%${params.search.trim()}%`,
+      };
 
       andConditions.push({
         [Op.or]: [
@@ -1494,42 +1472,64 @@ export class AssetsService {
       } as WhereOptions<Asset>);
     }
 
-    if (params.organisationId) {
-      andConditions.push({ organisationId: params.organisationId });
-    }
-
+    // Kind
     if (params.kind) {
-      andConditions.push({ kind: params.kind as Asset["kind"] });
+      andConditions.push({
+        kind: params.kind as Asset["kind"],
+      });
     }
 
+    // Category
     if (params.categoryId) {
-      andConditions.push({ categoryId: params.categoryId });
+      andConditions.push({
+        categoryId: params.categoryId,
+      });
     }
 
+    // Location
     if (params.locationId) {
-      andConditions.push({ locationId: params.locationId });
+      andConditions.push({
+        locationId: params.locationId,
+      });
     }
 
     const { rows: items, count: total } = await this.assetModel.findAndCountAll(
       {
-        where: { [Op.and]: andConditions },
+        where: {
+          [Op.and]: andConditions,
+        },
+
         include: [
-          { model: AssetCategory, as: "category" },
-          { model: Location, as: "location" },
+          {
+            model: AssetCategory,
+            as: "category",
+          },
+          {
+            model: Location,
+            as: "location",
+          },
         ],
+
         order: [["name", "ASC"]],
+
         limit: pageSize,
         offset: (page - 1) * pageSize,
+
         distinct: true,
       },
     );
 
     return {
-      items: items.map((asset) => ({
-        ...asset.toJSON(),
-        quantityAvailable:
-          (asset.quantity ?? 1) - (asset.quantityAssigned ?? 0),
-      })),
+      items: items.map((asset) => {
+        const quantity = asset.quantity ?? 1;
+        const quantityAssigned = asset.quantityAssigned ?? 0;
+
+        return {
+          ...asset.toJSON(),
+          quantityAvailable: Math.max(quantity - quantityAssigned, 0),
+        };
+      }),
+
       total,
       page,
       pageSize,

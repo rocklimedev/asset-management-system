@@ -5,6 +5,9 @@ import {
   Boxes,
   CheckCircle2,
   ClipboardList,
+  Download,
+  FileSpreadsheet,
+  FileText,
   Filter,
   PackageCheck,
   RefreshCw,
@@ -16,25 +19,20 @@ import {
 } from "lucide-react";
 
 import {
+  downloadReport,
   useGetAssetReportQuery,
   useGetInventoryReportQuery,
   useGetAssignedReportQuery,
   useGetDamagedReportQuery,
   useGetReportByStatusQuery,
   type ReportFilters,
+  type ReportType,
 } from "../services/api/reports.api";
 
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
 
 import {
   Table,
@@ -57,7 +55,7 @@ interface FilterState {
   organisationId: string;
   kind: string;
   categoryId: string;
-
+  locationId: string;
   from: string;
   to: string;
 }
@@ -70,7 +68,7 @@ const EMPTY_FILTERS: FilterState = {
   organisationId: "",
   kind: "",
   categoryId: "",
-
+  locationId: "",
   from: "",
   to: "",
 };
@@ -80,26 +78,31 @@ const TABS = [
     value: "assets" as const,
     label: "Assets",
     icon: Boxes,
+    reportType: "assets" as ReportType,
   },
   {
     value: "inventory" as const,
     label: "Inventory",
     icon: PackageCheck,
+    reportType: "inventory" as ReportType,
   },
   {
     value: "assigned" as const,
     label: "Assigned",
     icon: Users,
+    reportType: "assigned" as ReportType,
   },
   {
     value: "damaged" as const,
     label: "Damaged & Repair",
     icon: Wrench,
+    reportType: "damaged" as ReportType,
   },
   {
     value: "status" as const,
     label: "By Status",
     icon: ClipboardList,
+    reportType: "by-status" as ReportType,
   },
 ];
 
@@ -143,7 +146,8 @@ function statusTone(
   if (
     normalized.includes("ACTIVE") ||
     normalized.includes("AVAILABLE") ||
-    normalized.includes("GOOD")
+    normalized.includes("GOOD") ||
+    normalized.includes("HEALTHY")
   ) {
     return "ok";
   }
@@ -155,7 +159,8 @@ function statusTone(
   if (
     normalized.includes("REPAIR") ||
     normalized.includes("PENDING") ||
-    normalized.includes("MAINTENANCE")
+    normalized.includes("MAINTENANCE") ||
+    normalized.includes("LOW")
   ) {
     return "warn";
   }
@@ -164,7 +169,8 @@ function statusTone(
     normalized.includes("DAMAGED") ||
     normalized.includes("RETIRED") ||
     normalized.includes("LOST") ||
-    normalized.includes("DISPOSED")
+    normalized.includes("DISPOSED") ||
+    normalized.includes("REJECTED")
   ) {
     return "danger";
   }
@@ -307,7 +313,7 @@ function ReportFiltersBar({
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Narrow the report using organisation, asset and date filters.
+            Narrow reports using organisation, asset, location and date filters.
           </p>
         </div>
 
@@ -357,6 +363,17 @@ function ReportFiltersBar({
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="locationId">Location ID</Label>
+
+          <Input
+            id="locationId"
+            value={filters.locationId}
+            onChange={(event) => onChange("locationId", event.target.value)}
+            placeholder="Location UUID"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="from">From</Label>
 
           <Input
@@ -386,6 +403,74 @@ function ReportFiltersBar({
         </Button>
       </div>
     </section>
+  );
+}
+
+// ============================================================
+// REPORT ACTIONS
+// ============================================================
+
+interface ReportActionsProps {
+  reportType: ReportType;
+  filters: ReportFilters;
+}
+
+function ReportActions({ reportType, filters }: ReportActionsProps) {
+  const [downloading, setDownloading] = useState<"pdf" | "excel" | null>(null);
+
+  const [error, setError] = useState("");
+
+  const handleDownload = async (format: "pdf" | "excel") => {
+    try {
+      setError("");
+      setDownloading(format);
+
+      await downloadReport(reportType, format, filters);
+    } catch (downloadError) {
+      console.error(downloadError);
+
+      setError(
+        downloadError instanceof Error
+          ? downloadError.message
+          : "Failed to download report.",
+      );
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {error && <span className="text-xs text-destructive">{error}</span>}
+
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={downloading !== null}
+        onClick={() => handleDownload("pdf")}
+      >
+        {downloading === "pdf" ? (
+          <RefreshCw className="animate-spin" />
+        ) : (
+          <FileText />
+        )}
+        PDF
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={downloading !== null}
+        onClick={() => handleDownload("excel")}
+      >
+        {downloading === "excel" ? (
+          <RefreshCw className="animate-spin" />
+        ) : (
+          <FileSpreadsheet />
+        )}
+        Excel
+      </Button>
+    </div>
   );
 }
 
@@ -422,13 +507,6 @@ function AssetReportView({ filters }: { filters: ReportFilters }) {
         />
 
         <SummaryCard
-          label="Total Value"
-          value={formatCurrency(data?.totalValue)}
-          icon={ClipboardList}
-          tone="ok"
-        />
-
-        <SummaryCard
           label="Asset Types"
           value={formatNumber(Object.keys(data?.byKind ?? {}).length)}
           icon={PackageCheck}
@@ -446,8 +524,8 @@ function AssetReportView({ filters }: { filters: ReportFilters }) {
             <TableHead>Name</TableHead>
             <TableHead>Kind</TableHead>
             <TableHead>Category</TableHead>
-
             <TableHead>Status</TableHead>
+            <TableHead>Condition</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -463,6 +541,16 @@ function AssetReportView({ filters }: { filters: ReportFilters }) {
               <TableCell>
                 {asset.status ? (
                   <Badge tone={statusTone(asset.status)}>{asset.status}</Badge>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+
+              <TableCell>
+                {asset.condition ? (
+                  <Badge tone={statusTone(asset.condition)}>
+                    {asset.condition}
+                  </Badge>
                 ) : (
                   "—"
                 )}
@@ -706,7 +794,7 @@ function DamagedReportView({ filters }: { filters: ReportFilters }) {
             <TableHead>Asset</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Condition</TableHead>
-
+            <TableHead>Location</TableHead>
             <TableHead>Notes</TableHead>
           </TableRow>
         </TableHeader>
@@ -733,6 +821,8 @@ function DamagedReportView({ filters }: { filters: ReportFilters }) {
                   "—"
                 )}
               </TableCell>
+
+              <TableCell>{item.location ?? "—"}</TableCell>
 
               <TableCell className="max-w-[300px] truncate text-muted-foreground">
                 {item.notes ?? "—"}
@@ -868,6 +958,8 @@ export default function Reports() {
 
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>({});
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     setFilters((previous) => ({
       ...previous,
@@ -890,6 +982,10 @@ export default function Reports() {
       nextFilters.categoryId = filters.categoryId.trim();
     }
 
+    if (filters.locationId.trim()) {
+      nextFilters.locationId = filters.locationId.trim();
+    }
+
     if (filters.from) {
       nextFilters.from = filters.from;
     }
@@ -906,24 +1002,38 @@ export default function Reports() {
     setAppliedFilters({});
   };
 
-  const activeLabel =
-    TABS.find((tab) => tab.value === activeTab)?.label ?? "Reports";
+  const handleRefresh = () => {
+    setRefreshKey((previous) => previous + 1);
+  };
+
+  const activeTabConfig = TABS.find((tab) => tab.value === activeTab);
+
+  const activeLabel = activeTabConfig?.label ?? "Reports";
+
+  const activeReportType = activeTabConfig?.reportType ?? "assets";
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <div
+      key={refreshKey}
+      className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8"
+    >
       {/* ======================================================
           HEADER
       ====================================================== */}
 
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Reports
-        </h1>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            Reports
+          </h1>
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Asset, inventory, assignment, damage and status reports from live
-          system data.
-        </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Asset, inventory, assignment, damage and status reports from live
+            system data.
+          </p>
+        </div>
+
+        <ReportActions reportType={activeReportType} filters={appliedFilters} />
       </div>
 
       {/* ======================================================
@@ -1014,15 +1124,28 @@ export default function Reports() {
           FOOTER
       ====================================================== */}
 
-      <div className="flex items-center justify-between border-t border-border pt-4">
+      <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
           Showing live {activeLabel.toLowerCase()} data from the reports API.
         </p>
 
-        <Button variant="ghost" size="sm" onClick={handleApplyFilters}>
-          <RefreshCw />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleRefresh}>
+            <RefreshCw />
+            Refresh
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              downloadReport(activeReportType, "pdf", appliedFilters)
+            }
+          >
+            <Download />
+            Export
+          </Button>
+        </div>
       </div>
     </div>
   );

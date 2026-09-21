@@ -13,6 +13,12 @@ export type EmployeeStatus = "ACTIVE" | "ON_LEAVE" | "INACTIVE" | "EXITED";
 // TYPES
 // ============================================================
 
+export interface EmployeeOrganisation {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
 export interface EmployeeDepartment {
   id: string;
   name?: string;
@@ -42,23 +48,44 @@ export interface Employee {
   phone?: string | null;
   avatarUrl?: string | null;
 
+  // ============================================================
+  // ORGANISATION
+  // ============================================================
+
   organisationId?: string | null;
+  organisation?: EmployeeOrganisation | null;
+
+  // ============================================================
+  // DEPARTMENT
+  // ============================================================
 
   departmentId?: string | null;
-  department?: EmployeeDepartment;
+  department?: EmployeeDepartment | null;
 
   designation?: string | null;
 
+  // ============================================================
+  // MANAGER
+  // ============================================================
+
   managerId?: string | null;
-  manager?: EmployeeManager;
+  manager?: EmployeeManager | null;
   reports?: Employee[];
 
+  // ============================================================
+  // LOCATION
+  // ============================================================
+
   locationId?: string | null;
-  location?: EmployeeLocation;
+  location?: EmployeeLocation | null;
 
   status: EmployeeStatus;
 
   joiningDate?: string | null;
+
+  // ============================================================
+  // ASSET ASSIGNMENTS
+  // ============================================================
 
   assignments?: AssetAssignment[];
 

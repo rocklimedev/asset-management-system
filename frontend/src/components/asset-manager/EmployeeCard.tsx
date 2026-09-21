@@ -62,7 +62,8 @@ export function EmployeeCard({
       className={clsx(
         "flex flex-col rounded-xl border bg-card p-4 transition-all",
         isOver && isValidDrop && "border-brand-400 ring-2 ring-brand-100",
-        isInvalidHover && "border-destructive-border ring-2 ring-destructive-border",
+        isInvalidHover &&
+          "border-destructive-border ring-2 ring-destructive-border",
         !isOver && "border-border",
       )}
     >
@@ -81,19 +82,8 @@ export function EmployeeCard({
               </span>
             )}
           </div>
-          <p className="truncate text-xs text-muted-foreground">
-            {employee.designation ?? "—"}
-          </p>
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-            <span>{employee.department?.name ?? "Unassigned dept."}</span>
-            {employee.location && (
-              <>
-                <span>·</span>
-                <MapPin className="h-3 w-3" />
-                <span>{employee.location.name}</span>
-              </>
-            )}
-          </div>
+
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"></div>
         </div>
 
         {onAssignClick && !hasExited && (

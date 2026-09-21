@@ -65,17 +65,15 @@ export class AssetsController {
   // This must be ABOVE `@Get(":id")` so "pool" is not treated
   // as an asset ID.
   // ============================================================
-
   @Get("pool")
   findPool(@Query() query: AssetPoolQueryDto) {
     return this.service.findPool({
       search: query.search,
-      organisationId: query.organisationId,
       kind: query.kind,
       categoryId: query.categoryId,
       locationId: query.locationId,
-      page: query.page ? Number(query.page) : undefined,
-      pageSize: query.pageSize ? Number(query.pageSize) : undefined,
+      page: query.page,
+      pageSize: query.pageSize,
     });
   }
 

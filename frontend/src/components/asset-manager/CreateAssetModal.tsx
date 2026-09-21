@@ -42,24 +42,20 @@ interface ApiError {
 interface AssetFormValues {
   name: string;
   assetTag: string;
-  serialNumber: string;
 
   kind: AssetKind | "";
   status: AssetStatus | "";
   condition: AssetCondition | "";
 
   categoryId: string;
-  locationId: string;
-  vendorId: string;
 
   manufacturer: string;
   model: string;
 
   purchaseDate: string;
-  purchasePrice: string;
 
   invoiceNumber: string;
-  warrantyStart: string;
+
   warrantyExpiry: string;
 
   notes: string;
@@ -162,24 +158,20 @@ const CONDITION_OPTIONS: {
 const EMPTY_FORM: AssetFormValues = {
   name: "",
   assetTag: "",
-  serialNumber: "",
 
   kind: "",
   status: "",
   condition: "",
 
   categoryId: "",
-  locationId: "",
-  vendorId: "",
 
   manufacturer: "",
   model: "",
 
   purchaseDate: "",
-  purchasePrice: "",
 
   invoiceNumber: "",
-  warrantyStart: "",
+
   warrantyExpiry: "",
 
   notes: "",
@@ -215,8 +207,6 @@ function assetToFormValues(asset: Asset): AssetFormValues {
 
     assetTag: asset.assetTag ?? "",
 
-    serialNumber: asset.serialNumber ?? "",
-
     kind: asset.kind ?? "",
 
     status: asset.status ?? "",
@@ -224,10 +214,6 @@ function assetToFormValues(asset: Asset): AssetFormValues {
     condition: asset.condition ?? "",
 
     categoryId: asset.categoryId ?? "",
-
-    locationId: asset.locationId ?? "",
-
-    vendorId: asset.vendorId ?? "",
 
     manufacturer: asset.manufacturer ?? "",
 
@@ -237,16 +223,7 @@ function assetToFormValues(asset: Asset): AssetFormValues {
       ? String(asset.purchaseDate).slice(0, 10)
       : "",
 
-    purchasePrice:
-      asset.purchasePrice !== undefined && asset.purchasePrice !== null
-        ? String(asset.purchasePrice)
-        : "",
-
     invoiceNumber: asset.invoiceNumber ?? "",
-
-    warrantyStart: asset.warrantyStart
-      ? String(asset.warrantyStart).slice(0, 10)
-      : "",
 
     warrantyExpiry: asset.warrantyExpiry
       ? String(asset.warrantyExpiry).slice(0, 10)
@@ -368,8 +345,6 @@ export function CreateAssetModal({
 
       assetTag: values.assetTag.trim() || undefined,
 
-      serialNumber: values.serialNumber.trim() || undefined,
-
       kind: values.kind,
 
       status: values.status || undefined,
@@ -378,23 +353,13 @@ export function CreateAssetModal({
 
       categoryId: values.categoryId,
 
-      locationId: values.locationId.trim() || undefined,
-
-      vendorId: values.vendorId.trim() || undefined,
-
       manufacturer: values.manufacturer.trim() || undefined,
 
       model: values.model.trim() || undefined,
 
       purchaseDate: values.purchaseDate || undefined,
 
-      purchasePrice: values.purchasePrice.trim()
-        ? Number(values.purchasePrice)
-        : undefined,
-
       invoiceNumber: values.invoiceNumber.trim() || undefined,
-
-      warrantyStart: values.warrantyStart || undefined,
 
       warrantyExpiry: values.warrantyExpiry || undefined,
 
@@ -418,8 +383,6 @@ export function CreateAssetModal({
 
       assetTag: values.assetTag.trim() || undefined,
 
-      serialNumber: values.serialNumber.trim() || undefined,
-
       kind: values.kind || undefined,
 
       status: values.status || undefined,
@@ -428,23 +391,13 @@ export function CreateAssetModal({
 
       categoryId: values.categoryId || undefined,
 
-      locationId: values.locationId || undefined,
-
-      vendorId: values.vendorId || undefined,
-
       manufacturer: values.manufacturer.trim() || undefined,
 
       model: values.model.trim() || undefined,
 
       purchaseDate: values.purchaseDate || undefined,
 
-      purchasePrice: values.purchasePrice.trim()
-        ? Number(values.purchasePrice)
-        : undefined,
-
       invoiceNumber: values.invoiceNumber.trim() || undefined,
-
-      warrantyStart: values.warrantyStart || undefined,
 
       warrantyExpiry: values.warrantyExpiry || undefined,
 
@@ -467,14 +420,6 @@ export function CreateAssetModal({
 
     if (!values.categoryId) {
       return "Please select a category.";
-    }
-
-    if (values.purchasePrice && Number.isNaN(Number(values.purchasePrice))) {
-      return "Purchase price must be a valid number.";
-    }
-
-    if (values.purchasePrice && Number(values.purchasePrice) < 0) {
-      return "Purchase price cannot be negative.";
     }
 
     return null;
@@ -691,21 +636,6 @@ export function CreateAssetModal({
               />
             </div>
 
-            {/* SERIAL NUMBER */}
-
-            <div>
-              <label className={LABEL_CLASSES}>Serial number</label>
-
-              <Input
-                value={values.serialNumber}
-                onChange={(event) =>
-                  setField("serialNumber", event.target.value)
-                }
-                placeholder="Serial number"
-                disabled={isSubmitting}
-              />
-            </div>
-
             {/* KIND */}
 
             <div>
@@ -820,70 +750,6 @@ export function CreateAssetModal({
               ) : null}
             </div>
 
-            {/* LOCATION */}
-
-            <div>
-              <label className={LABEL_CLASSES}>Location</label>
-
-              {locations.length > 0 ? (
-                <select
-                  value={values.locationId}
-                  onChange={(event) =>
-                    setField("locationId", event.target.value)
-                  }
-                  disabled={isSubmitting}
-                  className={SELECT_CLASSES}
-                >
-                  <option value="">Select location</option>
-
-                  {locations.map((location) => (
-                    <option key={location.id} value={location.id}>
-                      {location.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <Input
-                  value={values.locationId}
-                  onChange={(event) =>
-                    setField("locationId", event.target.value)
-                  }
-                  placeholder="Location ID"
-                  disabled={isSubmitting}
-                />
-              )}
-            </div>
-
-            {/* VENDOR */}
-
-            <div>
-              <label className={LABEL_CLASSES}>Vendor</label>
-
-              {vendors.length > 0 ? (
-                <select
-                  value={values.vendorId}
-                  onChange={(event) => setField("vendorId", event.target.value)}
-                  disabled={isSubmitting}
-                  className={SELECT_CLASSES}
-                >
-                  <option value="">Select vendor</option>
-
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <Input
-                  value={values.vendorId}
-                  onChange={(event) => setField("vendorId", event.target.value)}
-                  placeholder="Vendor ID"
-                  disabled={isSubmitting}
-                />
-              )}
-            </div>
-
             {/* MANUFACTURER */}
 
             <div>
@@ -927,24 +793,6 @@ export function CreateAssetModal({
               />
             </div>
 
-            {/* PURCHASE PRICE */}
-
-            <div>
-              <label className={LABEL_CLASSES}>Purchase price</label>
-
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={values.purchasePrice}
-                onChange={(event) =>
-                  setField("purchasePrice", event.target.value)
-                }
-                placeholder="0.00"
-                disabled={isSubmitting}
-              />
-            </div>
-
             {/* INVOICE NUMBER */}
 
             <div>
@@ -956,21 +804,6 @@ export function CreateAssetModal({
                   setField("invoiceNumber", event.target.value)
                 }
                 placeholder="Invoice number"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            {/* WARRANTY START */}
-
-            <div>
-              <label className={LABEL_CLASSES}>Warranty start</label>
-
-              <Input
-                type="date"
-                value={values.warrantyStart}
-                onChange={(event) =>
-                  setField("warrantyStart", event.target.value)
-                }
                 disabled={isSubmitting}
               />
             </div>

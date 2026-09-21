@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 
 import {
@@ -11,16 +11,11 @@ import {
   User,
   Mail,
   Phone,
-  Building2,
-  MapPin,
   Users,
   Calendar,
-  IdCard,
-  Laptop,
   X,
   ChevronLeft,
   ChevronRight,
-  BriefcaseBusiness,
 } from "lucide-react";
 
 import {
@@ -37,7 +32,6 @@ import type {
   UpdateEmployeeRequest,
 } from "../services/api/employees.api";
 
-// shadcn
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -46,23 +40,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "../components/ui/drawer";
 import {
   Select,
   SelectContent,
@@ -79,55 +56,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "../components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Label } from "@/components/ui/label";
 
-// ============================================================
-// TYPES
-// ============================================================
+import EmployeeDetailDrawer from "../components/asset-manager/EmployeeDetailDrawer";
 
-interface EmployeeFormValues {
-  employeeCode: string;
-  name: string;
-  email: string;
-  phone: string;
-  avatarUrl: string;
-  departmentId: string;
-  designation: string;
-  managerId: string;
-  locationId: string;
-  status: EmployeeStatus;
-  joiningDate: string;
-  organisationId: string;
-}
-
-// ============================================================
-// CONSTANTS
-// ============================================================
-
-const STATUS_OPTIONS: {
-  label: string;
-  value: EmployeeStatus;
-}[] = [
-  {
-    label: "Active",
-    value: "ACTIVE",
-  },
-  {
-    label: "On Leave",
-    value: "ON_LEAVE",
-  },
-  {
-    label: "Inactive",
-    value: "INACTIVE",
-  },
-  {
-    label: "Exited",
-    value: "EXITED",
-  },
-];
+import EmployeeFormModal, {
+  type EmployeeFormValues,
+  STATUS_OPTIONS,
+  getEmptyEmployeeForm,
+} from "../components/asset-manager/EmployeeFormModal";
 
 // ============================================================
 // HELPERS
@@ -238,555 +176,8 @@ const StatusBadge = ({ status }: { status?: EmployeeStatus }) => {
 };
 
 // ============================================================
-// EMPLOYEE FORM
+// SUMMARY CARD
 // ============================================================
-
-interface EmployeeFormProps {
-  value: EmployeeFormValues;
-  onChange: (field: keyof EmployeeFormValues, value: string) => void;
-  employees: Employee[];
-  editingEmployee?: Employee | null;
-}
-
-const EmployeeForm = ({
-  value,
-  onChange,
-  employees,
-  editingEmployee,
-}: EmployeeFormProps) => {
-  const departmentOptions = useMemo(() => {
-    const map = new Map<string, string>();
-
-    employees.forEach((employee) => {
-      if (employee.department?.id) {
-        map.set(
-          employee.department.id,
-          employee.department.name || employee.department.id,
-        );
-      }
-    });
-
-    return Array.from(map.entries());
-  }, [employees]);
-
-  const locationOptions = useMemo(() => {
-    const map = new Map<string, string>();
-
-    employees.forEach((employee) => {
-      if (employee.location?.id) {
-        map.set(
-          employee.location.id,
-          employee.location.name || employee.location.id,
-        );
-      }
-    });
-
-    return Array.from(map.entries());
-  }, [employees]);
-
-  const managerOptions = useMemo(() => {
-    return employees.filter((employee) => employee.id !== editingEmployee?.id);
-  }, [employees, editingEmployee]);
-
-  return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FormField label="Employee Code" required>
-          <Input
-            value={value.employeeCode}
-            onChange={(e) => onChange("employeeCode", e.target.value)}
-            placeholder="EMP-001"
-          />
-        </FormField>
-
-        <FormField label="Employee Name" required>
-          <Input
-            value={value.name}
-            onChange={(e) => onChange("name", e.target.value)}
-            placeholder="Enter employee name"
-          />
-        </FormField>
-
-        <FormField label="Email">
-          <Input
-            type="email"
-            value={value.email}
-            onChange={(e) => onChange("email", e.target.value)}
-            placeholder="employee@company.com"
-          />
-        </FormField>
-
-        <FormField label="Phone">
-          <Input
-            value={value.phone}
-            onChange={(e) => onChange("phone", e.target.value)}
-            placeholder="+91 XXXXX XXXXX"
-          />
-        </FormField>
-
-        <FormField label="Designation">
-          <Input
-            value={value.designation}
-            onChange={(e) => onChange("designation", e.target.value)}
-            placeholder="Software Engineer"
-          />
-        </FormField>
-
-        <FormField label="Status">
-          <Select
-            value={value.status}
-            onValueChange={(selected) => onChange("status", selected)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <FormField label="Department">
-          <Select
-            value={value.departmentId || undefined}
-            onValueChange={(selected) => onChange("departmentId", selected)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select department" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {departmentOptions.map(([id, name]) => (
-                <SelectItem key={id} value={id}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <FormField label="Location">
-          <Select
-            value={value.locationId || undefined}
-            onValueChange={(selected) => onChange("locationId", selected)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {locationOptions.map(([id, name]) => (
-                <SelectItem key={id} value={id}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <FormField label="Manager">
-          <Select
-            value={value.managerId || undefined}
-            onValueChange={(selected) => onChange("managerId", selected)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select manager" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {managerOptions.map((employee) => (
-                <SelectItem key={employee.id} value={employee.id}>
-                  {employee.name} ({employee.employeeCode})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <FormField label="Joining Date">
-          <Input
-            type="date"
-            value={value.joiningDate}
-            onChange={(e) => onChange("joiningDate", e.target.value)}
-          />
-        </FormField>
-      </div>
-
-      <FormField label="Avatar URL">
-        <Input
-          value={value.avatarUrl}
-          onChange={(e) => onChange("avatarUrl", e.target.value)}
-          placeholder="https://..."
-        />
-      </FormField>
-    </div>
-  );
-};
-
-// ============================================================
-// FORM FIELD
-// ============================================================
-
-const FormField = ({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) => {
-  return (
-    <div className="space-y-2">
-      <Label>
-        {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
-      </Label>
-
-      {children}
-    </div>
-  );
-};
-
-// ============================================================
-// EMPLOYEE DETAIL DRAWER
-// ============================================================
-
-interface EmployeeDetailDrawerProps {
-  employee: Employee | null;
-  open: boolean;
-  onClose: () => void;
-  onEdit: (employee: Employee) => void;
-}
-
-const EmployeeDetailDrawer = ({
-  employee,
-  open,
-  onClose,
-  onEdit,
-}: EmployeeDetailDrawerProps) => {
-  if (!employee) {
-    return null;
-  }
-
-  const assignments = employee.assignments || [];
-
-  const reports = employee.reports || [];
-
-  return (
-    <Drawer
-      open={open}
-      onOpenChange={(value) => {
-        if (!value) {
-          onClose();
-        }
-      }}
-    >
-      <DrawerContent className="max-h-[95vh]">
-        <div className="mx-auto w-full max-w-4xl overflow-y-auto">
-          <DrawerHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={employee.avatarUrl || undefined} />
-
-                  <AvatarFallback className="text-lg">
-                    {getInitials(employee)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div>
-                  <DrawerTitle className="text-xl">{employee.name}</DrawerTitle>
-
-                  <DrawerDescription>{employee.employeeCode}</DrawerDescription>
-
-                  <div className="mt-2">
-                    <StatusBadge status={employee.status} />
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(employee)}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Button>
-            </div>
-          </DrawerHeader>
-
-          <div className="space-y-6 px-6 pb-6">
-            {/* SUMMARY */}
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <SummaryCard
-                icon={Users}
-                label="Reports"
-                value={reports.length}
-              />
-
-              <SummaryCard
-                icon={Laptop}
-                label="Assets"
-                value={assignments.length}
-              />
-
-              <SummaryCard
-                icon={Calendar}
-                label="Joined"
-                value={
-                  employee.joiningDate
-                    ? dayjs(employee.joiningDate).format("DD MMM YYYY")
-                    : "-"
-                }
-              />
-            </div>
-
-            {/* BASIC INFORMATION */}
-
-            <DetailSection title="Basic Information">
-              <DetailGrid>
-                <DetailItem
-                  icon={IdCard}
-                  label="Employee Code"
-                  value={employee.employeeCode}
-                />
-
-                <DetailItem icon={User} label="Name" value={employee.name} />
-
-                <DetailItem icon={Mail} label="Email" value={employee.email} />
-
-                <DetailItem icon={Phone} label="Phone" value={employee.phone} />
-
-                <DetailItem
-                  icon={BriefcaseBusiness}
-                  label="Designation"
-                  value={employee.designation}
-                />
-
-                <DetailItem
-                  icon={Calendar}
-                  label="Joining Date"
-                  value={
-                    employee.joiningDate
-                      ? dayjs(employee.joiningDate).format("DD MMM YYYY")
-                      : null
-                  }
-                />
-              </DetailGrid>
-            </DetailSection>
-
-            {/* ORGANISATION */}
-
-            <DetailSection title="Organisation">
-              <DetailGrid>
-                <DetailItem
-                  icon={Building2}
-                  label="Department"
-                  value={employee.department?.name || employee.departmentId}
-                />
-
-                <DetailItem
-                  icon={MapPin}
-                  label="Location"
-                  value={employee.location?.name || employee.locationId}
-                />
-
-                <DetailItem
-                  icon={User}
-                  label="Manager"
-                  value={employee.manager?.name || employee.managerId}
-                />
-
-                <DetailItem
-                  icon={Users}
-                  label="Organisation"
-                  value={employee.organisationId}
-                />
-              </DetailGrid>
-            </DetailSection>
-
-            {/* REPORTS */}
-
-            {reports.length > 0 && (
-              <DetailSection title="Reporting Employees">
-                <div className="space-y-2">
-                  {reports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={report.avatarUrl || undefined} />
-
-                        <AvatarFallback>{getInitials(report)}</AvatarFallback>
-                      </Avatar>
-
-                      <div className="min-w-0">
-                        <p className="font-medium">{report.name}</p>
-
-                        <p className="text-sm text-muted-foreground">
-                          {report.employeeCode}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </DetailSection>
-            )}
-
-            {/* ASSETS */}
-
-            {assignments.length > 0 && (
-              <DetailSection title="Assigned Assets">
-                <div className="overflow-hidden rounded-lg border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Asset</TableHead>
-
-                        <TableHead>Asset Tag</TableHead>
-
-                        <TableHead>Assigned</TableHead>
-                      </TableRow>
-                    </TableHeader>
-
-                    <TableBody>
-                      {assignments.map((assignment: any, index) => (
-                        <TableRow key={assignment.id || index}>
-                          <TableCell>
-                            {assignment.asset?.name ||
-                              assignment.asset?.assetTag ||
-                              assignment.assetId ||
-                              "-"}
-                          </TableCell>
-
-                          <TableCell>
-                            {assignment.asset?.assetTag ||
-                              assignment.assetTag ||
-                              "-"}
-                          </TableCell>
-
-                          <TableCell>
-                            {assignment.assignedAt
-                              ? dayjs(assignment.assignedAt).format(
-                                  "DD MMM YYYY",
-                                )
-                              : "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </DetailSection>
-            )}
-
-            {/* RECORD */}
-
-            <DetailSection title="Record Information">
-              <DetailGrid>
-                <DetailItem
-                  icon={Calendar}
-                  label="Created"
-                  value={
-                    employee.createdAt
-                      ? dayjs(employee.createdAt).format("DD MMM YYYY, hh:mm A")
-                      : null
-                  }
-                />
-
-                <DetailItem
-                  icon={Calendar}
-                  label="Updated"
-                  value={
-                    employee.updatedAt
-                      ? dayjs(employee.updatedAt).format("DD MMM YYYY, hh:mm A")
-                      : null
-                  }
-                />
-
-                <DetailItem
-                  icon={IdCard}
-                  label="Employee ID"
-                  value={employee.id}
-                />
-              </DetailGrid>
-            </DetailSection>
-          </div>
-
-          <DrawerFooter>
-            <DrawerClose asChild>
-              <Button variant="outline">Close</Button>
-            </DrawerClose>
-
-            <Button onClick={() => onEdit(employee)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Employee
-            </Button>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
-  );
-};
-
-// ============================================================
-// DETAIL HELPERS
-// ============================================================
-
-const DetailSection = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <section>
-      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
-
-      {children}
-    </section>
-  );
-};
-
-const DetailGrid = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="grid grid-cols-1 gap-3 rounded-lg border p-4 sm:grid-cols-2">
-      {children}
-    </div>
-  );
-};
-
-const DetailItem = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value?: React.ReactNode;
-}) => {
-  return (
-    <div className="flex gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-
-        <p className="truncate text-sm font-medium">{value || "-"}</p>
-      </div>
-    </div>
-  );
-};
 
 const SummaryCard = ({
   icon: Icon,
@@ -815,37 +206,19 @@ const SummaryCard = ({
 };
 
 // ============================================================
-// EMPTY FORM
-// ============================================================
-
-const getEmptyForm = (): EmployeeFormValues => ({
-  employeeCode: "",
-  name: "",
-  email: "",
-  phone: "",
-  avatarUrl: "",
-  departmentId: "",
-  designation: "",
-  managerId: "",
-  locationId: "",
-  status: "ACTIVE",
-  joiningDate: "",
-  organisationId: "",
-});
-
-// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
 const EmployeeList: React.FC = () => {
   const [search, setSearch] = useState("");
+
   const [status, setStatus] = useState<EmployeeStatus | undefined>();
 
   const [departmentId, setDepartmentId] = useState<string | undefined>();
 
   const [page, setPage] = useState(1);
 
-  const [form, setForm] = useState<EmployeeFormValues>(getEmptyForm());
+  const [form, setForm] = useState<EmployeeFormValues>(getEmptyEmployeeForm());
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -856,6 +229,10 @@ const EmployeeList: React.FC = () => {
   );
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // ============================================================
+  // API
+  // ============================================================
 
   const { data, isLoading, isFetching, isError, refetch } =
     useGetEmployeesQuery({
@@ -894,7 +271,7 @@ const EmployeeList: React.FC = () => {
     (employee) => employee.status === "ON_LEAVE",
   ).length;
 
-  const departmentOptions = useMemo(() => {
+  const departmentOptions = React.useMemo(() => {
     const map = new Map<string, string>();
 
     employees.forEach((employee) => {
@@ -922,9 +299,7 @@ const EmployeeList: React.FC = () => {
 
   const openCreate = () => {
     setEditingEmployee(null);
-
-    setForm(getEmptyForm());
-
+    setForm(getEmptyEmployeeForm());
     setModalOpen(true);
   };
 
@@ -936,11 +311,7 @@ const EmployeeList: React.FC = () => {
       name: employee.name || "",
       email: employee.email || "",
       phone: employee.phone || "",
-      avatarUrl: employee.avatarUrl || "",
       departmentId: employee.departmentId || "",
-      designation: employee.designation || "",
-      managerId: employee.managerId || "",
-      locationId: employee.locationId || "",
       status: employee.status || "ACTIVE",
       joiningDate: employee.joiningDate
         ? dayjs(employee.joiningDate).format("YYYY-MM-DD")
@@ -949,7 +320,6 @@ const EmployeeList: React.FC = () => {
     });
 
     setDrawerOpen(false);
-
     setModalOpen(true);
   };
 
@@ -960,7 +330,7 @@ const EmployeeList: React.FC = () => {
 
     setModalOpen(false);
     setEditingEmployee(null);
-    setForm(getEmptyForm());
+    setForm(getEmptyEmployeeForm());
   };
 
   // ============================================================
@@ -978,27 +348,12 @@ const EmployeeList: React.FC = () => {
 
     const payload: CreateEmployeeRequest = {
       employeeCode: form.employeeCode.trim(),
-
       name: form.name.trim(),
-
       email: form.email.trim() || undefined,
-
       phone: form.phone.trim() || undefined,
-
-      avatarUrl: form.avatarUrl.trim() || undefined,
-
       departmentId: form.departmentId || undefined,
-
-      designation: form.designation.trim() || undefined,
-
-      managerId: form.managerId || undefined,
-
-      locationId: form.locationId || undefined,
-
       status: form.status,
-
       joiningDate: form.joiningDate || undefined,
-
       organisationId: form.organisationId || undefined,
     };
 
@@ -1015,7 +370,6 @@ const EmployeeList: React.FC = () => {
       }
 
       closeModal();
-
       await refetch();
     } catch (error) {
       console.error("Failed to save employee", error);
@@ -1127,7 +481,7 @@ const EmployeeList: React.FC = () => {
         <SummaryCard icon={Calendar} label="On Leave" value={leaveCount} />
       </div>
 
-      {/* TABLE CARD */}
+      {/* TABLE */}
 
       <Card>
         <CardHeader className="pb-4">
@@ -1226,6 +580,8 @@ const EmployeeList: React.FC = () => {
                     <TableRow>
                       <TableHead className="min-w-[240px]">Employee</TableHead>
 
+                      <TableHead>Organisation</TableHead>
+
                       <TableHead>Contact</TableHead>
 
                       <TableHead>Status</TableHead>
@@ -1239,7 +595,7 @@ const EmployeeList: React.FC = () => {
                   <TableBody>
                     {isLoading || isFetching ? (
                       <TableRow>
-                        <TableCell colSpan={9} className="h-32 text-center">
+                        <TableCell colSpan={5} className="h-32 text-center">
                           <RefreshCw className="mx-auto mb-2 h-5 w-5 animate-spin text-muted-foreground" />
 
                           <span className="text-sm text-muted-foreground">
@@ -1249,7 +605,7 @@ const EmployeeList: React.FC = () => {
                       </TableRow>
                     ) : employees.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={9} className="h-40 text-center">
+                        <TableCell colSpan={5} className="h-40 text-center">
                           <Users className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
 
                           <p className="font-medium">No employees found</p>
@@ -1283,6 +639,16 @@ const EmployeeList: React.FC = () => {
                                   {employee.employeeCode}
                                 </p>
                               </div>
+                            </div>
+                          </TableCell>
+
+                          {/* ORGANISATION */}
+
+                          <TableCell>
+                            <div className="space-y-1">
+                              {employee.organisation?.name ||
+                                employee.organisationId ||
+                                "-"}
                             </div>
                           </TableCell>
 
@@ -1408,69 +774,21 @@ const EmployeeList: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* CREATE / EDIT MODAL */}
+      {/* ADD / EDIT EMPLOYEE */}
 
-      <Dialog
+      <EmployeeFormModal
         open={modalOpen}
-        onOpenChange={(open: boolean) => {
-          if (!open) {
-            closeModal();
-          }
-        }}
-      >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
-          <DialogHeader>
-            <DialogTitle>
-              {editingEmployee ? "Edit Employee" : "Add Employee"}
-            </DialogTitle>
+        value={form}
+        employees={employees}
+        editingEmployee={editingEmployee}
+        isCreating={isCreating}
+        isUpdating={isUpdating}
+        onChange={updateForm}
+        onClose={closeModal}
+        onSubmit={handleSubmit}
+      />
 
-            <DialogDescription>
-              {editingEmployee
-                ? "Update the employee information below."
-                : "Create a new employee record."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <EmployeeForm
-            value={form}
-            onChange={updateForm}
-            employees={employees}
-            editingEmployee={editingEmployee}
-          />
-
-          <DialogFooter className="mt-4">
-            <Button
-              variant="outline"
-              onClick={closeModal}
-              disabled={isCreating || isUpdating}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              onClick={handleSubmit}
-              disabled={
-                isCreating ||
-                isUpdating ||
-                !form.employeeCode.trim() ||
-                !form.name.trim()
-              }
-            >
-              {isCreating || isUpdating ? (
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              ) : editingEmployee ? (
-                <Pencil className="mr-2 h-4 w-4" />
-              ) : (
-                <Plus className="mr-2 h-4 w-4" />
-              )}
-
-              {editingEmployee ? "Update Employee" : "Create Employee"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* DETAIL DRAWER */}
+      {/* EMPLOYEE DETAILS */}
 
       <EmployeeDetailDrawer
         employee={selectedEmployee}
