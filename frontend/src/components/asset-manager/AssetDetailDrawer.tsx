@@ -53,7 +53,14 @@ export function AssetDetailDrawer({
     skip: asset?.id == null,
   });
 
-  const history = historyResponse ?? [];
+  /*
+   * The API query currently exposes `data` as unknown.
+   * Normalize it here so the component has a strongly typed
+   * AssetHistory[] instead of propagating unknown through the UI.
+   */
+  const history: AssetHistory[] = Array.isArray(historyResponse)
+    ? (historyResponse as AssetHistory[])
+    : [];
 
   // ==========================================================
   // DON'T RENDER
@@ -320,7 +327,7 @@ export function AssetDetailDrawer({
 
               {!historyLoading && !historyFetching && history.length > 0 && (
                 <ol className="space-y-4 border-l pl-4">
-                  {history.map((item) => (
+                  {history.map((item: AssetHistory) => (
                     <li key={item.id} className="relative">
                       <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-primary ring-4 ring-background" />
 

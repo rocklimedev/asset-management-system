@@ -514,23 +514,6 @@ export default function UsersRoles() {
                             : "permissions"}{" "}
                           granted
                         </p>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {permissions.slice(0, 6).map((item) => (
-                            <span
-                              key={item.id ?? item.permissionId}
-                              className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
-                            >
-                              {item.permission?.name || "Permission"}
-                            </span>
-                          ))}
-
-                          {permissions.length > 6 && (
-                            <span className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                              +{permissions.length - 6} more
-                            </span>
-                          )}
-                        </div>
                       </Card>
                     );
                   })}

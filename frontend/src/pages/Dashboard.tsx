@@ -238,11 +238,9 @@ export default function Dashboard() {
   const today = new Date();
 
   const thirtyDaysFromNow = new Date(today);
-
   thirtyDaysFromNow.setDate(today.getDate() + 30);
 
   const ninetyDaysFromNow = new Date(today);
-
   ninetyDaysFromNow.setDate(today.getDate() + 90);
 
   // ==========================================================
@@ -314,7 +312,6 @@ export default function Dashboard() {
     })
     .sort((a, b) => {
       const aDate = new Date(a.license?.expiryDate || "").getTime();
-
       const bDate = new Date(b.license?.expiryDate || "").getTime();
 
       return aDate - bDate;
@@ -334,7 +331,6 @@ export default function Dashboard() {
     })
     .sort((a, b) => {
       const aDate = new Date(a.warrantyExpiry || "").getTime();
-
       const bDate = new Date(b.warrantyExpiry || "").getTime();
 
       return aDate - bDate;
@@ -510,29 +506,29 @@ export default function Dashboard() {
     {
       label: "Licenses expiring within 30 days",
       count: licensesExpiring30Days,
-      tone: licensesExpiring30Days > 0 ? "danger" : "default",
+      tone: licensesExpiring30Days > 0 ? "danger" : "neutral",
     },
     {
       label: "Warranties expiring within 30 days",
       count: warrantiesExpiring30Days,
-      tone: warrantiesExpiring30Days > 0 ? "warn" : "default",
+      tone: warrantiesExpiring30Days > 0 ? "warn" : "neutral",
     },
     {
       label: "Assets under repair",
       count: underRepair,
-      tone: underRepair > 0 ? "warn" : "default",
+      tone: underRepair > 0 ? "warn" : "neutral",
     },
     {
       label: "Damaged assets",
       count: damagedAssets,
-      tone: damagedAssets > 0 ? "danger" : "default",
+      tone: damagedAssets > 0 ? "danger" : "neutral",
     },
     {
       label: "Lost assets",
       count: lostAssets,
-      tone: lostAssets > 0 ? "danger" : "default",
+      tone: lostAssets > 0 ? "danger" : "neutral",
     },
-  ];
+  ] as const;
 
   // ==========================================================
   // RENDER
@@ -959,17 +955,7 @@ export default function Dashboard() {
                   </span>
                 </div>
 
-                <Badge
-                  tone={
-                    alert.tone === "danger"
-                      ? "danger"
-                      : alert.tone === "warn"
-                        ? "warn"
-                        : "default"
-                  }
-                >
-                  {alert.count}
-                </Badge>
+                <Badge tone={alert.tone}>{alert.count}</Badge>
               </div>
             ))}
           </div>
