@@ -54,6 +54,11 @@ export interface AssetEmployee {
 
   [key: string]: unknown;
 }
+
+// ============================================================
+// ASSET POOL
+// ============================================================
+
 export interface AssetPoolParams {
   search?: string;
   organisationId?: string;
@@ -76,6 +81,10 @@ export interface AssetPoolResponse {
   totalPages: number;
 }
 
+// ============================================================
+// INVENTORY
+// ============================================================
+
 export interface AdjustInventoryRequest {
   id: string;
   changeType: "RESTOCK" | "CONSUMED" | "RETURNED" | "ADJUSTMENT" | "WRITE_OFF";
@@ -95,6 +104,7 @@ export interface InventoryHistoryEntry {
   reason?: string | null;
   createdAt: string;
 }
+
 // ============================================================
 // LOCATION
 // ============================================================
@@ -366,12 +376,17 @@ export interface Asset {
   createdAt?: string;
 
   updatedAt?: string;
+
+  // Inventory
   quantity?: number;
+
   quantityAssigned?: number;
+
   reorderLevel?: number | null;
 
-  // Image, served from the in-house CDN.
+  // Image
   imageKey?: string | null;
+
   imageUrl?: string | null;
 
   [key: string]: unknown;
@@ -404,6 +419,7 @@ export interface AssetsResponse {
 
   [key: string]: unknown;
 }
+
 export interface AssetResponse {
   data: Asset;
 
@@ -445,7 +461,7 @@ export interface SoftwareAssetsResponse {
 }
 
 // ============================================================
-// ASSET CATEGORY RESPONSE TYPES
+// CATEGORY RESPONSE TYPES
 // ============================================================
 
 export interface AssetCategoriesResponse {
@@ -719,7 +735,6 @@ export const assetApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
-      // Keep state available for future auth implementation.
       void state;
 
       const token = localStorage.getItem("accessToken");
@@ -771,7 +786,6 @@ export const assetApi = createApi({
                 type: "AssetCategory" as const,
                 id,
               })),
-
               {
                 type: "AssetCategory" as const,
                 id: "LIST",
@@ -811,7 +825,6 @@ export const assetApi = createApi({
           type: "AssetCategory",
           id: "LIST",
         },
-
         {
           type: "Asset",
           id: "LIST",
@@ -834,12 +847,10 @@ export const assetApi = createApi({
           type: "AssetCategory",
           id,
         },
-
         {
           type: "AssetCategory",
           id: "LIST",
         },
-
         {
           type: "Asset",
           id: "LIST",
@@ -858,7 +869,6 @@ export const assetApi = createApi({
           type: "AssetCategory",
           id,
         },
-
         {
           type: "AssetCategory",
           id: "LIST",
@@ -877,7 +887,6 @@ export const assetApi = createApi({
           type: "AssetCategory",
           id: "LIST",
         },
-
         {
           type: "Asset",
           id: "LIST",
@@ -893,6 +902,7 @@ export const assetApi = createApi({
       query: (params = {}) => ({
         url: "/assets",
         method: "GET",
+
         params: {
           search: params.search || undefined,
           organisationId: params.organisationId || undefined,
@@ -964,14 +974,11 @@ export const assetApi = createApi({
           type: "Asset",
           id: "LIST",
         },
-
         "SoftwareAsset",
-
         {
           type: "AssetCategory",
           id: "LIST",
         },
-
         "Vendor",
       ],
     }),
@@ -988,20 +995,47 @@ export const assetApi = createApi({
           type: "Asset",
           id,
         },
-
         {
           type: "Asset",
           id: "LIST",
         },
-
         "SoftwareAsset",
-
         {
           type: "AssetCategory",
           id: "LIST",
         },
-
         "Vendor",
+      ],
+    }),
+
+    // ============================================================
+    // DELETE ASSET
+    // ============================================================
+
+    deleteAsset: builder.mutation<{ message?: string; id?: string }, string>({
+      query: (id) => ({
+        url: `/assets/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: (result, error, id) => [
+        {
+          type: "Asset",
+          id,
+        },
+        {
+          type: "Asset",
+          id: "LIST",
+        },
+        {
+          type: "Asset",
+          id: "POOL",
+        },
+        "SoftwareAsset",
+        {
+          type: "AssetHistory",
+          id,
+        },
       ],
     }),
 
@@ -1021,22 +1055,18 @@ export const assetApi = createApi({
           type: "Asset",
           id,
         },
-
         {
           type: "Asset",
           id: "LIST",
         },
-
         {
           type: "AssetHistory",
           id,
         },
-
         {
           type: "AssetAssignment",
           id,
         },
-
         "SoftwareAsset",
       ],
     }),
@@ -1059,6 +1089,25 @@ export const assetApi = createApi({
         method: "POST",
         body,
       }),
+
+      invalidatesTags: (result, error, { id }) => [
+        {
+          type: "Asset",
+          id,
+        },
+        {
+          type: "Asset",
+          id: "LIST",
+        },
+        {
+          type: "AssetHistory",
+          id,
+        },
+        {
+          type: "AssetTransfer",
+          id,
+        },
+      ],
     }),
 
     // ============================================================
@@ -1080,22 +1129,18 @@ export const assetApi = createApi({
           type: "Asset",
           id,
         },
-
         {
           type: "Asset",
           id: "LIST",
         },
-
         {
           type: "AssetHistory",
           id,
         },
-
         {
           type: "AssetAssignment",
           id,
         },
-
         "SoftwareAsset",
       ],
     }),
@@ -1117,7 +1162,6 @@ export const assetApi = createApi({
                 type: "SoftwareAsset" as const,
                 id,
               })),
-
               {
                 type: "SoftwareAsset" as const,
                 id: "LIST",
@@ -1131,17 +1175,16 @@ export const assetApi = createApi({
             ],
     }),
 
-    /**
-     * 2. Add these endpoints inside `endpoints: (builder) => ({ ... })`,
-     *    alongside the existing asset endpoints:
-     */
+    // ============================================================
+    // ASSET POOL
+    // ============================================================
 
-    // ASSET POOL — searchable, ready-to-assign inventory
     getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>(
       {
         query: (params = {}) => ({
           url: "/assets/pool",
           method: "GET",
+
           params: {
             search: params.search || undefined,
             organisationId: params.organisationId || undefined,
@@ -1152,11 +1195,15 @@ export const assetApi = createApi({
             pageSize: params.pageSize || undefined,
           },
         }),
+
         providesTags: [{ type: "Asset" as const, id: "POOL" }],
       },
     ),
 
-    // RELEASE ASSETS FOR AN EXITED EMPLOYEE
+    // ============================================================
+    // RELEASE ASSETS FOR EMPLOYEE
+    // ============================================================
+
     releaseAssetsForEmployee: builder.mutation<
       { employeeId: string; releasedCount: number },
       string
@@ -1165,16 +1212,27 @@ export const assetApi = createApi({
         url: `/assets/release-for-employee/${employeeId}`,
         method: "POST",
       }),
+
       invalidatesTags: [
-        { type: "Asset" as const, id: "LIST" },
-        { type: "Asset" as const, id: "POOL" },
+        {
+          type: "Asset",
+          id: "LIST",
+        },
+        {
+          type: "Asset",
+          id: "POOL",
+        },
       ],
     }),
 
+    // ============================================================
     // ASSET IMAGE
+    // ============================================================
+
     setAssetImage: builder.mutation<AssetResponse, { id: string; file: File }>({
       query: ({ id, file }) => {
         const formData = new FormData();
+
         formData.append("file", file);
 
         return {
@@ -1183,8 +1241,12 @@ export const assetApi = createApi({
           body: formData,
         };
       },
+
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset" as const, id },
+        {
+          type: "Asset",
+          id,
+        },
       ],
     }),
 
@@ -1193,27 +1255,54 @@ export const assetApi = createApi({
         url: `/assets/${id}/image/remove`,
         method: "POST",
       }),
-      invalidatesTags: (result, error, id) => [{ type: "Asset" as const, id }],
+
+      invalidatesTags: (result, error, id) => [
+        {
+          type: "Asset",
+          id,
+        },
+      ],
     }),
 
+    // ============================================================
     // INVENTORY
+    // ============================================================
+
     adjustInventory: builder.mutation<AssetResponse, AdjustInventoryRequest>({
       query: ({ id, ...body }) => ({
         url: `/assets/${id}/inventory/adjust`,
         method: "POST",
         body,
       }),
+
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset" as const, id },
-        { type: "Asset" as const, id: "LIST" },
-        { type: "Asset" as const, id: "POOL" },
+        {
+          type: "Asset",
+          id,
+        },
+        {
+          type: "Asset",
+          id: "LIST",
+        },
+        {
+          type: "Asset",
+          id: "POOL",
+        },
+        {
+          type: "AssetHistory",
+          id,
+        },
       ],
     }),
 
     getInventoryHistory: builder.query<InventoryHistoryEntry[], string>({
       query: (id) => `/assets/${id}/inventory/history`,
+
       providesTags: (result, error, id) => [
-        { type: "AssetHistory" as const, id },
+        {
+          type: "AssetHistory" as const,
+          id,
+        },
       ],
     }),
   }),
@@ -1231,6 +1320,7 @@ export const {
 
   useCreateAssetMutation,
   useUpdateAssetMutation,
+  useDeleteAssetMutation,
 
   useAssignAssetMutation,
   useTransferAssetMutation,
@@ -1249,10 +1339,15 @@ export const {
   useToggleAssetCategoryMutation,
   useDeleteAssetCategoryMutation,
 
+  // Pool
   useGetAssetPoolQuery,
   useReleaseAssetsForEmployeeMutation,
+
+  // Image
   useSetAssetImageMutation,
   useRemoveAssetImageMutation,
+
+  // Inventory
   useAdjustInventoryMutation,
   useGetInventoryHistoryQuery,
 } = assetApi;

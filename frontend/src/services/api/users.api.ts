@@ -6,26 +6,25 @@ import { BACKEND } from "../../lib/api";
 // TYPES
 // ============================================================
 
+export interface UserRole {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
 export interface User {
   id: string;
 
-  name?: string;
-  firstName?: string;
-  lastName?: string;
+  name: string;
+  email: string;
 
-  email?: string;
-  phone?: string;
+  employeeId?: string | null;
 
-  employeeId?: string;
+  roleId: string;
 
-  role?: string;
-  roleId?: string;
+  role?: UserRole;
 
-  organisationId?: string;
-
-  status?: string;
-  is_active?: boolean;
-  is_email_verified?: boolean;
+  status: "ACTIVE" | "DISABLED";
 
   createdAt?: string;
   updatedAt?: string;
@@ -55,34 +54,60 @@ export interface UserResponse {
   [key: string]: unknown;
 }
 
-export interface CreateUserRequest {
-  name?: string;
-  firstName?: string;
-  lastName?: string;
+// ============================================================
+// CREATE USER
+// ============================================================
 
+export interface CreateUserRequest {
+  name: string;
   email: string;
-  phone?: string;
+  password: string;
+
+  roleId: string;
 
   employeeId?: string;
+}
 
-  roleId?: string;
-  organisationId?: string;
+// ============================================================
+// UPDATE USER
+// ============================================================
 
+export interface UpdateUserRequest {
+  id: string;
+
+  name?: string;
+  email?: string;
   password?: string;
 
-  status?: string;
-
-  [key: string]: unknown;
+  employeeId?: string | null;
 }
+
+// ============================================================
+// UPDATE USER STATUS
+// ============================================================
 
 export interface SetUserStatusRequest {
   id: string;
-  status: string;
+  status: "ACTIVE" | "DISABLED";
 }
+
+// ============================================================
+// CHANGE USER ROLE
+// ============================================================
 
 export interface ChangeUserRoleRequest {
   id: string;
   roleId: string;
+}
+
+// ============================================================
+// DELETE USER
+// ============================================================
+
+export interface DeleteUserResponse {
+  success: boolean;
+  message: string;
+  id: string;
 }
 
 // ============================================================
@@ -164,6 +189,53 @@ export const usersApi = createApi({
     }),
 
     // ============================================================
+    // UPDATE USER
+    // PATCH /users/:id
+    // ============================================================
+
+    updateUser: builder.mutation<UserResponse, UpdateUserRequest>({
+      query: ({ id, ...body }) => ({
+        url: `/users/${id}`,
+        method: "PATCH",
+        body,
+      }),
+
+      invalidatesTags: (result, error, { id }) => [
+        {
+          type: "User" as const,
+          id,
+        },
+        {
+          type: "User" as const,
+          id: "LIST",
+        },
+      ],
+    }),
+
+    // ============================================================
+    // DELETE USER
+    // DELETE /users/:id
+    // ============================================================
+
+    deleteUser: builder.mutation<DeleteUserResponse, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: (result, error, id) => [
+        {
+          type: "User" as const,
+          id,
+        },
+        {
+          type: "User" as const,
+          id: "LIST",
+        },
+      ],
+    }),
+
+    // ============================================================
     // UPDATE USER STATUS
     // PATCH /users/:id/status
     // ============================================================
@@ -183,7 +255,6 @@ export const usersApi = createApi({
           type: "User" as const,
           id,
         },
-
         {
           type: "User" as const,
           id: "LIST",
@@ -211,7 +282,6 @@ export const usersApi = createApi({
           type: "User" as const,
           id,
         },
-
         {
           type: "User" as const,
           id: "LIST",
@@ -228,6 +298,8 @@ export const usersApi = createApi({
 export const {
   useGetUsersQuery,
   useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
   useSetUserStatusMutation,
   useChangeUserRoleMutation,
 } = usersApi;

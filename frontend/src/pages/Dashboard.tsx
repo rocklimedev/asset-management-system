@@ -1,12 +1,13 @@
 import {
+  AppWindow,
   Boxes,
   CheckCircle2,
-  PackageOpen,
-  Users,
+  Clock3,
   Laptop,
-  AppWindow,
-  Wrench,
+  PackageOpen,
   ShieldAlert,
+  Users,
+  Wrench,
 } from "lucide-react";
 
 import { useGetAssetsQuery } from "../services/api/asset.api";
@@ -16,8 +17,11 @@ import { StatCard } from "../components/dashboard/StatCard";
 import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 
-import type { Asset, AssetStatus } from "../services/api/asset.api";
+// ============================================================
+// TYPES
+// ============================================================
 
+import type { Asset, AssetStatus } from "../services/api/asset.api";
 import type { Employee } from "../services/api/employees.api";
 
 // ============================================================
@@ -35,43 +39,19 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 // ============================================================
-// BAR ROW
-// ============================================================
-
-function BarRow({
-  label,
-  count,
-  max,
-}: {
-  label: string;
-  count: number;
-  max: number;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
-        {label}
-      </span>
-
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-brand-500"
-          style={{
-            width: `${max ? (count / max) * 100 : 0}%`,
-          }}
-        />
-      </div>
-
-      <span className="w-8 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground">
-        {count}
-      </span>
-    </div>
-  );
-}
-
-// ============================================================
 // HELPERS
 // ============================================================
+
+function formatStatus(status: string): string {
+  return status
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatAction(action: string): string {
+  return action.toLowerCase().replace(/_/g, " ");
+}
 
 function getEmployeeName(employee?: Employee | null): string {
   if (!employee) return "Unknown employee";
@@ -84,18 +64,84 @@ function getEmployeeName(employee?: Employee | null): string {
   );
 }
 
-function formatStatus(status: string): string {
-  return status.charAt(0) + status.slice(1).toLowerCase();
+function getDaysUntil(dateValue: string | Date, from: Date): number {
+  const target = new Date(dateValue);
+
+  return Math.ceil((target.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 // ============================================================
-// DASHBOARD
+// BAR ROW
+// ============================================================
+
+function BarRow({
+  label,
+  count,
+  max,
+}: {
+  label: string;
+  count: number;
+  max: number;
+}) {
+  const percentage = max ? Math.min((count / max) * 100, 100) : 0;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
+        {label}
+      </span>
+
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-brand-500 transition-all"
+          style={{
+            width: `${percentage}%`,
+          }}
+        />
+      </div>
+
+      <span className="w-8 shrink-0 text-right text-xs font-medium tabular-nums text-foreground">
+        {count}
+      </span>
+    </div>
+  );
+}
+
+// ============================================================
+// PERCENTAGE BAR
+// ============================================================
+
+function PercentageBar({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+
+        <span className="font-medium tabular-nums text-foreground">
+          {value.toFixed(0)}%
+        </span>
+      </div>
+
+      <div className="h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-brand-500 transition-all"
+          style={{
+            width: `${Math.min(Math.max(value, 0), 100)}%`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// REPORTS
 // ============================================================
 
 export default function Dashboard() {
-  // ----------------------------------------------------------
-  // ASSETS
-  // ----------------------------------------------------------
+  // ==========================================================
+  // API
+  // ==========================================================
 
   const {
     data: assetsData,
@@ -107,10 +153,6 @@ export default function Dashboard() {
     pageSize: 1000,
   });
 
-  // ----------------------------------------------------------
-  // EMPLOYEES
-  // ----------------------------------------------------------
-
   const {
     data: employeesData,
     isLoading: employeesLoading,
@@ -120,39 +162,45 @@ export default function Dashboard() {
     page: 1,
   });
 
-  // ----------------------------------------------------------
-  // NORMALIZE ASSETS
-  // ----------------------------------------------------------
+  // ==========================================================
+  // NORMALIZE DATA
+  // ==========================================================
 
   const assets: Asset[] = assetsData?.items || [];
-
-  // ----------------------------------------------------------
-  // NORMALIZE EMPLOYEES
-  // ----------------------------------------------------------
 
   const employees: Employee[] = Array.isArray(employeesData)
     ? employeesData
     : employeesData?.items || [];
 
-  // ----------------------------------------------------------
-  // LOADING
-  // ----------------------------------------------------------
-
   const isLoading = assetsLoading || employeesLoading;
+
+  // ==========================================================
+  // LOADING
+  // ==========================================================
 
   if (isLoading) {
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6">
           <div className="h-6 w-32 animate-pulse rounded bg-muted" />
-          <div className="mt-2 h-4 w-64 animate-pulse rounded bg-muted" />
+
+          <div className="mt-2 h-4 w-72 animate-pulse rounded bg-muted" />
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, index) => (
             <div
-              key={i}
+              key={index}
               className="h-24 animate-pulse rounded-xl bg-muted"
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-56 animate-pulse rounded-xl bg-muted"
             />
           ))}
         </div>
@@ -160,15 +208,15 @@ export default function Dashboard() {
     );
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // ERROR
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (assetsError || employeesError) {
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="rounded-lg border border-destructive-border bg-destructive-muted px-4 py-3 text-sm text-destructive-strong">
-          Couldn't load dashboard data.{" "}
+          Couldn&apos;t load report data.{" "}
           <button
             onClick={() => {
               refetchAssets();
@@ -184,7 +232,21 @@ export default function Dashboard() {
   }
 
   // ==========================================================
-  // ASSET COUNTS
+  // CURRENT DATE
+  // ==========================================================
+
+  const today = new Date();
+
+  const thirtyDaysFromNow = new Date(today);
+
+  thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+  const ninetyDaysFromNow = new Date(today);
+
+  ninetyDaysFromNow.setDate(today.getDate() + 90);
+
+  // ==========================================================
+  // BASIC COUNTS
   // ==========================================================
 
   const totalAssets = assets.length;
@@ -193,7 +255,7 @@ export default function Dashboard() {
     (asset) => asset.status === "ASSIGNED",
   ).length;
 
-  const unassignedAssets = assets.filter(
+  const availableAssets = assets.filter(
     (asset) => asset.status === "AVAILABLE",
   ).length;
 
@@ -205,14 +267,40 @@ export default function Dashboard() {
     (asset) => asset.status === "REPAIR",
   ).length;
 
+  const damagedAssets = assets.filter(
+    (asset) => asset.status === "DAMAGED",
+  ).length;
+
+  const lostAssets = assets.filter((asset) => asset.status === "LOST").length;
+
+  const retiredAssets = assets.filter(
+    (asset) => asset.status === "RETIRED",
+  ).length;
+
   // ==========================================================
-  // EXPIRING LICENSES
+  // ASSIGNMENT ANALYTICS
   // ==========================================================
 
-  const today = new Date();
+  const assignmentRate =
+    totalAssets > 0 ? (assignedAssets / totalAssets) * 100 : 0;
 
-  const licenseExpiryLimit = new Date();
-  licenseExpiryLimit.setDate(today.getDate() + 90);
+  const availabilityRate =
+    totalAssets > 0 ? (availableAssets / totalAssets) * 100 : 0;
+
+  // ==========================================================
+  // MAINTENANCE ANALYTICS
+  // ==========================================================
+
+  const maintenanceAssets = assets.filter(
+    (asset) => asset.status === "REPAIR" || asset.status === "DAMAGED",
+  ).length;
+
+  const maintenanceRate =
+    totalAssets > 0 ? (maintenanceAssets / totalAssets) * 100 : 0;
+
+  // ==========================================================
+  // LICENSE EXPIRATIONS
+  // ==========================================================
 
   const licenseExpirations = softwareAssets
     .filter((asset) => {
@@ -222,7 +310,7 @@ export default function Dashboard() {
 
       const expiry = new Date(expiryDate);
 
-      return expiry >= today && expiry <= licenseExpiryLimit;
+      return expiry >= today && expiry <= ninetyDaysFromNow;
     })
     .sort((a, b) => {
       const aDate = new Date(a.license?.expiryDate || "").getTime();
@@ -230,15 +318,11 @@ export default function Dashboard() {
       const bDate = new Date(b.license?.expiryDate || "").getTime();
 
       return aDate - bDate;
-    })
-    .slice(0, 5);
+    });
 
   // ==========================================================
   // WARRANTY EXPIRATIONS
   // ==========================================================
-
-  const warrantyExpiryLimit = new Date();
-  warrantyExpiryLimit.setDate(today.getDate() + 90);
 
   const warrantyExpirations = assets
     .filter((asset) => {
@@ -246,7 +330,7 @@ export default function Dashboard() {
 
       const expiry = new Date(asset.warrantyExpiry);
 
-      return expiry >= today && expiry <= warrantyExpiryLimit;
+      return expiry >= today && expiry <= ninetyDaysFromNow;
     })
     .sort((a, b) => {
       const aDate = new Date(a.warrantyExpiry || "").getTime();
@@ -254,11 +338,32 @@ export default function Dashboard() {
       const bDate = new Date(b.warrantyExpiry || "").getTime();
 
       return aDate - bDate;
-    })
-    .slice(0, 5);
+    });
 
   // ==========================================================
-  // ASSET DISTRIBUTION
+  // EXPIRY COUNTS
+  // ==========================================================
+
+  const licensesExpiring30Days = licenseExpirations.filter((asset) => {
+    const expiryDate = asset.license?.expiryDate;
+
+    if (!expiryDate) return false;
+
+    const expiry = new Date(expiryDate);
+
+    return expiry >= today && expiry <= thirtyDaysFromNow;
+  }).length;
+
+  const warrantiesExpiring30Days = warrantyExpirations.filter((asset) => {
+    if (!asset.warrantyExpiry) return false;
+
+    const expiry = new Date(asset.warrantyExpiry);
+
+    return expiry >= today && expiry <= thirtyDaysFromNow;
+  }).length;
+
+  // ==========================================================
+  // ASSET STATUS DISTRIBUTION
   // ==========================================================
 
   const statusOrder: AssetStatus[] = [
@@ -300,7 +405,10 @@ export default function Dashboard() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const maxHw = Math.max(...hardwareBreakdown.map((item) => item.count), 1);
+  const maxHardware = Math.max(
+    ...hardwareBreakdown.map((item) => item.count),
+    1,
+  );
 
   // ==========================================================
   // SOFTWARE BREAKDOWN
@@ -321,7 +429,47 @@ export default function Dashboard() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const maxSw = Math.max(...softwareBreakdown.map((item) => item.count), 1);
+  const maxSoftware = Math.max(
+    ...softwareBreakdown.map((item) => item.count),
+    1,
+  );
+
+  // ==========================================================
+  // EMPLOYEE ASSIGNMENT ANALYTICS
+  // ==========================================================
+
+  const employeeAssignmentMap = new Map<string, number>();
+
+  assets
+    .filter((asset) => asset.status === "ASSIGNED")
+    .forEach((asset) => {
+      const employee = asset.employee || asset.assignedTo || null;
+
+      const employeeName =
+        typeof employee === "object"
+          ? getEmployeeName(employee as Employee)
+          : typeof employee === "string"
+            ? employee
+            : "Unknown employee";
+
+      employeeAssignmentMap.set(
+        employeeName,
+        (employeeAssignmentMap.get(employeeName) || 0) + 1,
+      );
+    });
+
+  const employeeAssignments = Array.from(employeeAssignmentMap.entries())
+    .map(([employee, count]) => ({
+      employee,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  const maxEmployeeAssignments = Math.max(
+    ...employeeAssignments.map((item) => item.count),
+    1,
+  );
 
   // ==========================================================
   // RECENT ACTIVITY
@@ -339,7 +487,52 @@ export default function Dashboard() {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
-    .slice(0, 8);
+    .slice(0, 10);
+
+  // ==========================================================
+  // ACTIVITY SUMMARY
+  // ==========================================================
+
+  const totalHistoryEntries = assets.reduce(
+    (total, asset) => total + (asset.history?.length || 0),
+    0,
+  );
+
+  const assetsWithHistory = assets.filter(
+    (asset) => (asset.history?.length || 0) > 0,
+  ).length;
+
+  // ==========================================================
+  // OPERATIONAL ALERTS
+  // ==========================================================
+
+  const operationalAlerts = [
+    {
+      label: "Licenses expiring within 30 days",
+      count: licensesExpiring30Days,
+      tone: licensesExpiring30Days > 0 ? "danger" : "default",
+    },
+    {
+      label: "Warranties expiring within 30 days",
+      count: warrantiesExpiring30Days,
+      tone: warrantiesExpiring30Days > 0 ? "warn" : "default",
+    },
+    {
+      label: "Assets under repair",
+      count: underRepair,
+      tone: underRepair > 0 ? "warn" : "default",
+    },
+    {
+      label: "Damaged assets",
+      count: damagedAssets,
+      tone: damagedAssets > 0 ? "danger" : "default",
+    },
+    {
+      label: "Lost assets",
+      count: lostAssets,
+      tone: lostAssets > 0 ? "danger" : "default",
+    },
+  ];
 
   // ==========================================================
   // RENDER
@@ -347,18 +540,20 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      {/* HEADER */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
 
       <div>
-        <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+        <h1 className="text-lg font-semibold text-foreground">Reports</h1>
 
         <p className="text-sm text-muted-foreground">
-          Overview of your IT environment.
+          Operational analytics across your asset environment.
         </p>
       </div>
 
       {/* ======================================================
-          STAT CARDS
+          KPI CARDS
       ====================================================== */}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -367,8 +562,8 @@ export default function Dashboard() {
         <StatCard label="Assigned" value={assignedAssets} icon={CheckCircle2} />
 
         <StatCard
-          label="Unassigned"
-          value={unassignedAssets}
+          label="Available"
+          value={availableAssets}
           icon={PackageOpen}
         />
 
@@ -402,18 +597,28 @@ export default function Dashboard() {
       </div>
 
       {/* ======================================================
-          DISTRIBUTION / BREAKDOWN
+          ASSET STATUS ANALYTICS
       ====================================================== */}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* ASSET DISTRIBUTION */}
+        {/* STATUS DISTRIBUTION */}
 
         <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            Asset Distribution
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Asset Distribution
+              </h2>
 
-          <div className="mb-4 flex h-3 overflow-hidden rounded-full">
+              <p className="mt-1 text-xs text-muted-foreground">
+                Current status across all tracked assets.
+              </p>
+            </div>
+
+            <Boxes className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="mb-5 flex h-3 overflow-hidden rounded-full">
             {assetDistribution.map((item) => (
               <div
                 key={item.status}
@@ -421,12 +626,12 @@ export default function Dashboard() {
                 style={{
                   width: `${(item.count / totalForDistribution) * 100}%`,
                 }}
-                title={`${item.status}: ${item.count}`}
+                title={`${formatStatus(item.status)}: ${item.count}`}
               />
             ))}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {assetDistribution.map((item) => (
               <div
                 key={item.status}
@@ -454,25 +659,187 @@ export default function Dashboard() {
           </div>
         </Card>
 
+        {/* ASSIGNMENT */}
+
+        <Card className="p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Assignment Overview
+              </h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Coverage of assigned and available assets.
+              </p>
+            </div>
+
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="mb-6">
+            <div className="mb-2 flex items-end justify-between">
+              <span className="text-2xl font-semibold text-foreground">
+                {assignmentRate.toFixed(0)}%
+              </span>
+
+              <span className="text-xs text-muted-foreground">
+                assignment rate
+              </span>
+            </div>
+
+            <PercentageBar
+              value={assignmentRate}
+              label={`${assignedAssets} of ${totalAssets} assets assigned`}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <PercentageBar
+              value={availabilityRate}
+              label={`${availableAssets} available assets`}
+            />
+
+            <div className="flex items-center justify-between border-t border-border pt-4 text-sm">
+              <span className="text-muted-foreground">Available assets</span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {availableAssets}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Assigned assets</span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {assignedAssets}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Total employees</span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {employees.length}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* MAINTENANCE */}
+
+        <Card className="p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Maintenance
+              </h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Assets requiring operational attention.
+              </p>
+            </div>
+
+            <Wrench className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="mb-6">
+            <div className="mb-2 flex items-end justify-between">
+              <span className="text-2xl font-semibold text-foreground">
+                {maintenanceAssets}
+              </span>
+
+              <span className="text-xs text-muted-foreground">
+                affected assets
+              </span>
+            </div>
+
+            <PercentageBar
+              value={maintenanceRate}
+              label={`${maintenanceRate.toFixed(1)}% of total assets`}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-warning-muted0" />
+                Under repair
+              </span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {underRepair}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-destructive" />
+                Damaged
+              </span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {damagedAssets}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-destructive-muted0" />
+                Lost
+              </span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {lostAssets}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-border pt-3 text-sm">
+              <span className="text-muted-foreground">Retired</span>
+
+              <span className="font-medium tabular-nums text-foreground">
+                {retiredAssets}
+              </span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* ======================================================
+          CATEGORY ANALYTICS
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* HARDWARE */}
 
         <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            Hardware Breakdown
-          </h2>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Hardware by Category
+              </h2>
 
-          <div className="space-y-2.5">
+              <p className="mt-1 text-xs text-muted-foreground">
+                Distribution of hardware assets.
+              </p>
+            </div>
+
+            <Laptop className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="space-y-3">
             {hardwareBreakdown.map((item) => (
               <BarRow
                 key={item.category}
                 label={item.category}
                 count={item.count}
-                max={maxHw}
+                max={maxHardware}
               />
             ))}
 
             {hardwareBreakdown.length === 0 && (
-              <p className="text-sm text-muted-foreground">No hardware assets yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No hardware assets yet.
+              </p>
             )}
           </div>
         </Card>
@@ -480,56 +847,239 @@ export default function Dashboard() {
         {/* SOFTWARE */}
 
         <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            Software Breakdown
-          </h2>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Software by Category
+              </h2>
 
-          <div className="space-y-2.5">
+              <p className="mt-1 text-xs text-muted-foreground">
+                Distribution of software assets.
+              </p>
+            </div>
+
+            <AppWindow className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="space-y-3">
             {softwareBreakdown.map((item) => (
               <BarRow
                 key={item.category}
                 label={item.category}
                 count={item.count}
-                max={maxSw}
+                max={maxSoftware}
               />
             ))}
 
             {softwareBreakdown.length === 0 && (
-              <p className="text-sm text-muted-foreground">No software assets yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No software assets yet.
+              </p>
             )}
           </div>
         </Card>
       </div>
 
       {/* ======================================================
-          ACTIVITY / UPCOMING
+          ASSIGNMENT ANALYTICS
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* EMPLOYEE ASSIGNMENTS */}
+
+        <Card className="p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Asset Assignments
+              </h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Employees with assigned assets.
+              </p>
+            </div>
+
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="space-y-3">
+            {employeeAssignments.map((item) => (
+              <BarRow
+                key={item.employee}
+                label={item.employee}
+                count={item.count}
+                max={maxEmployeeAssignments}
+              />
+            ))}
+
+            {employeeAssignments.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No assigned assets yet.
+              </p>
+            )}
+          </div>
+        </Card>
+
+        {/* OPERATIONAL ALERTS */}
+
+        <Card className="p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Operational Alerts
+              </h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Items that may require attention.
+              </p>
+            </div>
+
+            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="space-y-3">
+            {operationalAlerts.map((alert) => (
+              <div
+                key={alert.label}
+                className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={`h-2 w-2 shrink-0 rounded-full ${
+                      alert.tone === "danger"
+                        ? "bg-destructive"
+                        : alert.tone === "warn"
+                          ? "bg-warning-muted0"
+                          : "bg-success-muted0"
+                    }`}
+                  />
+
+                  <span className="truncate text-sm text-foreground">
+                    {alert.label}
+                  </span>
+                </div>
+
+                <Badge
+                  tone={
+                    alert.tone === "danger"
+                      ? "danger"
+                      : alert.tone === "warn"
+                        ? "warn"
+                        : "default"
+                  }
+                >
+                  {alert.count}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* ======================================================
+          ACTIVITY SUMMARY
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Activity Records</p>
+
+              <p className="mt-1 text-2xl font-semibold text-foreground">
+                {totalHistoryEntries}
+              </p>
+            </div>
+
+            <Clock3 className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Total asset history records currently available.
+          </p>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Assets With Activity
+              </p>
+
+              <p className="mt-1 text-2xl font-semibold text-foreground">
+                {assetsWithHistory}
+              </p>
+            </div>
+
+            <Boxes className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Assets containing at least one recorded history entry.
+          </p>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Activity Coverage</p>
+
+              <p className="mt-1 text-2xl font-semibold text-foreground">
+                {totalAssets > 0
+                  ? ((assetsWithHistory / totalAssets) * 100).toFixed(0)
+                  : 0}
+                %
+              </p>
+            </div>
+
+            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Percentage of assets with recorded history.
+          </p>
+        </Card>
+      </div>
+
+      {/* ======================================================
+          RECENT ACTIVITY / UPCOMING
       ====================================================== */}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* RECENT ACTIVITY */}
 
         <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            Recent Activity
-          </h2>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Recent Activity
+              </h2>
 
-          <ul className="space-y-3">
+              <p className="mt-1 text-xs text-muted-foreground">
+                Latest changes recorded against assets.
+              </p>
+            </div>
+
+            <Clock3 className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <ul className="space-y-4">
             {recentActivity.map((activity) => (
-              <li key={activity.id} className="flex items-start gap-3 text-sm">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
+              <li key={activity.id} className="flex items-start gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
 
-                <div className="min-w-0">
-                  <p className="text-foreground">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground">
                     {activity.action === "TRANSFERRED" ? (
                       <>
                         <b className="font-medium">{activity.assetName}</b>{" "}
-                        transferred from {activity.fromValue || "unassigned"} to{" "}
-                        {activity.toValue || "unassigned"}
+                        transferred from {activity.fromValue} to{" "}
+                        {activity.toValue}
                       </>
                     ) : activity.action === "ASSIGNED" ? (
                       <>
                         <b className="font-medium">{activity.assetName}</b>{" "}
-                        assigned to {activity.toValue || "employee"}
+                        assigned to {activity.toValue}
                       </>
                     ) : activity.action === "CREATED" ? (
                       <>
@@ -544,12 +1094,12 @@ export default function Dashboard() {
                     ) : (
                       <>
                         <b className="font-medium">{activity.assetName}</b>{" "}
-                        {activity.action.toLowerCase().replace(/_/g, " ")}
+                        {formatAction(activity.action)}
                       </>
                     )}
                   </p>
 
-                  <p className="text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(activity.createdAt).toLocaleString()} ·{" "}
                     {activity.performedBy}
                   </p>
@@ -558,7 +1108,9 @@ export default function Dashboard() {
             ))}
 
             {recentActivity.length === 0 && (
-              <p className="text-sm text-muted-foreground">No recent activity yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No recent activity yet.
+              </p>
             )}
           </ul>
         </Card>
@@ -566,93 +1118,118 @@ export default function Dashboard() {
         {/* UPCOMING */}
 
         <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            Upcoming
-          </h2>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Upcoming
+              </h2>
 
-          {/* LICENSE */}
+              <p className="mt-1 text-xs text-muted-foreground">
+                Licenses and warranties expiring in the next 90 days.
+              </p>
+            </div>
 
-          <div className="mb-5">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              License expirations
-            </p>
+            <Clock3 className="h-4 w-4 text-muted-foreground" />
+          </div>
 
-            <div className="space-y-2">
-              {licenseExpirations.map((asset) => {
+          {/* LICENSES */}
+
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                License expirations
+              </p>
+
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {licenseExpirations.length}
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {licenseExpirations.slice(0, 5).map((asset) => {
                 const expiryDate = asset.license?.expiryDate;
 
                 if (!expiryDate) return null;
 
-                const daysLeft = Math.ceil(
-                  (new Date(expiryDate).getTime() - today.getTime()) /
-                    (1000 * 60 * 60 * 24),
-                );
+                const daysLeft = getDaysUntil(expiryDate, today);
 
                 return (
                   <div
                     key={asset.id}
-                    className="flex items-center justify-between text-sm"
+                    className="flex items-center justify-between gap-3 text-sm"
                   >
-                    <span className="truncate text-foreground">
-                      {asset.name}
-                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-foreground">{asset.name}</p>
+
+                      {asset.assetTag && (
+                        <p className="text-xs text-muted-foreground">
+                          {asset.assetTag}
+                        </p>
+                      )}
+                    </div>
 
                     <Badge tone={daysLeft <= 30 ? "danger" : "warn"}>
-                      {new Date(expiryDate).toLocaleDateString()}
+                      {daysLeft <= 0 ? "Today" : `${daysLeft}d`}
                     </Badge>
                   </div>
                 );
               })}
 
               {licenseExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+                <p className="text-sm text-muted-foreground">
+                  Nothing expiring soon.
+                </p>
               )}
             </div>
           </div>
 
-          {/* WARRANTY */}
+          {/* WARRANTIES */}
 
           <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Warranty expirations
-            </p>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Warranty expirations
+              </p>
 
-            <div className="space-y-2">
-              {warrantyExpirations.map((asset) => {
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {warrantyExpirations.length}
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {warrantyExpirations.slice(0, 5).map((asset) => {
                 const expiryDate = asset.warrantyExpiry;
 
                 if (!expiryDate) return null;
 
-                const daysLeft = Math.ceil(
-                  (new Date(expiryDate).getTime() - today.getTime()) /
-                    (1000 * 60 * 60 * 24),
-                );
+                const daysLeft = getDaysUntil(expiryDate, today);
 
                 return (
                   <div
                     key={asset.id}
-                    className="flex items-center justify-between text-sm"
+                    className="flex items-center justify-between gap-3 text-sm"
                   >
-                    <span className="truncate text-foreground">
-                      {asset.name}
+                    <div className="min-w-0">
+                      <p className="truncate text-foreground">{asset.name}</p>
 
                       {asset.assetTag && (
-                        <span className="text-muted-foreground tabular-nums">
-                          {" "}
-                          ({asset.assetTag})
-                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          {asset.assetTag}
+                        </p>
                       )}
-                    </span>
+                    </div>
 
                     <Badge tone={daysLeft <= 30 ? "danger" : "warn"}>
-                      {new Date(expiryDate).toLocaleDateString()}
+                      {daysLeft <= 0 ? "Today" : `${daysLeft}d`}
                     </Badge>
                   </div>
                 );
               })}
 
               {warrantyExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+                <p className="text-sm text-muted-foreground">
+                  Nothing expiring soon.
+                </p>
               )}
             </div>
           </div>

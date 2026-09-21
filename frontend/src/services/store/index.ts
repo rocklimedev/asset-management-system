@@ -17,6 +17,7 @@ import usersApi from "../api/users.api";
 
 import authApi from "../api/auth.api";
 import dashboardApi from "../api/dashboard.api";
+import reportsApi from "../api/reports.api";
 
 // ============================================================
 // STORE
@@ -37,6 +38,7 @@ export const store = configureStore({
     [rolesApi.reducerPath]: rolesApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [reportsApi.reducerPath]: reportsApi.reducer,
   },
 
   // ==========================================================
@@ -51,6 +53,7 @@ export const store = configureStore({
       usersApi.middleware,
       authApi.middleware,
       dashboardApi.middleware,
+      reportsApi.middleware,
     ),
 });
 

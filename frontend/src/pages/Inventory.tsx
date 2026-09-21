@@ -5,11 +5,25 @@ import {
   ArrowUpDown,
   Package,
   AlertTriangle,
+  MoreHorizontal,
+  Eye,
+  Pencil,
+  History,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 
-import { useGetAssetsQuery } from "../services/api/asset.api";
+import {
+  useGetAssetsQuery,
+  useDeleteAssetMutation,
+  type Asset,
+  type AssetKind,
+  type AssetStatus,
+} from "../services/api/asset.api";
+
 import { Input } from "@/components/ui/input";
 import { Badge } from "../components/ui/badge";
+
 import {
   Select,
   SelectContent,
@@ -17,13 +31,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+
 import { Button } from "../components/ui/button";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+
 import { EmptyState, SkeletonCard } from "../components/ui/EmptyState";
+
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
-import { toast } from "../components/ui/toast";
+import { AssetHistoryModal } from "../components/asset-manager/AssetHistoryModal";
 
-import type { Asset, AssetKind, AssetStatus } from "../services/api/asset.api";
+import { toast } from "../components/ui/toast";
 
 // ============================================================
 // CONSTANTS
@@ -44,16 +69,37 @@ const COLUMNS: {
   label: string;
   sortable?: boolean;
 }[] = [
-  { key: "image", label: "" },
-  { key: "assetTag", label: "Asset ID", sortable: true },
-  { key: "name", label: "Name", sortable: true },
-  { key: "category", label: "Category" },
-  { key: "serialNumber", label: "Serial number" },
-  { key: "quantity", label: "Quantity", sortable: true },
-  { key: "assignedTo", label: "Assigned to" },
-  { key: "status", label: "Status", sortable: true },
-  { key: "condition", label: "Condition" },
-  { key: "warrantyExpiry", label: "Warranty", sortable: true },
+  {
+    key: "image",
+    label: "",
+  },
+  {
+    key: "name",
+    label: "Name",
+    sortable: true,
+  },
+  {
+    key: "category",
+    label: "Category",
+  },
+  {
+    key: "quantity",
+    label: "Quantity",
+    sortable: true,
+  },
+  {
+    key: "assignedTo",
+    label: "Assigned to",
+  },
+  {
+    key: "status",
+    label: "Status",
+    sortable: true,
+  },
+  {
+    key: "condition",
+    label: "Condition",
+  },
 ];
 
 // ============================================================
@@ -94,19 +140,22 @@ function getStatusBadgeVariant(
 
 export default function Inventory() {
   const [search, setSearch] = useState("");
+
   const [status, setStatus] = useState<AssetStatus | "">("");
+
   const [kind, setKind] = useState<AssetKind | "">("");
+
   const [sortBy, setSortBy] = useState("assetTag");
+
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("ASC");
+
   const [page, setPage] = useState(1);
+
   const [selected, setSelected] = useState<Asset | null>(null);
 
-  // ------------------------------------------------------------
-  // Create / Edit asset modal
-  //
-  // assetModal.asset === null -> create mode
-  // assetModal.asset !== null -> edit mode
-  // ------------------------------------------------------------
+  // ============================================================
+  // ASSET MODAL
+  // ============================================================
 
   const [assetModal, setAssetModal] = useState<{
     open: boolean;
@@ -115,6 +164,24 @@ export default function Inventory() {
     open: false,
     asset: null,
   });
+
+  // ============================================================
+  // HISTORY MODAL
+  // ============================================================
+
+  const [historyModal, setHistoryModal] = useState<{
+    open: boolean;
+    asset: Asset | null;
+  }>({
+    open: false,
+    asset: null,
+  });
+
+  // ============================================================
+  // DELETE
+  // ============================================================
+
+  const [deleteAsset, { isLoading: isDeleting }] = useDeleteAssetMutation();
 
   // ============================================================
   // RTK QUERY
@@ -135,7 +202,9 @@ export default function Inventory() {
   // ============================================================
 
   const items = data?.items ?? [];
+
   const total = data?.total ?? 0;
+
   const pageSize = data?.pageSize ?? 25;
 
   const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 1;
@@ -187,18 +256,47 @@ export default function Inventory() {
   }
 
   // ============================================================
-  // CREATE / EDIT ASSET
+  // VIEW
+  // ============================================================
+
+  function openViewAsset(asset: Asset) {
+    setAssetModal({
+      open: false,
+      asset: null,
+    });
+
+    setHistoryModal({
+      open: false,
+      asset: null,
+    });
+
+    setSelected(asset);
+  }
+
+  // ============================================================
+  // CREATE
   // ============================================================
 
   function openCreateAsset() {
+    setSelected(null);
+
     setAssetModal({
       open: true,
       asset: null,
     });
   }
 
+  // ============================================================
+  // UPDATE
+  // ============================================================
+
   function openEditAsset(asset: Asset) {
     setSelected(null);
+
+    setHistoryModal({
+      open: false,
+      asset: null,
+    });
 
     setAssetModal({
       open: true,
@@ -214,10 +312,84 @@ export default function Inventory() {
   }
 
   // ============================================================
+  // HISTORY
+  // ============================================================
+
+  function openHistory(asset: Asset) {
+    setSelected(null);
+
+    setAssetModal({
+      open: false,
+      asset: null,
+    });
+
+    setHistoryModal({
+      open: true,
+      asset,
+    });
+  }
+
+  function closeHistory() {
+    setHistoryModal({
+      open: false,
+      asset: null,
+    });
+  }
+
+  // ============================================================
+  // DELETE
+  // ============================================================
+
+  async function handleDeleteAsset(asset: Asset) {
+    const confirmed = window.confirm(
+      `Delete "${asset.name}"?${
+        asset.assetTag ? `\n\nAsset Tag: ${asset.assetTag}` : ""
+      }\n\nThis action cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteAsset(asset.id).unwrap();
+
+      if (selected?.id === asset.id) {
+        setSelected(null);
+      }
+
+      if (historyModal.asset?.id === asset.id) {
+        setHistoryModal({
+          open: false,
+          asset: null,
+        });
+      }
+
+      if (assetModal.asset?.id === asset.id) {
+        setAssetModal({
+          open: false,
+          asset: null,
+        });
+      }
+
+      toast.add({
+        type: "success",
+        title: "Asset deleted",
+        description: `${asset.name} was deleted successfully.`,
+      });
+    } catch (error) {
+      console.error("Failed to delete asset:", error);
+
+      toast.add({
+        type: "error",
+        title: "Unable to delete asset",
+        description: "The asset could not be deleted. Please try again.",
+      });
+    }
+  }
+
+  // ============================================================
   // TRANSFER
-  //
-  // Inventory is a flat list, not an employee-centric view,
-  // so the assign/transfer picker lives in Asset Manager.
   // ============================================================
 
   function handleTransferFromDrawer() {
@@ -230,11 +402,12 @@ export default function Inventory() {
   }
 
   // ============================================================
-  // QUANTITY HELPERS
+  // QUANTITY
   // ============================================================
 
   function quantityAvailable(asset: Asset) {
     const quantity = asset.quantity ?? 1;
+
     const assigned = asset.quantityAssigned ?? 0;
 
     return quantity - assigned;
@@ -334,20 +507,12 @@ export default function Inventory() {
           description="There was a problem loading the inventory. Please try again."
         />
       ) : isLoading ? (
-        /* ====================================================
-           INITIAL LOADING
-        ==================================================== */
-
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, index) => (
             <SkeletonCard key={index} />
           ))}
         </div>
       ) : items.length === 0 ? (
-        /* ====================================================
-           EMPTY STATE
-        ==================================================== */
-
         <EmptyState
           title="No assets found"
           description="Try changing your filters, or add a new asset."
@@ -359,8 +524,6 @@ export default function Inventory() {
           ================================================== */}
 
           <div className="relative overflow-x-auto rounded-xl border border-border bg-card">
-            {/* Refresh / fetching indicator */}
-
             {isFetching && !isLoading && (
               <div className="absolute right-3 top-3 z-10">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-input border-t-slate-700" />
@@ -390,6 +553,12 @@ export default function Inventory() {
                       )}
                     </th>
                   ))}
+
+                  {/* Actions */}
+
+                  <th className="w-[56px] px-4 py-2.5 text-right font-medium">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
@@ -398,13 +567,15 @@ export default function Inventory() {
                   const assignee = asset.assignments?.[0]?.employee;
 
                   const quantity = asset.quantity ?? 1;
+
                   const available = quantityAvailable(asset);
+
                   const lowStock = isLowStock(asset);
 
                   return (
                     <tr
                       key={asset.id}
-                      onClick={() => setSelected(asset)}
+                      onClick={() => openViewAsset(asset)}
                       className="cursor-pointer hover:bg-muted"
                     >
                       {/* Image */}
@@ -423,12 +594,6 @@ export default function Inventory() {
                         )}
                       </td>
 
-                      {/* Asset ID */}
-
-                      <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-muted-foreground">
-                        {asset.assetTag}
-                      </td>
-
                       {/* Name */}
 
                       <td className="whitespace-nowrap px-4 py-2.5 font-medium text-foreground">
@@ -441,12 +606,6 @@ export default function Inventory() {
                         {asset.category?.name ?? "—"}
                       </td>
 
-                      {/* Serial Number */}
-
-                      <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-muted-foreground">
-                        {asset.serialNumber ?? "—"}
-                      </td>
-
                       {/* Quantity */}
 
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
@@ -454,7 +613,9 @@ export default function Inventory() {
                           <span
                             className={
                               "inline-flex items-center gap-1 tabular-nums " +
-                              (lowStock ? "font-medium text-warning-strong" : "")
+                              (lowStock
+                                ? "font-medium text-warning-strong"
+                                : "")
                             }
                           >
                             {lowStock && (
@@ -489,12 +650,75 @@ export default function Inventory() {
                         {asset.condition}
                       </td>
 
-                      {/* Warranty */}
+                      {/* ==================================================
+                          ACTIONS
+                      ================================================== */}
 
-                      <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
-                        {asset.warrantyExpiry
-                          ? new Date(asset.warrantyExpiry).toLocaleDateString()
-                          : "—"}
+                      <td
+                        className="px-4 py-2.5 text-right"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <MoreHorizontal className="h-4 w-4" />
+                              )}
+
+                              <span className="sr-only">Open actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent align="end" className="w-44">
+                            {/* View */}
+
+                            <DropdownMenuItem
+                              onClick={() => openViewAsset(asset)}
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              View
+                            </DropdownMenuItem>
+
+                            {/* Update */}
+
+                            <DropdownMenuItem
+                              onClick={() => openEditAsset(asset)}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Update
+                            </DropdownMenuItem>
+
+                            {/* History */}
+
+                            <DropdownMenuItem
+                              onClick={() => openHistory(asset)}
+                            >
+                              <History className="mr-2 h-4 w-4" />
+                              View History
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* Delete */}
+
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              disabled={isDeleting}
+                              onClick={() => void handleDeleteAsset(asset)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   );
@@ -552,7 +776,7 @@ export default function Inventory() {
       />
 
       {/* ======================================================
-          CREATE / EDIT ASSET MODAL
+          CREATE / UPDATE ASSET MODAL
       ====================================================== */}
 
       <CreateAssetModal
@@ -561,6 +785,16 @@ export default function Inventory() {
         asset={assetModal.asset}
         locations={[]}
         vendors={[]}
+      />
+
+      {/* ======================================================
+          HISTORY MODAL
+      ====================================================== */}
+
+      <AssetHistoryModal
+        open={historyModal.open}
+        asset={historyModal.asset}
+        onClose={closeHistory}
       />
     </div>
   );

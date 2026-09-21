@@ -1,5 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
-
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from "@nestjs/common";
 import {
   IsEmail,
   IsEnum,
@@ -12,7 +19,6 @@ import {
 import { UsersService } from "./users.service";
 import { UserStatus } from "./models/user.model";
 
-import { RequirePermissions } from "@/common/decorator/roles.decorator";
 import {
   CurrentUser,
   AuthUser,
@@ -29,12 +35,31 @@ class CreateUserDto {
   @MinLength(8)
   password!: string;
 
-  @IsUUID("4")
+  @IsUUID()
   roleId!: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID()
   employeeId?: string;
+}
+
+class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  password?: string;
+
+  @IsOptional()
+  @IsUUID()
+  employeeId?: string | null;
 }
 
 class UpdateUserStatusDto {
@@ -43,7 +68,7 @@ class UpdateUserStatusDto {
 }
 
 class ChangeUserRoleDto {
-  @IsUUID("4")
+  @IsUUID()
   roleId!: string;
 }
 
@@ -70,6 +95,28 @@ export class UsersController {
   }
 
   // ============================================================
+  // UPDATE USER
+  // ============================================================
+
+  @Patch(":id")
+  update(
+    @Param("id") id: string,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.update(id, dto, user);
+  }
+
+  // ============================================================
+  // DELETE USER
+  // ============================================================
+
+  @Delete(":id")
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.service.remove(id, user);
+  }
+
+  // ============================================================
   // UPDATE USER STATUS
   // ============================================================
 
@@ -83,7 +130,7 @@ export class UsersController {
   }
 
   // ============================================================
-  // CHANGE USER ROLE
+  // UPDATE USER ROLE
   // ============================================================
 
   @Patch(":id/role")

@@ -12,6 +12,7 @@ import { AuditModule } from "./modules/audit/audit.module";
 import { OrganisationsModule } from "./modules/organisation/organisation.module";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
+import { ReportsModule } from "./modules/reports/reports.module";
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { RolesGuard } from "./common/guards/roles.guard";
     UsersModule,
     RolesModule,
     AuditModule,
+    ReportsModule,
     OrganisationsModule,
   ],
 

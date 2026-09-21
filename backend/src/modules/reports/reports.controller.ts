@@ -4,7 +4,6 @@ import { ReportsService, ReportFilters } from "./reports.service";
 import { RequirePermissions } from "@/common/decorator/roles.decorator";
 
 @Controller("reports")
-@RequirePermissions("reports:read")
 export class ReportsController {
   constructor(private readonly reports: ReportsService) {}
 

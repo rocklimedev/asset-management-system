@@ -10,6 +10,22 @@ import { AuditService } from "@/modules/audit/audit.service";
 import { AuthUser } from "@/common/decorator/current-user.decorator";
 
 import { User, UserStatus } from "./models/user.model";
+import { Role } from "@/modules/roles/models/role.model";
+
+interface CreateUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  roleId: string;
+  employeeId?: string;
+}
+
+interface UpdateUserPayload {
+  name?: string;
+  email?: string;
+  password?: string;
+  employeeId?: string | null;
+}
 
 @Injectable()
 export class UsersService {
@@ -21,7 +37,21 @@ export class UsersService {
   ) {}
 
   // ============================================================
-  // FIND ALL
+  // USER INCLUDE
+  // ============================================================
+
+  private getUserInclude() {
+    return [
+      {
+        model: Role,
+        as: "role",
+        attributes: ["id", "name", "description"],
+      },
+    ];
+  }
+
+  // ============================================================
+  // GET ALL USERS
   // ============================================================
 
   async findAll() {
@@ -36,6 +66,8 @@ export class UsersService {
         "employeeId",
       ],
 
+      include: this.getUserInclude(),
+
       order: [["name", "ASC"]],
     });
   }
@@ -44,15 +76,7 @@ export class UsersService {
   // CREATE USER
   // ============================================================
 
-  async create(
-    dto: {
-      name: string;
-      email: string;
-      password: string;
-      roleId: string;
-    },
-    actor: AuthUser,
-  ) {
+  async create(dto: CreateUserPayload, actor: AuthUser) {
     const existing = await this.userModel.findOne({
       where: {
         email: dto.email,
@@ -70,23 +94,152 @@ export class UsersService {
       email: dto.email,
       passwordHash,
       roleId: dto.roleId,
+      employeeId: dto.employeeId ?? null,
     } as User);
 
     await this.audit.log({
       userId: actor.id,
-
       action: "USER_CREATED",
-
       entity: "User",
-
       entityId: user.id,
+      metadata: {
+        name: user.name,
+        email: user.email,
+        roleId: user.roleId,
+        employeeId: user.employeeId,
+      },
     });
 
-    return user;
+    return this.userModel.findByPk(user.id, {
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "status",
+        "createdAt",
+        "roleId",
+        "employeeId",
+      ],
+      include: this.getUserInclude(),
+    });
   }
 
   // ============================================================
-  // SET USER STATUS
+  // UPDATE USER
+  // ============================================================
+
+  async update(id: string, dto: UpdateUserPayload, actor: AuthUser) {
+    const user = await this.userModel.findByPk(id);
+
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    // ----------------------------------------------------------
+    // Check email uniqueness
+    // ----------------------------------------------------------
+
+    if (
+      dto.email !== undefined &&
+      dto.email.toLowerCase() !== user.email.toLowerCase()
+    ) {
+      const existing = await this.userModel.findOne({
+        where: {
+          email: dto.email,
+        },
+      });
+
+      if (existing && existing.id !== id) {
+        throw new ConflictException("A user with this email already exists.");
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Build update payload
+    // ----------------------------------------------------------
+
+    const updateData: Partial<User> = {};
+
+    if (dto.name !== undefined) {
+      updateData.name = dto.name;
+    }
+
+    if (dto.email !== undefined) {
+      updateData.email = dto.email;
+    }
+
+    if (dto.employeeId !== undefined) {
+      updateData.employeeId = dto.employeeId;
+    }
+
+    if (dto.password !== undefined) {
+      updateData.passwordHash = await bcrypt.hash(dto.password, 10);
+    }
+
+    await user.update(updateData);
+
+    await this.audit.log({
+      userId: actor.id,
+      action: "USER_UPDATED",
+      entity: "User",
+      entityId: user.id,
+      metadata: {
+        updatedFields: Object.keys(updateData).filter(
+          (field) => field !== "passwordHash",
+        ),
+        passwordChanged: dto.password !== undefined,
+      },
+    });
+
+    return this.userModel.findByPk(user.id, {
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "status",
+        "createdAt",
+        "roleId",
+        "employeeId",
+      ],
+      include: this.getUserInclude(),
+    });
+  }
+
+  // ============================================================
+  // DELETE USER
+  // ============================================================
+
+  async remove(id: string, actor: AuthUser) {
+    const user = await this.userModel.findByPk(id);
+
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    await user.destroy();
+
+    await this.audit.log({
+      userId: actor.id,
+      action: "USER_DELETED",
+      entity: "User",
+      entityId: id,
+      metadata: {
+        name: user.name,
+        email: user.email,
+        roleId: user.roleId,
+        employeeId: user.employeeId,
+      },
+    });
+
+    return {
+      success: true,
+      message: "User deleted successfully.",
+      id,
+    };
+  }
+
+  // ============================================================
+  // UPDATE USER STATUS
   // ============================================================
 
   async setStatus(id: string, status: UserStatus, actor: AuthUser) {
@@ -96,29 +249,39 @@ export class UsersService {
       throw new NotFoundException("User not found.");
     }
 
+    const previousStatus = user.status;
+
     await user.update({
       status,
     });
 
     await this.audit.log({
       userId: actor.id,
-
       action: status === UserStatus.DISABLED ? "USER_DISABLED" : "USER_ENABLED",
-
       entity: "User",
-
       entityId: user.id,
-
       metadata: {
+        previousStatus,
         status,
       },
     });
 
-    return user;
+    return this.userModel.findByPk(user.id, {
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "status",
+        "createdAt",
+        "roleId",
+        "employeeId",
+      ],
+      include: this.getUserInclude(),
+    });
   }
 
   // ============================================================
-  // CHANGE USER ROLE
+  // UPDATE USER ROLE
   // ============================================================
 
   async changeRole(id: string, roleId: string, actor: AuthUser) {
@@ -128,24 +291,34 @@ export class UsersService {
       throw new NotFoundException("User not found.");
     }
 
+    const previousRoleId = user.roleId;
+
     await user.update({
       roleId,
     });
 
     await this.audit.log({
       userId: actor.id,
-
       action: "ROLE_CHANGED",
-
       entity: "User",
-
       entityId: user.id,
-
       metadata: {
+        previousRoleId,
         roleId,
       },
     });
 
-    return user;
+    return this.userModel.findByPk(user.id, {
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "status",
+        "createdAt",
+        "roleId",
+        "employeeId",
+      ],
+      include: this.getUserInclude(),
+    });
   }
 }

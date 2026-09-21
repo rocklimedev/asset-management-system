@@ -21,7 +21,6 @@ export const NAV_ITEMS = [
   { to: "/employees", label: "Employees", icon: UserSquare2 },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/users-roles", label: "Users & Roles", icon: Users },
-  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar({

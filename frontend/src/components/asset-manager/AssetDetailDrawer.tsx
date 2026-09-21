@@ -53,7 +53,7 @@ export function AssetDetailDrawer({
     skip: asset?.id == null,
   });
 
-  const history = historyResponse?.data ?? [];
+  const history = historyResponse ?? [];
 
   // ==========================================================
   // DON'T RENDER
