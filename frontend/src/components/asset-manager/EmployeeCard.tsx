@@ -1,6 +1,14 @@
+import { Link } from "react-router-dom";
 import { useDroppable } from "@dnd-kit/core";
 import { clsx } from "clsx";
-import { Laptop, AppWindow, MapPin, Package, Undo2 } from "lucide-react";
+import {
+  Laptop,
+  AppWindow,
+  MapPin,
+  Package,
+  Monitor,
+  Undo2,
+} from "lucide-react";
 
 import type { Asset } from "../../services/api/asset.api";
 import type { Employee } from "../../services/api/employees.api";
@@ -21,6 +29,7 @@ export function EmployeeCard({
   onOpenDetail,
   onTransferClick,
   onAssignClick,
+  onAssignSystemClick,
   onReleaseClick,
   releasingAssets,
 }: {
@@ -33,6 +42,9 @@ export function EmployeeCard({
   onTransferClick: (asset: Asset) => void;
   // Open the asset pool to assign a new asset to this employee.
   onAssignClick?: (employee: Employee) => void;
+  // Open the system pool to assign a whole (unassigned) system to this
+  // employee. All of the system's components move with it.
+  onAssignSystemClick?: (employee: Employee) => void;
   // Bulk-return every asset this employee currently holds — shown only
   // for employees who have exited.
   onReleaseClick?: (employee: Employee) => void;
@@ -86,20 +98,61 @@ export function EmployeeCard({
           <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"></div>
         </div>
 
-        {onAssignClick && !hasExited && (
-          <button
-            type="button"
-            onClick={() => onAssignClick(employee)}
-            title="Assign asset from pool"
-            className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
-          >
-            <Package className="h-3.5 w-3.5" />
-            Assign
-          </button>
+        {!hasExited && (onAssignClick || onAssignSystemClick) && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            {onAssignClick && (
+              <button
+                type="button"
+                onClick={() => onAssignClick(employee)}
+                title="Assign asset from pool"
+                className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+              >
+                <Package className="h-3.5 w-3.5" />
+                Assign
+              </button>
+            )}
+
+            {onAssignSystemClick && (
+              <button
+                type="button"
+                onClick={() => onAssignSystemClick(employee)}
+                title="Assign an unassigned system"
+                className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+              >
+                <Monitor className="h-3.5 w-3.5" />
+                System
+              </button>
+            )}
+          </div>
         )}
       </div>
 
       <div className="space-y-3">
+        {!!employee.systems?.length && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              Systems ({employee.systems.length})
+            </p>
+            {employee.systems.map((system) => (
+              <Link
+                key={system.id}
+                to={`/systems?system=${system.id}`}
+                className="block rounded-lg border bg-muted/20 p-3 text-sm"
+              >
+                <span className="font-medium">{system.name}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {system.systemTag}
+                </span>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {system.assignments
+                    ?.map((a) => a.asset?.name)
+                    .filter(Boolean)
+                    .join(", ") || "No components yet"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
         <div>
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             <Laptop className="h-3 w-3" /> Hardware ({hardware.length})

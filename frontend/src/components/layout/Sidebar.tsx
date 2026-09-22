@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
+  Monitor,
   Archive,
   BarChart3,
   Boxes,
@@ -17,6 +18,7 @@ import { AppMark } from "./AppMark";
 export const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
   { to: "/asset-manager", label: "Asset Manager", icon: Boxes },
+  { to: "/systems", label: "Systems", icon: Monitor },
   { to: "/inventory", label: "Inventory", icon: Archive },
   { to: "/employees", label: "Employees", icon: UserSquare2 },
   { to: "/reports", label: "Reports", icon: BarChart3 },

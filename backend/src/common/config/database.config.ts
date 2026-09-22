@@ -1,3 +1,4 @@
+import { System } from "@/modules/assets/models/system.model";
 import { Sequelize } from "sequelize-typescript";
 
 import { Organisation } from "@/modules/organisation/models/organisation.model";
@@ -50,6 +51,7 @@ export const databaseConfig = new Sequelize({
     Asset,
     SoftwareLicense,
 
+    System,
     AssetAssignment,
     AssetTransfer,
     AssetHistory,

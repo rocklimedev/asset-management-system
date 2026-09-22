@@ -633,7 +633,9 @@ export default function Inventory() {
                       {/* Assigned To */}
 
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
-                        {assignee?.name ?? "—"}
+                        {asset.assignments?.[0]?.system
+                          ? `System: ${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? "Unassigned"}`
+                          : (assignee?.name ?? "—")}
                       </td>
 
                       {/* Status */}

@@ -42,6 +42,13 @@ Tailwind + dnd-kit + TanStack Query (frontend).
 - Bulk operations UI, CSV export, and role-permission editing UI (the API endpoint for
   editing a role's permissions already exists).
 
+## Systems (PCs)
+
+Assets can now belong to a System or directly to an employee. Systems group PC
+components and can be assigned, transferred, or returned as a whole. See
+[Systems setup and migration](backend/SYSTEMS.md) before running the updated backend.
+The current backend uses Sequelize; the older Prisma setup below is historical.
+
 ## Running it locally
 
 ### 1. Database

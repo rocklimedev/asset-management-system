@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 
 import type { Employee } from "../../services/api/employees.api";
-import type { AssetPoolItem } from "../../services/api/asset.api";
+import type { AssetPoolItem, SystemRecord } from "../../services/api/asset.api";
 
 // ============================================================
 // TYPES
@@ -28,7 +28,8 @@ import type { AssetPoolItem } from "../../services/api/asset.api";
 
 interface AssetPoolProps {
   open: boolean;
-  employee: Employee | null;
+  employee?: Employee | null;
+  system?: SystemRecord | null;
   onClose: () => void;
 }
 
@@ -57,20 +58,23 @@ function getErrorMessage(error: unknown, fallback: string): string {
 // COMPONENT
 // ============================================================
 
-export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
+export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [kind, setKind] = useState<"" | "HARDWARE" | "SOFTWARE">("");
 
-  const { data, isLoading, isFetching } = useGetAssetPoolQuery(
-    {
-      search: search || undefined,
-      kind: kind || undefined,
-      pageSize: 20,
-    },
-    {
-      skip: !open,
-    },
-  );
+  const { data, isLoading, isFetching, isError, refetch } =
+    useGetAssetPoolQuery(
+      {
+        search: search || undefined,
+        kind: kind || undefined,
+        pageSize: 20,
+        page,
+      },
+      {
+        skip: !open,
+      },
+    );
 
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
@@ -81,17 +85,17 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
   // ============================================================
 
   async function handleAssign(asset: AssetPoolItem) {
-    if (!employee) return;
+    if (!employee && !system) return;
 
     try {
       await assignAsset({
         id: asset.id,
-        employeeId: String(employee.id),
+        ...(system ? { systemId: system.id } : { employeeId: employee!.id }),
       }).unwrap();
 
       toast.add({
         title: "Asset assigned",
-        description: `${asset.name} assigned to ${employee.name}.`,
+        description: `${asset.name} assigned to ${system?.name ?? employee?.name}.`,
         type: "success",
       });
 
@@ -149,9 +153,11 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
           </DialogTitle>
 
           <DialogDescription className="text-sm text-muted-foreground">
-            {employee
-              ? `Choose an available asset to hand to ${employee.name}.`
-              : "Choose an available asset."}
+            {system
+              ? `Choose an available asset for ${system.name}.`
+              : employee
+                ? `Choose an available asset to hand to ${employee.name}.`
+                : "Choose an available asset."}
           </DialogDescription>
         </DialogHeader>
 
@@ -165,7 +171,7 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
 
             <Input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => (setPage(1), setSearch(event.target.value))}
               placeholder="Search asset tag, name, serial number..."
               className="
                 h-10
@@ -183,7 +189,10 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
 
           <select
             value={kind}
-            onChange={(event) => setKind(event.target.value as typeof kind)}
+            onChange={(event) => (
+              setPage(1),
+              setKind(event.target.value as typeof kind)
+            )}
             className="
               h-10
               w-full
@@ -317,6 +326,35 @@ export function AssetPool({ open, employee, onClose }: AssetPoolProps) {
               ))}
             </ul>
           )}
+        </div>
+        {isError && (
+          <div role="alert" className="p-4 text-sm">
+            Could not load assets.{" "}
+            <Button variant="outline" onClick={refetch}>
+              Retry
+            </Button>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-t px-6 py-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1 || isFetching}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Page {page} of {Math.max(data?.totalPages ?? 1, 1)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= (data?.totalPages ?? 1) || isFetching}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

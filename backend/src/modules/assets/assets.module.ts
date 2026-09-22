@@ -1,3 +1,6 @@
+import { System } from "./models/system.model";
+import { SystemsController } from "./systems.controller";
+import { SystemsService } from "./systems.service";
 import { Module } from "@nestjs/common";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { EventEmitterModule } from "@nestjs/event-emitter";
@@ -29,6 +32,7 @@ import { Location } from "@/modules/organisation/models/location.model";
 @Module({
   imports: [
     SequelizeModule.forFeature([
+      System,
       Asset,
       AssetCategory,
       AssetHistory,
@@ -48,10 +52,10 @@ import { Location } from "@/modules/organisation/models/location.model";
     EventEmitterModule.forRoot(),
   ],
 
-  providers: [AssetsService, AssetCategoryService],
+  providers: [SystemsService, AssetsService, AssetCategoryService],
 
-  controllers: [AssetsController, AssetCategoryController, SoftwareController],
+  controllers: [SystemsController, AssetsController, AssetCategoryController, SoftwareController],
 
-  exports: [AssetsService, AssetCategoryService],
+  exports: [SystemsService, AssetsService, AssetCategoryService],
 })
 export class AssetsModule {}

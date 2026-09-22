@@ -1,3 +1,5 @@
+import { SystemsService } from "./systems.service";
+import { System } from "./models/system.model";
 import {
   BadRequestException,
   ConflictException,
@@ -95,6 +97,7 @@ export class AssetsService {
     private readonly cdn: CdnService,
 
     private readonly audit: AuditService,
+    private readonly systemsService: SystemsService,
   ) {}
 
   // ============================================================
@@ -136,6 +139,7 @@ export class AssetsService {
         },
         required: false,
         include: [
+          { model: System, include: [Employee] },
           {
             model: Employee,
             as: "employee",
@@ -188,6 +192,9 @@ export class AssetsService {
           { "$organisation.name$": like },
           { "$category.name$": like },
           { "$assignments.employee.name$": like },
+          { "$assignments.system.name$": like },
+          { "$assignments.system.systemTag$": like },
+          { "$assignments.system.employee.name$": like },
         ],
       } as WhereOptions<Asset>);
     }
@@ -502,6 +509,7 @@ export class AssetsService {
             ? new Date(dto.warrantyExpiry)
             : null,
 
+          quantityAssigned: dto.assignEmployeeId ? 1 : 0,
           status: dto.assignEmployeeId
             ? AssetStatus.ASSIGNED
             : (dto.status ?? AssetStatus.AVAILABLE),
@@ -844,6 +852,22 @@ export class AssetsService {
       }
 
       if (dto.status !== undefined) {
+        await this.assetModel.findByPk(id, {
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        const active = await this.assetAssignmentModel.count({
+          where: { assetId: id, status: AssignmentStatus.ACTIVE },
+          transaction: t,
+        });
+        if (dto.status === AssetStatus.ASSIGNED && !active)
+          throw new BadRequestException(
+            "Use assignment to mark an asset assigned.",
+          );
+        if (dto.status === AssetStatus.AVAILABLE && active)
+          throw new BadRequestException(
+            "Return the current assignment before marking this asset available.",
+          );
         updateData.status = dto.status;
       }
 
@@ -927,117 +951,93 @@ export class AssetsService {
   // ============================================================
 
   async assign(id: string, dto: AssignAssetDto, actor: AuthUser) {
-    const asset = await this.findOne(id);
-
-    // ==========================================================
-    // STATUS VALIDATION
-    // ==========================================================
-
-    if (asset.status === AssetStatus.ASSIGNED) {
-      throw new BadRequestException(
-        "This asset is already assigned. Use transfer instead.",
-      );
-    }
-
-    if (NON_TRANSFERABLE_STATUSES.includes(asset.status)) {
-      throw new BadRequestException(
-        `Assets with status ${asset.status} cannot be assigned.`,
-      );
-    }
-
-    // ==========================================================
-    // EMPLOYEE
-    // ==========================================================
-
-    const employee = await this.employeeModel.findByPk(dto.employeeId);
-
-    if (!employee) {
-      throw new NotFoundException("Employee not found.");
-    }
-
-    if (employee.status === EmployeeStatus.EXITED) {
-      throw new BadRequestException(
-        "Cannot assign an asset to an employee who has exited.",
-      );
-    }
-
-    // ==========================================================
-    // ORGANISATION MATCH
-    // ==========================================================
-
-    // ==========================================================
-    // TRANSACTION
-    // ==========================================================
-
-    return this.sequelize.transaction(async (t: Transaction) => {
+    if (Boolean(dto.employeeId) === Boolean(dto.systemId))
+      throw new BadRequestException("Choose exactly one employee or system.");
+    return this.sequelize.transaction(async (t) => {
+      const employee = dto.employeeId
+        ? await this.employeeModel.findByPk(dto.employeeId, {
+            transaction: t,
+            lock: t.LOCK.UPDATE,
+          })
+        : null;
+      if (dto.employeeId && !employee)
+        throw new NotFoundException("Employee not found.");
+      if (
+        employee &&
+        ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(
+          employee.status,
+        )
+      )
+        throw new BadRequestException(
+          "Cannot assign to an inactive or exited employee.",
+        );
+      const system = dto.systemId
+        ? await System.findByPk(dto.systemId, {
+            transaction: t,
+            lock: t.LOCK.UPDATE,
+          })
+        : null;
+      if (dto.systemId && !system)
+        throw new NotFoundException("System not found.");
+      const asset = await this.assetModel.findByPk(id, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!asset) throw new NotFoundException("Asset not found.");
+      const active = await this.assetAssignmentModel.count({
+        where: { assetId: id, status: AssignmentStatus.ACTIVE },
+        transaction: t,
+      });
+      if (
+        asset.status !== AssetStatus.AVAILABLE ||
+        active ||
+        asset.quantityAssigned > 0
+      )
+        throw new BadRequestException(
+          "Only available, unassigned assets can be assigned. Return the current assignment first.",
+        );
+      if (asset.quantity < 1)
+        throw new BadRequestException("This asset has no stock available.");
       await this.assetAssignmentModel.create(
         {
           assetId: id,
-
-          employeeId: dto.employeeId,
-
+          employeeId: dto.employeeId ?? null,
+          systemId: dto.systemId ?? null,
           assignedBy: actor.id,
-
           status: AssignmentStatus.ACTIVE,
-
           notes: dto.notes ?? null,
         } as AssetAssignment,
-
-        {
-          transaction: t,
-        },
+        { transaction: t },
       );
-
-      await this.assetModel.update(
-        {
-          status: AssetStatus.ASSIGNED,
-        },
-
-        {
-          where: {
-            id,
-          },
-
-          transaction: t,
-        },
+      await asset.update(
+        { status: AssetStatus.ASSIGNED, quantityAssigned: 1 },
+        { transaction: t },
       );
-
       await this.assetHistoryModel.create(
         {
           assetId: id,
-
           action: "ASSIGNED",
-
           performedBy: actor.name,
-
-          toValue: employee.name,
-
+          toValue: system
+            ? "System: " + system.systemTag + " (" + system.name + ")"
+            : employee!.name,
           notes: dto.notes ?? null,
         } as AssetHistory,
-
-        {
-          transaction: t,
-        },
+        { transaction: t },
       );
-
       await this.audit.log(
         {
           userId: actor.id,
-
           action: "ASSET_ASSIGNED",
-
           entity: "Asset",
-
           entityId: id,
-
           metadata: {
-            employeeId: dto.employeeId,
+            employeeId: dto.employeeId ?? null,
+            systemId: dto.systemId ?? null,
           },
         },
-
         t,
       );
-
       return this.assetModel.findByPk(id, {
         include: this.assetInclude,
         transaction: t,
@@ -1089,6 +1089,10 @@ export class AssetsService {
 
     const currentAssignment = asset.assignments[0];
 
+    if (currentAssignment.systemId)
+      throw new BadRequestException(
+        "Remove this component from its system before assigning it directly to an employee.",
+      );
     const fromEmployeeId = currentAssignment.employeeId;
 
     // ============================================================
@@ -1121,7 +1125,9 @@ export class AssetsService {
     // CURRENT EMPLOYEE
     // ============================================================
 
-    const fromEmployee = await this.employeeModel.findByPk(fromEmployeeId);
+    const fromEmployee = fromEmployeeId
+      ? await this.employeeModel.findByPk(fromEmployeeId)
+      : null;
 
     // ============================================================
     // ACTOR VALIDATION
@@ -1139,6 +1145,33 @@ export class AssetsService {
 
     try {
       return await this.sequelize.transaction(async (t: Transaction) => {
+        const destination = await this.employeeModel.findByPk(
+          dto.toEmployeeId,
+          { transaction: t, lock: t.LOCK.UPDATE },
+        );
+        if (
+          !destination ||
+          ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(
+            destination.status,
+          )
+        )
+          throw new BadRequestException("Destination employee is not active.");
+        const lockedAsset = await this.assetModel.findByPk(id, {
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (lockedAsset?.status !== AssetStatus.ASSIGNED)
+          throw new ConflictException(
+            "Asset status changed. Refresh and try again.",
+          );
+        const active = await this.assetAssignmentModel.findOne({
+          where: { assetId: id, status: AssignmentStatus.ACTIVE },
+          transaction: t,
+        });
+        if (!active || active.id !== currentAssignment.id || active.systemId)
+          throw new ConflictException(
+            "Assignment changed. Refresh and try again.",
+          );
         // --------------------------------------------------------
         // 1. CLOSE CURRENT ASSIGNMENT
         // --------------------------------------------------------
@@ -1216,6 +1249,7 @@ export class AssetsService {
         await this.assetModel.update(
           {
             status: AssetStatus.ASSIGNED,
+            quantityAssigned: 1,
           },
           {
             where: {
@@ -1313,112 +1347,63 @@ export class AssetsService {
   // ============================================================
 
   async returnAsset(id: string, actor: AuthUser, notes?: string) {
-    const asset = await this.findOne(id);
-
-    // ==========================================================
-    // VALIDATION
-    // ==========================================================
-
-    if (
-      asset.status !== AssetStatus.ASSIGNED ||
-      asset.assignments.length === 0
-    ) {
-      throw new BadRequestException("This asset is not currently assigned.");
-    }
-
-    const assignment = asset.assignments[0];
-
-    // ==========================================================
-    // TRANSACTION
-    // ==========================================================
-
-    return this.sequelize.transaction(async (t: Transaction) => {
-      // ------------------------------------------------------
-      // 1. CLOSE ASSIGNMENT
-      // ------------------------------------------------------
-
-      await this.assetAssignmentModel.update(
+    return this.sequelize.transaction(async (t) => {
+      const asset = await this.assetModel.findByPk(id, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!asset) throw new NotFoundException("Asset not found.");
+      const assignment = await this.assetAssignmentModel.findOne({
+        where: { assetId: id, status: AssignmentStatus.ACTIVE },
+        include: [Employee, System],
+        transaction: t,
+      });
+      if (!assignment)
+        throw new BadRequestException("This asset is not currently assigned.");
+      await assignment.update(
         {
           status: AssignmentStatus.RETURNED,
-
           returnedAt: new Date(),
-
-          notes: notes ?? null,
+          notes: notes ?? assignment.notes,
         },
-
-        {
-          where: {
-            id: assignment.id,
-          },
-
-          transaction: t,
-        },
+        { transaction: t },
       );
-
-      // ------------------------------------------------------
-      // 2. MAKE AVAILABLE
-      // ------------------------------------------------------
-
-      await this.assetModel.update(
+      await asset.update(
         {
-          status: AssetStatus.AVAILABLE,
+          status:
+            asset.status === AssetStatus.ASSIGNED
+              ? AssetStatus.AVAILABLE
+              : asset.status,
+          quantityAssigned: 0,
         },
-
-        {
-          where: {
-            id,
-          },
-
-          transaction: t,
-        },
+        { transaction: t },
       );
-
-      // ------------------------------------------------------
-      // 3. HISTORY
-      // ------------------------------------------------------
-
       await this.assetHistoryModel.create(
         {
           assetId: id,
-
           action: "RETURNED",
-
           performedBy: actor.name,
-
-          fromValue: assignment.employee?.name ?? "Assigned",
-
+          fromValue: assignment.system
+            ? "System: " + assignment.system.systemTag
+            : (assignment.employee?.name ?? "Assigned"),
           toValue: "Unassigned",
-
           notes: notes ?? null,
         } as AssetHistory,
-
-        {
-          transaction: t,
-        },
+        { transaction: t },
       );
-
-      // ------------------------------------------------------
-      // 4. AUDIT
-      // ------------------------------------------------------
-
       await this.audit.log(
         {
           userId: actor.id,
-
           action: "ASSET_RETURNED",
-
           entity: "Asset",
-
           entityId: id,
+          metadata: {
+            employeeId: assignment.employeeId,
+            systemId: assignment.systemId,
+          },
         },
-
         t,
       );
-
-      // ------------------------------------------------------
-      // 5. RETURN UPDATED ASSET
-      // ------------------------------------------------------
-
       return this.assetModel.findByPk(id, {
         include: this.assetInclude,
         transaction: t,
@@ -1567,8 +1552,12 @@ export class AssetsService {
       released.push(result);
     }
 
+    const systems = await System.findAll({ where: { employeeId } });
+    for (const system of systems)
+      await this.systemsService.setEmployee(system.id, null, actor);
     return {
       employeeId,
+      releasedSystems: systems.length,
       releasedCount: released.length,
       assets: released,
     };

@@ -1,3 +1,5 @@
+import { System } from "../assets/models/system.model";
+import { AssetsService } from "../assets/assets.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Op, WhereOptions } from "sequelize";
@@ -29,6 +31,7 @@ export class EmployeesService {
     private readonly employeeModel: typeof Employee,
 
     private readonly audit: AuditService,
+    private readonly assets: AssetsService,
   ) {}
 
   // ============================================================
@@ -95,6 +98,17 @@ export class EmployeesService {
         where,
 
         include: [
+          {
+            model: System,
+            include: [
+              {
+                model: AssetAssignment,
+                where: { status: AssignmentStatus.ACTIVE },
+                required: false,
+                include: [Asset],
+              },
+            ],
+          },
           // ------------------------------------------------------
           // ORGANISATION
           // ------------------------------------------------------
@@ -175,6 +189,17 @@ export class EmployeesService {
   async findOne(id: string) {
     const employee = await this.employeeModel.findByPk(id, {
       include: [
+        {
+          model: System,
+          include: [
+            {
+              model: AssetAssignment,
+              where: { status: AssignmentStatus.ACTIVE },
+              required: false,
+              include: [Asset],
+            },
+          ],
+        },
         // --------------------------------------------------------
         // ORGANISATION
         // --------------------------------------------------------
@@ -303,7 +328,13 @@ export class EmployeesService {
       metadata: dto as unknown as Record<string, unknown>,
     });
 
-    return employee;
+    if (dto.status === EmployeeStatus.EXITED)
+      await this.releaseCustody(id, actor);
+    return this.findOne(id);
+  }
+
+  private async releaseCustody(id: string, actor: AuthUser) {
+    await this.assets.releaseAssetsForExitedEmployee(id, actor);
   }
 
   // ============================================================
@@ -328,6 +359,7 @@ export class EmployeesService {
       entityId: id,
     });
 
+    await this.releaseCustody(id, actor);
     return {
       success: true,
     };

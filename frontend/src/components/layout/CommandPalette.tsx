@@ -1,9 +1,9 @@
-import { Search, User, Package } from "lucide-react";
+import { Search, User, Package, Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useGetEmployeesQuery } from "../../services/api/employees.api";
-import { useGetAssetsQuery } from "../../services/api/asset.api";
+import { useGetAssetsQuery, useGetSystemsQuery } from "../../services/api/asset.api";
 
 // ============================================================
 // TYPES
@@ -69,6 +69,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   // ==========================================================
 
   const assets = assetsResponse?.items ?? [];
+  const { data: systems = [], isFetching: systemsLoading } = useGetSystemsQuery({ search: query }, { skip: !open || !query });
 
   // ==========================================================
   // RESET SEARCH WHEN CLOSED
@@ -120,7 +121,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   if (!open) return null;
 
-  const isLoading = employeesLoading || assetsLoading;
+  const isLoading = employeesLoading || assetsLoading || systemsLoading;
 
   // ==========================================================
   // RENDER
@@ -159,6 +160,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </p>
           )}
 
+          {query.length > 0 && !systemsLoading && systems.length > 0 && <div className="mb-2"><p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Systems</p>{systems.slice(0, 10).map(system => <button key={system.id} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { navigate(`/systems?system=${system.id}`); onClose(); }}><Monitor className="h-4 w-4" /><span>{system.name} · {system.systemTag}</span></button>)}</div>}
           {/* LOADING */}
           {query.length > 0 && isLoading && (
             <div className="px-3 py-6 text-center text-sm text-muted-foreground">
@@ -253,7 +255,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           {query.length > 0 &&
             !isLoading &&
             employees.length === 0 &&
-            assets.length === 0 && (
+            assets.length === 0 && systems.length === 0 && (
               <div className="px-3 py-8 text-center">
                 <Search className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
 

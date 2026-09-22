@@ -14,6 +14,7 @@ import {
   InferCreationAttributes,
   CreationOptional,
 } from "sequelize";
+import { System } from "./system.model";
 import { Asset } from "./asset.model";
 import { Employee } from "@/modules/organisation/models/employees.model";
 
@@ -69,10 +70,17 @@ export class AssetAssignment extends Model<
   @ForeignKey(() => Employee)
   @Column({
     type: DataType.CHAR(36),
-    allowNull: false,
+    allowNull: true,
     field: "employee_id",
   })
-  declare employeeId: string;
+  declare employeeId: string | null;
+
+  @ForeignKey(() => System)
+  @Column({ type: DataType.CHAR(36), allowNull: true, field: "system_id" })
+  declare systemId: CreationOptional<string | null>;
+
+  @BelongsTo(() => System, "systemId")
+  declare system?: System;
 
   @BelongsTo(() => Employee, {
     foreignKey: "employeeId",

@@ -1,3 +1,4 @@
+import { AssetsModule } from "../assets/assets.module";
 import { Module } from "@nestjs/common";
 import { SequelizeModule } from "@nestjs/sequelize";
 
@@ -44,6 +45,7 @@ import { AuditModule } from "../audit/audit.module";
     // ==========================================================
 
     AuditModule,
+    AssetsModule,
 
     // ==========================================================
     // SEQUELIZE MODELS

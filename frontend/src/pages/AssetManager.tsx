@@ -27,6 +27,7 @@ import { TransferModal } from "../components/asset-manager/TransferModal";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
 import { AssetPool } from "../components/asset-manager/AssetPool";
+import { SystemPool } from "../components/asset-manager/SystemPool";
 
 import { SkeletonCard, EmptyState } from "../components/ui/EmptyState";
 
@@ -95,6 +96,14 @@ export default function AssetManager() {
   // ------------------------------------------------------------
 
   const [poolTarget, setPoolTarget] = useState<Employee | null>(null);
+
+  // ------------------------------------------------------------
+  // System pool (assign a whole system to an employee)
+  // ------------------------------------------------------------
+
+  const [systemPoolTarget, setSystemPoolTarget] = useState<Employee | null>(
+    null,
+  );
 
   // ------------------------------------------------------------
   // Create / Edit asset modal
@@ -377,6 +386,15 @@ export default function AssetManager() {
   }
 
   // ============================================================
+  // OPEN SYSTEM POOL
+  // ============================================================
+
+  function handleAssignSystemFromPool(employee: Employee) {
+    setDetailAsset(null);
+    setSystemPoolTarget(employee);
+  }
+
+  // ============================================================
   // RELEASE ASSETS FOR AN EXITED EMPLOYEE
   // ============================================================
 
@@ -559,6 +577,7 @@ export default function AssetManager() {
                 onOpenDetail={setDetailAsset}
                 onTransferClick={handleManualTransfer}
                 onAssignClick={handleAssignFromPool}
+                onAssignSystemClick={handleAssignSystemFromPool}
                 onReleaseClick={handleReleaseAssets}
                 releasingAssets={isReleasing}
               />
@@ -629,6 +648,16 @@ export default function AssetManager() {
         open={Boolean(poolTarget)}
         employee={poolTarget}
         onClose={() => setPoolTarget(null)}
+      />
+
+      {/* ======================================================
+          SYSTEM POOL
+      ====================================================== */}
+
+      <SystemPool
+        open={Boolean(systemPoolTarget)}
+        employee={systemPoolTarget}
+        onClose={() => setSystemPoolTarget(null)}
       />
 
       {/* ======================================================

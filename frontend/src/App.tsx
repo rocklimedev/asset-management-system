@@ -12,6 +12,7 @@ import LoginPage from "./pages/Login";
 
 import Dashboard from "./pages/Dashboard";
 import AssetManager from "./pages/AssetManager";
+import Systems from "./pages/Systems";
 import Inventory from "./pages/Inventory";
 import EmployeeList from "./pages/EmployeeList";
 import Reports from "./pages/Reports";
@@ -165,6 +166,7 @@ export default function App() {
           <Route element={<ApplicationLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/asset-manager" element={<AssetManager />} />
+            <Route path="/systems" element={<Systems />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/employees" element={<EmployeeList />} />
             <Route path="/reports" element={<Reports />} />

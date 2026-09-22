@@ -1,8 +1,13 @@
 import { IsOptional, IsString, IsUUID } from "class-validator";
 
 export class AssignAssetDto {
+  @IsOptional()
   @IsUUID()
-  employeeId!: string;
+  employeeId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  systemId?: string;
 
   @IsOptional()
   @IsString()

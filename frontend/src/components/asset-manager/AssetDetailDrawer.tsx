@@ -72,7 +72,12 @@ export function AssetDetailDrawer({
   // CURRENT ASSIGNEE
   // ==========================================================
 
-  const currentAssignee = asset.assignments?.[0]?.employee;
+  const currentSystem = asset.assignments?.[0]?.system;
+  const currentAssignee = currentSystem
+    ? {
+        name: `System: ${currentSystem.systemTag} · ${currentSystem.employee?.name ?? "Unassigned"}`,
+      }
+    : asset.assignments?.[0]?.employee;
 
   // ==========================================================
   // CONDITION
@@ -233,7 +238,16 @@ export function AssetDetailDrawer({
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {currentAssignee.name}
+                        {currentSystem ? (
+                          <a
+                            className="underline underline-offset-4"
+                            href={`/systems?system=${currentSystem.id}`}
+                          >
+                            {currentAssignee.name}
+                          </a>
+                        ) : (
+                          currentAssignee.name
+                        )}
                       </p>
 
                       <p className="mt-0.5 text-xs text-muted-foreground">
@@ -242,18 +256,19 @@ export function AssetDetailDrawer({
                       </p>
                     </div>
 
-                    {asset.status?.toUpperCase() === "ASSIGNED" && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onTransfer(asset)}
-                        className="shrink-0"
-                      >
-                        <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-                        Transfer
-                      </Button>
-                    )}
+                    {!currentSystem &&
+                      asset.status?.toUpperCase() === "ASSIGNED" && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onTransfer(asset)}
+                          className="shrink-0"
+                        >
+                          <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                          Transfer
+                        </Button>
+                      )}
                   </div>
                 </div>
               ) : (

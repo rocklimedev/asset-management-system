@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import React from "react";
 import dayjs from "dayjs";
 
@@ -326,6 +327,27 @@ const EmployeeDetailDrawer = ({
               </DetailSection>
             )}
 
+            {!!employee.systems?.length && (
+              <DetailSection title="Assigned Systems">
+                {employee.systems.map((system) => (
+                  <Link
+                    key={system.id}
+                    to={`/systems?system=${system.id}`}
+                    className="mb-2 block rounded-lg border p-3 text-sm"
+                  >
+                    <p className="font-medium">
+                      {system.name} · {system.systemTag}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {system.assignments
+                        ?.map((a) => a.asset?.name)
+                        .filter(Boolean)
+                        .join(", ") || "No components yet"}
+                    </p>
+                  </Link>
+                ))}
+              </DetailSection>
+            )}
             {assignments.length > 0 && (
               <DetailSection title="Assigned Assets">
                 <div className="overflow-hidden rounded-lg border">

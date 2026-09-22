@@ -1,3 +1,4 @@
+import { System } from "@/modules/assets/models/system.model";
 import {
   Table,
   Column,
@@ -211,9 +212,12 @@ export class Employee extends Model<Employee> {
   // ============================================================
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "employee_id",
+    foreignKey: "employeeId",
   })
   assignments!: AssetAssignment[];
+
+  @HasMany(() => System, "employeeId")
+  systems?: System[];
 
   // ============================================================
   // ASSET TRANSFERS - FROM

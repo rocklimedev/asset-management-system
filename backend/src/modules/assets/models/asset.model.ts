@@ -333,7 +333,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "asset_id",
+    foreignKey: "assetId",
   })
   assignments!: AssetAssignment[];
 

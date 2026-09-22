@@ -6,7 +6,9 @@
     "build": "nest build && tsc-alias -p tsconfig.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "migrate:systems": "node scripts/migrate-systems.cjs",
+    "test:systems": "npm run build && node --test test/systems.test.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

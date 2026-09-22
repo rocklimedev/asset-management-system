@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, type Middleware, isAnyOf } from "@reduxjs/toolkit";
 
 // ============================================================
 // APIS
@@ -22,6 +22,38 @@ import reportsApi from "../api/reports.api";
 // ============================================================
 // STORE
 // ============================================================
+
+const custodyCache: Middleware = (api) => (next) => (action) => {
+  const result = next(action);
+  if (
+    isAnyOf(
+      assetApi.endpoints.assignAsset.matchFulfilled,
+      assetApi.endpoints.returnAsset.matchFulfilled,
+      assetApi.endpoints.transferAsset.matchFulfilled,
+      assetApi.endpoints.assignSystem.matchFulfilled,
+      assetApi.endpoints.updateSystem.matchFulfilled,
+      assetApi.endpoints.createSystem.matchFulfilled,
+      assetApi.endpoints.releaseAssetsForEmployee.matchFulfilled,
+    )(action)
+  ) {
+    api.dispatch(employeesApi.util.invalidateTags(["Employee"]));
+    api.dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+    api.dispatch(reportsApi.util.invalidateTags(["Report"]));
+  }
+  if (
+    isAnyOf(
+      employeesApi.endpoints.updateEmployee.matchFulfilled,
+      employeesApi.endpoints.removeEmployee.matchFulfilled,
+    )(action)
+  ) {
+    api.dispatch(
+      assetApi.util.invalidateTags(["Asset", "System", "AssetHistory"]),
+    );
+    api.dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+    api.dispatch(reportsApi.util.invalidateTags(["Report"]));
+  }
+  return result;
+};
 
 export const store = configureStore({
   reducer: {
@@ -47,6 +79,7 @@ export const store = configureStore({
 
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
+      custodyCache,
       assetApi.middleware,
       employeesApi.middleware,
       rolesApi.middleware,

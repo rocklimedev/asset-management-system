@@ -188,12 +188,24 @@ export interface AssetLicense {
 // ASSET ASSIGNMENT
 // ============================================================
 
+export interface SystemRecord {
+  id: string;
+  systemTag: string;
+  name: string;
+  notes?: string | null;
+  employeeId: string | null;
+  employee?: AssetEmployee;
+  assignments?: AssetAssignment[];
+}
+
 export interface AssetAssignment {
   id: string;
 
   assetId: string;
 
-  employeeId: string;
+  employeeId: string | null;
+  systemId?: string | null;
+  system?: SystemRecord;
 
   assignedAt: string;
 
@@ -667,7 +679,8 @@ export interface UpdateAssetRequest {
 export interface AssignAssetRequest {
   id: string;
 
-  employeeId: string;
+  employeeId?: string;
+  systemId?: string;
 
   notes?: string | null;
 }
@@ -750,6 +763,7 @@ export const assetApi = createApi({
   }),
 
   tagTypes: [
+    "System",
     "Asset",
     "AssetHistory",
     "AssetAssignment",
@@ -760,6 +774,42 @@ export const assetApi = createApi({
   ],
 
   endpoints: (builder) => ({
+    getSystems: builder.query<
+      SystemRecord[],
+      { search?: string; employeeId?: string } | void
+    >({
+      query: (params) => ({ url: "/systems", params: params || undefined }),
+      providesTags: ["System"],
+    }),
+    createSystem: builder.mutation<
+      SystemRecord,
+      { name: string; systemTag: string; notes?: string }
+    >({
+      query: (body) => ({ url: "/systems", method: "POST", body }),
+      invalidatesTags: ["System"],
+    }),
+    updateSystem: builder.mutation<
+      SystemRecord,
+      { id: string; name: string; systemTag: string; notes?: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/systems/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["System", "Asset"],
+    }),
+    assignSystem: builder.mutation<
+      SystemRecord,
+      { id: string; employeeId: string | null }
+    >({
+      query: ({ id, employeeId }) => ({
+        url: `/systems/${id}/${employeeId ? "assign" : "return"}`,
+        method: "POST",
+        body: employeeId ? { employeeId } : {},
+      }),
+      invalidatesTags: ["System", "Asset", "AssetHistory"],
+    }),
     // ============================================================
     // ASSET CATEGORIES
     // ============================================================
@@ -843,6 +893,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "AssetCategory",
           id,
@@ -991,6 +1043,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1051,6 +1105,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1091,6 +1147,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1125,6 +1183,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1243,6 +1303,8 @@ export const assetApi = createApi({
       },
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1276,6 +1338,8 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        "System",
+        { type: "Asset", id: "POOL" },
         {
           type: "Asset",
           id,
@@ -1313,6 +1377,10 @@ export const assetApi = createApi({
 // ============================================================
 
 export const {
+  useGetSystemsQuery,
+  useCreateSystemMutation,
+  useUpdateSystemMutation,
+  useAssignSystemMutation,
   // Assets
   useGetAssetsQuery,
   useGetAssetQuery,

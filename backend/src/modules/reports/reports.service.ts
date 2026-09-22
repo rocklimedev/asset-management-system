@@ -1,3 +1,4 @@
+import { System } from "../assets/models/system.model";
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Op, WhereOptions } from "sequelize";
@@ -229,6 +230,7 @@ export class ReportsService {
           },
           required: true,
           include: [
+            { model: System, include: [Employee] },
             {
               model: Employee,
               as: "employee",
@@ -251,7 +253,9 @@ export class ReportsService {
         assetTag: asset.assetTag,
         name: asset.name,
         category: asset.category?.name ?? null,
-        assignedTo: asset.assignments?.[0]?.employee?.name ?? null,
+        assignedTo: asset.assignments?.[0]?.system
+          ? `System: ${asset.assignments[0].system!.systemTag} (${asset.assignments[0].system!.employee?.name ?? "Unassigned"})`
+          : (asset.assignments?.[0]?.employee?.name ?? null),
         assignedAt: asset.assignments?.[0]?.assignedAt ?? null,
       })),
     };

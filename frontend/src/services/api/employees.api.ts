@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
-import type { AssetAssignment } from "./asset.api";
+import type { AssetAssignment, SystemRecord } from "./asset.api";
 import { BACKEND } from "../../lib/api";
 
 // ============================================================
@@ -88,6 +88,7 @@ export interface Employee {
   // ============================================================
 
   assignments?: AssetAssignment[];
+  systems?: SystemRecord[];
 
   createdAt?: string;
   updatedAt?: string;
