@@ -12,6 +12,7 @@ import {
   Server,
   AppWindow,
   GripVertical,
+  Undo2,
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -41,10 +42,14 @@ export function AssetChip({
   asset,
   onOpenDetail,
   transferrable,
+  onUnassign,
+  returning,
 }: {
   asset: Asset;
   onOpenDetail: (asset: Asset) => void;
   transferrable: boolean;
+  onUnassign?: (asset: Asset) => void;
+  returning?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -54,6 +59,7 @@ export function AssetChip({
     });
 
   const Icon = iconFor(asset);
+  const canUnassign = asset.status === "ASSIGNED" && Boolean(onUnassign);
 
   return (
     <Card
@@ -111,6 +117,24 @@ export function AssetChip({
           </p>
         </div>
       </Button>
+
+      {/* Unassign */}
+      {canUnassign && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          title="Unassign / return to pool"
+          disabled={returning}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUnassign?.(asset);
+          }}
+          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+        >
+          <Undo2 className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </Card>
   );
 }

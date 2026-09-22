@@ -102,7 +102,7 @@ export interface Employee {
 
 export interface GetEmployeesParams {
   search?: string;
-  departmentId?: string;
+  organisationId?: string;
   status?: EmployeeStatus;
   page?: number;
 }
@@ -185,7 +185,59 @@ export interface UpdateEmployeeRequest {
 
   [key: string]: unknown;
 }
+// ============================================================
+// ORGANISATION TYPES
+// ============================================================
 
+export interface Organisation {
+  id: string;
+  name: string;
+
+  description?: string | null;
+  code?: string | null;
+
+  createdAt?: string;
+  updatedAt?: string;
+
+  [key: string]: unknown;
+}
+
+export interface CreateOrganisationRequest {
+  name: string;
+  description?: string;
+  code?: string;
+
+  [key: string]: unknown;
+}
+
+export interface UpdateOrganisationRequest {
+  id: string;
+
+  name?: string;
+  description?: string;
+  code?: string;
+
+  [key: string]: unknown;
+}
+
+export interface OrganisationResponse {
+  data?: Organisation;
+  message?: string;
+
+  [key: string]: unknown;
+}
+
+export type OrganisationsApiResponse =
+  | Organisation[]
+  | {
+      items?: Organisation[];
+      total?: number;
+      page?: number;
+      pageSize?: number;
+      totalPages?: number;
+
+      [key: string]: unknown;
+    };
 // ============================================================
 // EMPLOYEES API
 // ============================================================
@@ -212,8 +264,7 @@ export const employeesApi = createApi({
     },
   }),
 
-  tagTypes: ["Employee"],
-
+  tagTypes: ["Employee", "Organisation"],
   endpoints: (builder) => ({
     // ============================================================
     // GET ALL EMPLOYEES
@@ -226,7 +277,7 @@ export const employeesApi = createApi({
     >({
       query: ({
         search,
-        departmentId,
+        organisationId,
         status,
         page,
       }: GetEmployeesParams = {}) => ({
@@ -235,7 +286,7 @@ export const employeesApi = createApi({
 
         params: {
           search: search || undefined,
-          departmentId: departmentId || undefined,
+          organisationId: organisationId || undefined,
           status: status || undefined,
           page: page || undefined,
         },
@@ -347,6 +398,131 @@ export const employeesApi = createApi({
         },
       ],
     }),
+    // ============================================================
+    // GET ALL ORGANISATIONS
+    // GET /organisations
+    // ============================================================
+
+    getOrganisations: builder.query<OrganisationsApiResponse, void>({
+      query: () => ({
+        url: "/organisations",
+        method: "GET",
+      }),
+
+      providesTags: (result) => {
+        const organisations: Organisation[] = Array.isArray(result)
+          ? result
+          : result?.items || [];
+
+        return [
+          ...organisations.map(({ id }) => ({
+            type: "Organisation" as const,
+            id,
+          })),
+
+          {
+            type: "Organisation" as const,
+            id: "LIST",
+          },
+        ];
+      },
+    }),
+
+    // ============================================================
+    // GET SINGLE ORGANISATION
+    // GET /organisations/:id
+    // ============================================================
+
+    getOrganisation: builder.query<OrganisationResponse | Organisation, string>(
+      {
+        query: (id) => ({
+          url: `/organisations/${id}`,
+          method: "GET",
+        }),
+
+        providesTags: (result, error, id) => [
+          {
+            type: "Organisation" as const,
+            id,
+          },
+        ],
+      },
+    ),
+
+    // ============================================================
+    // CREATE ORGANISATION
+    // POST /organisations
+    // ============================================================
+
+    createOrganisation: builder.mutation<
+      OrganisationResponse,
+      CreateOrganisationRequest
+    >({
+      query: (body) => ({
+        url: "/organisations",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: [
+        {
+          type: "Organisation",
+          id: "LIST",
+        },
+      ],
+    }),
+
+    // ============================================================
+    // UPDATE ORGANISATION
+    // PATCH /organisations/:id
+    // ============================================================
+
+    updateOrganisation: builder.mutation<
+      OrganisationResponse,
+      UpdateOrganisationRequest
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/organisations/${id}`,
+        method: "PATCH",
+        body,
+      }),
+
+      invalidatesTags: (result, error, { id }) => [
+        {
+          type: "Organisation",
+          id,
+        },
+
+        {
+          type: "Organisation",
+          id: "LIST",
+        },
+      ],
+    }),
+
+    // ============================================================
+    // DELETE ORGANISATION
+    // DELETE /organisations/:id
+    // ============================================================
+
+    removeOrganisation: builder.mutation<unknown, string>({
+      query: (id) => ({
+        url: `/organisations/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: (result, error, id) => [
+        {
+          type: "Organisation",
+          id,
+        },
+
+        {
+          type: "Organisation",
+          id: "LIST",
+        },
+      ],
+    }),
   }),
 });
 
@@ -360,6 +536,11 @@ export const {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useRemoveEmployeeMutation,
-} = employeesApi;
 
+  useGetOrganisationsQuery,
+  useGetOrganisationQuery,
+  useCreateOrganisationMutation,
+  useUpdateOrganisationMutation,
+  useRemoveOrganisationMutation,
+} = employeesApi;
 export default employeesApi;

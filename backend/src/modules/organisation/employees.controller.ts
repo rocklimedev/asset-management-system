@@ -30,20 +30,17 @@ export class EmployeesController {
   @Get()
   findAll(
     @Query("search") search?: string,
+    @Query("organisationId") organisationId?: string,
     @Query("departmentId") departmentId?: string,
     @Query("status") status?: string,
     @Query("page") page?: string,
   ) {
     return this.service.findAll({
       search,
-
-      // UUID - do NOT convert to Number()
-      departmentId: departmentId || undefined,
-
+      organisationId,
+      departmentId,
       status,
-
-      // Pagination is still numeric
-      page: page ? Number(page) : undefined,
+      page: page ? Number(page) : 1,
     });
   }
 

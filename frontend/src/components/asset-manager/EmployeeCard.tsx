@@ -1,14 +1,7 @@
 import { Link } from "react-router-dom";
 import { useDroppable } from "@dnd-kit/core";
 import { clsx } from "clsx";
-import {
-  Laptop,
-  AppWindow,
-  MapPin,
-  Package,
-  Monitor,
-  Undo2,
-} from "lucide-react";
+import { Laptop, AppWindow, Package, Monitor, Undo2 } from "lucide-react";
 
 import type { Asset } from "../../services/api/asset.api";
 import type { Employee } from "../../services/api/employees.api";
@@ -31,7 +24,9 @@ export function EmployeeCard({
   onAssignClick,
   onAssignSystemClick,
   onReleaseClick,
+  onUnassignClick,
   releasingAssets,
+  returningAsset,
 }: {
   employee: Employee;
   // UUID string, matching the backend's CHAR(36) asset ids — was
@@ -48,7 +43,10 @@ export function EmployeeCard({
   // Bulk-return every asset this employee currently holds — shown only
   // for employees who have exited.
   onReleaseClick?: (employee: Employee) => void;
+  // Return a single asset to the pool.
+  onUnassignClick?: (asset: Asset) => void;
   releasingAssets?: boolean;
+  returningAsset?: boolean;
 }) {
   const { setNodeRef, isOver, active } = useDroppable({
     id: `employee-${employee.id}`,
@@ -171,6 +169,8 @@ export function EmployeeCard({
                       asset={a.asset}
                       onOpenDetail={onOpenDetail}
                       transferrable={a.asset.status === "ASSIGNED"}
+                      onUnassign={onUnassignClick}
+                      returning={returningAsset}
                     />
                   ),
               )}
@@ -192,6 +192,8 @@ export function EmployeeCard({
                       asset={a.asset}
                       onOpenDetail={onOpenDetail}
                       transferrable={false}
+                      onUnassign={onUnassignClick}
+                      returning={returningAsset}
                     />
                   ),
               )}

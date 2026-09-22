@@ -13,10 +13,15 @@ import {
 
 import { Laptop, Plus, Search } from "lucide-react";
 
-import { useGetEmployeesQuery } from "../services/api/employees.api";
+import {
+  useGetEmployeesQuery,
+  useGetOrganisationsQuery,
+} from "../services/api/employees.api";
+
 import {
   useTransferAssetMutation,
   useReleaseAssetsForEmployeeMutation,
+  useReturnAssetMutation,
 } from "../services/api/asset.api";
 
 import { toast } from "../components/ui/toast";
@@ -35,7 +40,7 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
 import type { Asset } from "../services/api/asset.api";
-import type { Employee } from "../services/api/employees.api";
+import type { Employee, Organisation } from "../services/api/employees.api";
 
 // ============================================================
 // TYPES
@@ -78,7 +83,8 @@ export default function AssetManager() {
   // ============================================================
 
   const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState("");
+
+  const [organisationId, setOrganisationId] = useState("");
 
   const [activeAsset, setActiveAsset] = useState<Asset | null>(null);
 
@@ -91,23 +97,23 @@ export default function AssetManager() {
     pickMode: boolean;
   } | null>(null);
 
-  // ------------------------------------------------------------
-  // Asset pool
-  // ------------------------------------------------------------
+  // ============================================================
+  // ASSET POOL
+  // ============================================================
 
   const [poolTarget, setPoolTarget] = useState<Employee | null>(null);
 
-  // ------------------------------------------------------------
-  // System pool (assign a whole system to an employee)
-  // ------------------------------------------------------------
+  // ============================================================
+  // SYSTEM POOL
+  // ============================================================
 
   const [systemPoolTarget, setSystemPoolTarget] = useState<Employee | null>(
     null,
   );
 
-  // ------------------------------------------------------------
-  // Create / Edit asset modal
-  // ------------------------------------------------------------
+  // ============================================================
+  // CREATE / EDIT ASSET MODAL
+  // ============================================================
 
   const [assetModal, setAssetModal] = useState<{
     open: boolean;
@@ -118,13 +124,40 @@ export default function AssetManager() {
   });
 
   // ============================================================
+  // API - ORGANISATIONS
+  // ============================================================
+
+  const { data: organisationsData, isLoading: isOrganisationsLoading } =
+    useGetOrganisationsQuery();
+
+  // ============================================================
+  // NORMALIZE ORGANISATIONS
+  // ============================================================
+
+  const organisations: Organisation[] = Array.isArray(organisationsData)
+    ? organisationsData
+    : (organisationsData?.items ?? []);
+
+  // ============================================================
   // API - EMPLOYEES
   // ============================================================
 
-  const { data, isLoading, isFetching } = useGetEmployeesQuery({
-    search: search || undefined,
-    departmentId: department ? department : undefined,
+  const {
+    data: employeesData,
+    isLoading,
+    isFetching,
+  } = useGetEmployeesQuery({
+    search: search.trim() || undefined,
+    organisationId: organisationId || undefined,
   });
+
+  // ============================================================
+  // NORMALIZE EMPLOYEES
+  // ============================================================
+
+  const employees: Employee[] = Array.isArray(employeesData)
+    ? employeesData
+    : (employeesData?.items ?? []);
 
   // ============================================================
   // API - TRANSFER
@@ -141,14 +174,10 @@ export default function AssetManager() {
     useReleaseAssetsForEmployeeMutation();
 
   // ============================================================
-  // NORMALIZE EMPLOYEE RESPONSE
+  // API - RETURN / UNASSIGN
   // ============================================================
 
-  const employees = Array.isArray(data)
-    ? data
-    : ((data as { data?: Employee[]; items?: Employee[] } | undefined)?.data ??
-      (data as { items?: Employee[] } | undefined)?.items ??
-      []);
+  const [returnAsset, { isLoading: isReturning }] = useReturnAssetMutation();
 
   // ============================================================
   // DND SENSORS
@@ -377,6 +406,53 @@ export default function AssetManager() {
   }
 
   // ============================================================
+  // UNASSIGN / RETURN ASSET
+  // ============================================================
+
+  async function handleUnassign(asset: Asset) {
+    if (asset.status !== "ASSIGNED") {
+      toast.add({
+        type: "error",
+        title: "Cannot unassign",
+        description: "Only assigned assets can be returned to the pool.",
+      });
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Return "${asset.name}" to the asset pool? This will unassign it from the current employee.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await returnAsset({
+        id: String(asset.id),
+        notes: undefined,
+      }).unwrap();
+
+      toast.add({
+        type: "success",
+        title: "Asset unassigned",
+        description: `${asset.name} has been returned to the pool.`,
+      });
+
+      setDetailAsset(null);
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: "Unassign failed",
+        description: getErrorMessage(
+          error,
+          "Could not return this asset. Please try again.",
+        ),
+      });
+    }
+  }
+
+  // ============================================================
   // OPEN ASSET POOL
   // ============================================================
 
@@ -395,7 +471,7 @@ export default function AssetManager() {
   }
 
   // ============================================================
-  // RELEASE ASSETS FOR AN EXITED EMPLOYEE
+  // RELEASE ASSETS FOR EXITED EMPLOYEE
   // ============================================================
 
   async function handleReleaseAssets(employee: Employee) {
@@ -528,14 +604,25 @@ export default function AssetManager() {
           />
         </div>
 
-        {/* Department */}
+        {/* Organisation */}
 
         <select
-          value={department}
-          onChange={(event) => setDepartment(event.target.value)}
-          className="h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring sm:w-48"
+          value={organisationId}
+          onChange={(event) => setOrganisationId(event.target.value)}
+          disabled={isOrganisationsLoading}
+          className="h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:opacity-50 sm:w-56"
         >
-          <option value="">All departments</option>
+          <option value="">
+            {isOrganisationsLoading
+              ? "Loading organisations..."
+              : "All organisations"}
+          </option>
+
+          {organisations.map((organisation) => (
+            <option key={organisation.id} value={organisation.id}>
+              {organisation.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -560,7 +647,11 @@ export default function AssetManager() {
           <EmptyState
             icon={Laptop}
             title="No employees found"
-            description="Try a different search or add a new employee to get started."
+            description={
+              organisationId
+                ? "No employees were found in the selected organisation."
+                : "Try a different search or add a new employee to get started."
+            }
           />
         ) : (
           <div
@@ -579,7 +670,9 @@ export default function AssetManager() {
                 onAssignClick={handleAssignFromPool}
                 onAssignSystemClick={handleAssignSystemFromPool}
                 onReleaseClick={handleReleaseAssets}
+                onUnassignClick={handleUnassign}
                 releasingAssets={isReleasing}
+                returningAsset={isReturning}
               />
             ))}
           </div>
@@ -669,6 +762,7 @@ export default function AssetManager() {
         onClose={() => setDetailAsset(null)}
         onTransfer={handleManualTransfer}
         onEdit={openEditAsset}
+        onUnassign={handleUnassign}
       />
 
       {/* ======================================================

@@ -1,4 +1,4 @@
-import { X, Clock, ArrowRightLeft } from "lucide-react";
+import { X, Clock, ArrowRightLeft, Undo2 } from "lucide-react";
 
 import { useGetAssetHistoryQuery } from "../../services/api/asset.api";
 import { Badge } from "../ui/badge";
@@ -33,6 +33,7 @@ interface AssetDetailDrawerProps {
   onClose: () => void;
   onTransfer: (asset: Asset) => void;
   onEdit: (asset: Asset) => void;
+  onUnassign?: (asset: Asset) => void;
 }
 
 export function AssetDetailDrawer({
@@ -40,6 +41,7 @@ export function AssetDetailDrawer({
   onClose,
   onTransfer,
   onEdit,
+  onUnassign,
 }: AssetDetailDrawerProps) {
   // ==========================================================
   // ASSET HISTORY
@@ -94,6 +96,8 @@ export function AssetDetailDrawer({
   const status = asset.status
     ? asset.status.charAt(0) + asset.status.slice(1).toLowerCase()
     : "Unknown";
+
+  const isAssigned = asset.status?.toUpperCase() === "ASSIGNED";
 
   // ==========================================================
   // DATE HELPERS
@@ -256,19 +260,31 @@ export function AssetDetailDrawer({
                       </p>
                     </div>
 
-                    {!currentSystem &&
-                      asset.status?.toUpperCase() === "ASSIGNED" && (
+                    {!currentSystem && isAssigned && (
+                      <div className="flex shrink-0 items-center gap-1.5">
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => onTransfer(asset)}
-                          className="shrink-0"
                         >
                           <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
                           Transfer
                         </Button>
-                      )}
+
+                        {onUnassign && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onUnassign(asset)}
+                          >
+                            <Undo2 className="mr-1.5 h-3.5 w-3.5" />
+                            Unassign
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

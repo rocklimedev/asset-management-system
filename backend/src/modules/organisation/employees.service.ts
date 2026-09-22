@@ -40,12 +40,13 @@ export class EmployeesService {
 
   async findAll(params: {
     search?: string;
+    organisationId?: string;
     departmentId?: string;
     status?: string;
     page?: number;
   }) {
     const take = 24;
-    const page = params.page ?? 1;
+    const page = Math.max(Number(params.page) || 1, 1);
 
     const andConditions: WhereOptions<Employee>[] = [];
 
@@ -53,9 +54,11 @@ export class EmployeesService {
     // SEARCH
     // ------------------------------------------------------------
 
-    if (params.search) {
+    if (params.search?.trim()) {
+      const search = params.search.trim();
+
       const like = {
-        [Op.like]: `%${params.search}%`,
+        [Op.like]: `%${search}%`,
       };
 
       andConditions.push({
@@ -64,30 +67,45 @@ export class EmployeesService {
     }
 
     // ------------------------------------------------------------
+    // ORGANISATION
+    // ------------------------------------------------------------
+
+    if (params.organisationId?.trim()) {
+      andConditions.push({
+        organisationId: params.organisationId.trim(),
+      } as WhereOptions<Employee>);
+    }
+
+    // ------------------------------------------------------------
     // DEPARTMENT
     // ------------------------------------------------------------
 
-    if (params.departmentId) {
+    if (params.departmentId?.trim()) {
       andConditions.push({
-        departmentId: params.departmentId,
-      });
+        departmentId: params.departmentId.trim(),
+      } as WhereOptions<Employee>);
     }
 
     // ------------------------------------------------------------
     // STATUS
     // ------------------------------------------------------------
 
-    if (params.status) {
+    if (params.status?.trim()) {
       andConditions.push({
-        status: params.status as EmployeeStatus,
-      });
+        status: params.status.trim() as EmployeeStatus,
+      } as WhereOptions<Employee>);
     }
 
-    const where: WhereOptions<Employee> = andConditions.length
-      ? {
-          [Op.and]: andConditions,
-        }
-      : {};
+    // ------------------------------------------------------------
+    // FINAL WHERE
+    // ------------------------------------------------------------
+
+    const where: WhereOptions<Employee> =
+      andConditions.length > 0
+        ? {
+            [Op.and]: andConditions,
+          }
+        : {};
 
     // ============================================================
     // QUERY
@@ -98,17 +116,25 @@ export class EmployeesService {
         where,
 
         include: [
+          // ------------------------------------------------------
+          // SYSTEMS
+          // ------------------------------------------------------
+
           {
             model: System,
+
             include: [
               {
                 model: AssetAssignment,
-                where: { status: AssignmentStatus.ACTIVE },
+                where: {
+                  status: AssignmentStatus.ACTIVE,
+                },
                 required: false,
                 include: [Asset],
               },
             ],
           },
+
           // ------------------------------------------------------
           // ORGANISATION
           // ------------------------------------------------------
@@ -179,6 +205,7 @@ export class EmployeesService {
       total,
       page,
       pageSize: take,
+      totalPages: Math.ceil(total / take),
     };
   }
 
@@ -189,17 +216,25 @@ export class EmployeesService {
   async findOne(id: string) {
     const employee = await this.employeeModel.findByPk(id, {
       include: [
+        // --------------------------------------------------------
+        // SYSTEMS
+        // --------------------------------------------------------
+
         {
           model: System,
+
           include: [
             {
               model: AssetAssignment,
-              where: { status: AssignmentStatus.ACTIVE },
+              where: {
+                status: AssignmentStatus.ACTIVE,
+              },
               required: false,
               include: [Asset],
             },
           ],
         },
+
         // --------------------------------------------------------
         // ORGANISATION
         // --------------------------------------------------------
@@ -328,10 +363,16 @@ export class EmployeesService {
       metadata: dto as unknown as Record<string, unknown>,
     });
 
-    if (dto.status === EmployeeStatus.EXITED)
+    if (dto.status === EmployeeStatus.EXITED) {
       await this.releaseCustody(id, actor);
+    }
+
     return this.findOne(id);
   }
+
+  // ============================================================
+  // RELEASE ASSETS
+  // ============================================================
 
   private async releaseCustody(id: string, actor: AuthUser) {
     await this.assets.releaseAssetsForExitedEmployee(id, actor);
@@ -360,6 +401,7 @@ export class EmployeesService {
     });
 
     await this.releaseCustody(id, actor);
+
     return {
       success: true,
     };
