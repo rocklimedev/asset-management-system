@@ -4,6 +4,8 @@ import {
   Plus,
   ArrowUpDown,
   Package,
+  PackagePlus,
+  Boxes,
   AlertTriangle,
   MoreHorizontal,
   Eye,
@@ -47,6 +49,8 @@ import { EmptyState, SkeletonCard } from "../components/ui/EmptyState";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
 import { AssetHistoryModal } from "../components/asset-manager/AssetHistoryModal";
+import { UpdateInventoryModal } from "../components/asset-manager/UpdateInventoryModal";
+import { InventoryHistoryModal } from "../components/asset-manager/InventoryHistoryModal";
 
 import { toast } from "../components/ui/toast";
 
@@ -170,6 +174,30 @@ export default function Inventory() {
   // ============================================================
 
   const [historyModal, setHistoryModal] = useState<{
+    open: boolean;
+    asset: Asset | null;
+  }>({
+    open: false,
+    asset: null,
+  });
+
+  // ============================================================
+  // UPDATE INVENTORY MODAL
+  // ============================================================
+
+  const [inventoryModal, setInventoryModal] = useState<{
+    open: boolean;
+    asset: Asset | null;
+  }>({
+    open: false,
+    asset: null,
+  });
+
+  // ============================================================
+  // INVENTORY HISTORY MODAL
+  // ============================================================
+
+  const [inventoryHistoryModal, setInventoryHistoryModal] = useState<{
     open: boolean;
     asset: Asset | null;
   }>({
@@ -337,6 +365,66 @@ export default function Inventory() {
   }
 
   // ============================================================
+  // UPDATE INVENTORY
+  // ============================================================
+
+  function openUpdateInventory(asset: Asset) {
+    setSelected(null);
+
+    setAssetModal({
+      open: false,
+      asset: null,
+    });
+
+    setHistoryModal({
+      open: false,
+      asset: null,
+    });
+
+    setInventoryModal({
+      open: true,
+      asset,
+    });
+  }
+
+  function closeInventoryModal() {
+    setInventoryModal({
+      open: false,
+      asset: null,
+    });
+  }
+
+  // ============================================================
+  // INVENTORY HISTORY
+  // ============================================================
+
+  function openInventoryHistory(asset: Asset) {
+    setSelected(null);
+
+    setAssetModal({
+      open: false,
+      asset: null,
+    });
+
+    setHistoryModal({
+      open: false,
+      asset: null,
+    });
+
+    setInventoryHistoryModal({
+      open: true,
+      asset,
+    });
+  }
+
+  function closeInventoryHistory() {
+    setInventoryHistoryModal({
+      open: false,
+      asset: null,
+    });
+  }
+
+  // ============================================================
   // DELETE
   // ============================================================
 
@@ -367,6 +455,20 @@ export default function Inventory() {
 
       if (assetModal.asset?.id === asset.id) {
         setAssetModal({
+          open: false,
+          asset: null,
+        });
+      }
+
+      if (inventoryModal.asset?.id === asset.id) {
+        setInventoryModal({
+          open: false,
+          asset: null,
+        });
+      }
+
+      if (inventoryHistoryModal.asset?.id === asset.id) {
+        setInventoryHistoryModal({
           open: false,
           asset: null,
         });
@@ -679,7 +781,7 @@ export default function Inventory() {
                             </Button>
                           </DropdownMenuTrigger>
 
-                          <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuContent align="end" className="w-52">
                             {/* View */}
 
                             <DropdownMenuItem
@@ -705,6 +807,26 @@ export default function Inventory() {
                             >
                               <History className="mr-2 h-4 w-4" />
                               View History
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* Adjust inventory */}
+
+                            <DropdownMenuItem
+                              onClick={() => openUpdateInventory(asset)}
+                            >
+                              <PackagePlus className="mr-2 h-4 w-4" />
+                              Adjust inventory
+                            </DropdownMenuItem>
+
+                            {/* Inventory history */}
+
+                            <DropdownMenuItem
+                              onClick={() => openInventoryHistory(asset)}
+                            >
+                              <Boxes className="mr-2 h-4 w-4" />
+                              Inventory history
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
@@ -797,6 +919,26 @@ export default function Inventory() {
         open={historyModal.open}
         asset={historyModal.asset}
         onClose={closeHistory}
+      />
+
+      {/* ======================================================
+          UPDATE INVENTORY MODAL
+      ====================================================== */}
+
+      <UpdateInventoryModal
+        open={inventoryModal.open}
+        asset={inventoryModal.asset}
+        onClose={closeInventoryModal}
+      />
+
+      {/* ======================================================
+          INVENTORY HISTORY MODAL
+      ====================================================== */}
+
+      <InventoryHistoryModal
+        open={inventoryHistoryModal.open}
+        asset={inventoryHistoryModal.asset}
+        onClose={closeInventoryHistory}
       />
     </div>
   );
