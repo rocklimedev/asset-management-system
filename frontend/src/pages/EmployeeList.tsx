@@ -16,6 +16,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from "lucide-react";
 
 import {
@@ -60,6 +61,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import EmployeeDetailDrawer from "../components/asset-manager/EmployeeDetailDrawer";
+import EmployeeAssetModal from "../components/asset-manager/EmployeeAssetModal";
 
 import EmployeeFormModal, {
   type EmployeeFormValues,
@@ -229,6 +231,11 @@ const EmployeeList: React.FC = () => {
   );
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Employee whose assets are being managed via EmployeeAssetModal.
+  const [assetModalEmployee, setAssetModalEmployee] = useState<Employee | null>(
+    null,
+  );
 
   // ============================================================
   // API
@@ -425,6 +432,14 @@ const EmployeeList: React.FC = () => {
   };
 
   // ============================================================
+  // ASSETS
+  // ============================================================
+
+  const openAssetManager = (employee: Employee) => {
+    setAssetModalEmployee(employee);
+  };
+
+  // ============================================================
   // PAGINATION
   // ============================================================
 
@@ -586,7 +601,7 @@ const EmployeeList: React.FC = () => {
 
                       <TableHead>Status</TableHead>
 
-                      <TableHead className="w-[130px] text-right">
+                      <TableHead className="w-[170px] text-right">
                         Actions
                       </TableHead>
                     </TableRow>
@@ -704,6 +719,15 @@ const EmployeeList: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => openAssetManager(employee)}
+                                title="Manage assets"
+                              >
+                                <Package className="h-4 w-4" />
+                              </Button>
+
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => openEdit(employee)}
                                 title="Edit"
                               >
@@ -798,6 +822,15 @@ const EmployeeList: React.FC = () => {
           setSelectedEmployee(null);
         }}
         onEdit={openEdit}
+      />
+
+      {/* EMPLOYEE ASSETS */}
+
+      <EmployeeAssetModal
+        employee={assetModalEmployee}
+        open={!!assetModalEmployee}
+        onClose={() => setAssetModalEmployee(null)}
+        onRemoved={() => refetch()}
       />
     </div>
   );

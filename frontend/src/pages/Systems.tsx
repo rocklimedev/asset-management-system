@@ -178,8 +178,8 @@ export default function Systems() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <section className="space-y-3">
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
+          <section className="space-y-3 lg:sticky lg:top-6 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-1">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input

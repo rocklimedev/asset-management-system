@@ -37,18 +37,20 @@ export class CreateEmployeeDto {
 
   @IsOptional()
   @IsUUID("4")
+  organisationId?: string;
+
+  @IsOptional()
+  @IsUUID("4")
   departmentId?: string;
 
   @IsOptional()
   @IsString()
   designation?: string;
 
-  // Manager is another Employee UUID
   @IsOptional()
   @IsUUID("4")
   managerId?: string;
 
-  // Location UUID
   @IsOptional()
   @IsUUID("4")
   locationId?: string;
