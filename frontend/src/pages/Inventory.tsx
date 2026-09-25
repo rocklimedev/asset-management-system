@@ -232,10 +232,7 @@ export default function Inventory() {
   const { data: systemsData, isLoading: isSystemsLoading } =
     useGetSystemsQuery();
 
-  const systems: SystemRecord[] = Array.isArray(systemsData)
-    ? systemsData
-    : ((systemsData as { items?: SystemRecord[] })?.items ?? []);
-
+  const systems: SystemRecord[] = systemsData ?? [];
   // ============================================================
   // CATEGORIES
   // ============================================================
@@ -243,10 +240,7 @@ export default function Inventory() {
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAssetCategoriesQuery({ isActive: true });
 
-  const categories = Array.isArray(categoriesData)
-    ? categoriesData
-    : ((categoriesData as { data?: typeof categoriesData })?.data ?? []);
-
+  const categories = categoriesData ?? [];
   // ============================================================
   // RTK QUERY — ASSETS
   // ============================================================

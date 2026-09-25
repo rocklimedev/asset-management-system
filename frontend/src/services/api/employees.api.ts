@@ -103,6 +103,7 @@ export interface Employee {
 export interface GetEmployeesParams {
   search?: string;
   organisationId?: string;
+  departmentId?: string;
   status?: EmployeeStatus;
   page?: number;
 }
