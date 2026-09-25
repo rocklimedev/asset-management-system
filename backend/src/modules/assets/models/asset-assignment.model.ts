@@ -9,13 +9,16 @@ import {
   PrimaryKey,
   Default,
 } from "sequelize-typescript";
+
 import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
 } from "sequelize";
+
 import { System } from "./system.model";
 import { Asset } from "./asset.model";
+import { AssetUnit } from "./asset-unit.model";
 import { Employee } from "@/modules/organisation/models/employees.model";
 
 export enum AssignmentStatus {
@@ -45,6 +48,13 @@ export class AssetAssignment extends Model<
 
   // ============================================================
   // ASSET
+  //
+  // Parent / inventory definition.
+  //
+  // Kept even when assetUnitId is present because:
+  // - existing assignments already use assetId
+  // - pooled assets can be assigned without individual units
+  // - reporting can continue to group assignments by asset
   // ============================================================
 
   @Index
@@ -63,6 +73,48 @@ export class AssetAssignment extends Model<
   declare asset?: Asset;
 
   // ============================================================
+  // ASSET UNIT
+  //
+  // Physical unit being assigned.
+  //
+  // Example:
+  //
+  // Asset:
+  //   Samsung Galaxy Book 2
+  //   quantity = 9
+  //
+  // AssetUnit:
+  //   LAPTOP-001
+  //   LAPTOP-002
+  //   LAPTOP-003
+  //   ...
+  //
+  // If LAPTOP-003 is assigned to Rahul:
+  //
+  // assetId     = Samsung Galaxy Book 2
+  // assetUnitId = LAPTOP-003
+  //
+  // Nullable for:
+  // - old assignments
+  // - pooled/quantity-based inventory
+  // ============================================================
+
+  @Index
+  @ForeignKey(() => AssetUnit)
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: true,
+    field: "asset_unit_id",
+  })
+  declare assetUnitId: string | null;
+
+  @BelongsTo(() => AssetUnit, {
+    foreignKey: "assetUnitId",
+    targetKey: "id",
+  })
+  declare assetUnit?: AssetUnit;
+
+  // ============================================================
   // EMPLOYEE
   // ============================================================
 
@@ -75,18 +127,33 @@ export class AssetAssignment extends Model<
   })
   declare employeeId: string | null;
 
-  @ForeignKey(() => System)
-  @Column({ type: DataType.CHAR(36), allowNull: true, field: "system_id" })
-  declare systemId: CreationOptional<string | null>;
-
-  @BelongsTo(() => System, "systemId")
-  declare system?: System;
-
   @BelongsTo(() => Employee, {
     foreignKey: "employeeId",
     targetKey: "id",
   })
   declare employee?: Employee;
+
+  // ============================================================
+  // SYSTEM
+  //
+  // Example:
+  // Laptop/component assigned to a workstation/system.
+  // ============================================================
+
+  @Index
+  @ForeignKey(() => System)
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: true,
+    field: "system_id",
+  })
+  declare systemId: CreationOptional<string | null>;
+
+  @BelongsTo(() => System, {
+    foreignKey: "systemId",
+    targetKey: "id",
+  })
+  declare system?: System;
 
   // ============================================================
   // ASSIGNED AT

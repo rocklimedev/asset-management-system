@@ -15,6 +15,8 @@ import { AssetCategory } from "@/modules/assets/models/asset-category.model";
 import { Vendor } from "@/modules/assets/models/vendor.model";
 import { Asset } from "@/modules/assets/models/asset.model";
 import { SoftwareLicense } from "@/modules/assets/models/software-license.model";
+import { AssetUnit } from "@/modules/assets/models/asset-unit.model";
+import { InventoryHistory } from "@/modules/assets/models/inventory-history.model";
 
 import { AssetAssignment } from "@/modules/assets/models/asset-assignment.model";
 import { AssetTransfer } from "@/modules/assets/models/asset-transfer.model";
@@ -50,6 +52,8 @@ export const databaseConfig = new Sequelize({
     Vendor,
     Asset,
     SoftwareLicense,
+    AssetUnit,
+    InventoryHistory,
 
     System,
     AssetAssignment,

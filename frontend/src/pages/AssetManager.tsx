@@ -22,6 +22,9 @@ import {
   useTransferAssetMutation,
   useReleaseAssetsForEmployeeMutation,
   useReturnAssetMutation,
+  useAssignSystemMutation,
+  type Asset,
+  type SystemRecord,
 } from "../services/api/asset.api";
 
 import { toast } from "../components/ui/toast";
@@ -29,6 +32,7 @@ import { toast } from "../components/ui/toast";
 import { EmployeeCard } from "../components/asset-manager/EmployeeCard";
 import { AssetChip } from "../components/asset-manager/AssetChip";
 import { TransferModal } from "../components/asset-manager/TransferModal";
+import { TransferSystemModal } from "../components/asset-manager/TransferSystemModal";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
 import { AssetPool } from "../components/asset-manager/AssetPool";
@@ -39,7 +43,6 @@ import { SkeletonCard, EmptyState } from "../components/ui/EmptyState";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
-import type { Asset } from "../services/api/asset.api";
 import type { Employee, Organisation } from "../services/api/employees.api";
 
 // ============================================================
@@ -104,12 +107,22 @@ export default function AssetManager() {
   const [poolTarget, setPoolTarget] = useState<Employee | null>(null);
 
   // ============================================================
-  // SYSTEM POOL
+  // SYSTEM POOL (assign first system)
   // ============================================================
 
   const [systemPoolTarget, setSystemPoolTarget] = useState<Employee | null>(
     null,
   );
+
+  // ============================================================
+  // SYSTEM TRANSFER (employee already has a system)
+  // ============================================================
+
+  const [systemTransfer, setSystemTransfer] = useState<{
+    system: SystemRecord;
+    from: Employee;
+    to: Employee | null;
+  } | null>(null);
 
   // ============================================================
   // CREATE / EDIT ASSET MODAL
@@ -160,11 +173,18 @@ export default function AssetManager() {
     : (employeesData?.items ?? []);
 
   // ============================================================
-  // API - TRANSFER
+  // API - TRANSFER ASSET
   // ============================================================
 
   const [transferAsset, { isLoading: isTransferLoading }] =
     useTransferAssetMutation();
+
+  // ============================================================
+  // API - ASSIGN / TRANSFER SYSTEM
+  // ============================================================
+
+  const [assignSystem, { isLoading: isAssigningSystem }] =
+    useAssignSystemMutation();
 
   // ============================================================
   // API - RELEASE ASSETS
@@ -243,19 +263,11 @@ export default function AssetManager() {
       return;
     }
 
-    // ----------------------------------------------------------
-    // Current owner
-    // ----------------------------------------------------------
-
     const currentAssignment = asset.assignments?.find(
       (assignment) => assignment.status === "ACTIVE",
     );
 
     const fromEmployeeId = currentAssignment?.employeeId ?? null;
-
-    // ----------------------------------------------------------
-    // Same employee = no-op
-    // ----------------------------------------------------------
 
     if (
       fromEmployeeId !== null &&
@@ -263,10 +275,6 @@ export default function AssetManager() {
     ) {
       return;
     }
-
-    // ----------------------------------------------------------
-    // Backend transfer rule
-    // ----------------------------------------------------------
 
     if (asset.status !== "ASSIGNED") {
       const statusLabel =
@@ -281,10 +289,6 @@ export default function AssetManager() {
       return;
     }
 
-    // ----------------------------------------------------------
-    // Destination employee validation
-    // ----------------------------------------------------------
-
     if (targetEmployee.status === "EXITED") {
       toast.add({
         type: "error",
@@ -295,17 +299,9 @@ export default function AssetManager() {
       return;
     }
 
-    // ----------------------------------------------------------
-    // Source employee
-    // ----------------------------------------------------------
-
     const fromEmployee = fromEmployeeId
       ? (employeeById.get(String(fromEmployeeId)) ?? null)
       : null;
-
-    // ----------------------------------------------------------
-    // Open transfer confirmation
-    // ----------------------------------------------------------
 
     setPendingTransfer({
       asset,
@@ -316,7 +312,7 @@ export default function AssetManager() {
   }
 
   // ============================================================
-  // CONFIRM TRANSFER
+  // CONFIRM ASSET TRANSFER
   // ============================================================
 
   async function confirmTransfer(reason: string, notes: string) {
@@ -364,7 +360,84 @@ export default function AssetManager() {
   }
 
   // ============================================================
-  // OPEN MANUAL TRANSFER
+  // CONFIRM SYSTEM TRANSFER
+  // ============================================================
+
+  async function confirmSystemTransfer(employeeId: string, _notes?: string) {
+    if (!systemTransfer) {
+      return;
+    }
+
+    try {
+      await assignSystem({
+        id: systemTransfer.system.id,
+        employeeId,
+      }).unwrap();
+
+      const toName =
+        employees.find((e) => String(e.id) === String(employeeId))?.name ??
+        "employee";
+
+      toast.add({
+        type: "success",
+        title: "System transferred",
+        description: `${systemTransfer.system.name} transferred to ${toName}.`,
+      });
+
+      setSystemTransfer(null);
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: "Transfer failed",
+        description: getErrorMessage(
+          error,
+          "Could not transfer this system. Please try again.",
+        ),
+      });
+    }
+  }
+
+  // ============================================================
+  // RETURN DESTINATION'S EXISTING SYSTEM(S), THEN ASSIGN
+  // ============================================================
+
+  async function handleReturnExistingSystem(employee: Employee) {
+    const systems = employee.systems ?? [];
+
+    if (!systems.length) {
+      return;
+    }
+
+    try {
+      for (const sys of systems) {
+        await assignSystem({
+          id: sys.id,
+          employeeId: null,
+        }).unwrap();
+      }
+
+      toast.add({
+        type: "success",
+        title: "System returned",
+        description: `${employee.name}'s system${
+          systems.length > 1 ? "s were" : " was"
+        } returned to the pool.`,
+      });
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: "Return failed",
+        description: getErrorMessage(
+          error,
+          "Could not return the existing system. Please try again.",
+        ),
+      });
+      throw error;
+    }
+  }
+
+  // ============================================================
+  // OPEN MANUAL ASSET TRANSFER
   // ============================================================
 
   function handleManualTransfer(asset: Asset) {
@@ -377,10 +450,6 @@ export default function AssetManager() {
     const fromEmployee = fromEmployeeId
       ? (employeeById.get(String(fromEmployeeId)) ?? null)
       : null;
-
-    // ----------------------------------------------------------
-    // Validate asset status
-    // ----------------------------------------------------------
 
     if (asset.status !== "ASSIGNED") {
       const statusLabel =
@@ -462,11 +531,25 @@ export default function AssetManager() {
   }
 
   // ============================================================
-  // OPEN SYSTEM POOL
+  // SYSTEM BUTTON
+  // - no system  → SystemPool (assign first system)
+  // - has system → TransferSystemModal (transfer existing)
   // ============================================================
 
   function handleAssignSystemFromPool(employee: Employee) {
+    const systems = employee.systems ?? [];
+
     setDetailAsset(null);
+
+    if (systems.length > 0) {
+      setSystemTransfer({
+        system: systems[0],
+        from: employee,
+        to: null,
+      });
+      return;
+    }
+
     setSystemPoolTarget(employee);
   }
 
@@ -591,8 +674,6 @@ export default function AssetManager() {
       ====================================================== */}
 
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-        {/* Search */}
-
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -603,8 +684,6 @@ export default function AssetManager() {
             className="pl-9"
           />
         </div>
-
-        {/* Organisation */}
 
         <select
           value={organisationId}
@@ -637,9 +716,7 @@ export default function AssetManager() {
       >
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({
-              length: 8,
-            }).map((_, index) => (
+            {Array.from({ length: 8 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))}
           </div>
@@ -678,10 +755,6 @@ export default function AssetManager() {
           </div>
         )}
 
-        {/* ====================================================
-            DRAG OVERLAY
-        ==================================================== */}
-
         <DragOverlay>
           {activeAsset ? (
             <div className="w-56 rotate-2 shadow-xl">
@@ -696,7 +769,7 @@ export default function AssetManager() {
       </DndContext>
 
       {/* ======================================================
-          TRANSFER MODAL
+          TRANSFER MODAL (assets)
       ====================================================== */}
 
       <TransferModal
@@ -731,6 +804,41 @@ export default function AssetManager() {
         }}
         onConfirm={confirmTransfer}
         loading={isTransferLoading}
+      />
+
+      {/* ======================================================
+          TRANSFER SYSTEM MODAL
+      ====================================================== */}
+
+      <TransferSystemModal
+        open={Boolean(systemTransfer)}
+        onClose={() => {
+          if (!isAssigningSystem) {
+            setSystemTransfer(null);
+          }
+        }}
+        system={systemTransfer?.system ?? null}
+        fromEmployee={systemTransfer?.from ?? null}
+        toEmployee={systemTransfer?.to ?? null}
+        employeeOptions={employees.filter(
+          (e) =>
+            e.status !== "EXITED" &&
+            String(e.id) !== String(systemTransfer?.from.id),
+        )}
+        onSelectEmployee={(id) =>
+          setSystemTransfer((cur) =>
+            cur
+              ? {
+                  ...cur,
+                  to: employeeById.get(String(id)) ?? null,
+                }
+              : cur,
+          )
+        }
+        onConfirm={confirmSystemTransfer}
+        onReturnExistingSystem={handleReturnExistingSystem}
+        loading={isAssigningSystem}
+        allowReplace={true}
       />
 
       {/* ======================================================

@@ -1,7 +1,14 @@
 import { Link } from "react-router-dom";
 import { useDroppable } from "@dnd-kit/core";
 import { clsx } from "clsx";
-import { Laptop, AppWindow, Package, Monitor, Undo2 } from "lucide-react";
+import {
+  Laptop,
+  AppWindow,
+  Package,
+  Monitor,
+  Undo2,
+  ChevronRight,
+} from "lucide-react";
 
 import type { Asset } from "../../services/api/asset.api";
 import type { Employee } from "../../services/api/employees.api";
@@ -29,21 +36,12 @@ export function EmployeeCard({
   returningAsset,
 }: {
   employee: Employee;
-  // UUID string, matching the backend's CHAR(36) asset ids — was
-  // incorrectly typed/passed as `number` before, which meant
-  // Number(uuid) always resolved to NaN.
   activeAssetId: string | null;
   onOpenDetail: (asset: Asset) => void;
   onTransferClick: (asset: Asset) => void;
-  // Open the asset pool to assign a new asset to this employee.
   onAssignClick?: (employee: Employee) => void;
-  // Open the system pool to assign a whole (unassigned) system to this
-  // employee. All of the system's components move with it.
   onAssignSystemClick?: (employee: Employee) => void;
-  // Bulk-return every asset this employee currently holds — shown only
-  // for employees who have exited.
   onReleaseClick?: (employee: Employee) => void;
-  // Return a single asset to the pool.
   onUnassignClick?: (asset: Asset) => void;
   releasingAssets?: boolean;
   returningAsset?: boolean;
@@ -56,6 +54,7 @@ export function EmployeeCard({
   const assignments = employee.assignments ?? [];
   const hardware = assignments.filter((a) => a.asset?.kind === "HARDWARE");
   const software = assignments.filter((a) => a.asset?.kind === "SOFTWARE");
+  const systems = employee.systems ?? [];
 
   const draggingAsset = active?.data.current?.asset as Asset | undefined;
   const isValidDrop = draggingAsset
@@ -65,24 +64,29 @@ export function EmployeeCard({
 
   const hasExited = employee.status === "EXITED";
   const hasActiveAssets = assignments.some((a) => a.status === "ACTIVE");
+  const hasSystem = systems.length > 0;
+  const isEmpty =
+    systems.length === 0 && hardware.length === 0 && software.length === 0;
 
   return (
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex flex-col rounded-xl border bg-card p-4 transition-all",
+        "flex flex-col rounded-xl border bg-card transition-all",
         isOver && isValidDrop && "border-brand-400 ring-2 ring-brand-100",
         isInvalidHover &&
           "border-destructive-border ring-2 ring-destructive-border",
         !isOver && "border-border",
       )}
     >
-      <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="flex items-start gap-3 border-b border-border px-4 py-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
           {initials(employee.name)}
         </div>
+
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-sm font-semibold text-foreground">
               {employee.name}
             </p>
@@ -92,137 +96,168 @@ export function EmployeeCard({
               </span>
             )}
           </div>
-
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground"></div>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {assignments.length} asset{assignments.length !== 1 ? "s" : ""}
+            {hasSystem
+              ? ` · ${systems.length} system${systems.length !== 1 ? "s" : ""}`
+              : ""}
+          </p>
         </div>
 
         {!hasExited && (onAssignClick || onAssignSystemClick) && (
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 gap-1">
             {onAssignClick && (
               <button
                 type="button"
                 onClick={() => onAssignClick(employee)}
                 title="Assign asset from pool"
-                className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Package className="h-3.5 w-3.5" />
-                Assign
               </button>
             )}
-
             {onAssignSystemClick && (
               <button
                 type="button"
                 onClick={() => onAssignSystemClick(employee)}
-                title="Assign an unassigned system"
-                className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+                title={
+                  hasSystem
+                    ? "Transfer this employee’s system"
+                    : "Assign an unassigned system"
+                }
+                className={clsx(
+                  "rounded-md p-1.5 hover:bg-muted",
+                  hasSystem
+                    ? "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 <Monitor className="h-3.5 w-3.5" />
-                System
               </button>
             )}
           </div>
         )}
       </div>
 
-      <div className="space-y-3">
-        {!!employee.systems?.length && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Systems ({employee.systems.length})
-            </p>
-            {employee.systems.map((system) => (
-              <Link
-                key={system.id}
-                to={`/systems?system=${system.id}`}
-                className="block rounded-lg border bg-muted/20 p-3 text-sm"
-              >
-                <span className="font-medium">{system.name}</span>
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {system.systemTag}
-                </span>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {system.assignments
-                    ?.map((a) => a.asset?.name)
-                    .filter(Boolean)
-                    .join(", ") || "No components yet"}
+      {/* ── Body ───────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col gap-3 px-4 py-3">
+        {isEmpty ? (
+          <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+            Nothing assigned yet
+          </p>
+        ) : (
+          <>
+            {/* Systems — compact rows */}
+            {systems.length > 0 && (
+              <div className="space-y-1">
+                <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Monitor className="h-3 w-3" />
+                  Systems
                 </p>
-              </Link>
-            ))}
-          </div>
-        )}
-        <div>
-          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            <Laptop className="h-3 w-3" /> Hardware ({hardware.length})
-          </div>
-          {hardware.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-border px-2.5 py-2 text-xs text-muted-foreground">
-              No hardware assigned.
-            </p>
-          ) : (
-            <div className="space-y-1.5">
-              {hardware.map(
-                (a) =>
-                  a.asset && (
-                    <AssetChip
-                      key={a.id}
-                      asset={a.asset}
-                      onOpenDetail={onOpenDetail}
-                      transferrable={a.asset.status === "ASSIGNED"}
-                      onUnassign={onUnassignClick}
-                      returning={returningAsset}
-                    />
-                  ),
-              )}
-            </div>
-          )}
-        </div>
+                <div className="space-y-1">
+                  {systems.map((system) => (
+                    <Link
+                      key={system.id}
+                      to={`/systems?system=${system.id}`}
+                      className="group flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm transition hover:border-brand-300 hover:bg-brand-50/50"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-foreground">
+                          {system.name}
+                        </p>
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {system.systemTag}
+                          {system.assignments?.length
+                            ? ` · ${system.assignments.length} components`
+                            : ""}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {software.length > 0 && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              <AppWindow className="h-3 w-3" /> Software ({software.length})
-            </div>
-            <div className="space-y-1.5">
-              {software.map(
-                (a) =>
-                  a.asset && (
-                    <AssetChip
-                      key={a.id}
-                      asset={a.asset}
-                      onOpenDetail={onOpenDetail}
-                      transferrable={false}
-                      onUnassign={onUnassignClick}
-                      returning={returningAsset}
-                    />
-                  ),
-              )}
-            </div>
-          </div>
+            {/* Hardware */}
+            {hardware.length > 0 && (
+              <div className="space-y-1">
+                <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Laptop className="h-3 w-3" />
+                  Hardware · {hardware.length}
+                </p>
+                <div className="space-y-1">
+                  {hardware.map(
+                    (a) =>
+                      a.asset && (
+                        <AssetChip
+                          key={a.id}
+                          asset={a.asset}
+                          onOpenDetail={onOpenDetail}
+                          transferrable={a.asset.status === "ASSIGNED"}
+                          onUnassign={onUnassignClick}
+                          returning={returningAsset}
+                        />
+                      ),
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Software */}
+            {software.length > 0 && (
+              <div className="space-y-1">
+                <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <AppWindow className="h-3 w-3" />
+                  Software · {software.length}
+                </p>
+                <div className="space-y-1">
+                  {software.map(
+                    (a) =>
+                      a.asset && (
+                        <AssetChip
+                          key={a.id}
+                          asset={a.asset}
+                          onOpenDetail={onOpenDetail}
+                          transferrable={false}
+                          onUnassign={onUnassignClick}
+                          returning={returningAsset}
+                        />
+                      ),
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
-        <span className="text-xs text-muted-foreground">
-          {assignments.length} asset{assignments.length !== 1 ? "s" : ""} total
-        </span>
-
-        {hasExited && onReleaseClick ? (
+      {/* ── Footer (exited only, or minimal stats) ─────────── */}
+      {hasExited && onReleaseClick ? (
+        <div className="border-t border-border px-4 py-2.5">
           <button
             type="button"
             disabled={!hasActiveAssets || releasingAssets}
             onClick={() => onReleaseClick(employee)}
-            className="flex items-center gap-1 rounded-md border border-destructive-border px-2 py-1 text-[11px] font-medium text-destructive-strong hover:bg-destructive-muted disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-destructive-border px-2 py-1.5 text-[11px] font-medium text-destructive-strong hover:bg-destructive-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Undo2 className="h-3.5 w-3.5" />
-            {releasingAssets ? "Releasing…" : "Release assets"}
+            {releasingAssets ? "Releasing…" : "Release all assets"}
           </button>
-        ) : (
-          <span className="text-xs font-medium text-brand-600">
-            {hardware.length}HW · {software.length}SW
+        </div>
+      ) : !isEmpty ? (
+        <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[10px] text-muted-foreground">
+          <span>
+            {hardware.length}HW
+            {software.length > 0 ? ` · ${software.length}SW` : ""}
           </span>
-        )}
-      </div>
+          {hasSystem && (
+            <span className="font-medium text-brand-600">
+              {systems.length} system{systems.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

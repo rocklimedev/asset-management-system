@@ -51,12 +51,11 @@ export function AssetChip({
   onUnassign?: (asset: Asset) => void;
   returning?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: `asset-${asset.id}`,
-      data: { asset },
-      disabled: !transferrable,
-    });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `asset-${asset.id}`,
+    data: { asset },
+    disabled: !transferrable,
+  });
 
   const Icon = iconFor(asset);
   const canUnassign = asset.status === "ASSIGNED" && Boolean(onUnassign);
@@ -64,20 +63,15 @@ export function AssetChip({
   return (
     <Card
       ref={setNodeRef}
-      style={{
-        transform: CSS.Translate.toString(transform),
-      }}
       className={clsx(
         "group flex flex-row items-center gap-2 rounded-lg border bg-muted/30 px-2.5 py-2",
         "transition-shadow hover:shadow-sm",
         isDragging && "opacity-40",
       )}
     >
-      {/* Drag Handle */}
-      <Button
+      {/* Native handle — do not use shadcn Button here */}
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
         {...(transferrable ? { ...listeners, ...attributes } : {})}
         aria-label={
           transferrable
@@ -86,54 +80,47 @@ export function AssetChip({
         }
         disabled={!transferrable}
         className={clsx(
-          "h-7 w-7 shrink-0 text-muted-foreground",
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground",
           transferrable
-            ? "cursor-grab touch-none hover:text-foreground active:cursor-grabbing"
+            ? "cursor-grab touch-none hover:bg-muted hover:text-foreground active:cursor-grabbing"
             : "cursor-not-allowed opacity-50",
         )}
       >
         <GripVertical className="h-3.5 w-3.5" />
-      </Button>
+      </button>
 
-      {/* Asset Icon */}
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border bg-background">
         <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      {/* Asset Details */}
-      <Button
+      <button
         type="button"
-        variant="ghost"
         onClick={() => onOpenDetail(asset)}
-        className="h-auto min-w-0 flex-1 justify-start px-1.5 py-1 text-left hover:bg-transparent"
+        className="h-auto min-w-0 flex-1 justify-start px-1.5 py-1 text-left"
       >
         <div className="min-w-0 w-full">
           <p className="truncate text-xs font-medium text-foreground">
             {asset.name}
           </p>
-
           <p className="truncate text-[11px] text-muted-foreground tabular-nums">
             {asset.assetTag}
           </p>
         </div>
-      </Button>
+      </button>
 
-      {/* Unassign */}
       {canUnassign && (
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
           title="Unassign / return to pool"
           disabled={returning}
           onClick={(e) => {
             e.stopPropagation();
             onUnassign?.(asset);
           }}
-          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
         >
           <Undo2 className="h-3.5 w-3.5" />
-        </Button>
+        </button>
       )}
     </Card>
   );

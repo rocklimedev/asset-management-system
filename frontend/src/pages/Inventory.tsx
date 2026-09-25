@@ -18,9 +18,13 @@ import {
 import {
   useGetAssetsQuery,
   useDeleteAssetMutation,
+  useGetAssetCategoriesQuery,
+  useAssignAssetMutation,
+  useGetSystemsQuery,
   type Asset,
   type AssetKind,
   type AssetStatus,
+  type SystemRecord,
 } from "../services/api/asset.api";
 
 import { Input } from "@/components/ui/input";
@@ -149,6 +153,8 @@ export default function Inventory() {
 
   const [kind, setKind] = useState<AssetKind | "">("");
 
+  const [categoryId, setCategoryId] = useState("");
+
   const [sortBy, setSortBy] = useState("assetTag");
 
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("ASC");
@@ -156,6 +162,16 @@ export default function Inventory() {
   const [page, setPage] = useState(1);
 
   const [selected, setSelected] = useState<Asset | null>(null);
+
+  // ============================================================
+  // MULTISELECT
+  // ============================================================
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const [assignToSystemModal, setAssignToSystemModal] = useState(false);
+
+  const [selectedSystemId, setSelectedSystemId] = useState("");
 
   // ============================================================
   // ASSET MODAL
@@ -206,19 +222,40 @@ export default function Inventory() {
   });
 
   // ============================================================
-  // DELETE
+  // MUTATIONS / QUERIES
   // ============================================================
 
   const [deleteAsset, { isLoading: isDeleting }] = useDeleteAssetMutation();
 
+  const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
+
+  const { data: systemsData, isLoading: isSystemsLoading } =
+    useGetSystemsQuery();
+
+  const systems: SystemRecord[] = Array.isArray(systemsData)
+    ? systemsData
+    : ((systemsData as { items?: SystemRecord[] })?.items ?? []);
+
   // ============================================================
-  // RTK QUERY
+  // CATEGORIES
+  // ============================================================
+
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useGetAssetCategoriesQuery({ isActive: true });
+
+  const categories = Array.isArray(categoriesData)
+    ? categoriesData
+    : ((categoriesData as { data?: typeof categoriesData })?.data ?? []);
+
+  // ============================================================
+  // RTK QUERY — ASSETS
   // ============================================================
 
   const { data, isLoading, isFetching, isError } = useGetAssetsQuery({
     search: search || undefined,
     status: status || undefined,
     kind: kind || undefined,
+    categoryId: categoryId || undefined,
     sortBy,
     sortDir,
     page,
@@ -238,6 +275,104 @@ export default function Inventory() {
   const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 1;
 
   // ============================================================
+  // QUANTITY HELPERS
+  // ============================================================
+
+  function quantityAvailable(asset: Asset) {
+    const quantity = asset.quantity ?? 1;
+    const assigned = asset.quantityAssigned ?? 0;
+    return quantity - assigned;
+  }
+
+  function isLowStock(asset: Asset) {
+    const reorderLevel = asset.reorderLevel;
+    if (reorderLevel == null) {
+      return false;
+    }
+    return quantityAvailable(asset) <= reorderLevel;
+  }
+
+  function isAssignable(asset: Asset) {
+    return quantityAvailable(asset) > 0;
+  }
+
+  // ============================================================
+  // MULTISELECT HELPERS
+  // ============================================================
+
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelect(asset: Asset) {
+    if (!isAssignable(asset)) return;
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(asset.id)) {
+        next.delete(asset.id);
+      } else {
+        next.add(asset.id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAllOnPage() {
+    const assignableOnPage = items.filter(isAssignable);
+    const allSelected =
+      assignableOnPage.length > 0 &&
+      assignableOnPage.every((a) => selectedIds.has(a.id));
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        assignableOnPage.forEach((a) => next.delete(a.id));
+      } else {
+        assignableOnPage.forEach((a) => next.add(a.id));
+      }
+      return next;
+    });
+  }
+
+  async function handleBulkAssignToSystem() {
+    if (!selectedSystemId || selectedIds.size === 0) return;
+
+    const ids = Array.from(selectedIds);
+    let success = 0;
+    let failed = 0;
+
+    for (const id of ids) {
+      try {
+        await assignAsset({ id, systemId: selectedSystemId }).unwrap();
+        success++;
+      } catch {
+        failed++;
+      }
+    }
+
+    if (success > 0) {
+      toast.add({
+        type: "success",
+        title: "Assets assigned",
+        description: `${success} asset(s) assigned to system successfully.`,
+      });
+    }
+
+    if (failed > 0) {
+      toast.add({
+        type: "error",
+        title: "Some assignments failed",
+        description: `${failed} asset(s) could not be assigned.`,
+      });
+    }
+
+    clearSelection();
+    setAssignToSystemModal(false);
+    setSelectedSystemId("");
+  }
+
+  // ============================================================
   // SORT
   // ============================================================
 
@@ -250,6 +385,7 @@ export default function Inventory() {
     }
 
     setPage(1);
+    clearSelection();
   }
 
   // ============================================================
@@ -259,16 +395,25 @@ export default function Inventory() {
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
+    clearSelection();
   }
 
   function handleKindChange(value: string) {
-    setKind(value as AssetKind | "");
+    setKind(value === "all" ? "" : (value as AssetKind));
     setPage(1);
+    clearSelection();
   }
 
   function handleStatusChange(value: string) {
-    setStatus(value as AssetStatus | "");
+    setStatus(value === "all" ? "" : (value as AssetStatus));
     setPage(1);
+    clearSelection();
+  }
+
+  function handleCategoryChange(value: string) {
+    setCategoryId(value === "all" ? "" : value);
+    setPage(1);
+    clearSelection();
   }
 
   // ============================================================
@@ -277,10 +422,12 @@ export default function Inventory() {
 
   function goToPreviousPage() {
     setPage((current) => Math.max(1, current - 1));
+    clearSelection();
   }
 
   function goToNextPage() {
     setPage((current) => Math.min(totalPages, current + 1));
+    clearSelection();
   }
 
   // ============================================================
@@ -474,6 +621,12 @@ export default function Inventory() {
         });
       }
 
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(asset.id);
+        return next;
+      });
+
       toast.add({
         type: "success",
         title: "Asset deleted",
@@ -504,30 +657,13 @@ export default function Inventory() {
   }
 
   // ============================================================
-  // QUANTITY
-  // ============================================================
-
-  function quantityAvailable(asset: Asset) {
-    const quantity = asset.quantity ?? 1;
-
-    const assigned = asset.quantityAssigned ?? 0;
-
-    return quantity - assigned;
-  }
-
-  function isLowStock(asset: Asset) {
-    const reorderLevel = asset.reorderLevel;
-
-    if (reorderLevel == null) {
-      return false;
-    }
-
-    return quantityAvailable(asset) <= reorderLevel;
-  }
-
-  // ============================================================
   // RENDER
   // ============================================================
+
+  const assignableOnPage = items.filter(isAssignable);
+  const allAssignableSelected =
+    assignableOnPage.length > 0 &&
+    assignableOnPage.every((a) => selectedIds.has(a.id));
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
@@ -554,10 +690,10 @@ export default function Inventory() {
           FILTERS
       ====================================================== */}
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Search */}
 
-        <div className="relative flex-1 sm:max-w-sm">
+        <div className="relative flex-1 sm:min-w-[220px] sm:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
           <Input
@@ -568,14 +704,42 @@ export default function Inventory() {
           />
         </div>
 
+        {/* Category */}
+
+        <Select
+          value={categoryId || "all"}
+          onValueChange={handleCategoryChange}
+          disabled={isCategoriesLoading}
+        >
+          <SelectTrigger className="w-full sm:w-44">
+            <SelectValue
+              placeholder={
+                isCategoriesLoading ? "Loading categories..." : "All categories"
+              }
+            />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="all">All categories</SelectItem>
+
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* Asset Type */}
 
-        <Select value={kind} onValueChange={handleKindChange}>
+        <Select value={kind || "all"} onValueChange={handleKindChange}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All types" />
           </SelectTrigger>
 
           <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+
             <SelectItem value="HARDWARE">Hardware</SelectItem>
 
             <SelectItem value="SOFTWARE">Software</SelectItem>
@@ -584,12 +748,14 @@ export default function Inventory() {
 
         {/* Status */}
 
-        <Select value={status} onValueChange={handleStatusChange}>
+        <Select value={status || "all"} onValueChange={handleStatusChange}>
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
 
           <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+
             {STATUS_OPTIONS.map((item) => (
               <SelectItem key={item} value={item}>
                 {formatStatus(item)}
@@ -600,7 +766,7 @@ export default function Inventory() {
       </div>
 
       {/* ======================================================
-          ERROR
+          ERROR / LOADING / EMPTY / TABLE
       ====================================================== */}
 
       {isError ? (
@@ -622,6 +788,37 @@ export default function Inventory() {
       ) : (
         <>
           {/* ==================================================
+              BULK SELECTION BAR
+          ================================================== */}
+
+          {selectedIds.size > 0 && (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
+              <span className="text-sm text-foreground">
+                {selectedIds.size} asset
+                {selectedIds.size === 1 ? "" : "s"} selected
+                <span className="text-muted-foreground">
+                  {" "}
+                  (available quantity only)
+                </span>
+              </span>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAssignToSystemModal(true)}
+                >
+                  Assign to system
+                </Button>
+
+                <Button variant="ghost" size="sm" onClick={clearSelection}>
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ==================================================
               TABLE
           ================================================== */}
 
@@ -635,6 +832,17 @@ export default function Inventory() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted text-xs text-muted-foreground">
                 <tr>
+                  <th className="w-10 px-3 py-2.5">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-border"
+                      checked={allAssignableSelected}
+                      onChange={toggleSelectAllOnPage}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Select all assignable on page"
+                    />
+                  </th>
+
                   {COLUMNS.map((column) => (
                     <th
                       key={column.key}
@@ -656,8 +864,6 @@ export default function Inventory() {
                     </th>
                   ))}
 
-                  {/* Actions */}
-
                   <th className="w-[56px] px-4 py-2.5 text-right font-medium">
                     Actions
                   </th>
@@ -674,12 +880,30 @@ export default function Inventory() {
 
                   const lowStock = isLowStock(asset);
 
+                  const canAssign = isAssignable(asset);
+
                   return (
                     <tr
                       key={asset.id}
                       onClick={() => openViewAsset(asset)}
                       className="cursor-pointer hover:bg-muted"
                     >
+                      {/* Checkbox */}
+
+                      <td
+                        className="px-3 py-2.5"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-border disabled:cursor-not-allowed disabled:opacity-40"
+                          checked={selectedIds.has(asset.id)}
+                          disabled={!canAssign}
+                          onChange={() => toggleSelect(asset)}
+                          aria-label={`Select ${asset.name}`}
+                        />
+                      </td>
+
                       {/* Image */}
 
                       <td className="px-4 py-2.5">
@@ -727,7 +951,7 @@ export default function Inventory() {
                           </span>
                         ) : (
                           <span className="tabular-nums text-muted-foreground">
-                            1 / 1
+                            {available} / 1
                           </span>
                         )}
                       </td>
@@ -754,9 +978,7 @@ export default function Inventory() {
                         {asset.condition}
                       </td>
 
-                      {/* ==================================================
-                          ACTIONS
-                      ================================================== */}
+                      {/* Actions */}
 
                       <td
                         className="px-4 py-2.5 text-right"
@@ -782,8 +1004,6 @@ export default function Inventory() {
                           </DropdownMenuTrigger>
 
                           <DropdownMenuContent align="end" className="w-52">
-                            {/* View */}
-
                             <DropdownMenuItem
                               onClick={() => openViewAsset(asset)}
                             >
@@ -791,16 +1011,12 @@ export default function Inventory() {
                               View
                             </DropdownMenuItem>
 
-                            {/* Update */}
-
                             <DropdownMenuItem
                               onClick={() => openEditAsset(asset)}
                             >
                               <Pencil className="mr-2 h-4 w-4" />
                               Update
                             </DropdownMenuItem>
-
-                            {/* History */}
 
                             <DropdownMenuItem
                               onClick={() => openHistory(asset)}
@@ -811,16 +1027,12 @@ export default function Inventory() {
 
                             <DropdownMenuSeparator />
 
-                            {/* Adjust inventory */}
-
                             <DropdownMenuItem
                               onClick={() => openUpdateInventory(asset)}
                             >
                               <PackagePlus className="mr-2 h-4 w-4" />
                               Adjust inventory
                             </DropdownMenuItem>
-
-                            {/* Inventory history */}
 
                             <DropdownMenuItem
                               onClick={() => openInventoryHistory(asset)}
@@ -830,8 +1042,6 @@ export default function Inventory() {
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
-
-                            {/* Delete */}
 
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
@@ -940,6 +1150,84 @@ export default function Inventory() {
         asset={inventoryHistoryModal.asset}
         onClose={closeInventoryHistory}
       />
+
+      {/* ======================================================
+          ASSIGN TO SYSTEM MODAL
+      ====================================================== */}
+
+      {assignToSystemModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-lg">
+            <h2 className="text-base font-semibold text-foreground">
+              Assign {selectedIds.size} asset
+              {selectedIds.size === 1 ? "" : "s"} to a system
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Only assets with available quantity will be assigned.
+            </p>
+
+            <div className="mt-4">
+              <Select
+                value={selectedSystemId || undefined}
+                onValueChange={setSelectedSystemId}
+                disabled={isSystemsLoading || isAssigning}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      isSystemsLoading ? "Loading systems..." : "Select system"
+                    }
+                  />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {systems.length === 0 ? (
+                    <SelectItem value="__none" disabled>
+                      No systems found
+                    </SelectItem>
+                  ) : (
+                    systems.map((sys) => (
+                      <SelectItem key={sys.id} value={sys.id}>
+                        {sys.systemTag}
+                        {sys.name ? ` · ${sys.name}` : ""}
+                        {sys.employee?.name ? ` · ${sys.employee.name}` : ""}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setAssignToSystemModal(false);
+                  setSelectedSystemId("");
+                }}
+                disabled={isAssigning}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                onClick={() => void handleBulkAssignToSystem()}
+                disabled={!selectedSystemId || isAssigning}
+              >
+                {isAssigning ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Assigning…
+                  </>
+                ) : (
+                  "Assign"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

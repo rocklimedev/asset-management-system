@@ -10,16 +10,13 @@ import {
 } from "sequelize-typescript";
 
 import { Asset } from "./asset.model";
+import { AssetUnit } from "./asset-unit.model";
 
 @Table({
   tableName: "asset_history",
   timestamps: false,
 })
 export class AssetHistory extends Model<AssetHistory> {
-  // ============================================================
-  // ID
-  // ============================================================
-
   @PrimaryKey
   @Column({
     type: DataType.CHAR(36),
@@ -47,6 +44,24 @@ export class AssetHistory extends Model<AssetHistory> {
   asset!: Asset;
 
   // ============================================================
+  // ASSET UNIT (optional — null for asset-level events)
+  // ============================================================
+
+  @Index
+  @ForeignKey(() => AssetUnit)
+  @Column({
+    type: DataType.CHAR(36),
+    allowNull: true,
+    field: "asset_unit_id",
+  })
+  assetUnitId?: string | null;
+
+  @BelongsTo(() => AssetUnit, {
+    foreignKey: "asset_unit_id",
+  })
+  assetUnit?: AssetUnit;
+
+  // ============================================================
   // ACTION
   // ============================================================
 
@@ -67,7 +82,7 @@ export class AssetHistory extends Model<AssetHistory> {
   performedBy!: string;
 
   // ============================================================
-  // FROM VALUE
+  // FROM / TO VALUE
   // ============================================================
 
   @Column({
@@ -75,10 +90,6 @@ export class AssetHistory extends Model<AssetHistory> {
     allowNull: true,
   })
   fromValue?: string | null;
-
-  // ============================================================
-  // TO VALUE
-  // ============================================================
 
   @Column({
     type: DataType.TEXT,

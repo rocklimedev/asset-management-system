@@ -21,6 +21,7 @@ import { AssetAssignment } from "./asset-assignment.model";
 import { AssetTransfer } from "./asset-transfer.model";
 import { AssetHistory } from "./asset-history.model";
 import { InventoryHistory } from "./inventory-history.model";
+import { AssetUnit } from "./asset-unit.model";
 
 import { AssetKind } from "@/common/enums/assets.enums";
 
@@ -33,7 +34,10 @@ export enum AssetStatus {
   RETIRED = "RETIRED",
   DISPOSED = "DISPOSED",
 }
-
+export enum AssetTrackingMode {
+  INDIVIDUAL = "INDIVIDUAL",
+  QUANTITY = "QUANTITY",
+}
 export enum AssetCondition {
   NEW = "NEW",
   GOOD = "GOOD",
@@ -148,6 +152,11 @@ export class Asset extends Model<Asset> {
 
   // ============================================================
   // SERIAL NUMBER
+  //
+  // Kept for backward compatibility during migration.
+  //
+  // For individually tracked assets, serialNumber should
+  // eventually live on AssetUnit.
   // ============================================================
 
   @Column({
@@ -223,6 +232,11 @@ export class Asset extends Model<Asset> {
 
   // ============================================================
   // STATUS
+  //
+  // Legacy / aggregate status.
+  //
+  // For assets with AssetUnit records, individual unit status
+  // should be read from AssetUnit.
   // ============================================================
 
   @Index
@@ -235,6 +249,11 @@ export class Asset extends Model<Asset> {
 
   // ============================================================
   // CONDITION
+  //
+  // Legacy / aggregate condition.
+  //
+  // Once AssetUnit is enabled, individual conditions should be
+  // stored on AssetUnit instead.
   // ============================================================
 
   @Column({
@@ -246,6 +265,11 @@ export class Asset extends Model<Asset> {
 
   // ============================================================
   // LOCATION
+  //
+  // Legacy / aggregate location.
+  //
+  // Individual units can have their own location through
+  // AssetUnit.
   // ============================================================
 
   @Index
@@ -275,11 +299,14 @@ export class Asset extends Model<Asset> {
   // ============================================================
   // INVENTORY / QUANTITY
   //
-  // For serialized 1:1 hardware (a laptop), quantity stays 1 and
-  // quantityAssigned tracks 0/1 in lockstep with `status`. For
-  // pooled/consumable stock (cables, mice, license seats bought in
-  // bulk) quantity can be N and quantityAssigned tracks how many
-  // units are currently checked out, independent of `status`.
+  // Asset represents the inventory/product definition.
+  //
+  // Example:
+  //
+  // Samsung Galaxy Book 2
+  // quantity = 9
+  //
+  // Individual physical state is represented by AssetUnit.
   // ============================================================
 
   @Column({
@@ -289,12 +316,26 @@ export class Asset extends Model<Asset> {
   })
   quantity!: number;
 
+  // ============================================================
+  // ASSIGNED QUANTITY
+  //
+  // For pooled inventory this can represent the number of
+  // units currently checked out.
+  //
+  // For individually tracked assets, this should eventually
+  // be derived from AssetUnit.status = ASSIGNED.
+  // ============================================================
+
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   quantityAssigned!: number;
+
+  // ============================================================
+  // REORDER LEVEL
+  // ============================================================
 
   @Column({
     type: DataType.INTEGER,
@@ -304,7 +345,7 @@ export class Asset extends Model<Asset> {
   reorderLevel?: number | null;
 
   // ============================================================
-  // IMAGE (served from in-house CDN — see CdnModule)
+  // IMAGE
   // ============================================================
 
   @Column({
@@ -327,6 +368,40 @@ export class Asset extends Model<Asset> {
 
   @HasOne(() => SoftwareLicense)
   license?: SoftwareLicense;
+  @Index
+  @Column({
+    type: DataType.ENUM(...Object.values(AssetTrackingMode)),
+    allowNull: false,
+    defaultValue: AssetTrackingMode.QUANTITY,
+    field: "tracking_mode",
+  })
+  trackingMode!: AssetTrackingMode;
+  // ============================================================
+  // ASSET UNITS
+  //
+  // One Asset can have many physical units.
+  //
+  // Example:
+  //
+  // Asset:
+  //   Samsung Galaxy Book 2
+  //   quantity = 9
+  //
+  // AssetUnits:
+  //   Unit 1 → AVAILABLE / GOOD
+  //   Unit 2 → AVAILABLE / GOOD
+  //   Unit 3 → ASSIGNED / GOOD
+  //   Unit 4 → REPAIR / POOR
+  //   ...
+  //
+  // This is the relationship that allows different units of
+  // the same asset to have different conditions/statuses.
+  // ============================================================
+
+  @HasMany(() => AssetUnit, {
+    foreignKey: "assetId",
+  })
+  units!: AssetUnit[];
 
   // ============================================================
   // ASSIGNMENTS
@@ -347,7 +422,7 @@ export class Asset extends Model<Asset> {
   transfers!: AssetTransfer[];
 
   // ============================================================
-  // HISTORY (status / assignment / lifecycle events)
+  // HISTORY
   // ============================================================
 
   @HasMany(() => AssetHistory, {
@@ -356,7 +431,7 @@ export class Asset extends Model<Asset> {
   history!: AssetHistory[];
 
   // ============================================================
-  // INVENTORY HISTORY (quantity movements: restock, consume, etc.)
+  // INVENTORY HISTORY
   // ============================================================
 
   @HasMany(() => InventoryHistory, {

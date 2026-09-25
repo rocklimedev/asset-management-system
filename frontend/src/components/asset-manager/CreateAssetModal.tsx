@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { X, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, Trash2, X } from "lucide-react";
 
 import {
   useCreateAssetMutation,
@@ -39,11 +39,25 @@ interface ApiError {
   message?: string;
 }
 
+type AssetTrackingMode = "INDIVIDUAL" | "QUANTITY";
+
+interface AssetUnitForm {
+  id?: string;
+  unitCode: string;
+  serialNumber: string;
+  status: AssetStatus;
+  condition: AssetCondition;
+  locationId: string;
+  notes: string;
+}
+
 interface AssetFormValues {
   name: string;
   assetTag: string;
 
   kind: AssetKind | "";
+  trackingMode: AssetTrackingMode;
+
   status: AssetStatus | "";
   condition: AssetCondition | "";
 
@@ -51,6 +65,8 @@ interface AssetFormValues {
 
   manufacturer: string;
   model: string;
+
+  quantity: number;
 
   purchaseDate: string;
 
@@ -65,19 +81,10 @@ interface CreateAssetModalProps {
   open: boolean;
   onClose: () => void;
 
-  /**
-   * If asset is provided, modal works in edit mode.
-   */
   asset?: Asset | null;
 
-  /**
-   * Optional location options.
-   */
   locations?: SelectOption[];
 
-  /**
-   * Optional vendor options.
-   */
   vendors?: SelectOption[];
 }
 
@@ -96,6 +103,23 @@ const KIND_OPTIONS: {
   {
     value: "SOFTWARE",
     label: "Software",
+  },
+];
+
+const TRACKING_MODE_OPTIONS: {
+  value: AssetTrackingMode;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "INDIVIDUAL",
+    label: "Individual",
+    description: "Track each asset as a separate unit.",
+  },
+  {
+    value: "QUANTITY",
+    label: "Quantity",
+    description: "Track multiple units under one asset record.",
   },
 ];
 
@@ -160,13 +184,17 @@ const EMPTY_FORM: AssetFormValues = {
   assetTag: "",
 
   kind: "",
-  status: "",
-  condition: "",
+  trackingMode: "QUANTITY",
+
+  status: "AVAILABLE",
+  condition: "GOOD",
 
   categoryId: "",
 
   manufacturer: "",
   model: "",
+
+  quantity: 1,
 
   purchaseDate: "",
 
@@ -201,7 +229,42 @@ function getErrorMessage(error: unknown, fallback: string): string {
   );
 }
 
+function createEmptyUnit(
+  index: number,
+  defaults?: {
+    status?: AssetStatus;
+    condition?: AssetCondition;
+  },
+): AssetUnitForm {
+  return {
+    unitCode: `UNIT-${String(index + 1).padStart(3, "0")}`,
+    serialNumber: "",
+    status: defaults?.status ?? "AVAILABLE",
+    condition: defaults?.condition ?? "GOOD",
+    locationId: "",
+    notes: "",
+  };
+}
+
+function createUnits(
+  quantity: number,
+  status: AssetStatus,
+  condition: AssetCondition,
+): AssetUnitForm[] {
+  const safeQuantity = Math.max(1, Math.floor(quantity || 1));
+
+  return Array.from({ length: safeQuantity }, (_, index) =>
+    createEmptyUnit(index, {
+      status,
+      condition,
+    }),
+  );
+}
+
 function assetToFormValues(asset: Asset): AssetFormValues {
+  const trackingMode = ((asset as Asset & { trackingMode?: AssetTrackingMode })
+    .trackingMode ?? "QUANTITY") as AssetTrackingMode;
+
   return {
     name: asset.name ?? "",
 
@@ -209,15 +272,19 @@ function assetToFormValues(asset: Asset): AssetFormValues {
 
     kind: asset.kind ?? "",
 
-    status: asset.status ?? "",
+    trackingMode,
 
-    condition: asset.condition ?? "",
+    status: asset.status ?? "AVAILABLE",
+
+    condition: asset.condition ?? "GOOD",
 
     categoryId: asset.categoryId ?? "",
 
     manufacturer: asset.manufacturer ?? "",
 
     model: asset.model ?? "",
+
+    quantity: Math.max(1, Number(asset.quantity ?? 1)),
 
     purchaseDate: asset.purchaseDate
       ? String(asset.purchaseDate).slice(0, 10)
@@ -242,12 +309,7 @@ export function CreateAssetModal({
   onClose,
   asset,
   locations = [],
-  vendors = [],
 }: CreateAssetModalProps) {
-  // ==========================================================
-  // MODE
-  // ==========================================================
-
   const isEditMode = Boolean(asset?.id);
 
   // ==========================================================
@@ -255,6 +317,8 @@ export function CreateAssetModal({
   // ==========================================================
 
   const [values, setValues] = useState<AssetFormValues>(EMPTY_FORM);
+
+  const [units, setUnits] = useState<AssetUnitForm[]>([]);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -283,7 +347,42 @@ export function CreateAssetModal({
 
     setFormError(null);
 
-    setValues(asset ? assetToFormValues(asset) : { ...EMPTY_FORM });
+    const nextValues = asset ? assetToFormValues(asset) : { ...EMPTY_FORM };
+
+    setValues(nextValues);
+
+    const existingUnits =
+      (
+        asset as
+          | (Asset & {
+              units?: AssetUnitForm[];
+            })
+          | null
+          | undefined
+      )?.units ?? [];
+
+    if (existingUnits.length > 0) {
+      setUnits(
+        existingUnits.map((unit, index) => ({
+          id: unit.id,
+          unitCode:
+            unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
+          serialNumber: unit.serialNumber ?? "",
+          status: unit.status ?? nextValues.status ?? "AVAILABLE",
+          condition: unit.condition ?? nextValues.condition ?? "GOOD",
+          locationId: unit.locationId ?? "",
+          notes: unit.notes ?? "",
+        })),
+      );
+    } else {
+      setUnits(
+        createUnits(
+          nextValues.trackingMode === "INDIVIDUAL" ? 1 : nextValues.quantity,
+          (nextValues.status || "AVAILABLE") as AssetStatus,
+          (nextValues.condition || "GOOD") as AssetCondition,
+        ),
+      );
+    }
   }, [open, asset]);
 
   // ==========================================================
@@ -298,7 +397,7 @@ export function CreateAssetModal({
     isActive: true,
   });
 
-  const categories = categoriesResponse?.data ?? [];
+  const categories = categoriesResponse ?? [];
 
   const [createAssetCategory, { isLoading: isCreatingCategory }] =
     useCreateAssetCategoryMutation();
@@ -328,6 +427,96 @@ export function CreateAssetModal({
   }
 
   // ==========================================================
+  // TRACKING MODE
+  // ==========================================================
+
+  function handleTrackingModeChange(trackingMode: AssetTrackingMode) {
+    setField("trackingMode", trackingMode);
+
+    const quantity =
+      trackingMode === "INDIVIDUAL" ? 1 : Math.max(1, values.quantity || 1);
+
+    setField("quantity", quantity);
+
+    setUnits(
+      createUnits(
+        quantity,
+        (values.status || "AVAILABLE") as AssetStatus,
+        (values.condition || "GOOD") as AssetCondition,
+      ),
+    );
+  }
+
+  // ==========================================================
+  // QUANTITY
+  // ==========================================================
+
+  function handleQuantityChange(value: string) {
+    const parsed = Number(value);
+
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+
+    const quantity = Math.max(1, Math.floor(parsed));
+
+    setField("quantity", quantity);
+
+    if (values.trackingMode !== "QUANTITY") {
+      return;
+    }
+
+    setUnits((current) => {
+      if (quantity === current.length) {
+        return current;
+      }
+
+      if (quantity < current.length) {
+        return current.slice(0, quantity);
+      }
+
+      const additionalUnits = Array.from(
+        {
+          length: quantity - current.length,
+        },
+        (_, index) =>
+          createEmptyUnit(current.length + index, {
+            status: (values.status || "AVAILABLE") as AssetStatus,
+            condition: (values.condition || "GOOD") as AssetCondition,
+          }),
+      );
+
+      return [...current, ...additionalUnits];
+    });
+  }
+
+  // ==========================================================
+  // UNIT HELPERS
+  // ==========================================================
+
+  function updateUnit(index: number, key: keyof AssetUnitForm, value: string) {
+    setUnits((current) =>
+      current.map((unit, unitIndex) =>
+        unitIndex === index
+          ? {
+              ...unit,
+              [key]: value,
+            }
+          : unit,
+      ),
+    );
+  }
+
+  function regenerateUnitCodes() {
+    setUnits((current) =>
+      current.map((unit, index) => ({
+        ...unit,
+        unitCode: unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
+      })),
+    );
+  }
+
+  // ==========================================================
   // BUILD CREATE PAYLOAD
   // ==========================================================
 
@@ -340,12 +529,36 @@ export function CreateAssetModal({
       throw new Error("Asset category is required.");
     }
 
+    if (values.trackingMode === "INDIVIDUAL" && units.length !== 1) {
+      throw new Error("Individual assets must have exactly one unit record.");
+    }
+
+    if (
+      values.trackingMode === "QUANTITY" &&
+      units.length !== values.quantity
+    ) {
+      throw new Error("Unit records must match the asset quantity.");
+    }
+
+    const normalizedUnits = units.map((unit, index) => ({
+      unitCode: unit.unitCode.trim() || undefined,
+      serialNumber: unit.serialNumber.trim() || undefined,
+      status: unit.status || "AVAILABLE",
+      condition: unit.condition || "GOOD",
+      locationId: unit.locationId || undefined,
+      notes: unit.notes.trim() || undefined,
+    }));
+
     return {
       name: values.name.trim(),
 
       assetTag: values.assetTag.trim() || undefined,
 
       kind: values.kind,
+
+      trackingMode: values.trackingMode,
+
+      quantity: values.trackingMode === "INDIVIDUAL" ? 1 : values.quantity,
 
       status: values.status || undefined,
 
@@ -364,7 +577,9 @@ export function CreateAssetModal({
       warrantyExpiry: values.warrantyExpiry || undefined,
 
       notes: values.notes.trim() || undefined,
-    };
+
+      units: normalizedUnits,
+    } as CreateAssetRequest;
   }
 
   // ==========================================================
@@ -385,6 +600,10 @@ export function CreateAssetModal({
 
       kind: values.kind || undefined,
 
+      trackingMode: values.trackingMode,
+
+      quantity: values.trackingMode === "INDIVIDUAL" ? 1 : values.quantity,
+
       status: values.status || undefined,
 
       condition: values.condition || undefined,
@@ -402,7 +621,7 @@ export function CreateAssetModal({
       warrantyExpiry: values.warrantyExpiry || undefined,
 
       notes: values.notes.trim() || undefined,
-    };
+    } as UpdateAssetRequest;
   }
 
   // ==========================================================
@@ -422,6 +641,29 @@ export function CreateAssetModal({
       return "Please select a category.";
     }
 
+    if (!Number.isInteger(values.quantity) || values.quantity < 1) {
+      return "Quantity must be at least 1.";
+    }
+
+    if (values.trackingMode === "INDIVIDUAL" && units.length !== 1) {
+      return "Individual assets must have one unit record.";
+    }
+
+    if (
+      values.trackingMode === "QUANTITY" &&
+      units.length !== values.quantity
+    ) {
+      return `Please provide ${values.quantity} unit records.`;
+    }
+
+    for (let index = 0; index < units.length; index += 1) {
+      const unit = units[index];
+
+      if (!unit.unitCode.trim()) {
+        return `Unit ${index + 1}: unit code is required.`;
+      }
+    }
+
     return null;
   }
 
@@ -436,7 +678,6 @@ export function CreateAssetModal({
 
     if (!name) {
       setCategoryError("Category name is required.");
-
       return;
     }
 
@@ -461,10 +702,8 @@ export function CreateAssetModal({
         );
       }
 
-      // Automatically select newly created category.
       setField("categoryId", createdCategory.id);
 
-      // Reset category form.
       setNewCategoryName("");
       setNewCategoryDescription("");
       setNewCategoryType("HARDWARE");
@@ -492,7 +731,6 @@ export function CreateAssetModal({
 
     if (validationError) {
       setFormError(validationError);
-
       return;
     }
 
@@ -516,7 +754,9 @@ export function CreateAssetModal({
 
         toast.add({
           title: "Asset created",
-          description: `${values.name} created.`,
+          description: `${values.name} created with ${units.length} unit record${
+            units.length === 1 ? "" : "s"
+          }.`,
           type: "success",
         });
       }
@@ -563,6 +803,27 @@ export function CreateAssetModal({
   }
 
   // ==========================================================
+  // UNIT SUMMARY
+  // ==========================================================
+
+  const unitSummary = useMemo(() => {
+    const available = units.filter(
+      (unit) => unit.status === "AVAILABLE",
+    ).length;
+
+    const assigned = units.filter((unit) => unit.status === "ASSIGNED").length;
+
+    const repair = units.filter((unit) => unit.status === "REPAIR").length;
+
+    return {
+      total: units.length,
+      available,
+      assigned,
+      repair,
+    };
+  }, [units]);
+
+  // ==========================================================
   // RENDER
   // ==========================================================
 
@@ -576,7 +837,7 @@ export function CreateAssetModal({
           MAIN ASSET MODAL
       ====================================================== */}
 
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card shadow-xl">
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-card shadow-xl">
         {/* ====================================================
             HEADER
         ==================================================== */}
@@ -589,8 +850,8 @@ export function CreateAssetModal({
 
             <p className="text-xs text-muted-foreground">
               {isEditMode
-                ? "Update the details for this asset."
-                : "Add a new asset to the inventory."}
+                ? "Update the asset details."
+                : "Add a new asset and its unit records."}
             </p>
           </div>
 
@@ -659,16 +920,97 @@ export function CreateAssetModal({
               </select>
             </div>
 
+            {/* TRACKING MODE */}
+
+            <div className="sm:col-span-2">
+              <label className={LABEL_CLASSES}>Tracking mode *</label>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {TRACKING_MODE_OPTIONS.map((option) => {
+                  const selected = values.trackingMode === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleTrackingModeChange(option.value)}
+                      disabled={isSubmitting}
+                      className={[
+                        "rounded-md border p-3 text-left transition",
+                        selected
+                          ? "border-ring bg-muted"
+                          : "border-border hover:bg-muted/50",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={[
+                            "h-3 w-3 rounded-full border",
+                            selected
+                              ? "border-foreground bg-foreground"
+                              : "border-muted-foreground",
+                          ].join(" ")}
+                        />
+
+                        <span className="text-sm font-medium text-foreground">
+                          {option.label}
+                        </span>
+                      </div>
+
+                      <p className="mt-1 pl-5 text-xs text-muted-foreground">
+                        {option.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* QUANTITY */}
+
+            <div>
+              <label className={LABEL_CLASSES}>Quantity *</label>
+
+              <Input
+                type="number"
+                min={1}
+                step={1}
+                value={values.quantity}
+                onChange={(event) => handleQuantityChange(event.target.value)}
+                disabled={isSubmitting || values.trackingMode === "INDIVIDUAL"}
+              />
+
+              {values.trackingMode === "INDIVIDUAL" ? (
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Individual assets always have quantity 1.
+                </p>
+              ) : (
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {values.quantity} unit record
+                  {values.quantity === 1 ? "" : "s"} will be created.
+                </p>
+              )}
+            </div>
+
             {/* STATUS */}
 
             <div>
-              <label className={LABEL_CLASSES}>Status</label>
+              <label className={LABEL_CLASSES}>Default status</label>
 
               <select
                 value={values.status}
-                onChange={(event) =>
-                  setField("status", event.target.value as AssetStatus)
-                }
+                onChange={(event) => {
+                  const status = event.target.value as AssetStatus;
+
+                  setField("status", status);
+
+                  setUnits((current) =>
+                    current.map((unit) => ({
+                      ...unit,
+                      status,
+                    })),
+                  );
+                }}
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
@@ -685,13 +1027,22 @@ export function CreateAssetModal({
             {/* CONDITION */}
 
             <div>
-              <label className={LABEL_CLASSES}>Condition</label>
+              <label className={LABEL_CLASSES}>Default condition</label>
 
               <select
                 value={values.condition}
-                onChange={(event) =>
-                  setField("condition", event.target.value as AssetCondition)
-                }
+                onChange={(event) => {
+                  const condition = event.target.value as AssetCondition;
+
+                  setField("condition", condition);
+
+                  setUnits((current) =>
+                    current.map((unit) => ({
+                      ...unit,
+                      condition,
+                    })),
+                  );
+                }}
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
@@ -840,6 +1191,212 @@ export function CreateAssetModal({
           </div>
 
           {/* ====================================================
+              UNIT RECORDS
+          ==================================================== */}
+
+          <div className="border-t border-border px-5 py-5">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Unit Records
+                </h3>
+
+                <p className="text-xs text-muted-foreground">
+                  {values.trackingMode === "INDIVIDUAL"
+                    ? "This asset has one individually tracked unit."
+                    : "Each quantity has its own unit record."}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span>
+                  Total:{" "}
+                  <strong className="text-foreground">
+                    {unitSummary.total}
+                  </strong>
+                </span>
+
+                <span>
+                  Available:{" "}
+                  <strong className="text-foreground">
+                    {unitSummary.available}
+                  </strong>
+                </span>
+
+                <span>
+                  Assigned:{" "}
+                  <strong className="text-foreground">
+                    {unitSummary.assigned}
+                  </strong>
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {units.map((unit, index) => (
+                <div
+                  key={unit.id ?? index}
+                  className="rounded-lg border border-border bg-background p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">
+                        Unit {index + 1}
+                      </p>
+
+                      <p className="text-[10px] text-muted-foreground">
+                        Individual unit information
+                      </p>
+                    </div>
+
+                    {values.trackingMode === "QUANTITY" && units.length > 1 ? (
+                      <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
+                        {index + 1} / {units.length}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {/* UNIT CODE */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Unit code *</label>
+
+                      <Input
+                        value={unit.unitCode}
+                        onChange={(event) =>
+                          updateUnit(index, "unitCode", event.target.value)
+                        }
+                        placeholder={`UNIT-${String(index + 1).padStart(
+                          3,
+                          "0",
+                        )}`}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* SERIAL */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Serial number</label>
+
+                      <Input
+                        value={unit.serialNumber}
+                        onChange={(event) =>
+                          updateUnit(index, "serialNumber", event.target.value)
+                        }
+                        placeholder="Serial number"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* STATUS */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Status</label>
+
+                      <select
+                        value={unit.status}
+                        onChange={(event) =>
+                          updateUnit(index, "status", event.target.value)
+                        }
+                        disabled={isSubmitting}
+                        className={SELECT_CLASSES}
+                      >
+                        {STATUS_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* CONDITION */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Condition</label>
+
+                      <select
+                        value={unit.condition}
+                        onChange={(event) =>
+                          updateUnit(index, "condition", event.target.value)
+                        }
+                        disabled={isSubmitting}
+                        className={SELECT_CLASSES}
+                      >
+                        {CONDITION_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* LOCATION */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Location</label>
+
+                      <select
+                        value={unit.locationId}
+                        onChange={(event) =>
+                          updateUnit(index, "locationId", event.target.value)
+                        }
+                        disabled={isSubmitting || locations.length === 0}
+                        className={SELECT_CLASSES}
+                      >
+                        <option value="">
+                          {locations.length
+                            ? "Select location"
+                            : "No locations available"}
+                        </option>
+
+                        {locations.map((location) => (
+                          <option key={location.id} value={location.id}>
+                            {location.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* NOTES */}
+
+                    <div>
+                      <label className={LABEL_CLASSES}>Notes</label>
+
+                      <Input
+                        value={unit.notes}
+                        onChange={(event) =>
+                          updateUnit(index, "notes", event.target.value)
+                        }
+                        placeholder="Unit notes"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {values.trackingMode === "QUANTITY" ? (
+              <div className="mt-3 flex items-center justify-between rounded-md bg-muted px-3 py-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Unit records automatically match the quantity.
+                </p>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={regenerateUnitCodes}
+                  disabled={isSubmitting}
+                >
+                  Generate missing codes
+                </Button>
+              </div>
+            ) : null}
+          </div>
+
+          {/* ====================================================
               FORM ERROR
           ==================================================== */}
 
@@ -910,7 +1467,7 @@ export function CreateAssetModal({
 
             <form onSubmit={handleCreateCategory}>
               <div className="space-y-4 px-5 py-5">
-                {/* Category Name */}
+                {/* CATEGORY NAME */}
 
                 <div>
                   <label className={LABEL_CLASSES}>Category name *</label>
@@ -924,7 +1481,7 @@ export function CreateAssetModal({
                   />
                 </div>
 
-                {/* Category Type */}
+                {/* CATEGORY TYPE */}
 
                 <div>
                   <label className={LABEL_CLASSES}>Category type *</label>
@@ -945,7 +1502,7 @@ export function CreateAssetModal({
                   </select>
                 </div>
 
-                {/* Description */}
+                {/* DESCRIPTION */}
 
                 <div>
                   <label className={LABEL_CLASSES}>Description</label>
@@ -962,7 +1519,7 @@ export function CreateAssetModal({
                   />
                 </div>
 
-                {/* Category Error */}
+                {/* CATEGORY ERROR */}
 
                 {categoryError ? (
                   <div className="rounded-md bg-destructive-muted px-3 py-2 text-xs text-destructive-strong">

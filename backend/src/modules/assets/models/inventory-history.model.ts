@@ -12,11 +12,25 @@ import {
 import { Asset } from "./asset.model";
 
 export enum InventoryChangeType {
-  RESTOCK = "RESTOCK", // new stock received
-  CONSUMED = "CONSUMED", // checked out against quantityAssigned
-  RETURNED = "RETURNED", // checked back in
-  ADJUSTMENT = "ADJUSTMENT", // manual correction (stock count, etc.)
-  WRITE_OFF = "WRITE_OFF", // lost / damaged / disposed units removed from stock
+  // ============================================================
+  // PHYSICAL INVENTORY MOVEMENTS
+  // ============================================================
+
+  RESTOCK = "RESTOCK", // new stock received / added to inventory
+
+  CONSUMED = "CONSUMED", // physical stock consumed / removed
+
+  WRITE_OFF = "WRITE_OFF", // lost, damaged, disposed, or permanently removed stock
+
+  ADJUSTMENT = "ADJUSTMENT", // manual physical stock correction
+
+  // ============================================================
+  // CUSTODY / ASSIGNMENT EVENTS
+  // ============================================================
+
+  ASSIGNED = "ASSIGNED", // asset assigned to an employee/system; physical quantity unchanged
+
+  RETURNED = "RETURNED", // asset returned from employee/system; physical quantity unchanged
 }
 
 @Table({
@@ -50,7 +64,8 @@ export class InventoryHistory extends Model<InventoryHistory> {
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "asset_id",
+    foreignKey: "assetId",
+    targetKey: "id",
   })
   asset!: Asset;
 
@@ -58,6 +73,7 @@ export class InventoryHistory extends Model<InventoryHistory> {
   // CHANGE TYPE
   // ============================================================
 
+  @Index
   @Column({
     type: DataType.ENUM(...Object.values(InventoryChangeType)),
     allowNull: false,
@@ -65,17 +81,50 @@ export class InventoryHistory extends Model<InventoryHistory> {
   changeType!: InventoryChangeType;
 
   // ============================================================
-  // QUANTITY DELTA (signed: +10 restock, -1 consumed, etc.)
+  // QUANTITY DELTA
+  //
+  // Physical inventory change only.
+  //
+  // RESTOCK:
+  //   +5
+  //
+  // CONSUMED:
+  //   -1
+  //
+  // WRITE_OFF:
+  //   -1
+  //
+  // ADJUSTMENT:
+  //   +5 / -2
+  //
+  // ASSIGNED / RETURNED:
+  //   0
+  //
+  // Assignment changes quantityAssigned, not physical quantity.
   // ============================================================
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    defaultValue: 0,
   })
   quantityDelta!: number;
 
   // ============================================================
-  // SNAPSHOT AFTER CHANGE (for audit-friendly reads without replay)
+  // PHYSICAL QUANTITY AFTER CHANGE
+  //
+  // Example:
+  //
+  // RESTOCK +5
+  // quantityAfter = 6
+  //
+  // ASSIGNED
+  // quantityAfter = 6
+  //
+  // RETURNED
+  // quantityAfter = 6
+  //
+  // Assignment/return does NOT change physical quantity.
   // ============================================================
 
   @Column({
@@ -84,6 +133,22 @@ export class InventoryHistory extends Model<InventoryHistory> {
     field: "quantity_after",
   })
   quantityAfter!: number;
+
+  // ============================================================
+  // ASSIGNED QUANTITY AFTER CHANGE
+  //
+  // Example for individually tracked asset:
+  //
+  // ASSIGNED
+  // quantityAssignedAfter = 1
+  //
+  // RETURNED
+  // quantityAssignedAfter = 0
+  //
+  // RESTOCK
+  // quantityAssignedAfter remains whatever the current
+  // assignment state is.
+  // ============================================================
 
   @Column({
     type: DataType.INTEGER,

@@ -9,6 +9,11 @@ export class AssignAssetDto {
   @IsUUID()
   systemId?: string;
 
+  /** Optional specific physical unit to assign. If omitted, first AVAILABLE unit is used. */
+  @IsOptional()
+  @IsUUID()
+  assetUnitId?: string;
+
   @IsOptional()
   @IsString()
   notes?: string;
