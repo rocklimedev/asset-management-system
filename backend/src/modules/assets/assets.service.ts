@@ -20,7 +20,10 @@ import { AuthUser } from "@/common/decorator/current-user.decorator";
 import { CdnUploadFile } from "../cdn/cdn.service";
 import { CdnService } from "../cdn/cdn.service";
 
-import { CreateAssetDto } from "./dto/create-asset.dto";
+import {
+  CreateAssetDto,
+  CreateAssetUnitInputDto,
+} from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
 import { AssignAssetDto } from "./dto/assign-asset.dto";
 import { TransferAssetDto } from "./dto/transfer-asset.dto";
@@ -210,28 +213,46 @@ export class AssetsService {
     options?: {
       assigned?: boolean;
       serialNumber?: string | null;
+      initialUnits?: CreateAssetUnitInputDto[];
     },
   ) {
     const units: AssetUnit[] = [];
+
     const safeQuantity = Math.max(quantity || 1, 1);
+    const initialUnits = options?.initialUnits ?? [];
 
     for (let index = 0; index < safeQuantity; index++) {
+      const input = initialUnits[index];
+
       const unit = await this.assetUnitModel.create(
         {
           assetId: asset.id,
-          unitCode: this.generateUnitCode(asset.assetTag ?? null, index),
+
+          unitCode:
+            input?.unitCode?.trim() ||
+            this.generateUnitCode(asset.assetTag ?? null, index),
+
           serialNumber:
-            safeQuantity === 1 ? (options?.serialNumber ?? null) : null,
+            input?.serialNumber?.trim() ||
+            (safeQuantity === 1 ? (options?.serialNumber ?? null) : null),
+
           status: options?.assigned
             ? AssetUnitStatus.ASSIGNED
-            : AssetUnitStatus.AVAILABLE,
+            : ((input?.status as unknown as AssetUnitStatus) ??
+              AssetUnitStatus.AVAILABLE),
+
           condition:
+            (input?.condition as unknown as AssetUnitCondition) ??
             (asset.condition as unknown as AssetUnitCondition) ??
             AssetUnitCondition.GOOD,
-          locationId: asset.locationId ?? null,
-          notes: null,
+
+          locationId: input?.locationId ?? asset.locationId ?? null,
+
+          notes: input?.notes ?? null,
         },
-        { transaction },
+        {
+          transaction,
+        },
       );
 
       units.push(unit);
@@ -356,6 +377,10 @@ export class AssetsService {
   // INVENTORY LISTING
   // ============================================================
 
+  // ============================================================
+  // INVENTORY LISTING
+  // ============================================================
+
   async findAll(params: {
     search?: string;
     organisationId?: string;
@@ -396,8 +421,18 @@ export class AssetsService {
           { "$assignments.system.name$": like },
           { "$assignments.system.systemTag$": like },
           { "$assignments.system.employee.name$": like },
-          { "$units.unitCode$": like },
-          { "$units.serialNumber$": like },
+          /*
+           * unitCode / serialNumber on AssetUnit are field-mapped
+           * (unit_code / serial_number). Sequelize's internal count()
+           * query, used by findAndCountAll, does not translate
+           * "$units.unitCode$" style dot-notation through that field
+           * mapping the way the main row query does — it passes the
+           * camelCase name straight through and MySQL rejects it.
+           * Referencing the real column via sequelize.col(...) avoids
+           * that translation step entirely.
+           */
+          this.sequelize.where(this.sequelize.col("units.unit_code"), like),
+          this.sequelize.where(this.sequelize.col("units.serial_number"), like),
         ],
       } as WhereOptions<Asset>);
     }
@@ -458,9 +493,10 @@ export class AssetsService {
           {
             status: AssetStatus.ASSIGNED,
           },
-          {
-            "$units.status$": AssetUnitStatus.ASSIGNED,
-          },
+          this.sequelize.where(
+            this.sequelize.col("units.status"),
+            AssetUnitStatus.ASSIGNED,
+          ),
         ],
       } as WhereOptions<Asset>);
     }
@@ -473,11 +509,9 @@ export class AssetsService {
               [Op.ne]: AssetStatus.ASSIGNED,
             },
           },
-          {
-            "$units.status$": {
-              [Op.ne]: AssetUnitStatus.ASSIGNED,
-            },
-          },
+          this.sequelize.where(this.sequelize.col("units.status"), {
+            [Op.ne]: AssetUnitStatus.ASSIGNED,
+          }),
         ],
       } as WhereOptions<Asset>);
     }
@@ -489,23 +523,54 @@ export class AssetsService {
           }
         : {};
 
-    const { rows: items, count: total } = await this.assetModel.findAndCountAll(
-      {
-        where,
+    // ------------------------------------------------------------
+    // TOTAL COUNT
+    //
+    // Deliberately NOT using findAndCountAll here: its internal
+    // count() query mishandles field-mapped dot-notation on included
+    // associations (see note above) and throws "Unknown column".
+    //
+    // A plain findAll restricted to `id`, grouped by `id`, produces
+    // one row per distinct asset even though the joins (units,
+    // assignments) can multiply matching rows — this replaces what
+    // `distinct: true` did for findAndCountAll's count query. Note
+    // `distinct` itself isn't a valid FindOptions property (it only
+    // exists on FindAndCountOptions/CountOptions), hence `group`.
+    // ------------------------------------------------------------
 
-        include: this.assetInclude,
+    const matchingIdRows = await this.assetModel.findAll({
+      attributes: ["id"],
+      where,
+      include: this.assetInclude,
+      group: ["id"],
+      subQuery: false,
+    });
 
-        order: [[params.sortBy ?? "assetTag", params.sortDir ?? "asc"]],
+    const total = matchingIdRows.length;
 
-        limit: pageSize,
+    // ------------------------------------------------------------
+    // PAGE OF RESULTS
+    //
+    // No `distinct` needed here either: Sequelize's eager-loading
+    // collapses duplicate joined rows into one JS object per primary
+    // key, with hasMany associations (units, assignments) nested
+    // inside as arrays, regardless of how many raw SQL rows the join
+    // produced.
+    // ------------------------------------------------------------
 
-        offset: (page - 1) * pageSize,
+    const items = await this.assetModel.findAll({
+      where,
 
-        distinct: true,
+      include: this.assetInclude,
 
-        subQuery: false,
-      },
-    );
+      order: [[params.sortBy ?? "assetTag", params.sortDir ?? "asc"]],
+
+      limit: pageSize,
+
+      offset: (page - 1) * pageSize,
+
+      subQuery: false,
+    });
 
     return {
       items,
@@ -515,7 +580,6 @@ export class AssetsService {
       totalPages: Math.ceil(total / pageSize),
     };
   }
-
   // ============================================================
   // FIND ONE
   // ============================================================
@@ -601,16 +665,6 @@ export class AssetsService {
     const organisation = await this.organisationModel.findByPk(
       dto.organisationId,
     );
-
-    if (!organisation) {
-      throw new NotFoundException("Organisation not found.");
-    }
-
-    if (!organisation.isActive) {
-      throw new BadRequestException(
-        "Cannot create an asset for an inactive organisation.",
-      );
-    }
 
     // CATEGORY
 
@@ -744,8 +798,8 @@ export class AssetsService {
       await this.createAssetUnits(asset, quantity, t, {
         assigned: Boolean(dto.assignEmployeeId),
         serialNumber: dto.serialNumber ?? null,
+        initialUnits: dto.initialUnits,
       });
-
       // ========================================================
       // SOFTWARE LICENSE
       // ========================================================
@@ -891,12 +945,6 @@ export class AssetsService {
 
       if (!organisation) {
         throw new NotFoundException("Organisation not found.");
-      }
-
-      if (!organisation.isActive) {
-        throw new BadRequestException(
-          "Cannot move an asset to an inactive organisation.",
-        );
       }
     }
 
@@ -1868,184 +1916,136 @@ export class AssetsService {
 
   async findPool(params: AssetPoolQueryDto) {
     const page = Math.max(params.page ?? 1, 1);
-
     const pageSize = Math.min(Math.max(params.pageSize ?? 25, 1), 100);
 
-    const andConditions: WhereOptions<Asset>[] = [
-      {
-        status: {
-          [Op.notIn]: NON_TRANSFERABLE_STATUSES,
-        },
-      },
+    const search = params.search?.trim();
+    const like = search ? { [Op.like]: `%${search}%` } : null;
 
-      {
-        "$units.status$": AssetUnitStatus.AVAILABLE,
-      },
+    // ------------------------------------------------------------
+    // STEP 1: resolve qualifying asset ids (no pagination yet)
+    // ------------------------------------------------------------
+    const idConditions: WhereOptions<Asset>[] = [
+      { status: { [Op.notIn]: NON_TRANSFERABLE_STATUSES } },
     ];
 
-    // SEARCH
+    if (params.kind) idConditions.push({ kind: params.kind as Asset["kind"] });
+    if (params.categoryId) idConditions.push({ categoryId: params.categoryId });
+    if (params.locationId) idConditions.push({ locationId: params.locationId });
 
-    if (params.search?.trim()) {
-      const like = {
-        [Op.like]: `%${params.search.trim()}%`,
-      };
-
-      andConditions.push({
+    if (like) {
+      /*
+       * NOTE: the "units" include below uses attributes: [] to keep
+       * step 1 cheap (we only need asset ids). That means Sequelize
+       * has no attribute metadata to resolve "$units.unitCode$" style
+       * dot-notation against the model's `field` mapping (unitCode ->
+       * unit_code, serialNumber -> serial_number). Referencing the
+       * real DB column names directly via sequelize.col(...) sidesteps
+       * that translation entirely and works regardless of what's in
+       * the include's attributes list.
+       */
+      idConditions.push({
         [Op.or]: [
-          {
-            assetTag: like,
-          },
-
-          {
-            name: like,
-          },
-
-          {
-            serialNumber: like,
-          },
-
-          {
-            manufacturer: like,
-          },
-
-          {
-            model: like,
-          },
-
-          {
-            "$units.unitCode$": like,
-          },
-
-          {
-            "$units.serialNumber$": like,
-          },
+          { assetTag: like },
+          { name: like },
+          { serialNumber: like },
+          { manufacturer: like },
+          { model: like },
+          this.sequelize.where(this.sequelize.col("units.unit_code"), like),
+          this.sequelize.where(this.sequelize.col("units.serial_number"), like),
         ],
       } as WhereOptions<Asset>);
     }
 
-    // KIND
-
-    if (params.kind) {
-      andConditions.push({
-        kind: params.kind as Asset["kind"],
-      });
-    }
-
-    // CATEGORY
-
-    if (params.categoryId) {
-      andConditions.push({
-        categoryId: params.categoryId,
-      });
-    }
-
-    // LOCATION
-
-    if (params.locationId) {
-      andConditions.push({
-        locationId: params.locationId,
-      });
-    }
-
-    const { rows: items, count: total } = await this.assetModel.findAndCountAll(
-      {
-        where: {
-          [Op.and]: andConditions,
+    const qualifying = await this.assetModel.findAll({
+      attributes: ["id"],
+      where: { [Op.and]: idConditions },
+      include: [
+        {
+          model: AssetUnit,
+          as: "units",
+          attributes: [],
+          required: true,
+          where: { status: AssetUnitStatus.AVAILABLE },
         },
+      ],
+      order: [["name", "ASC"]],
+      subQuery: false,
+      group: ["Asset.id", "Asset.name"], // group by anything in ORDER BY too
+    });
 
-        include: [
-          {
-            model: AssetCategory,
+    const total = qualifying.length;
+    const pageIds = qualifying
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map((a) => a.id);
 
-            as: "category",
-          },
+    if (pageIds.length === 0) {
+      return {
+        items: [],
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    }
 
-          {
-            model: Location,
+    // ------------------------------------------------------------
+    // STEP 2: fetch the full, hydrated records for this page
+    // ------------------------------------------------------------
+    const rows = await this.assetModel.findAll({
+      where: { id: { [Op.in]: pageIds } },
+      include: [
+        { model: AssetCategory, as: "category" },
+        { model: Location, as: "location" },
+        {
+          model: AssetUnit,
+          as: "units",
+          required: true,
+          where: { status: AssetUnitStatus.AVAILABLE },
+        },
+      ],
+    });
 
-            as: "location",
-          },
-
-          {
-            model: AssetUnit,
-
-            as: "units",
-
-            required: true,
-
-            where: {
-              status: AssetUnitStatus.AVAILABLE,
-            },
-          },
-        ],
-
-        order: [["name", "ASC"]],
-
-        limit: pageSize,
-
-        offset: (page - 1) * pageSize,
-
-        distinct: true,
-
-        subQuery: false,
-      },
-    );
+    // IN (...) doesn't preserve order — restore the paginated order from step 1
+    const byId = new Map(rows.map((a) => [a.id, a]));
+    const items = pageIds.map((id) => byId.get(id)!).filter(Boolean);
 
     return {
       items: items.map((asset) => {
         const units = asset.units ?? [];
-
         const quantity = asset.quantity ?? 0;
-
         const quantityAssigned = units.filter(
-          (unit) => unit.status === AssetUnitStatus.ASSIGNED,
+          (u) => u.status === AssetUnitStatus.ASSIGNED,
         ).length;
-
         const quantityAvailable = units.filter(
-          (unit) => unit.status === AssetUnitStatus.AVAILABLE,
+          (u) => u.status === AssetUnitStatus.AVAILABLE,
         ).length;
-
         const quantityRepair = units.filter(
-          (unit) => unit.status === AssetUnitStatus.REPAIR,
+          (u) => u.status === AssetUnitStatus.REPAIR,
         ).length;
-
         const quantityDamaged = units.filter(
-          (unit) => unit.status === AssetUnitStatus.DAMAGED,
+          (u) => u.status === AssetUnitStatus.DAMAGED,
         ).length;
-
         const quantityLost = units.filter(
-          (unit) => unit.status === AssetUnitStatus.LOST,
+          (u) => u.status === AssetUnitStatus.LOST,
         ).length;
 
         return {
           ...asset.toJSON(),
-
           quantity,
-
           quantityAssigned,
-
           quantityAvailable,
-
           quantityRepair,
-
           quantityDamaged,
-
           quantityLost,
-
           units,
         };
       }),
-
       total,
-
       page,
-
       pageSize,
-
       totalPages: Math.ceil(total / pageSize),
     };
   }
-
   // ============================================================
   // RELEASE ASSETS FOR EXITED EMPLOYEE
   // ============================================================

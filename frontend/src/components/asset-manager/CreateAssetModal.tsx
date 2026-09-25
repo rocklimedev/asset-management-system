@@ -551,34 +551,20 @@ export function CreateAssetModal({
 
     return {
       name: values.name.trim(),
-
       assetTag: values.assetTag.trim() || undefined,
-
       kind: values.kind,
-
       trackingMode: values.trackingMode,
-
       quantity: values.trackingMode === "INDIVIDUAL" ? 1 : values.quantity,
-
       status: values.status || undefined,
-
       condition: values.condition || undefined,
-
       categoryId: values.categoryId,
-
       manufacturer: values.manufacturer.trim() || undefined,
-
       model: values.model.trim() || undefined,
-
       purchaseDate: values.purchaseDate || undefined,
-
       invoiceNumber: values.invoiceNumber.trim() || undefined,
-
       warrantyExpiry: values.warrantyExpiry || undefined,
-
       notes: values.notes.trim() || undefined,
-
-      units: normalizedUnits,
+      initialUnits: normalizedUnits, // was `units: normalizedUnits`
     } as CreateAssetRequest;
   }
 

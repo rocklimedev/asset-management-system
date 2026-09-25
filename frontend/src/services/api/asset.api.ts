@@ -788,48 +788,37 @@ export interface GetAssetsParams {
 
 export interface CreateAssetRequest {
   name: string;
-
   assetTag?: string | null;
-
   serialNumber?: string | null;
-
   kind: AssetKind;
-
   trackingMode?: AssetTrackingMode;
-
   organisationId?: string | null;
-
   categoryId: string;
-
   manufacturer?: string | null;
-
   model?: string | null;
-
   vendorId?: string | null;
-
   invoiceNumber?: string | null;
-
   purchaseDate?: string | null;
-
   purchasePrice?: number | null;
-
   warrantyStart?: string | null;
-
   warrantyExpiry?: string | null;
-
   status?: AssetStatus;
-
   condition?: AssetCondition;
-
   locationId?: string | null;
-
   notes?: string | null;
-
   quantity?: number;
-
   quantityAssigned?: number;
-
   reorderLevel?: number | null;
+
+  // renamed from `units` to match CreateAssetDto
+  initialUnits?: {
+    unitCode?: string;
+    serialNumber?: string;
+    status?: AssetStatus;
+    condition?: AssetCondition;
+    locationId?: string;
+    notes?: string;
+  }[];
 }
 
 // ============================================================
