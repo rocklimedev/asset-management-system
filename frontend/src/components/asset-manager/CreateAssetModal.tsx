@@ -236,8 +236,10 @@ function createEmptyUnit(
     condition?: AssetCondition;
   },
 ): AssetUnitForm {
+  const uniqueSuffix = crypto.randomUUID().slice(0, 8).toUpperCase();
+
   return {
-    unitCode: `UNIT-${String(index + 1).padStart(3, "0")}`,
+    unitCode: `UNIT-${String(index + 1).padStart(3, "0")}-${uniqueSuffix}`,
     serialNumber: "",
     status: defaults?.status ?? "AVAILABLE",
     condition: defaults?.condition ?? "GOOD",

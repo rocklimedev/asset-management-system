@@ -723,9 +723,15 @@ export class AssetsService {
 
     // ORGANISATION
 
-    const organisation = await this.organisationModel.findByPk(
-      dto.organisationId,
-    );
+    if (dto.organisationId) {
+      const organisation = await this.organisationModel.findByPk(
+        dto.organisationId,
+      );
+
+      if (!organisation) {
+        throw new NotFoundException("Organisation not found.");
+      }
+    }
 
     // CATEGORY
 
@@ -737,6 +743,7 @@ export class AssetsService {
 
     if (
       category.organisationId !== null &&
+      dto.organisationId !== undefined &&
       category.organisationId !== dto.organisationId
     ) {
       throw new BadRequestException(
@@ -761,6 +768,7 @@ export class AssetsService {
 
       if (
         location.organisationId !== null &&
+        dto.organisationId !== undefined &&
         location.organisationId !== dto.organisationId
       ) {
         throw new BadRequestException(
@@ -808,7 +816,7 @@ export class AssetsService {
 
           kind: dto.kind,
 
-          organisationId: dto.organisationId,
+          organisationId: dto.organisationId ?? null,
 
           categoryId: dto.categoryId,
 
@@ -861,6 +869,7 @@ export class AssetsService {
         serialNumber: dto.serialNumber ?? null,
         initialUnits: dto.initialUnits,
       });
+
       // ========================================================
       // SOFTWARE LICENSE
       // ========================================================
@@ -987,7 +996,6 @@ export class AssetsService {
       });
     });
   }
-
   // ============================================================
   // UPDATE
   // ============================================================
