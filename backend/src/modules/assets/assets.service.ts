@@ -401,7 +401,9 @@ export class AssetsService {
 
     const andConditions: WhereOptions<Asset>[] = [];
 
+    // ------------------------------------------------------------
     // SEARCH
+    // ------------------------------------------------------------
 
     if (params.search?.trim()) {
       const like = {
@@ -415,29 +417,25 @@ export class AssetsService {
           { serialNumber: like },
           { manufacturer: like },
           { model: like },
+
           { "$organisation.name$": like },
           { "$category.name$": like },
+
           { "$assignments.employee.name$": like },
           { "$assignments.system.name$": like },
           { "$assignments.system.systemTag$": like },
           { "$assignments.system.employee.name$": like },
-          /*
-           * unitCode / serialNumber on AssetUnit are field-mapped
-           * (unit_code / serial_number). Sequelize's internal count()
-           * query, used by findAndCountAll, does not translate
-           * "$units.unitCode$" style dot-notation through that field
-           * mapping the way the main row query does — it passes the
-           * camelCase name straight through and MySQL rejects it.
-           * Referencing the real column via sequelize.col(...) avoids
-           * that translation step entirely.
-           */
+
           this.sequelize.where(this.sequelize.col("units.unit_code"), like),
+
           this.sequelize.where(this.sequelize.col("units.serial_number"), like),
         ],
       } as WhereOptions<Asset>);
     }
 
+    // ------------------------------------------------------------
     // ORGANISATION
+    // ------------------------------------------------------------
 
     if (params.organisationId) {
       andConditions.push({
@@ -445,7 +443,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // KIND
+    // ------------------------------------------------------------
 
     if (params.kind) {
       andConditions.push({
@@ -453,7 +453,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // STATUS
+    // ------------------------------------------------------------
 
     if (params.status) {
       andConditions.push({
@@ -461,7 +463,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // CONDITION
+    // ------------------------------------------------------------
 
     if (params.condition) {
       andConditions.push({
@@ -469,7 +473,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // CATEGORY
+    // ------------------------------------------------------------
 
     if (params.categoryId) {
       andConditions.push({
@@ -477,7 +483,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // LOCATION
+    // ------------------------------------------------------------
 
     if (params.locationId) {
       andConditions.push({
@@ -485,7 +493,9 @@ export class AssetsService {
       });
     }
 
+    // ------------------------------------------------------------
     // ASSIGNMENT FILTER
+    // ------------------------------------------------------------
 
     if (params.assigned === "assigned") {
       andConditions.push({
@@ -524,53 +534,104 @@ export class AssetsService {
         : {};
 
     // ------------------------------------------------------------
-    // TOTAL COUNT
-    //
-    // Deliberately NOT using findAndCountAll here: its internal
-    // count() query mishandles field-mapped dot-notation on included
-    // associations (see note above) and throws "Unknown column".
-    //
-    // A plain findAll restricted to `id`, grouped by `id`, produces
-    // one row per distinct asset even though the joins (units,
-    // assignments) can multiply matching rows — this replaces what
-    // `distinct: true` did for findAndCountAll's count query. Note
-    // `distinct` itself isn't a valid FindOptions property (it only
-    // exists on FindAndCountOptions/CountOptions), hence `group`.
+    // SORT
     // ------------------------------------------------------------
 
-    const matchingIdRows = await this.assetModel.findAll({
+    const sortBy = params.sortBy ?? "assetTag";
+    const sortDir = params.sortDir ?? "asc";
+
+    // ------------------------------------------------------------
+    // TOTAL ASSETS
+    //
+    // Count DISTINCT ASSETS, not units.
+    // ------------------------------------------------------------
+
+    const countRows = await this.assetModel.findAll({
       attributes: ["id"],
       where,
       include: this.assetInclude,
-      group: ["id"],
+      group: ["Asset.id"],
+      raw: true,
       subQuery: false,
     });
 
-    const total = matchingIdRows.length;
+    const total = countRows.length;
 
     // ------------------------------------------------------------
-    // PAGE OF RESULTS
+    // PAGINATE ASSET IDS
     //
-    // No `distinct` needed here either: Sequelize's eager-loading
-    // collapses duplicate joined rows into one JS object per primary
-    // key, with hasMany associations (units, assignments) nested
-    // inside as arrays, regardless of how many raw SQL rows the join
-    // produced.
+    // IMPORTANT:
+    // LIMIT/OFFSET is applied to Asset rows only.
+    // Units are NOT allowed to consume the pagination.
     // ------------------------------------------------------------
 
-    const items = await this.assetModel.findAll({
+    const pagedAssetRows = await this.assetModel.findAll({
+      attributes: ["id"],
       where,
 
       include: this.assetInclude,
 
-      order: [[params.sortBy ?? "assetTag", params.sortDir ?? "asc"]],
+      order: [
+        [sortBy, sortDir],
+        ["id", "asc"],
+      ],
 
       limit: pageSize,
-
       offset: (page - 1) * pageSize,
+
+      group: ["Asset.id"],
+
+      raw: true,
 
       subQuery: false,
     });
+
+    const assetIds = pagedAssetRows.map((row: any) => row.id);
+
+    // ------------------------------------------------------------
+    // NO ASSETS ON THIS PAGE
+    // ------------------------------------------------------------
+
+    if (assetIds.length === 0) {
+      return {
+        items: [],
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    }
+
+    // ------------------------------------------------------------
+    // FETCH COMPLETE ASSETS
+    //
+    // No limit/offset here.
+    // Therefore ALL units belonging to each selected asset
+    // are returned.
+    // ------------------------------------------------------------
+
+    const items = await this.assetModel.findAll({
+      where: {
+        id: {
+          [Op.in]: assetIds,
+        },
+      },
+
+      include: this.assetInclude,
+    });
+
+    // ------------------------------------------------------------
+    // RESTORE PAGINATION/SORT ORDER
+    //
+    // IN (...) does not guarantee the same order as assetIds.
+    // ------------------------------------------------------------
+
+    const orderMap = new Map(assetIds.map((id, index) => [String(id), index]));
+
+    items.sort(
+      (a: Asset, b: Asset) =>
+        (orderMap.get(String(a.id)) ?? 0) - (orderMap.get(String(b.id)) ?? 0),
+    );
 
     return {
       items,

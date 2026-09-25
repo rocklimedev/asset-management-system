@@ -331,7 +331,13 @@ export interface InventoryHistoryEntry {
 
   createdAt: string;
 }
-
+export interface AssetAssignmentSummary {
+  totalAssignments: number;
+  activeAssignments: number;
+  returnedAssignments: number;
+  assignments: AssetAssignment[];
+  [key: string]: unknown;
+}
 // ============================================================
 // SOFTWARE LICENSE
 // ============================================================
@@ -363,6 +369,52 @@ export interface AssetLicense {
 }
 
 // ============================================================
+// SYSTEM SPECS
+// ============================================================
+
+export interface SystemSpecs {
+  id: string;
+
+  systemId: string;
+
+  // Hardware
+  processor?: string | null;
+  ram?: string | null;
+  localStorage?: string | null;
+  graphicsCard?: string | null;
+  motherboard?: string | null;
+  powerSupply?: string | null;
+
+  // Display
+  monitor?: string | null;
+  monitorSize?: string | null;
+
+  // Software
+  operatingSystem?: string | null;
+  osVersion?: string | null;
+
+  // Cloud Storage
+  cloudStorage?: string | null;
+  cloudStorageEmail?: string | null;
+
+  /**
+   * Password is normally returned masked/omitted by the backend.
+   * Never display the bcrypt hash in the frontend.
+   */
+  cloudStoragePassword?: string | null;
+
+  // Network
+  macAddress?: string | null;
+  ipAddress?: string | null;
+
+  // Other
+  notes?: string | null;
+
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ============================================================
 // SYSTEM
 // ============================================================
 
@@ -374,14 +426,93 @@ export interface SystemRecord {
   name: string;
 
   notes?: string | null;
+  organisationId?: string | null;
+  organisation?: AssetOrganisation;
 
   employeeId: string | null;
 
   employee?: AssetEmployee;
 
+  specs?: SystemSpecs | null;
+
   assignments?: AssetAssignment[];
 }
 
+// ============================================================
+// SYSTEM SPECS REQUESTS
+// ============================================================
+
+export interface CreateSystemSpecsRequest {
+  systemId: string;
+
+  // Hardware
+  processor?: string | null;
+  ram?: string | null;
+  localStorage?: string | null;
+  graphicsCard?: string | null;
+  motherboard?: string | null;
+  powerSupply?: string | null;
+
+  // Display
+  monitor?: string | null;
+  monitorSize?: string | null;
+
+  // Software
+  operatingSystem?: string | null;
+  osVersion?: string | null;
+
+  // Cloud Storage
+  cloudStorage?: string | null;
+  cloudStorageEmail?: string | null;
+  cloudStoragePassword?: string | null;
+
+  // Network
+  macAddress?: string | null;
+  ipAddress?: string | null;
+
+  // Other
+  notes?: string | null;
+}
+
+export interface UpdateSystemSpecsRequest {
+  id: string;
+
+  // Hardware
+  processor?: string | null;
+  ram?: string | null;
+  localStorage?: string | null;
+  graphicsCard?: string | null;
+  motherboard?: string | null;
+  powerSupply?: string | null;
+
+  // Display
+  monitor?: string | null;
+  monitorSize?: string | null;
+
+  // Software
+  operatingSystem?: string | null;
+  osVersion?: string | null;
+
+  // Cloud Storage
+  cloudStorage?: string | null;
+  cloudStorageEmail?: string | null;
+  cloudStoragePassword?: string | null;
+
+  // Network
+  macAddress?: string | null;
+  ipAddress?: string | null;
+
+  // Other
+  notes?: string | null;
+}
+
+export interface SystemSpecsResponse {
+  data: SystemSpecs;
+
+  message?: string;
+
+  [key: string]: unknown;
+}
 // ============================================================
 // ASSET ASSIGNMENT
 // ============================================================
@@ -624,15 +755,10 @@ export interface SoftwareAsset extends Asset {
 
 export interface AssetsResponse {
   items: Asset[];
-
   total: number;
-
   page: number;
-
   pageSize: number;
-
   totalPages: number;
-
   [key: string]: unknown;
 }
 
@@ -982,25 +1108,27 @@ export const assetApi = createApi({
     // ============================================================
     // SYSTEMS
     // ============================================================
-
     getSystems: builder.query<
       SystemRecord[],
-      { search?: string; employeeId?: string } | void
+      {
+        search?: string;
+        employeeId?: string;
+        organisationId?: string;
+      } | void
     >({
       query: (params) => ({
         url: "/systems",
         params: params || undefined,
       }),
-
       providesTags: ["System"],
     }),
-
     createSystem: builder.mutation<
       SystemRecord,
       {
         name: string;
         systemTag: string;
-        notes?: string;
+        notes?: string | null; // ← allow null
+        organisationId?: string | null;
       }
     >({
       query: (body) => ({
@@ -1008,7 +1136,6 @@ export const assetApi = createApi({
         method: "POST",
         body,
       }),
-
       invalidatesTags: ["System"],
     }),
 
@@ -1016,9 +1143,10 @@ export const assetApi = createApi({
       SystemRecord,
       {
         id: string;
-        name: string;
-        systemTag: string;
-        notes?: string;
+        name?: string;
+        systemTag?: string;
+        notes?: string | null;
+        organisationId?: string | null;
       }
     >({
       query: ({ id, ...body }) => ({
@@ -1026,7 +1154,6 @@ export const assetApi = createApi({
         method: "PATCH",
         body,
       }),
-
       invalidatesTags: ["System", "Asset"],
     }),
 
@@ -1045,7 +1172,84 @@ export const assetApi = createApi({
 
       invalidatesTags: ["System", "Asset", "AssetHistory", "AssetAssignment"],
     }),
+    deleteSystem: builder.mutation<
+      { success: boolean; message: string; id: string },
+      string
+    >({
+      query: (id) => ({
+        url: `/systems/${id}`,
+        method: "DELETE",
+      }),
 
+      invalidatesTags: ["System", "Asset", "AssetHistory", "AssetAssignment"],
+    }),
+    // ============================================================
+    // SYSTEM SPECS
+    // ============================================================
+
+    getSystemSpecs: builder.query<SystemSpecsResponse, string>({
+      query: (systemId) => `/systems/${systemId}/specs`,
+
+      providesTags: (result, error, systemId) => [
+        {
+          type: "System" as const,
+          id: `SPECS-${systemId}`,
+        },
+      ],
+    }),
+
+    upsertSystemSpecs: builder.mutation<
+      SystemSpecsResponse,
+      CreateSystemSpecsRequest
+    >({
+      query: ({ systemId, ...body }) => ({
+        url: `/systems/${systemId}/specs`,
+        method: "PUT",
+        body,
+      }),
+
+      invalidatesTags: (result, error, { systemId }) => [
+        "System",
+        {
+          type: "System",
+          id: systemId,
+        },
+        {
+          type: "System",
+          id: `SPECS-${systemId}`,
+        },
+      ],
+    }),
+    updateSystemSpecs: builder.mutation<
+      SystemSpecsResponse,
+      UpdateSystemSpecsRequest
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/systems/specs/${id}`,
+        method: "PATCH",
+        body,
+      }),
+
+      invalidatesTags: (result) => {
+        const systemId = result?.data?.systemId;
+
+        return [
+          "System",
+          ...(systemId
+            ? [
+                {
+                  type: "System" as const,
+                  id: systemId,
+                },
+                {
+                  type: "System" as const,
+                  id: `SPECS-${systemId}`,
+                },
+              ]
+            : []),
+        ];
+      },
+    }),
     // ============================================================
     // ASSET CATEGORIES
     // ============================================================
@@ -1184,7 +1388,235 @@ export const assetApi = createApi({
         },
       ],
     }),
+    // ============================================================
+    // ASSET ASSIGNMENTS
+    // ============================================================
 
+    // GET /asset-assignments
+    getAssetAssignments: builder.query<
+      AssetAssignment[],
+      | {
+          status?: AssignmentStatus;
+          employeeId?: string;
+          assetId?: string;
+          assetUnitId?: string;
+          systemId?: string;
+          search?: string;
+        }
+      | undefined
+    >({
+      query: (params = {}) => ({
+        url: "/asset-assignments",
+        method: "GET",
+        params: {
+          status: params.status || undefined,
+          employeeId: params.employeeId || undefined,
+          assetId: params.assetId || undefined,
+          assetUnitId: params.assetUnitId || undefined,
+          systemId: params.systemId || undefined,
+          search: params.search || undefined,
+        },
+      }),
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: "AssetAssignment" as const,
+                id,
+              })),
+              {
+                type: "AssetAssignment" as const,
+                id: "LIST",
+              },
+            ]
+          : [
+              {
+                type: "AssetAssignment" as const,
+                id: "LIST",
+              },
+            ],
+    }),
+
+    // GET /asset-assignments/employees/:employeeId
+    getAssetAssignmentsByEmployee: builder.query<
+      AssetAssignment[],
+      {
+        employeeId: string;
+        status?: AssignmentStatus;
+        activeOnly?: boolean;
+      }
+    >({
+      query: ({ employeeId, status, activeOnly }) => ({
+        url: `/asset-assignments/employees/${employeeId}`,
+        method: "GET",
+        params: {
+          status: status || undefined,
+          activeOnly: activeOnly !== undefined ? activeOnly : undefined,
+        },
+      }),
+
+      providesTags: (result, error, { employeeId }) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `EMPLOYEE-${employeeId}`,
+        },
+        ...(result || []).map(({ id }) => ({
+          type: "AssetAssignment" as const,
+          id,
+        })),
+      ],
+    }),
+
+    // GET /asset-assignments/employees/:employeeId/active
+    getActiveAssetAssignmentsByEmployee: builder.query<
+      AssetAssignment[],
+      string
+    >({
+      query: (employeeId) => ({
+        url: `/asset-assignments/employees/${employeeId}/active`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, employeeId) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `EMPLOYEE-ACTIVE-${employeeId}`,
+        },
+        ...(result || []).map(({ id }) => ({
+          type: "AssetAssignment" as const,
+          id,
+        })),
+      ],
+    }),
+
+    // GET /asset-assignments/assets/:assetId
+    getAssetAssignmentsByAsset: builder.query<
+      AssetAssignment[],
+      {
+        assetId: string;
+        status?: AssignmentStatus;
+        employeeId?: string;
+        assetUnitId?: string;
+        activeOnly?: boolean;
+      }
+    >({
+      query: ({ assetId, status, employeeId, assetUnitId, activeOnly }) => ({
+        url: `/asset-assignments/assets/${assetId}`,
+        method: "GET",
+        params: {
+          status: status || undefined,
+          employeeId: employeeId || undefined,
+          assetUnitId: assetUnitId || undefined,
+          activeOnly: activeOnly !== undefined ? activeOnly : undefined,
+        },
+      }),
+
+      providesTags: (result, error, { assetId }) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `ASSET-${assetId}`,
+        },
+        ...(result || []).map(({ id }) => ({
+          type: "AssetAssignment" as const,
+          id,
+        })),
+      ],
+    }),
+
+    // GET /asset-assignments/assets/:assetId/active
+    getActiveAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
+      query: (assetId) => ({
+        url: `/asset-assignments/assets/${assetId}/active`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, assetId) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `ASSET-ACTIVE-${assetId}`,
+        },
+        ...(result || []).map(({ id }) => ({
+          type: "AssetAssignment" as const,
+          id,
+        })),
+      ],
+    }),
+
+    // GET /asset-assignments/assets/:assetId/summary
+    getAssetAssignmentSummary: builder.query<AssetAssignmentSummary, string>({
+      query: (assetId) => ({
+        url: `/asset-assignments/assets/${assetId}/summary`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, assetId) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `ASSET-SUMMARY-${assetId}`,
+        },
+      ],
+    }),
+
+    // GET /asset-assignments/units/:assetUnitId
+    getAssetAssignmentsByAssetUnit: builder.query<AssetAssignment[], string>({
+      query: (assetUnitId) => ({
+        url: `/asset-assignments/units/${assetUnitId}`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, assetUnitId) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `UNIT-${assetUnitId}`,
+        },
+        ...(result || []).map(({ id }) => ({
+          type: "AssetAssignment" as const,
+          id,
+        })),
+      ],
+    }),
+
+    // GET /asset-assignments/units/:assetUnitId/active
+    getActiveAssetAssignmentByAssetUnit: builder.query<
+      AssetAssignment | null,
+      string
+    >({
+      query: (assetUnitId) => ({
+        url: `/asset-assignments/units/${assetUnitId}/active`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, assetUnitId) => [
+        {
+          type: "AssetAssignment" as const,
+          id: `UNIT-ACTIVE-${assetUnitId}`,
+        },
+        ...(result?.id
+          ? [
+              {
+                type: "AssetAssignment" as const,
+                id: result.id,
+              },
+            ]
+          : []),
+      ],
+    }),
+
+    // GET /asset-assignments/:id
+    getAssetAssignment: builder.query<AssetAssignment, string>({
+      query: (id) => ({
+        url: `/asset-assignments/${id}`,
+        method: "GET",
+      }),
+
+      providesTags: (result, error, id) => [
+        {
+          type: "AssetAssignment" as const,
+          id,
+        },
+      ],
+    }),
     // ============================================================
     // ASSETS
     // ============================================================
@@ -1941,7 +2373,11 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useAssignSystemMutation,
-
+  useDeleteSystemMutation,
+  // System Specs
+  useGetSystemSpecsQuery,
+  useUpsertSystemSpecsMutation,
+  useUpdateSystemSpecsMutation,
   // Assets
   useGetAssetsQuery,
   useGetAssetQuery,
@@ -1969,7 +2405,16 @@ export const {
 
   // Software
   useGetSoftwareAssetsQuery,
-
+  // Asset Assignments
+  useGetAssetAssignmentsQuery,
+  useGetAssetAssignmentsByEmployeeQuery,
+  useGetActiveAssetAssignmentsByEmployeeQuery,
+  useGetAssetAssignmentsByAssetQuery,
+  useGetActiveAssetAssignmentsByAssetQuery,
+  useGetAssetAssignmentSummaryQuery,
+  useGetAssetAssignmentsByAssetUnitQuery,
+  useGetActiveAssetAssignmentByAssetUnitQuery,
+  useGetAssetAssignmentQuery,
   // Categories
   useGetAssetCategoriesQuery,
   useGetAssetCategoryQuery,

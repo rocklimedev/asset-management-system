@@ -1,12 +1,27 @@
-import { X, Clock, ArrowRightLeft, Undo2 } from "lucide-react";
+import {
+  X,
+  Clock,
+  ArrowRightLeft,
+  Undo2,
+  UserRound,
+  Monitor,
+  Package,
+} from "lucide-react";
 
-import { useGetAssetHistoryQuery } from "../../services/api/asset.api";
+import {
+  useGetAssetHistoryQuery,
+  useGetActiveAssetAssignmentsByAssetQuery,
+} from "../../services/api/asset.api";
+
 import { Badge } from "../ui/badge";
-
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-import type { Asset, AssetHistory } from "../../services/api/asset.api";
+import type {
+  Asset,
+  AssetHistory,
+  AssetAssignment,
+} from "../../services/api/asset.api";
 
 // ============================================================
 // FIELD
@@ -55,13 +70,40 @@ export function AssetDetailDrawer({
     skip: asset?.id == null,
   });
 
-  /*
-   * The API query currently exposes `data` as unknown.
-   * Normalize it here so the component has a strongly typed
-   * AssetHistory[] instead of propagating unknown through the UI.
-   */
   const history: AssetHistory[] = Array.isArray(historyResponse)
     ? (historyResponse as AssetHistory[])
+    : [];
+
+  // ==========================================================
+  // ACTIVE ASSIGNMENTS
+  // ==========================================================
+
+  const {
+    data: activeAssignmentsResponse,
+    isLoading: assignmentLoading,
+    isFetching: assignmentFetching,
+  } = useGetActiveAssetAssignmentsByAssetQuery(
+    asset?.id != null ? String(asset.id) : "",
+    {
+      skip: asset?.id == null,
+    },
+  );
+
+  /*
+   * Quantity-tracked assets can have multiple active assignments.
+   *
+   * Example:
+   *
+   * UNIT-001 -> SPRL-PC1
+   * UNIT-003 -> Admin
+   *
+   * Therefore we intentionally keep the complete array instead
+   * of selecting only [0].
+   */
+  const activeAssignments: AssetAssignment[] = Array.isArray(
+    activeAssignmentsResponse,
+  )
+    ? activeAssignmentsResponse
     : [];
 
   // ==========================================================
@@ -71,39 +113,25 @@ export function AssetDetailDrawer({
   if (!asset) return null;
 
   // ==========================================================
-  // CURRENT ASSIGNEE
-  // ==========================================================
-
-  const currentSystem = asset.assignments?.[0]?.system;
-  const currentAssignee = currentSystem
-    ? {
-        name: `System: ${currentSystem.systemTag} · ${currentSystem.employee?.name ?? "Unassigned"}`,
-      }
-    : asset.assignments?.[0]?.employee;
-
-  // ==========================================================
-  // CONDITION
+  // STATUS
   // ==========================================================
 
   const condition = asset.condition
     ? asset.condition.charAt(0) + asset.condition.slice(1).toLowerCase()
     : "Unknown";
 
-  // ==========================================================
-  // STATUS
-  // ==========================================================
-
   const status = asset.status
     ? asset.status.charAt(0) + asset.status.slice(1).toLowerCase()
     : "Unknown";
 
-  const isAssigned = asset.status?.toUpperCase() === "ASSIGNED";
+  const isAssigned =
+    asset.status?.toUpperCase() === "ASSIGNED" || activeAssignments.length > 0;
 
   // ==========================================================
   // DATE HELPERS
   // ==========================================================
 
-  const formatDate = (date?: string) => {
+  const formatDate = (date?: string | null) => {
     if (!date) return "—";
 
     const parsed = new Date(date);
@@ -115,7 +143,7 @@ export function AssetDetailDrawer({
     return parsed.toLocaleDateString();
   };
 
-  const formatDateTime = (date?: string) => {
+  const formatDateTime = (date?: string | null) => {
     if (!date) return "—";
 
     const parsed = new Date(date);
@@ -128,12 +156,46 @@ export function AssetDetailDrawer({
   };
 
   // ==========================================================
-  // RENDER
+  // ASSIGNMENT LABEL
   // ==========================================================
+
+  const getAssignmentName = (assignment: AssetAssignment) => {
+    if (assignment.system) {
+      return assignment.system.systemTag || assignment.system.name;
+    }
+
+    if (assignment.employee?.name) {
+      return assignment.employee.name;
+    }
+
+    if (assignment.employeeId) {
+      return assignment.employeeId;
+    }
+
+    if (assignment.systemId) {
+      return assignment.systemId;
+    }
+
+    return "Unknown assignee";
+  };
+
+  const getAssignmentType = (assignment: AssetAssignment) => {
+    if (assignment.systemId || assignment.system) {
+      return "System";
+    }
+
+    return "Employee";
+  };
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* BACKDROP */}
+      {/* ======================================================
+          BACKDROP
+      ====================================================== */}
 
       <button
         type="button"
@@ -142,7 +204,9 @@ export function AssetDetailDrawer({
         onClick={onClose}
       />
 
-      {/* PANEL */}
+      {/* ======================================================
+          PANEL
+      ====================================================== */}
 
       <aside className="relative z-10 flex h-full w-full flex-col border-l bg-background shadow-xl sm:max-w-md">
         {/* ==================================================
@@ -229,71 +293,233 @@ export function AssetDetailDrawer({
             <Separator />
 
             {/* ==================================================
-                ASSIGNMENT
+                ASSIGNMENTS
             ================================================== */}
 
             <section>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Assignment
-              </h3>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Assignment
+                </h3>
 
-              {currentAssignee ? (
-                <div className="rounded-lg border bg-muted/20 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {currentSystem ? (
-                          <a
-                            className="underline underline-offset-4"
-                            href={`/systems?system=${currentSystem.id}`}
-                          >
-                            {currentAssignee.name}
-                          </a>
-                        ) : (
-                          currentAssignee.name
-                        )}
-                      </p>
+                {!assignmentLoading &&
+                  !assignmentFetching &&
+                  activeAssignments.length > 0 && (
+                    <Badge variant="secondary">
+                      {activeAssignments.length}{" "}
+                      {activeAssignments.length === 1
+                        ? "assignment"
+                        : "assignments"}
+                    </Badge>
+                  )}
+              </div>
 
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        Assigned{" "}
-                        {formatDate(asset.assignments?.[0]?.assignedAt)}
-                      </p>
-                    </div>
+              {/* ==================================================
+                  LOADING
+              ================================================== */}
 
-                    {!currentSystem && isAssigned && (
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onTransfer(asset)}
-                        >
-                          <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-                          Transfer
-                        </Button>
-
-                        {onUnassign && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onUnassign(asset)}
-                          >
-                            <Undo2 className="mr-1.5 h-3.5 w-3.5" />
-                            Unassign
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
+              {(assignmentLoading || assignmentFetching) && (
                 <div className="rounded-lg border border-dashed p-4">
                   <p className="text-sm text-muted-foreground">
-                    This asset is not currently assigned to anyone.
+                    Loading assignments...
                   </p>
                 </div>
               )}
+
+              {/* ==================================================
+                  ACTIVE ASSIGNMENTS
+              ================================================== */}
+
+              {!assignmentLoading &&
+                !assignmentFetching &&
+                activeAssignments.length > 0 && (
+                  <div className="space-y-3">
+                    {activeAssignments.map((assignment) => {
+                      const assignmentName = getAssignmentName(assignment);
+
+                      const assignmentType = getAssignmentType(assignment);
+
+                      const system = assignment.system;
+
+                      return (
+                        <div
+                          key={assignment.id}
+                          className="rounded-lg border bg-muted/20 p-3"
+                        >
+                          {/* ----------------------------------------
+                              ASSIGNEE
+                          ---------------------------------------- */}
+
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                {assignmentType === "System" ? (
+                                  <Monitor className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                ) : (
+                                  <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                )}
+
+                                <p className="truncate text-sm font-medium text-foreground">
+                                  {system ? (
+                                    <a
+                                      className="underline underline-offset-4"
+                                      href={`/systems?system=${system.id}`}
+                                    >
+                                      {assignmentName}
+                                    </a>
+                                  ) : (
+                                    assignmentName
+                                  )}
+                                </p>
+                              </div>
+
+                              {/* --------------------------------------
+                                  TYPE
+                              -------------------------------------- */}
+
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {assignmentType}
+                              </p>
+                            </div>
+
+                            <Badge variant="outline" className="shrink-0">
+                              {assignment.status}
+                            </Badge>
+                          </div>
+
+                          {/* ----------------------------------------
+                              UNIT INFORMATION
+                          ---------------------------------------- */}
+
+                          {assignment.assetUnit && (
+                            <div className="mt-3 rounded-md border bg-background p-2.5">
+                              <div className="flex items-center gap-2">
+                                <Package className="h-3.5 w-3.5 text-muted-foreground" />
+
+                                <span className="text-xs font-medium">
+                                  {assignment.assetUnit.unitCode}
+                                </span>
+                              </div>
+
+                              <div className="mt-1 grid grid-cols-2 gap-2">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    Serial number
+                                  </p>
+
+                                  <p className="text-xs">
+                                    {assignment.assetUnit.serialNumber || "—"}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    Condition
+                                  </p>
+
+                                  <p className="text-xs">
+                                    {assignment.assetUnit.condition
+                                      ? assignment.assetUnit.condition
+                                          .charAt(0)
+                                          .toUpperCase() +
+                                        assignment.assetUnit.condition
+                                          .slice(1)
+                                          .toLowerCase()
+                                      : "—"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ----------------------------------------
+                              ASSIGNMENT DETAILS
+                          ---------------------------------------- */}
+
+                          <div className="mt-3 grid grid-cols-2 gap-3">
+                            <Field
+                              label="Assigned"
+                              value={formatDate(assignment.assignedAt)}
+                            />
+
+                            <Field
+                              label="Assigned at"
+                              value={formatDateTime(assignment.assignedAt)}
+                            />
+
+                            {assignment.system?.name && (
+                              <Field
+                                label="System name"
+                                value={assignment.system.name}
+                              />
+                            )}
+
+                            {assignment.system?.employeeId && (
+                              <Field
+                                label="System employee"
+                                value={assignment.system.employeeId}
+                              />
+                            )}
+                          </div>
+
+                          {/* ----------------------------------------
+                              NOTES
+                          ---------------------------------------- */}
+
+                          {assignment.notes && (
+                            <p className="mt-3 rounded-md bg-muted px-2.5 py-2 text-xs text-muted-foreground">
+                              {assignment.notes}
+                            </p>
+                          )}
+
+                          {/* ----------------------------------------
+                              ACTIONS
+                          ---------------------------------------- */}
+
+                          <div className="mt-3 flex justify-end gap-1.5">
+                            {!assignment.systemId && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onTransfer(asset)}
+                              >
+                                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                                Transfer
+                              </Button>
+                            )}
+
+                            {onUnassign && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onUnassign(asset)}
+                              >
+                                <Undo2 className="mr-1.5 h-3.5 w-3.5" />
+                                Unassign
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+              {/* ==================================================
+                  NO ACTIVE ASSIGNMENTS
+              ================================================== */}
+
+              {!assignmentLoading &&
+                !assignmentFetching &&
+                activeAssignments.length === 0 && (
+                  <div className="rounded-lg border border-dashed p-4">
+                    <p className="text-sm text-muted-foreground">
+                      This asset is not currently assigned to anyone.
+                    </p>
+                  </div>
+                )}
             </section>
 
             {/* ==================================================
@@ -340,10 +566,6 @@ export function AssetDetailDrawer({
                 Asset history
               </h3>
 
-              {/* ==================================================
-                  LOADING
-              ================================================== */}
-
               {(historyLoading || historyFetching) && (
                 <div className="rounded-lg border border-dashed p-4">
                   <p className="text-sm text-muted-foreground">
@@ -351,10 +573,6 @@ export function AssetDetailDrawer({
                   </p>
                 </div>
               )}
-
-              {/* ==================================================
-                  HISTORY
-              ================================================== */}
 
               {!historyLoading && !historyFetching && history.length > 0 && (
                 <ol className="space-y-4 border-l pl-4">
@@ -379,10 +597,6 @@ export function AssetDetailDrawer({
                   ))}
                 </ol>
               )}
-
-              {/* ==================================================
-                  EMPTY
-              ================================================== */}
 
               {!historyLoading && !historyFetching && history.length === 0 && (
                 <div className="rounded-lg border border-dashed p-4">

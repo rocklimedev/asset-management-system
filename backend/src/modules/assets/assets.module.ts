@@ -49,6 +49,9 @@ import { Location } from "@/modules/organisation/models/location.model";
 // Modules
 import { AuditModule } from "@/modules/audit/audit.module";
 import { CdnModule } from "@/modules/cdn/cdn.module";
+import { SystemSpecs } from "./models/system-specs.model";
+import { AssetAssignmentService } from "./asset-assignment.service";
+import { AssetAssignmentController } from "./asset-assignment.controller";
 
 @Module({
   imports: [
@@ -57,7 +60,7 @@ import { CdnModule } from "@/modules/cdn/cdn.module";
       // SYSTEM
       // ============================================================
       System,
-
+      SystemSpecs,
       // ============================================================
       // ASSET
       // ============================================================
@@ -122,6 +125,7 @@ import { CdnModule } from "@/modules/cdn/cdn.module";
     AssetsService,
     AssetCategoryService,
     AssetUnitsService,
+    AssetAssignmentService,
   ],
 
   controllers: [
@@ -130,6 +134,7 @@ import { CdnModule } from "@/modules/cdn/cdn.module";
     AssetCategoryController,
     SoftwareController,
     AssetUnitsController,
+    AssetAssignmentController,
   ],
 
   exports: [
@@ -137,6 +142,7 @@ import { CdnModule } from "@/modules/cdn/cdn.module";
     AssetsService,
     AssetCategoryService,
     AssetUnitsService,
+    AssetAssignmentService,
   ],
 })
 export class AssetsModule {}
