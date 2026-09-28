@@ -10,7 +10,7 @@ import {
   HasOne,
   Index,
 } from "sequelize-typescript";
-
+import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
 import { Employee } from "@/modules/organisation/models/employees.model";
 import { Organisation } from "@/modules/organisation/models/organisation.model";
 import { AssetAssignment } from "./asset-assignment.model";
@@ -82,7 +82,7 @@ export class System extends Model<System> {
   employeeId!: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "employee_id",
+    foreignKey: "employeeId",
   })
   employee?: Employee;
 
@@ -94,7 +94,14 @@ export class System extends Model<System> {
     foreignKey: "systemId",
   })
   specs?: SystemSpecs;
+  // ============================================================
+  // SOFTWARE
+  // ============================================================
 
+  @HasMany(() => SoftwareLicenseAssignment, {
+    foreignKey: "systemId",
+  })
+  softwareAssignments?: SoftwareLicenseAssignment[];
   // ============================================================
   // ASSET ASSIGNMENTS
   // ============================================================

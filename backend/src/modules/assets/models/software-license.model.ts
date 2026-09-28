@@ -3,139 +3,124 @@ import {
   Column,
   Model,
   DataType,
+  Default,
   ForeignKey,
   BelongsTo,
-  PrimaryKey,
+  HasMany,
   Index,
+  PrimaryKey,
 } from "sequelize-typescript";
+import {
+  CreationOptional,
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute,
+} from "sequelize";
 
 import { Asset } from "./asset.model";
+import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
 
 @Table({
   tableName: "software_licenses",
   timestamps: false,
 })
-export class SoftwareLicense extends Model<SoftwareLicense> {
-  // ============================================================
-  // ID
-  // ============================================================
-
+export class SoftwareLicense extends Model<
+  InferAttributes<SoftwareLicense>,
+  InferCreationAttributes<SoftwareLicense>
+> {
   @PrimaryKey
+  @Default(DataType.UUIDV4)
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    defaultValue: DataType.UUIDV4,
   })
-  id!: string;
+  declare id: CreationOptional<string>;
 
-  // ============================================================
-  // ASSET
-  // ============================================================
+  // ---------------- ASSET ----------------
 
   @Index
   @ForeignKey(() => Asset)
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    unique: true,
     field: "asset_id",
   })
-  assetId!: string;
+  declare assetId: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "asset_id",
+    foreignKey: "assetId",
+    targetKey: "id",
   })
-  asset!: Asset;
+  declare asset?: NonAttribute<Asset>;
 
-  // ============================================================
-  // VENDOR
-  // ============================================================
+  // ---------------- DETAILS ----------------
+
+  @Index
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: false,
+  })
+  declare vendor: string;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
   })
-  vendor!: string;
-
-  // ============================================================
-  // LICENSE TYPE
-  // ============================================================
+  declare licenseType: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: true,
   })
-  licenseType!: string;
+  declare licenseReference: CreationOptional<string | null>;
 
-  // ============================================================
-  // LICENSE REFERENCE
-  // ============================================================
-
-  @Column({
-    type: DataType.STRING(255),
-    allowNull: false,
-  })
-  licenseReference!: string;
-
-  // ============================================================
-  // TOTAL SEATS
-  // ============================================================
+  // ---------------- SEATS ----------------
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 1,
   })
-  totalSeats!: number;
-
-  // ============================================================
-  // ASSIGNED SEATS
-  // ============================================================
+  declare totalSeats: CreationOptional<number>;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
-  assignedSeats!: number;
+  declare assignedSeats: CreationOptional<number>;
 
-  // ============================================================
-  // PURCHASE DATE
-  // ============================================================
+  // ---------------- DATES / COST ----------------
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  purchaseDate?: Date | null;
+  declare purchaseDate: CreationOptional<Date | null>;
 
-  // ============================================================
-  // EXPIRY DATE
-  // ============================================================
+  @Index
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare expiryDate: CreationOptional<Date | null>;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  expiryDate?: Date | null;
-
-  // ============================================================
-  // RENEWAL DATE
-  // ============================================================
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: true,
-  })
-  renewalDate?: Date | null;
-
-  // ============================================================
-  // COST
-  // ============================================================
+  declare renewalDate: CreationOptional<Date | null>;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
     allowNull: true,
   })
-  cost?: number | null;
+  declare cost: CreationOptional<number | null>;
+
+  // ---------------- ASSIGNMENTS ----------------
+
+  @HasMany(() => SoftwareLicenseAssignment, {
+    foreignKey: "licenseId",
+  })
+  declare assignments?: NonAttribute<SoftwareLicenseAssignment[]>;
 }

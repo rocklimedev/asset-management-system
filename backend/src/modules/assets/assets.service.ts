@@ -147,7 +147,7 @@ export class AssetsService {
 
       {
         model: SoftwareLicense,
-        as: "license",
+        as: "licenses",
       },
 
       // ----------------------------------------------------------

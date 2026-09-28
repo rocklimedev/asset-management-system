@@ -12,18 +12,19 @@ import {
 } from "sequelize-typescript";
 
 import { Organisation } from "@/modules/organisation/models/organisation.model";
+import { Location } from "@/modules/organisation/models/location.model";
+import { SoftwareDetails } from "./software-details.model";
+import { AssetKind } from "@/common/enums/assets.enums";
+
 import { AssetCategory } from "./asset-category.model";
 import { Vendor } from "./vendor.model";
-import { Location } from "@/modules/organisation/models/location.model";
-
 import { SoftwareLicense } from "./software-license.model";
+import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
 import { AssetAssignment } from "./asset-assignment.model";
 import { AssetTransfer } from "./asset-transfer.model";
 import { AssetHistory } from "./asset-history.model";
 import { InventoryHistory } from "./inventory-history.model";
 import { AssetUnit } from "./asset-unit.model";
-
-import { AssetKind } from "@/common/enums/assets.enums";
 
 export enum AssetStatus {
   AVAILABLE = "AVAILABLE",
@@ -34,10 +35,12 @@ export enum AssetStatus {
   RETIRED = "RETIRED",
   DISPOSED = "DISPOSED",
 }
+
 export enum AssetTrackingMode {
   INDIVIDUAL = "INDIVIDUAL",
   QUANTITY = "QUANTITY",
 }
+
 export enum AssetCondition {
   NEW = "NEW",
   GOOD = "GOOD",
@@ -108,9 +111,9 @@ export class Asset extends Model<Asset> {
   organisationId!: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisation_id",
+    foreignKey: "organisationId",
   })
-  organisation!: Organisation;
+  organisation?: Organisation;
 
   // ============================================================
   // CATEGORY
@@ -126,9 +129,9 @@ export class Asset extends Model<Asset> {
   categoryId!: string;
 
   @BelongsTo(() => AssetCategory, {
-    foreignKey: "category_id",
+    foreignKey: "categoryId",
   })
-  category!: AssetCategory;
+  category?: AssetCategory;
 
   // ============================================================
   // MANUFACTURER
@@ -154,7 +157,6 @@ export class Asset extends Model<Asset> {
   // SERIAL NUMBER
   //
   // Kept for backward compatibility during migration.
-  //
   // For individually tracked assets, serialNumber should
   // eventually live on AssetUnit.
   // ============================================================
@@ -167,7 +169,7 @@ export class Asset extends Model<Asset> {
   serialNumber?: string | null;
 
   // ============================================================
-  // PURCHASE DATE
+  // PURCHASE DATE / PRICE
   // ============================================================
 
   @Column({
@@ -175,10 +177,6 @@ export class Asset extends Model<Asset> {
     allowNull: true,
   })
   purchaseDate?: Date | null;
-
-  // ============================================================
-  // PURCHASE PRICE
-  // ============================================================
 
   @Column({
     type: DataType.DECIMAL(12, 2),
@@ -200,7 +198,7 @@ export class Asset extends Model<Asset> {
   vendorId?: string | null;
 
   @BelongsTo(() => Vendor, {
-    foreignKey: "vendor_id",
+    foreignKey: "vendorId",
   })
   vendor?: Vendor;
 
@@ -233,10 +231,8 @@ export class Asset extends Model<Asset> {
   // ============================================================
   // STATUS
   //
-  // Legacy / aggregate status.
-  //
-  // For assets with AssetUnit records, individual unit status
-  // should be read from AssetUnit.
+  // Legacy / aggregate status. For assets with AssetUnit records,
+  // individual unit status should be read from AssetUnit.
   // ============================================================
 
   @Index
@@ -250,10 +246,8 @@ export class Asset extends Model<Asset> {
   // ============================================================
   // CONDITION
   //
-  // Legacy / aggregate condition.
-  //
-  // Once AssetUnit is enabled, individual conditions should be
-  // stored on AssetUnit instead.
+  // Legacy / aggregate condition. Once AssetUnit is enabled,
+  // individual conditions should live on AssetUnit.
   // ============================================================
 
   @Column({
@@ -266,10 +260,8 @@ export class Asset extends Model<Asset> {
   // ============================================================
   // LOCATION
   //
-  // Legacy / aggregate location.
-  //
-  // Individual units can have their own location through
-  // AssetUnit.
+  // Legacy / aggregate location. Individual units can have their
+  // own location through AssetUnit.
   // ============================================================
 
   @Index
@@ -282,7 +274,7 @@ export class Asset extends Model<Asset> {
   locationId?: string | null;
 
   @BelongsTo(() => Location, {
-    foreignKey: "location_id",
+    foreignKey: "locationId",
   })
   location?: Location;
 
@@ -300,12 +292,7 @@ export class Asset extends Model<Asset> {
   // INVENTORY / QUANTITY
   //
   // Asset represents the inventory/product definition.
-  //
-  // Example:
-  //
-  // Samsung Galaxy Book 2
-  // quantity = 9
-  //
+  // Example: Samsung Galaxy Book 2, quantity = 9.
   // Individual physical state is represented by AssetUnit.
   // ============================================================
 
@@ -319,11 +306,9 @@ export class Asset extends Model<Asset> {
   // ============================================================
   // ASSIGNED QUANTITY
   //
-  // For pooled inventory this can represent the number of
-  // units currently checked out.
-  //
-  // For individually tracked assets, this should eventually
-  // be derived from AssetUnit.status = ASSIGNED.
+  // For pooled inventory: number of units currently checked out.
+  // For individually tracked assets this should eventually be
+  // derived from AssetUnit.status = ASSIGNED.
   // ============================================================
 
   @Column({
@@ -363,11 +348,9 @@ export class Asset extends Model<Asset> {
   imageUrl?: string | null;
 
   // ============================================================
-  // SOFTWARE LICENSE
+  // TRACKING MODE
   // ============================================================
 
-  @HasOne(() => SoftwareLicense)
-  license?: SoftwareLicense;
   @Index
   @Column({
     type: DataType.ENUM(...Object.values(AssetTrackingMode)),
@@ -376,32 +359,18 @@ export class Asset extends Model<Asset> {
     field: "tracking_mode",
   })
   trackingMode!: AssetTrackingMode;
+
   // ============================================================
   // ASSET UNITS
   //
-  // One Asset can have many physical units.
-  //
-  // Example:
-  //
-  // Asset:
-  //   Samsung Galaxy Book 2
-  //   quantity = 9
-  //
-  // AssetUnits:
-  //   Unit 1 → AVAILABLE / GOOD
-  //   Unit 2 → AVAILABLE / GOOD
-  //   Unit 3 → ASSIGNED / GOOD
-  //   Unit 4 → REPAIR / POOR
-  //   ...
-  //
-  // This is the relationship that allows different units of
-  // the same asset to have different conditions/statuses.
+  // One Asset can have many physical units, each with its own
+  // status / condition / location.
   // ============================================================
 
   @HasMany(() => AssetUnit, {
     foreignKey: "assetId",
   })
-  units!: AssetUnit[];
+  units?: AssetUnit[];
 
   // ============================================================
   // ASSIGNMENTS
@@ -410,7 +379,7 @@ export class Asset extends Model<Asset> {
   @HasMany(() => AssetAssignment, {
     foreignKey: "assetId",
   })
-  assignments!: AssetAssignment[];
+  assignments?: AssetAssignment[];
 
   // ============================================================
   // TRANSFERS
@@ -419,7 +388,30 @@ export class Asset extends Model<Asset> {
   @HasMany(() => AssetTransfer, {
     foreignKey: "asset_id",
   })
-  transfers!: AssetTransfer[];
+  transfers?: AssetTransfer[];
+
+  // ============================================================
+  // SOFTWARE (only for kind = SOFTWARE)
+  //
+  // software       -> catalog details (version, publisher, parent...)
+  // licenses       -> license records / seat pools
+  // installations  -> where this software is installed (system level)
+  // ============================================================
+
+  @HasOne(() => SoftwareDetails, {
+    foreignKey: "assetId",
+  })
+  software?: SoftwareDetails;
+
+  @HasMany(() => SoftwareLicense, {
+    foreignKey: "assetId",
+  })
+  licenses?: SoftwareLicense[];
+
+  @HasMany(() => SoftwareLicenseAssignment, {
+    foreignKey: "assetId",
+  })
+  installations?: SoftwareLicenseAssignment[];
 
   // ============================================================
   // HISTORY
@@ -428,7 +420,7 @@ export class Asset extends Model<Asset> {
   @HasMany(() => AssetHistory, {
     foreignKey: "asset_id",
   })
-  history!: AssetHistory[];
+  history?: AssetHistory[];
 
   // ============================================================
   // INVENTORY HISTORY
@@ -437,5 +429,5 @@ export class Asset extends Model<Asset> {
   @HasMany(() => InventoryHistory, {
     foreignKey: "asset_id",
   })
-  inventoryHistory!: InventoryHistory[];
+  inventoryHistory?: InventoryHistory[];
 }

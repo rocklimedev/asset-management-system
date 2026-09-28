@@ -10,6 +10,7 @@ import {
   Settings,
   Users,
   UserSquare2,
+  ComputerIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export const NAV_ITEMS = [
   { to: "/inventory", label: "Inventory", icon: Archive },
   { to: "/employees", label: "Employees", icon: UserSquare2 },
   { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/software", label: "Software", icon: ComputerIcon },
   { to: "/users-roles", label: "Users & Roles", icon: Users },
 ];
 

@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 import { SequelizeModule } from "@nestjs/sequelize";
-import { EventEmitterModule } from "@nestjs/event-emitter";
 
 // Systems
 import { System } from "./models/system.model";
+import { SystemSpecs } from "./models/system-specs.model";
 import { SystemsController } from "./systems.controller";
 import { SystemsService } from "./systems.service";
 
@@ -22,23 +22,23 @@ import { AssetUnit } from "./models/asset-unit.model";
 import { AssetUnitsController } from "./asset-units.controller";
 import { AssetUnitsService } from "./asset-units.service";
 
-// Asset History
+// Asset History / Assignment / Transfer
 import { AssetHistory } from "./models/asset-history.model";
-
-// Asset Assignment
 import { AssetAssignment } from "./models/asset-assignment.model";
-
-// Asset Transfer
 import { AssetTransfer } from "./models/asset-transfer.model";
+import { AssetAssignmentService } from "./asset-assignment.service";
+import { AssetAssignmentController } from "./asset-assignment.controller";
 
 // Software
-import { SoftwareController } from "./software.controller";
+import { SoftwareDetails } from "./models/software-details.model";
 import { SoftwareLicense } from "./models/software-license.model";
+import { SoftwareLicenseAssignment } from "./models/software-license-assignment.model";
+import { SoftwareAssignment } from "./models/software-assignment.model";
+import { SoftwareController } from "./software.controller";
+import { SoftwareService } from "./software.service";
 
-// Vendor
+// Vendor / Inventory
 import { Vendor } from "./models/vendor.model";
-
-// Inventory
 import { InventoryHistory } from "./models/inventory-history.model";
 
 // Organisation
@@ -49,66 +49,33 @@ import { Location } from "@/modules/organisation/models/location.model";
 // Modules
 import { AuditModule } from "@/modules/audit/audit.module";
 import { CdnModule } from "@/modules/cdn/cdn.module";
-import { SystemSpecs } from "./models/system-specs.model";
-import { AssetAssignmentService } from "./asset-assignment.service";
-import { AssetAssignmentController } from "./asset-assignment.controller";
 
 @Module({
   imports: [
     SequelizeModule.forFeature([
-      // ============================================================
-      // SYSTEM
-      // ============================================================
+      // System
       System,
       SystemSpecs,
-      // ============================================================
-      // ASSET
-      // ============================================================
+
+      // Asset
       Asset,
-
-      // ============================================================
-      // ASSET UNIT
-      // ============================================================
       AssetUnit,
-
-      // ============================================================
-      // ASSET CATEGORY
-      // ============================================================
       AssetCategory,
-
-      // ============================================================
-      // ASSET HISTORY
-      // ============================================================
       AssetHistory,
-
-      // ============================================================
-      // ASSET ASSIGNMENT
-      // ============================================================
       AssetAssignment,
-
-      // ============================================================
-      // ASSET TRANSFER
-      // ============================================================
       AssetTransfer,
 
-      // ============================================================
-      // SOFTWARE
-      // ============================================================
+      // Software
+      SoftwareDetails,
       SoftwareLicense,
+      SoftwareLicenseAssignment,
+      SoftwareAssignment,
 
-      // ============================================================
-      // VENDOR
-      // ============================================================
+      // Vendor / Inventory
       Vendor,
-
-      // ============================================================
-      // INVENTORY
-      // ============================================================
       InventoryHistory,
 
-      // ============================================================
-      // ORGANISATION
-      // ============================================================
+      // Organisation
       Organisation,
       Employee,
       Location,
@@ -117,7 +84,9 @@ import { AssetAssignmentController } from "./asset-assignment.controller";
     AuditModule,
     CdnModule,
 
-    EventEmitterModule.forRoot(),
+    // EventEmitterModule.forRoot() removed: it must be registered ONCE in
+    // AppModule. Calling forRoot() in a feature module creates a second
+    // emitter and events stop reaching listeners in other modules.
   ],
 
   providers: [
@@ -126,15 +95,16 @@ import { AssetAssignmentController } from "./asset-assignment.controller";
     AssetCategoryService,
     AssetUnitsService,
     AssetAssignmentService,
+    SoftwareService,
   ],
 
   controllers: [
     SystemsController,
     AssetsController,
     AssetCategoryController,
-    SoftwareController,
     AssetUnitsController,
     AssetAssignmentController,
+    SoftwareController,
   ],
 
   exports: [
@@ -143,6 +113,7 @@ import { AssetAssignmentController } from "./asset-assignment.controller";
     AssetCategoryService,
     AssetUnitsService,
     AssetAssignmentService,
+    SoftwareService,
   ],
 })
 export class AssetsModule {}

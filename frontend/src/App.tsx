@@ -23,6 +23,7 @@ import { useAuth } from "./services/context/AuthContext";
 import { cn } from "./lib/utils";
 
 import "./index.css";
+import SoftwareList from "./pages/SoftwareList";
 
 // ============================================================
 // APPLICATION SHELL
@@ -171,6 +172,7 @@ export default function App() {
             <Route path="/employees" element={<EmployeeList />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/users-roles" element={<UsersRoles />} />
+            <Route path="/software" element={<SoftwareList />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
