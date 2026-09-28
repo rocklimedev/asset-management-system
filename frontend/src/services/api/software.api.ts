@@ -115,7 +115,22 @@ export interface SoftwareInstallation {
   removedAt?: string | null;
   notes?: string | null;
 
-  asset?: Asset;
+  asset?: {
+    id: string;
+    name: string;
+    assetTag?: string | null;
+    kind?: string;
+    status?: string;
+    // ...other asset fields as needed
+  };
+  softwareAsset?: {
+    id: string;
+    name: string;
+    assetTag?: string | null;
+    kind?: string;
+    status?: string;
+    // ...
+  };
   license?: SoftwareLicenseRecord | null;
   system?: SystemRecord;
 }

@@ -129,7 +129,7 @@ export function SystemDetailDrawer({
    * Therefore use softwareAssetId here.
    */
   const installedSoftwareAssetIds = systemSoftware.map(
-    (installation) => installation.softwareAssetId,
+    (installation) => installation.assetId, // was softwareAssetId
   );
 
   /*
@@ -612,8 +612,8 @@ export function SystemDetailDrawer({
                      */
                     const softwareName =
                       installation.softwareAsset?.name ??
-                      installation.softwareAssetId;
-
+                      installation.asset?.name ??
+                      installation.assetId; // was softwareAssetId
                     const softwareAssetTag =
                       installation.softwareAsset?.assetTag;
 
@@ -645,7 +645,10 @@ export function SystemDetailDrawer({
 
                             <span>·</span>
 
-                            <span>{installation.status}</span>
+                            <span>
+                              {installation.installationStatus ??
+                                installation.assignmentStatus}
+                            </span>
                           </div>
 
                           {installation.license && (
