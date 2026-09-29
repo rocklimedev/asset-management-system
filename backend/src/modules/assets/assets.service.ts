@@ -2115,6 +2115,114 @@ export class AssetsService {
       totalPages: Math.ceil(total / pageSize),
     };
   }
+
+  // ============================================================
+  // DELETE ASSET
+  //
+  // Hard-deletes the asset and all related records.
+  // Active assignments / assigned units must be returned first.
+  // ============================================================
+
+  async delete(id: string, actor: AuthUser) {
+    const asset = await this.sequelize.transaction(async (t: Transaction) => {
+      const locked = await this.assetModel.findByPk(id, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (!locked) {
+        throw new NotFoundException("Asset not found.");
+      }
+
+      // Guard: no active assignments
+      const activeAssignments = await this.assetAssignmentModel.count({
+        where: {
+          assetId: id,
+          status: AssignmentStatus.ACTIVE,
+        },
+        transaction: t,
+      });
+
+      if (activeAssignments > 0) {
+        throw new BadRequestException(
+          "Cannot delete an asset that still has active assignments. Return all units first.",
+        );
+      }
+
+      // Guard: no units still marked ASSIGNED
+      const assignedUnits = await this.assetUnitModel.count({
+        where: {
+          assetId: id,
+          status: AssetUnitStatus.ASSIGNED,
+        },
+        transaction: t,
+      });
+
+      if (assignedUnits > 0) {
+        throw new BadRequestException(
+          "Cannot delete an asset that still has assigned physical units. Return them first.",
+        );
+      }
+
+      // Cascade cleanup
+      await this.inventoryHistoryModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.assetHistoryModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.assetTransferModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.assetAssignmentModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.softwareLicenseModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.assetUnitModel.destroy({
+        where: { assetId: id },
+        transaction: t,
+      });
+      await this.assetModel.destroy({ where: { id }, transaction: t });
+
+      await this.audit.log(
+        {
+          userId: actor.id,
+          action: "ASSET_DELETED",
+          entity: "Asset",
+          entityId: id,
+          metadata: {
+            name: locked.name,
+            assetTag: locked.assetTag ?? null,
+            kind: locked.kind,
+          },
+        },
+        t,
+      );
+
+      return locked;
+    });
+
+    // CDN cleanup after successful DB commit
+    if (asset.imageKey) {
+      try {
+        await this.cdn.deleteAssetImage(asset.imageKey);
+      } catch {
+        // Best-effort: asset is already gone from the DB.
+      }
+    }
+
+    return {
+      id,
+      message: "Asset deleted successfully.",
+    };
+  }
   // ============================================================
   // RELEASE ASSETS FOR EXITED EMPLOYEE
   // ============================================================

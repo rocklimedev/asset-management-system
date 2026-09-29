@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  Delete,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
@@ -208,5 +209,9 @@ export class AssetsController {
   @Get(":id/inventory/history")
   inventoryHistory(@Param("id") id: string) {
     return this.service.inventoryHistory(id);
+  }
+  @Delete(":id")
+  delete(@Param("id") id: string, @CurrentUser() actor: AuthUser) {
+    return this.service.delete(id, actor);
   }
 }
