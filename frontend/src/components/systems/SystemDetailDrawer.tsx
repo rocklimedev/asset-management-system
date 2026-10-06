@@ -37,6 +37,7 @@ import {
 } from "../../types/systems";
 
 import { SoftwareAssignModal } from "../asset-manager/SoftwareAssignModal";
+import { TransferSystemAssetModal, type SystemTransferTarget } from "./TransferSystemAssetModal";
 
 function SpecItem({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -71,6 +72,7 @@ export function SystemDetailDrawer({
   onShowHistory,
 }: Props) {
   const [softwareModalOpen, setSoftwareModalOpen] = useState(false);
+  const [transferTarget, setTransferTarget] = useState<SystemTransferTarget | null>(null);
 
   const [remove, removeState] = useReturnAssetMutation();
   const [assign, assignState] = useAssignSystemMutation();
@@ -665,6 +667,9 @@ export function SystemDetailDrawer({
                           )}
                         </div>
 
+                        <Button size="sm" variant="outline" disabled={isBusy} onClick={() => setTransferTarget({ id: installation.id, name: softwareName, kind: "software" })}>
+                          Transfer asset
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -749,6 +754,9 @@ export function SystemDetailDrawer({
                     History
                   </Button>
 
+                  <Button size="sm" variant="outline" disabled={isBusy} onClick={() => setTransferTarget({ id: assignment.assetId, name: assignment.asset?.name ?? "Component", kind: "component" })}>
+                    Transfer asset
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -768,8 +776,7 @@ export function SystemDetailDrawer({
             )}
 
             <p className="mt-4 text-xs text-muted-foreground">
-              Remove a component to make it available for another system or a
-              direct employee assignment.
+              Transfer a component directly to another employee, or remove it to make it available for another system.
             </p>
           </div>
         </section>
@@ -790,6 +797,7 @@ export function SystemDetailDrawer({
         installedAssetIds={installedSoftwareAssetIds}
         onClose={() => setSoftwareModalOpen(false)}
       />
+      {transferTarget && <TransferSystemAssetModal key={`${system.id}-${transferTarget.kind}-${transferTarget.id}`} target={transferTarget} systemId={system.id} employeeId={system.employeeId} onClose={() => setTransferTarget(null)} />}
     </>
   );
 }

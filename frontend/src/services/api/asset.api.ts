@@ -2092,6 +2092,8 @@ export const assetApi = createApi({
       {
         id: string;
         toEmployeeId: string;
+        fromSystemId?: string;
+        toSystemId?: string;
         reason: string;
         notes?: string;
       }

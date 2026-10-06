@@ -1511,15 +1511,26 @@ export class AssetsService {
 
     const currentAssignment = asset.assignments[0];
 
-    if (currentAssignment.systemId) {
+    if (currentAssignment.systemId && currentAssignment.systemId !== dto.fromSystemId) {
       throw new BadRequestException(
         "Remove this component from its system before assigning it directly to an employee.",
       );
     }
 
-    const fromEmployeeId = currentAssignment.employeeId;
+    if (dto.fromSystemId && currentAssignment.systemId !== dto.fromSystemId) {
+      throw new ConflictException("Assignment changed. Refresh and try again.");
+    }
 
-    if (fromEmployeeId === dto.toEmployeeId) {
+    const sourceSystem = currentAssignment.systemId
+      ? await System.findByPk(currentAssignment.systemId)
+      : null;
+    const fromEmployeeId = sourceSystem?.employeeId ?? currentAssignment.employeeId;
+
+    if (dto.toSystemId && dto.toSystemId === currentAssignment.systemId) {
+      throw new BadRequestException("Asset is already on this system.");
+    }
+
+    if (fromEmployeeId === dto.toEmployeeId && !dto.toSystemId) {
       throw new BadRequestException(
         "Cannot transfer an asset to its current owner.",
       );
@@ -1585,15 +1596,35 @@ export class AssetsService {
         lock: t.LOCK.UPDATE,
       });
 
-      if (!active || active.id !== currentAssignment.id) {
+      if (!active || active.id !== currentAssignment.id || active.systemId !== currentAssignment.systemId || active.employeeId !== currentAssignment.employeeId) {
         throw new ConflictException(
           "Assignment changed. Refresh and try again.",
         );
       }
 
+      const destinationSystem = dto.toSystemId
+        ? await System.findByPk(dto.toSystemId, { transaction: t, lock: t.LOCK.UPDATE })
+        : null;
+      if (dto.toSystemId && !destinationSystem) {
+        throw new NotFoundException("Destination system not found.");
+      }
+      if (destinationSystem && destinationSystem.employeeId !== dto.toEmployeeId) {
+        throw new ConflictException("Destination system is not assigned to the selected employee. Refresh and try again.");
+      }
+
       // ======================================================
       // UNIT
       // ======================================================
+
+      if (active.systemId) {
+        const lockedSystem = await System.findByPk(active.systemId, {
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (!lockedSystem || lockedSystem.employeeId !== sourceSystem?.employeeId) {
+          throw new ConflictException("System assignment changed. Refresh and try again.");
+        }
+      }
 
       let unit: AssetUnit | null = null;
 
@@ -1659,7 +1690,9 @@ export class AssetsService {
 
           assetUnitId: unit.id,
 
-          employeeId: dto.toEmployeeId,
+          employeeId: destinationSystem ? null : dto.toEmployeeId,
+
+          systemId: destinationSystem?.id ?? null,
 
           assignedAt: new Date(),
 
@@ -1734,9 +1767,9 @@ export class AssetsService {
 
           performedBy: actor.name,
 
-          fromValue: fromEmployee?.name ?? "Unassigned",
+          fromValue: sourceSystem ? `System: ${sourceSystem.name} (${fromEmployee?.name ?? "Unassigned"})` : fromEmployee?.name ?? "Unassigned",
 
-          toValue: toEmployee.name,
+          toValue: destinationSystem ? `System: ${destinationSystem.name} (${toEmployee.name})` : toEmployee.name,
 
           notes: dto.notes ?? null,
         } as AssetHistory,
@@ -1761,6 +1794,9 @@ export class AssetsService {
 
           metadata: {
             fromEmployeeId,
+
+            fromSystemId: currentAssignment.systemId ?? null,
+            toSystemId: destinationSystem?.id ?? null,
 
             toEmployeeId: dto.toEmployeeId,
 
