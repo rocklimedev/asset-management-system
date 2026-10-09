@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
-  AlertTriangle,
   Boxes,
-  CheckCircle2,
   ClipboardList,
   Download,
   FileSpreadsheet,
   FileText,
   Filter,
+  Monitor,
   PackageCheck,
   RefreshCw,
   RotateCcw,
@@ -25,6 +24,7 @@ import {
   useGetAssignedReportQuery,
   useGetDamagedReportQuery,
   useGetReportByStatusQuery,
+  useGetSystemsReportQuery,
   type ReportFilters,
   type ReportType,
 } from "../services/api/reports.api";
@@ -49,7 +49,13 @@ import { cn } from "@/lib/utils";
 // TYPES
 // ============================================================
 
-type ReportTab = "assets" | "inventory" | "assigned" | "damaged" | "status";
+type ReportTab =
+  | "assets"
+  | "inventory"
+  | "assigned"
+  | "damaged"
+  | "status"
+  | "systems";
 
 interface FilterState {
   organisationId: string;
@@ -58,6 +64,61 @@ interface FilterState {
   locationId: string;
   from: string;
   to: string;
+}
+
+/**
+ * Unassigned inventory response (GET reports/inventory).
+ * Only items that are NOT assigned are returned, grouped by category.
+ */
+interface InventoryRowData {
+  asset: string;
+  unitCode: string;
+  serialNumber: string;
+  quantity: number;
+}
+
+interface InventoryCategoryData {
+  name: string;
+  total: number;
+  rows: InventoryRowData[];
+}
+
+interface InventoryReportData {
+  generatedAt: string;
+  totalUnassigned: number;
+  totalCategories: number;
+  categories: InventoryCategoryData[];
+}
+
+/**
+ * System IT data response (GET reports/systems).
+ * `fields` = specs, `assignedItems` = items assigned to the system.
+ */
+interface SystemFieldData {
+  label: string;
+  value: string;
+}
+
+interface SystemAssignedItemData {
+  category: string;
+  name: string;
+}
+
+interface SystemItemData {
+  id: string;
+  company: string;
+  nameLabel: string;
+  name: string;
+  holder: string;
+  fields: SystemFieldData[];
+  assignedItems: SystemAssignedItemData[];
+}
+
+interface SystemsReportData {
+  generatedAt: string;
+  totalSystems: number;
+  byCompany: Record<string, number>;
+  items: SystemItemData[];
 }
 
 // ============================================================
@@ -104,6 +165,12 @@ const TABS = [
     icon: ClipboardList,
     reportType: "by-status" as ReportType,
   },
+  {
+    value: "systems" as const,
+    label: "Systems",
+    icon: Monitor,
+    reportType: "systems" as ReportType,
+  },
 ];
 
 // ============================================================
@@ -112,14 +179,6 @@ const TABS = [
 
 function formatNumber(value: number | string | null | undefined) {
   return new Intl.NumberFormat("en-IN").format(Number(value ?? 0));
-}
-
-function formatCurrency(value: number | string | null | undefined) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value ?? 0));
 }
 
 function formatDate(value: string | null | undefined) {
@@ -564,12 +623,17 @@ function AssetReportView({ filters }: { filters: ReportFilters }) {
 }
 
 // ============================================================
-// INVENTORY REPORT
+// INVENTORY REPORT (unassigned only, by category)
 // ============================================================
 
 function InventoryReportView({ filters }: { filters: ReportFilters }) {
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetInventoryReportQuery(filters);
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetInventoryReportQuery(filters);
 
   if (isLoading) {
     return <LoadingState />;
@@ -579,96 +643,110 @@ function InventoryReportView({ filters }: { filters: ReportFilters }) {
     return <ErrorState onRetry={refetch} />;
   }
 
-  const items = data?.items ?? [];
+  const data = response as InventoryReportData | undefined;
+  const categories = data?.categories ?? [];
 
-  if (!items.length) {
-    return <EmptyState />;
+  if (!categories.length) {
+    return (
+      <EmptyState
+        title="No unassigned assets"
+        description="Every asset matching the selected filters is currently assigned."
+      />
+    );
   }
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SummaryCard
-          label="SKUs"
-          value={formatNumber(data?.totalSkus)}
-          icon={Boxes}
-        />
-
-        <SummaryCard
-          label="Total Quantity"
-          value={formatNumber(data?.totalQuantity)}
+          label="Unassigned Items"
+          value={formatNumber(data?.totalUnassigned)}
           icon={PackageCheck}
-          tone="info"
-        />
-
-        <SummaryCard
-          label="Assigned"
-          value={formatNumber(data?.totalAssigned)}
-          icon={Users}
-          tone="brand"
-        />
-
-        <SummaryCard
-          label="Available"
-          value={formatNumber(data?.totalAvailable)}
-          icon={CheckCircle2}
           tone="ok"
+          description="Available units and free stock"
         />
 
         <SummaryCard
-          label="Low Stock"
-          value={formatNumber(data?.lowStockCount)}
-          icon={AlertTriangle}
-          tone="warn"
+          label="Categories"
+          value={formatNumber(data?.totalCategories)}
+          icon={ClipboardList}
+          tone="info"
         />
       </div>
 
       <ReportTable
         loading={isFetching}
-        title="Inventory Levels"
-        description="Current quantity, assigned quantity and available stock."
+        title="Unassigned by Category"
+        description="Number of unassigned items in each category."
       >
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
-            <TableHead className="text-right">Quantity</TableHead>
-            <TableHead className="text-right">Assigned</TableHead>
-            <TableHead className="text-right">Available</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Unassigned</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name ?? "—"}</TableCell>
-
-              <TableCell>{item.category ?? "—"}</TableCell>
-
-              <TableCell className="text-right">
-                {formatNumber(item.quantity)}
-              </TableCell>
-
-              <TableCell className="text-right">
-                {formatNumber(item.quantityAssigned)}
-              </TableCell>
+          {categories.map((category) => (
+            <TableRow key={category.name}>
+              <TableCell>{category.name}</TableCell>
 
               <TableCell className="text-right font-medium">
-                {formatNumber(item.quantityAvailable)}
-              </TableCell>
-
-              <TableCell>
-                {item.belowReorderLevel ? (
-                  <Badge tone="warn">
-                    <AlertTriangle className="mr-1 h-3 w-3" />
-                    Low stock
-                  </Badge>
-                ) : (
-                  <Badge tone="ok">Healthy</Badge>
-                )}
+                {formatNumber(category.total)}
               </TableCell>
             </TableRow>
+          ))}
+        </TableBody>
+      </ReportTable>
+
+      <ReportTable
+        loading={false}
+        title="Unassigned Items"
+        description="Exactly what is not assigned, grouped by category."
+      >
+        <TableHeader>
+          <TableRow>
+            <TableHead>Asset</TableHead>
+            <TableHead>Unit Code</TableHead>
+            <TableHead>Serial Number</TableHead>
+            <TableHead className="text-right">Quantity</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {categories.map((category) => (
+            <Fragment key={category.name}>
+              <TableRow className="bg-muted/60 hover:bg-muted/60">
+                <TableCell
+                  colSpan={3}
+                  className="font-semibold text-foreground"
+                >
+                  {category.name}
+                </TableCell>
+
+                <TableCell className="text-right font-semibold">
+                  {formatNumber(category.total)}
+                </TableCell>
+              </TableRow>
+
+              {category.rows.map((row, index) => (
+                <TableRow key={`${category.name}-${index}`}>
+                  <TableCell>{row.asset || "—"}</TableCell>
+
+                  <TableCell className="text-muted-foreground">
+                    {row.unitCode || "—"}
+                  </TableCell>
+
+                  <TableCell className="text-muted-foreground">
+                    {row.serialNumber || "—"}
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    {formatNumber(row.quantity)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </Fragment>
           ))}
         </TableBody>
       </ReportTable>
@@ -910,6 +988,146 @@ function StatusReportView({ filters }: { filters: ReportFilters }) {
 }
 
 // ============================================================
+// SYSTEMS REPORT (System IT Data)
+//
+// Same cards as the exported PDF / Excel: company marker on top,
+// then PC name, holder name and specs, followed by a separate
+// "Assigned Items" section listing what is assigned to the system.
+// ============================================================
+
+function SystemsReportView({ filters }: { filters: ReportFilters }) {
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetSystemsReportQuery(filters);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isError) {
+    return <ErrorState onRetry={refetch} />;
+  }
+
+  const data = response as SystemsReportData | undefined;
+  const items = data?.items ?? [];
+
+  if (!items.length) {
+    return (
+      <EmptyState
+        title="No systems found"
+        description="No systems match the selected organisation filter."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <SummaryCard
+          label="Total Systems"
+          value={formatNumber(data?.totalSystems)}
+          icon={Monitor}
+          tone="brand"
+          description="Only the organisation filter applies"
+        />
+
+        {Object.entries(data?.byCompany ?? {}).map(([company, count]) => (
+          <SummaryCard
+            key={company}
+            label={company}
+            value={formatNumber(count)}
+            icon={Users}
+            tone="info"
+          />
+        ))}
+      </div>
+
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3",
+          isFetching && "opacity-70",
+        )}
+      >
+        {items.map((item) => {
+          const specRows = [
+            { label: item.nameLabel, value: item.name, bold: true },
+            { label: "HOLDER NAME", value: item.holder, bold: true },
+            ...item.fields.map((field) => ({ ...field, bold: false })),
+          ];
+
+          return (
+            <article
+              key={item.id}
+              className="overflow-hidden rounded-xl border border-border bg-card shadow-card"
+            >
+              <header className="bg-primary px-4 py-2.5 text-center text-sm font-semibold uppercase tracking-wide text-primary-foreground">
+                {item.company}
+              </header>
+
+              <dl className="divide-y divide-border text-sm">
+                {specRows.map((row, index) => (
+                  <div
+                    key={`${row.label}-${index}`}
+                    className="grid grid-cols-[2fr_3fr] items-center gap-3 px-4 py-2"
+                  >
+                    <dt
+                      className={cn(
+                        "text-muted-foreground",
+                        row.bold && "font-semibold text-foreground",
+                      )}
+                    >
+                      {row.label}
+                    </dt>
+
+                    <dd
+                      className={cn(
+                        "break-words text-foreground",
+                        row.bold && "font-semibold",
+                      )}
+                    >
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              {item.assignedItems.length > 0 && (
+                <section>
+                  <h3 className="bg-success-muted px-4 py-2 text-center text-xs font-semibold uppercase tracking-wide text-success-strong">
+                    Assigned Items
+                  </h3>
+
+                  <dl className="divide-y divide-border text-sm">
+                    {item.assignedItems.map((entry, index) => (
+                      <div
+                        key={`${entry.category}-${index}`}
+                        className="grid grid-cols-[2fr_3fr] items-center gap-3 px-4 py-2"
+                      >
+                        <dt className="text-muted-foreground">
+                          {entry.category}
+                        </dt>
+
+                        <dd className="break-words text-foreground">
+                          {entry.name}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // TABLE WRAPPER
 // ============================================================
 
@@ -1028,8 +1246,8 @@ export default function Reports() {
           </h1>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Asset, inventory, assignment, damage and status reports from live
-            system data.
+            Asset, inventory, assignment, damage, status and system IT data
+            reports from live system data.
           </p>
         </div>
 
@@ -1088,7 +1306,7 @@ export default function Reports() {
         </Tabs.Content>
 
         {/* ====================================================
-            INVENTORY
+            INVENTORY (unassigned only)
         ==================================================== */}
 
         <Tabs.Content value="inventory" className="outline-none">
@@ -1117,6 +1335,14 @@ export default function Reports() {
 
         <Tabs.Content value="status" className="outline-none">
           <StatusReportView filters={appliedFilters} />
+        </Tabs.Content>
+
+        {/* ====================================================
+            SYSTEMS (IT DATA)
+        ==================================================== */}
+
+        <Tabs.Content value="systems" className="outline-none">
+          <SystemsReportView filters={appliedFilters} />
         </Tabs.Content>
       </Tabs.Root>
 

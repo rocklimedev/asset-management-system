@@ -4,12 +4,31 @@ import { InjectModel } from "@nestjs/sequelize";
 import { Op, WhereOptions } from "sequelize";
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
+import { addReportCardsSheet, createCardsPdf } from "./report-cards";
+import {
+  createInventoryExcel,
+  createInventoryPdf,
+  InventoryCategory,
+  InventoryReport,
+  InventoryRow,
+  UNCATEGORISED_LABEL,
+} from "./inventory-report";
+import {
+  buildSystemRecord,
+  companyName,
+  createSystemsExcel,
+  createSystemsPdf,
+  SystemsReport,
+} from "./system-report";
+import { SystemSpecs } from "../assets/models/system-specs.model";
+import { Organisation } from "@/modules/organisation/models/organisation.model";
 
 import {
   Asset,
   AssetCondition,
   AssetStatus,
 } from "../assets/models/asset.model";
+import { AssetUnit, AssetUnitStatus } from "../assets/models/asset-unit.model";
 import { AssetCategory } from "../assets/models/asset-category.model";
 import { Vendor } from "../assets/models/vendor.model";
 import {
@@ -34,7 +53,8 @@ export type ReportExportType =
   | "inventory"
   | "assigned"
   | "damaged"
-  | "by-status";
+  | "by-status"
+  | "systems";
 
 export type ReportExportFormat = "pdf" | "excel";
 
@@ -156,52 +176,73 @@ export class ReportsService {
   // 2. INVENTORY REPORT
   // ============================================================
 
-  async inventoryReport(filters: ReportFilters) {
-    const where = this.buildWhere(filters);
-
+  async inventoryReport(filters: ReportFilters): Promise<InventoryReport> {
     const assets = await this.assetModel.findAll({
-      where,
-      include: [
-        {
-          model: AssetCategory,
-          as: "category",
-        },
-      ],
+      where: this.buildWhere(filters),
+      include: [{ model: AssetCategory, as: "category" }],
       order: [["name", "ASC"]],
     });
 
-    const items = assets.map((asset) => {
-      const quantity = asset.quantity ?? 1;
-      const assigned = asset.quantityAssigned ?? 0;
-      const available = quantity - assigned;
+    // Units of individually tracked assets. An asset with no units is pooled.
+    const units = assets.length
+      ? await AssetUnit.findAll({
+          where: { assetId: { [Op.in]: assets.map((asset) => asset.id) } },
+          attributes: ["id", "assetId", "unitCode", "serialNumber", "status"],
+        })
+      : [];
 
-      return {
-        id: asset.id,
-        assetTag: asset.assetTag,
-        name: asset.name,
-        category: asset.category?.name ?? null,
-        quantity,
-        quantityAssigned: assigned,
-        quantityAvailable: available,
-        belowReorderLevel:
-          asset.reorderLevel != null && available <= asset.reorderLevel,
-      };
-    });
+    const unitsByAsset = new Map<string, AssetUnit[]>();
+    for (const unit of units) {
+      unitsByAsset.set(unit.assetId, [...(unitsByAsset.get(unit.assetId) ?? []), unit]);
+    }
+
+    // Only what is NOT assigned: available units, or free quantity of pooled assets.
+    const rows: Array<InventoryRow & { category: string }> = [];
+    for (const asset of assets) {
+      const category = asset.category?.name || UNCATEGORISED_LABEL;
+      const assetUnits = unitsByAsset.get(asset.id);
+
+      if (assetUnits?.length) {
+        for (const unit of assetUnits) {
+          if (unit.status !== AssetUnitStatus.AVAILABLE) continue;
+          rows.push({
+            category,
+            asset: asset.name,
+            unitCode: unit.unitCode ?? "",
+            serialNumber: unit.serialNumber ?? "",
+            quantity: 1,
+          });
+        }
+      } else {
+        const free = Math.max((asset.quantity ?? 0) - (asset.quantityAssigned ?? 0), 0);
+        if (free > 0) {
+          rows.push({ category, asset: asset.name, unitCode: "", serialNumber: "", quantity: free });
+        }
+      }
+    }
+
+    const byCategory = new Map<string, InventoryRow[]>();
+    for (const { category, ...row } of rows) {
+      byCategory.set(category, [...(byCategory.get(category) ?? []), row]);
+    }
+
+    const categories: InventoryCategory[] = [...byCategory.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, list]) => ({
+        name,
+        total: list.reduce((sum, row) => sum + row.quantity, 0),
+        rows: list.sort(
+          (a, b) =>
+            a.asset.localeCompare(b.asset, undefined, { numeric: true, sensitivity: "base" }) ||
+            a.unitCode.localeCompare(b.unitCode, undefined, { numeric: true, sensitivity: "base" }),
+        ),
+      }));
 
     return {
       generatedAt: new Date(),
-      totalSkus: items.length,
-      totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-      totalAssigned: items.reduce(
-        (sum, item) => sum + item.quantityAssigned,
-        0,
-      ),
-      totalAvailable: items.reduce(
-        (sum, item) => sum + item.quantityAvailable,
-        0,
-      ),
-      lowStockCount: items.filter((item) => item.belowReorderLevel).length,
-      items,
+      totalUnassigned: categories.reduce((sum, category) => sum + category.total, 0),
+      totalCategories: categories.length,
+      categories,
     };
   }
 
@@ -359,6 +400,136 @@ export class ReportsService {
   }
 
   // ============================================================
+  // 6. SYSTEMS REPORT (IT data sheet)
+  //
+  // One record per system: company, PC name, holder, specs and
+  // the monitor / keyboard / mouse / phone etc. that go with it.
+  // Only the organisation filter applies to systems.
+  // ============================================================
+
+  async systemsReport(filters: ReportFilters): Promise<SystemsReport> {
+    const systems = await System.findAll({
+      include: [
+        { model: Organisation, required: false },
+        {
+          model: Employee,
+          required: false,
+          include: [{ model: Organisation, required: false }],
+        },
+        { model: SystemSpecs, as: "specs", required: false },
+        {
+          model: AssetAssignment,
+          where: { status: AssignmentStatus.ACTIVE },
+          required: false,
+          include: [
+            {
+              model: Asset,
+              include: [AssetCategory],
+            },
+            { model: AssetUnit, required: false },
+          ],
+        },
+      ],
+    });
+
+    const rows = systems
+      .map((system) => ({
+        system,
+        company: companyName(
+          system.organisation?.name,
+          system.employee?.organisation?.name,
+        ),
+      }))
+      .filter(
+        ({ system }) =>
+          !filters.organisationId ||
+          (system.organisationId ?? system.employee?.organisationId) ===
+            filters.organisationId,
+      )
+      .sort(
+        (a, b) =>
+          a.company.localeCompare(b.company) ||
+          a.system.name.localeCompare(b.system.name, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          }),
+      );
+
+    // Things given straight to the holder (e.g. a mobile phone) rather than
+    // to a system. They are listed once, on the holder's first system.
+    const employeeIds = [
+      ...new Set(
+        rows.map(({ system }) => system.employeeId).filter(Boolean),
+      ),
+    ] as string[];
+
+    const direct = employeeIds.length
+      ? await this.assetAssignmentModel.findAll({
+          where: {
+            status: AssignmentStatus.ACTIVE,
+            systemId: null,
+            employeeId: { [Op.in]: employeeIds },
+          } as WhereOptions<AssetAssignment>,
+          include: [
+            { model: Asset, include: [AssetCategory] },
+            { model: AssetUnit, required: false },
+          ],
+        })
+      : [];
+
+    // A unit assignment (one physical laptop, monitor, ...) is shown with
+    // its unit code and serial, so two units of the same model stay separate.
+    const toComponent = (assignment: AssetAssignment) => {
+      const unit = assignment.assetUnit;
+      const base = assignment.asset?.name ?? "";
+      const details = [
+        unit?.unitCode,
+        unit?.serialNumber ? `S/N ${unit.serialNumber}` : null,
+      ].filter(Boolean);
+      return {
+        name: details.length && base ? `${base} (${details.join(", ")})` : base,
+        category: assignment.asset?.category?.name ?? "",
+      };
+    };
+
+    const claimed = new Set<string>();
+    const byCompany: Record<string, number> = {};
+
+    const items = rows.map(({ system, company }) => {
+      const extra: ReturnType<typeof toComponent>[] = [];
+
+      if (system.employeeId && !claimed.has(system.employeeId)) {
+        claimed.add(system.employeeId);
+        direct
+          .filter((a) => a.employeeId === system.employeeId)
+          .forEach((a) => extra.push(toComponent(a)));
+      }
+
+      byCompany[company] = (byCompany[company] ?? 0) + 1;
+
+      return buildSystemRecord({
+        id: system.id,
+        systemName: system.name,
+        systemTag: system.systemTag,
+        company,
+        holder: system.employee?.name,
+        specs: system.specs,
+        components: [
+          ...(system.assignments ?? []).map(toComponent),
+          ...extra,
+        ].filter((component) => component.name),
+      });
+    });
+
+    return {
+      generatedAt: new Date(),
+      totalSystems: items.length,
+      byCompany,
+      items,
+    };
+  }
+
+  // ============================================================
   // EXPORT
   // ============================================================
 
@@ -372,6 +543,41 @@ export class ReportsService {
     filename: string;
   }> {
     const report = await this.getReportData(type, filters);
+
+    if (type === "inventory") {
+      const date = this.fileDate();
+      const inventory = report as InventoryReport;
+
+      return format === "excel"
+        ? {
+            buffer: await createInventoryExcel(inventory),
+            contentType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            filename: `unassigned-inventory-${date}.xlsx`,
+          }
+        : {
+            buffer: await createInventoryPdf(inventory),
+            contentType: "application/pdf",
+            filename: `unassigned-inventory-${date}.pdf`,
+          };
+    }
+
+    if (type === "systems") {
+      const date = this.fileDate();
+
+      return format === "excel"
+        ? {
+            buffer: await createSystemsExcel(report),
+            contentType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            filename: `system-it-data-${date}.xlsx`,
+          }
+        : {
+            buffer: await createSystemsPdf(report),
+            contentType: "application/pdf",
+            filename: `system-it-data-${date}.pdf`,
+          };
+    }
 
     if (format === "excel") {
       const buffer = await this.createExcelReport(type, report);
@@ -417,6 +623,9 @@ export class ReportsService {
       case "by-status":
         return this.reportByStatus(filters);
 
+      case "systems":
+        return this.systemsReport(filters);
+
       default:
         throw new Error(`Unsupported report type: ${type}`);
     }
@@ -434,6 +643,10 @@ export class ReportsService {
 
     workbook.creator = "CM Asset Management";
     workbook.created = new Date();
+
+    if (type === "assets" || type === "inventory") {
+      addReportCardsSheet(workbook, type, report);
+    }
 
     const worksheet = workbook.addWorksheet(this.getReportTitle(type));
 
@@ -622,6 +835,9 @@ export class ReportsService {
     type: ReportExportType,
     report: any,
   ): Promise<Buffer> {
+    if (type === "assets" || type === "inventory") {
+      return createCardsPdf(type, report);
+    }
     return new Promise((resolve, reject) => {
       const document = new PDFDocument({
         size: "A4",
@@ -659,14 +875,6 @@ export class ReportsService {
       document.moveDown(0.8).fillColor("#000000");
 
       switch (type) {
-        case "assets":
-          this.buildAssetPdf(document, report);
-          break;
-
-        case "inventory":
-          this.buildInventoryPdf(document, report);
-          break;
-
         case "assigned":
           this.buildAssignedPdf(document, report);
           break;
@@ -682,60 +890,6 @@ export class ReportsService {
 
       document.end();
     });
-  }
-
-  private buildAssetPdf(document: PDFKit.PDFDocument, report: any) {
-    this.pdfSummary(document, [
-      ["Total Assets", report.totalAssets],
-      ["Total Value", this.currency(report.totalValue)],
-      ["Asset Types", Object.keys(report.byKind ?? {}).length],
-    ]);
-
-    this.pdfTable(
-      document,
-      ["Asset Tag", "Name", "Kind", "Category", "Status", "Condition", "Value"],
-      report.items.map((asset: any) => [
-        asset.assetTag,
-        asset.name,
-        asset.kind,
-        asset.category?.name,
-        asset.status,
-        asset.condition,
-        this.currency(asset.purchasePrice),
-      ]),
-    );
-  }
-
-  private buildInventoryPdf(document: PDFKit.PDFDocument, report: any) {
-    this.pdfSummary(document, [
-      ["SKUs", report.totalSkus],
-      ["Quantity", report.totalQuantity],
-      ["Assigned", report.totalAssigned],
-      ["Available", report.totalAvailable],
-      ["Low Stock", report.lowStockCount],
-    ]);
-
-    this.pdfTable(
-      document,
-      [
-        "Asset Tag",
-        "Name",
-        "Category",
-        "Qty",
-        "Assigned",
-        "Available",
-        "Status",
-      ],
-      report.items.map((item: any) => [
-        item.assetTag,
-        item.name,
-        item.category,
-        item.quantity,
-        item.quantityAssigned,
-        item.quantityAvailable,
-        item.belowReorderLevel ? "LOW STOCK" : "HEALTHY",
-      ]),
-    );
   }
 
   private buildAssignedPdf(document: PDFKit.PDFDocument, report: any) {
@@ -921,6 +1075,9 @@ export class ReportsService {
 
       case "by-status":
         return "Asset Status Report";
+
+      case "systems":
+        return "System IT Data";
     }
   }
 

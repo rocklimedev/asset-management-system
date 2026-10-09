@@ -41,6 +41,11 @@ export class ReportsController {
     return this.reports.reportByStatus(query);
   }
 
+  @Get("systems")
+  systemsReport(@Query() query: ReportFilters) {
+    return this.reports.systemsReport(query);
+  }
+
   // ============================================================
   // EXPORTS
   //
@@ -92,6 +97,15 @@ export class ReportsController {
     @Res() response: Response,
   ) {
     return this.exportReport("by-status", query, response);
+  }
+
+  // GET /reports/systems/export?format=pdf|excel  (System IT Data sheet)
+  @Get("systems/export")
+  exportSystems(
+    @Query() query: ReportFilters & { format?: string },
+    @Res() response: Response,
+  ) {
+    return this.exportReport("systems", query, response);
   }
 
   // ============================================================

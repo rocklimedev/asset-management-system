@@ -10,6 +10,7 @@ import App from "./App";
 import { AuthProvider } from "./services/context/AuthContext";
 import { Provider } from "react-redux";
 import store from "./services/store";
+import { PwaPrompts } from "./components/pwa/PwaPrompts";
 
 // ============================================================
 // REACT QUERY
@@ -36,6 +37,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <AuthProvider>
             <App />
+            <PwaPrompts />
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

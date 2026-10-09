@@ -62,6 +62,24 @@ export interface DashboardResponse {
 }
 
 // ============================================================
+// CACHE CONFIGURATION
+// ============================================================
+
+const DASHBOARD_CACHE_CONFIG = {
+  // Keep dashboard data for 3 minutes (dashboard updates frequently)
+  keepUnusedDataFor: 3 * 60,
+
+  // ✅ FIX: Refetch when window regains focus (user comes back to tab)
+  refetchOnFocus: true,
+
+  // ✅ FIX: Refetch when network reconnects
+  refetchOnReconnect: true,
+
+  // Don't auto-refetch on every mount if data exists
+  refetchOnMountOrArgChange: false,
+};
+
+// ============================================================
 // DASHBOARD API
 // ============================================================
 
@@ -71,8 +89,9 @@ export const dashboardApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
 
-    // Read the token straight from localStorage — AuthContext is
-    // the single source of truth now that authSlice is gone.
+    // ✅ FIX: Add request timeout
+    timeout: 30000,
+
     prepareHeaders: (headers) => {
       headers.set("Content-Type", "application/json");
 
@@ -81,6 +100,9 @@ export const dashboardApi = createApi({
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
+
+      // ✅ FIX: Add compression headers
+      headers.set("Accept-Encoding", "gzip, deflate");
 
       return headers;
     },
@@ -97,6 +119,9 @@ export const dashboardApi = createApi({
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
       providesTags: ["Dashboard"],
+
+      // ✅ FIX: Add cache configuration for real-time updates
+      ...DASHBOARD_CACHE_CONFIG,
     }),
   }),
 });

@@ -139,6 +139,32 @@ export interface StatusReportResponse {
 }
 
 // ============================================================
+// SYSTEMS REPORT (System IT Data)
+// ============================================================
+
+export interface SystemsReportField {
+  label: string;
+  value: string;
+}
+
+export interface SystemsReportItem {
+  id: string;
+  company: string;
+  /** "PC NAME" | "MAC NAME" | "MACBOOK NAME" | "LAPTOP NAME" */
+  nameLabel: string;
+  name: string;
+  holder: string;
+  fields: SystemsReportField[];
+}
+
+export interface SystemsReportResponse {
+  generatedAt: string;
+  totalSystems: number;
+  byCompany: Record<string, number>;
+  items: SystemsReportItem[];
+}
+
+// ============================================================
 // EXPORT TYPES
 // ============================================================
 
@@ -147,7 +173,8 @@ export type ReportType =
   | "inventory"
   | "assigned"
   | "damaged"
-  | "by-status";
+  | "by-status"
+  | "systems";
 
 export type ReportExportFormat = "pdf" | "excel";
 
@@ -273,6 +300,25 @@ export const reportsApi = createApi({
         },
       ],
     }),
+
+    // ========================================================
+    // SYSTEMS (IT data sheet)
+    // ========================================================
+
+    getSystemsReport: builder.query<SystemsReportResponse, ReportFilters>({
+      query: (filters = {}) => ({
+        url: "/reports/systems",
+        method: "GET",
+        params: filters,
+      }),
+
+      providesTags: [
+        {
+          type: "Report",
+          id: "SYSTEMS",
+        },
+      ],
+    }),
   }),
 });
 
@@ -286,6 +332,7 @@ export const {
   useGetAssignedReportQuery,
   useGetDamagedReportQuery,
   useGetReportByStatusQuery,
+  useGetSystemsReportQuery,
 } = reportsApi;
 
 export default reportsApi;
@@ -331,7 +378,7 @@ export async function downloadReport(
 
   const disposition = response.headers.get("Content-Disposition");
 
-  let filename = `asset-report-${type}.${format === "excel" ? "xlsx" : "pdf"}`;
+  let filename = `${type === "systems" ? "system-it-data" : `asset-report-${type}`}.${format === "excel" ? "xlsx" : "pdf"}`;
 
   const match = disposition?.match(/filename="?([^"]+)"?/i);
 
