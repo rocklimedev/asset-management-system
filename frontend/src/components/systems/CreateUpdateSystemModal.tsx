@@ -174,7 +174,7 @@ export function CreateUpdateSystemModal({
 
           <DialogDescription>
             A system groups the assets and hardware specifications that make up
-            a PC. Organisation is optional.
+            a PC. Organisation is optional. New systems are saved to Inventory without an employee; you can assign them later.
           </DialogDescription>
         </DialogHeader>
 

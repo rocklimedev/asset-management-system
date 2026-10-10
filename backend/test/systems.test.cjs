@@ -157,3 +157,33 @@ test('employee release returns direct assets and whole systems separately', asyn
   assert.deepEqual(released, ['direct']); assert.deepEqual(systems, [['pc', null]]);
   assert.equal(result.releasedSystems, 1);
 });
+
+test('creating a system needs no employee and saves it unassigned', async () => {
+  const transaction = { LOCK: { UPDATE: 'UPDATE' } };
+  let created;
+  stub(System, 'create', async (data) => { created = { id: 'inventory-system', ...data }; return created; });
+  stub(System, 'findByPk', async () => created);
+  const service = new SystemsService({ transaction: async fn => fn(transaction) }, { log: async () => {} });
+  const dto = plainToInstance(CreateSystemDto, { name: 'Spare PC', systemTag: 'SPARE-001' });
+  assert.equal((await validate(dto)).length, 0);
+  const result = await service.create(dto, actor);
+  assert.equal(result.employeeId, null);
+});
+
+test('system reports and Excel explicitly identify unassigned inventory', async () => {
+  const { buildSystemRecord, cardRows, createSystemsExcel } = require('../dist/modules/reports/system-report');
+  const ExcelJS = require('exceljs');
+  const inventory = buildSystemRecord({ id: 'spare', systemName: 'Spare PC', company: 'Example', components: [] });
+  const assigned = buildSystemRecord({ id: 'used', systemName: 'Work PC', company: 'Example', employeeId: 'employee', holder: 'Ada', components: [] });
+  assert.equal(inventory.holder, 'UNASSIGNED');
+  assert.equal(inventory.assignmentStatus, 'Unassigned (Inventory)');
+  assert.equal(assigned.assignmentStatus, 'Assigned');
+  assert.ok(cardRows(inventory).some(row => row.label === 'ASSIGNMENT STATUS' && row.value === 'Unassigned (Inventory)'));
+  const buffer = await createSystemsExcel({ generatedAt: new Date(), totalSystems: 2, byCompany: { Example: 2 }, items: [inventory, assigned] });
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const table = workbook.getWorksheet('Systems Table');
+  assert.equal(table.getCell('E1').value, 'Assignment Status');
+  assert.equal(table.getCell('E2').value, 'Unassigned (Inventory)');
+  assert.equal(table.getCell('E3').value, 'Assigned');
+});

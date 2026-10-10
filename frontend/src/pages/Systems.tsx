@@ -1,3 +1,4 @@
+import * as Tabs from "@radix-ui/react-tabs";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Monitor, Plus, Search, Building2 } from "lucide-react";
@@ -59,6 +60,14 @@ export default function SystemsPage() {
     (s) => s.id === params.get("system"),
   );
 
+  const activeTab = selected
+    ? (selected.employeeId ? "grid" : "inventory")
+    : (params.get("tab") === "inventory" ? "inventory" : "grid");
+  const assignedCount = systems.filter((system) => !!system.employeeId).length;
+  function closeSelection() {
+    setParams({ tab: activeTab });
+  }
+
   const filtered = organisationSystems.filter((system) => {
     const query = search.trim().toLowerCase();
 
@@ -76,7 +85,8 @@ export default function SystemsPage() {
         ? !system.organisationId
         : system.organisationId === organisationFilter);
 
-    return matchesSearch && matchesOrganisation;
+    return matchesSearch && matchesOrganisation &&
+      (activeTab === "grid" ? !!system.employeeId : !system.employeeId);
   });
 
   // Editor (create/update) modal
@@ -112,7 +122,7 @@ export default function SystemsPage() {
 
   function handleSaved(systemId: string) {
     closeEditor();
-    setParams({ system: systemId });
+    setParams({ tab: editingSystem?.employeeId ? "grid" : "inventory", system: systemId });
   }
 
   async function deleteSelectedSystem(system: SystemWithOrganisation) {
@@ -128,7 +138,7 @@ export default function SystemsPage() {
       setAssignOpen(false);
       setPool(false);
       setHistory(null);
-      setParams({});
+      closeSelection();
 
       toast.add({
         title: "System deleted",
@@ -174,10 +184,11 @@ export default function SystemsPage() {
           SUMMARY
       ============================================================ */}
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-5">
         {[
           ["Systems", systems.length],
-          ["Assigned to employees", systems.filter((s) => s.employeeId).length],
+          ["Assigned to employees", assignedCount],
+          ["Unassigned inventory", systems.length - assignedCount],
           [
             "Organisation scoped",
             organisationSystems.filter((s) => !!s.organisationId).length,
@@ -198,6 +209,13 @@ export default function SystemsPage() {
           SYSTEM LIST + DETAIL
       ============================================================ */}
 
+      <Tabs.Root value={activeTab} onValueChange={(tab) => setParams({ tab })}>
+        <Tabs.List aria-label="System assignment" className="inline-flex gap-1 rounded-lg bg-muted p-1">
+          <Tabs.Trigger value="grid" className="rounded-md px-4 py-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">Grid ({assignedCount})</Tabs.Trigger>
+          <Tabs.Trigger value="inventory" className="rounded-md px-4 py-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">Inventory ({systems.length - assignedCount})</Tabs.Trigger>
+        </Tabs.List>
+        <p className="mt-2 text-sm text-muted-foreground">{activeTab === "grid" ? "Systems assigned to employees." : "Unassigned systems available for employee assignment."}</p>
+      <Tabs.Content value={activeTab} className="mt-4 outline-none">
       {isLoading ? (
         <p role="status">Loading systems…</p>
       ) : isError ? (
@@ -251,7 +269,7 @@ export default function SystemsPage() {
             {filtered.map((system) => (
               <button
                 key={system.id}
-                onClick={() => setParams({ system: system.id })}
+                onClick={() => setParams({ tab: activeTab, system: system.id })}
                 disabled={busy}
                 className={`w-full rounded-xl border p-4 text-left transition-colors ${
                   selected?.id === system.id
@@ -286,7 +304,7 @@ export default function SystemsPage() {
               <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
                 {search || organisationFilter
                   ? "No matching systems."
-                  : "Create your first system to group PC components."}
+                  : activeTab === "inventory" ? "No unassigned systems. Create a system to add it to inventory." : "No assigned systems. Assign a system from Inventory to an employee."}
               </p>
             )}
           </section>
@@ -294,7 +312,7 @@ export default function SystemsPage() {
           <SystemDetailDrawer
             system={selected}
             busy={busy}
-            onClose={() => setParams({})}
+            onClose={closeSelection}
             onEdit={openEdit}
             onDelete={deleteSelectedSystem}
             onOpenAssign={() => setAssignOpen(true)}
@@ -303,6 +321,9 @@ export default function SystemsPage() {
           />
         </div>
       )}
+
+      </Tabs.Content>
+      </Tabs.Root>
 
       {/* ============================================================
           MODALS

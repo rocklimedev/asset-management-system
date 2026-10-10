@@ -50,6 +50,7 @@ export interface SystemReportItem {
   nameLabel: string;
   name: string;
   holder: string;
+  assignmentStatus: "Assigned" | "Unassigned (Inventory)";
   /** Specs of the system (processor, RAM, ...). */
   fields: SystemReportField[];
   /** Items assigned to the system, shown in their own section. */
@@ -129,6 +130,7 @@ export function buildSystemRecord(args: {
   systemTag?: string | null;
   company: string;
   holder?: string | null;
+  employeeId?: string | null;
   specs?: Record<string, any> | null;
   components: ComponentLike[];
 }): SystemReportItem {
@@ -212,6 +214,7 @@ export function buildSystemRecord(args: {
     nameLabel: nameLabel(args.systemName, ownCategory),
     name: args.systemName,
     holder: clean(args.holder) || UNASSIGNED_HOLDER_LABEL,
+    assignmentStatus: args.employeeId ? "Assigned" : "Unassigned (Inventory)",
     fields,
     assignedItems,
   };
@@ -222,6 +225,7 @@ export function cardRows(item: SystemReportItem): SystemReportField[] {
   return [
     { label: item.nameLabel, value: item.name },
     { label: "HOLDER NAME", value: item.holder },
+    { label: "ASSIGNMENT STATUS", value: item.assignmentStatus },
     ...item.fields,
   ];
 }
@@ -494,7 +498,7 @@ function addTableSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
     }
   }
 
-  sheet.addRow(["Company", "Type", "System Name", "Holder Name", ...labels]);
+  sheet.addRow(["Company", "Type", "System Name", "Holder Name", "Assignment Status", ...labels]);
   for (const item of report.items) {
     const byLabel = new Map(tableFields(item).map((field) => [field.label, field.value]));
     sheet.addRow([
@@ -502,6 +506,7 @@ function addTableSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
       item.nameLabel.replace(/ NAME$/, ""),
       item.name,
       item.holder,
+      item.assignmentStatus,
       ...labels.map((label) => byLabel.get(label) ?? ""),
     ]);
   }

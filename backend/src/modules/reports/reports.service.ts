@@ -513,6 +513,7 @@ export class ReportsService {
         systemTag: system.systemTag,
         company,
         holder: system.employee?.name,
+        employeeId: system.employeeId,
         specs: system.specs,
         components: [
           ...(system.assignments ?? []).map(toComponent),

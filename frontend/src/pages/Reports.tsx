@@ -31,7 +31,8 @@ import {
 
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { useGetOrganisationsQuery } from "../services/api/employees.api";
+import { useGetAssetCategoriesQuery } from "../services/api/asset.api";
 import { Label } from "../components/ui/label";
 
 import {
@@ -61,9 +62,6 @@ interface FilterState {
   organisationId: string;
   kind: string;
   categoryId: string;
-  locationId: string;
-  from: string;
-  to: string;
 }
 
 /**
@@ -110,6 +108,7 @@ interface SystemItemData {
   nameLabel: string;
   name: string;
   holder: string;
+  assignmentStatus: "Assigned" | "Unassigned (Inventory)";
   fields: SystemFieldData[];
   assignedItems: SystemAssignedItemData[];
 }
@@ -129,9 +128,6 @@ const EMPTY_FILTERS: FilterState = {
   organisationId: "",
   kind: "",
   categoryId: "",
-  locationId: "",
-  from: "",
-  to: "",
 };
 
 const TABS = [
@@ -359,6 +355,27 @@ function ReportFiltersBar({
   onReset,
   isLoading,
 }: ReportFiltersProps) {
+  const {
+    data: organisationsData,
+    isLoading: loadingOrganisations,
+    isError: organisationsError,
+    refetch: reloadOrganisations,
+  } = useGetOrganisationsQuery();
+  const {
+    data: categories = [],
+    isLoading: loadingCategories,
+    isError: categoriesError,
+    refetch: reloadCategories,
+  } = useGetAssetCategoriesQuery();
+  const organisations = Array.isArray(organisationsData)
+    ? organisationsData
+    : (organisationsData?.items ?? []);
+  const categoryOptions = categories.filter(
+    (category) => !filters.kind || category.type === filters.kind,
+  );
+  const selectClassName =
+    "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
+
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -372,7 +389,7 @@ function ReportFiltersBar({
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Narrow reports using organisation, asset, location and date filters.
+            Narrow reports using organisation, asset kind and category.
           </p>
         </div>
 
@@ -387,71 +404,68 @@ function ReportFiltersBar({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="organisationId">Organisation ID</Label>
-
-          <Input
+          <Label htmlFor="organisationId">Organisation</Label>
+          <select
             id="organisationId"
+            className={selectClassName}
             value={filters.organisationId}
+            disabled={loadingOrganisations || organisationsError}
             onChange={(event) => onChange("organisationId", event.target.value)}
-            placeholder="Organisation UUID"
-          />
+          >
+            <option value="">
+              {loadingOrganisations
+                ? "Loading organisations…"
+                : "All organisations"}
+            </option>
+            {[...organisations]
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((organisation) => (
+                <option key={organisation.id} value={organisation.id}>
+                  {organisation.name}
+                </option>
+              ))}
+          </select>
+          {organisationsError && (
+            <p role="alert" className="text-sm text-destructive">
+              Could not load organisations.{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => reloadOrganisations()}
+              >
+                Retry
+              </button>
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="kind">Asset Kind</Label>
-
-          <Input
+          <select
             id="kind"
+            className={selectClassName}
             value={filters.kind}
-            onChange={(event) => onChange("kind", event.target.value)}
-            placeholder="e.g. LAPTOP"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="categoryId">Category ID</Label>
-
-          <Input
-            id="categoryId"
-            value={filters.categoryId}
-            onChange={(event) => onChange("categoryId", event.target.value)}
-            placeholder="Category UUID"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="locationId">Location ID</Label>
-
-          <Input
-            id="locationId"
-            value={filters.locationId}
-            onChange={(event) => onChange("locationId", event.target.value)}
-            placeholder="Location UUID"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="from">From</Label>
-
-          <Input
-            id="from"
-            type="date"
-            value={filters.from}
-            onChange={(event) => onChange("from", event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="to">To</Label>
-
-          <Input
-            id="to"
-            type="date"
-            value={filters.to}
-            onChange={(event) => onChange("to", event.target.value)}
-          />
+            onChange={(event) => {
+              onChange("kind", event.target.value);
+              if (
+                filters.categoryId &&
+                !categories.some(
+                  (category) =>
+                    category.id === filters.categoryId &&
+                    (!event.target.value ||
+                      category.type === event.target.value),
+                )
+              ) {
+                onChange("categoryId", "");
+              }
+            }}
+          >
+            <option value="">All asset kinds</option>
+            <option value="HARDWARE">Hardware</option>
+            <option value="SOFTWARE">Software</option>
+          </select>
         </div>
       </div>
 
@@ -1056,6 +1070,11 @@ function SystemsReportView({ filters }: { filters: ReportFilters }) {
           const specRows = [
             { label: item.nameLabel, value: item.name, bold: true },
             { label: "HOLDER NAME", value: item.holder, bold: true },
+            {
+              label: "ASSIGNMENT STATUS",
+              value: item.assignmentStatus,
+              bold: true,
+            },
             ...item.fields.map((field) => ({ ...field, bold: false })),
           ];
 
@@ -1198,18 +1217,6 @@ export default function Reports() {
 
     if (filters.categoryId.trim()) {
       nextFilters.categoryId = filters.categoryId.trim();
-    }
-
-    if (filters.locationId.trim()) {
-      nextFilters.locationId = filters.locationId.trim();
-    }
-
-    if (filters.from) {
-      nextFilters.from = filters.from;
-    }
-
-    if (filters.to) {
-      nextFilters.to = filters.to;
     }
 
     setAppliedFilters(nextFilters);

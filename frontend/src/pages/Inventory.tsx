@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -159,7 +160,30 @@ export default function Inventory() {
 
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("ASC");
 
-  const [page, setPage] = useState(1);
+  const [params, setParams] = useSearchParams();
+  const pageParam = params.get("page");
+  const requestedPage = Number(pageParam);
+  const page = pageParam && /^\d+$/.test(pageParam) &&
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+    ? requestedPage
+    : 1;
+
+  useEffect(() => {
+    if (pageParam === String(page)) return;
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("page", String(page));
+      return next;
+    }, { replace: true });
+  }, [pageParam, page, setParams]);
+
+  function setPage(nextPage: number) {
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("page", String(nextPage));
+      return next;
+    });
+  }
 
   const [selected, setSelected] = useState<Asset | null>(null);
 
@@ -415,12 +439,12 @@ export default function Inventory() {
   // ============================================================
 
   function goToPreviousPage() {
-    setPage((current) => Math.max(1, current - 1));
+    setPage(Math.max(1, page - 1));
     clearSelection();
   }
 
   function goToNextPage() {
-    setPage((current) => Math.min(totalPages, current + 1));
+    setPage(Math.min(totalPages, page + 1));
     clearSelection();
   }
 
