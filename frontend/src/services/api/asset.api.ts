@@ -463,6 +463,7 @@ export const assetApi = createApi({
         { type: "Asset", id: "LIST" },
         { type: "AssetHistory", id },
         { type: "AssetTransfer", id },
+        { type: "AssetAssignment", id },
       ],
     }),
 
@@ -498,7 +499,7 @@ export const assetApi = createApi({
         { type: "Asset", id: "LIST" },
         { type: "Asset", id: "POOL" },
         { type: "AssetUnit", id: "LIST" },
-        { type: "AssetAssignment", id: "LIST" },
+        { type: "AssetAssignment" },
       ],
     }),
 
@@ -507,7 +508,7 @@ export const assetApi = createApi({
     // ============================================================
 
     getAssetAssignments: builder.query<AssetAssignment[], void>({
-      query: () => "/assets/assignments",
+      query: () => "/asset-assignments",
 
       providesTags: (result) =>
         result
@@ -524,7 +525,7 @@ export const assetApi = createApi({
     }),
 
     getAssetAssignment: builder.query<AssetAssignment, string>({
-      query: (id) => `/assets/assignments/${id}`,
+      query: (id) => `/asset-assignments/${id}`,
 
       providesTags: (result, error, id) => [{ type: "AssetAssignment", id }],
 
@@ -532,7 +533,7 @@ export const assetApi = createApi({
     }),
 
     getAssetAssignmentsByEmployee: builder.query<AssetAssignment[], string>({
-      query: (employeeId) => `/employees/${employeeId}/assignments`,
+      query: (employeeId) => `/asset-assignments/employees/${employeeId}`,
 
       providesTags: (result, error, employeeId) => [
         { type: "AssetAssignment", id: `employee-${employeeId}` },
@@ -545,7 +546,7 @@ export const assetApi = createApi({
       AssetAssignment[],
       string
     >({
-      query: (employeeId) => `/employees/${employeeId}/assignments/active`,
+      query: (employeeId) => `/asset-assignments/employees/${employeeId}/active`,
 
       providesTags: (result, error, employeeId) => [
         { type: "AssetAssignment", id: `employee-${employeeId}-active` },
@@ -555,37 +556,44 @@ export const assetApi = createApi({
     }),
 
     getAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
-      query: (assetId) => `/assets/${assetId}/assignments`,
+      query: (assetId) => `/asset-assignments/assets/${assetId}`,
+      transformResponse: (response: { asset: Asset; assignments: AssetAssignment[] }) =>
+        response.assignments,
 
       providesTags: (result, error, assetId) => [
         { type: "AssetAssignment", id: `asset-${assetId}` },
+        { type: "AssetAssignment", id: assetId },
       ],
 
       ...LIST_CACHE_CONFIG,
     }),
 
     getActiveAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
-      query: (assetId) => `/assets/${assetId}/assignments/active`,
+      query: (assetId) => `/asset-assignments/assets/${assetId}/active`,
 
       providesTags: (result, error, assetId) => [
         { type: "AssetAssignment", id: `asset-${assetId}-active` },
+        { type: "AssetAssignment", id: assetId },
       ],
 
       ...SHORT_CACHE_CONFIG,
     }),
 
     getAssetAssignmentSummary: builder.query<unknown, string>({
-      query: (assetId) => `/assets/${assetId}/assignments/summary`,
+      query: (assetId) => `/asset-assignments/assets/${assetId}/summary`,
 
       providesTags: (result, error, assetId) => [
         { type: "AssetAssignment", id: `asset-${assetId}-summary` },
+        { type: "AssetAssignment", id: assetId },
       ],
 
       ...SHORT_CACHE_CONFIG,
     }),
 
     getAssetAssignmentsByAssetUnit: builder.query<AssetAssignment[], string>({
-      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments`,
+      query: (assetUnitId) => `/asset-assignments/units/${assetUnitId}`,
+      transformResponse: (response: { assetUnit: AssetUnit; assignments: AssetAssignment[] }) =>
+        response.assignments,
 
       providesTags: (result, error, assetUnitId) => [
         { type: "AssetAssignment", id: `unit-${assetUnitId}` },
@@ -598,7 +606,7 @@ export const assetApi = createApi({
       AssetAssignment | null,
       string
     >({
-      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments/active`,
+      query: (assetUnitId) => `/asset-assignments/units/${assetUnitId}/active`,
 
       providesTags: (result, error, assetUnitId) => [
         { type: "AssetAssignment", id: `unit-${assetUnitId}-active` },

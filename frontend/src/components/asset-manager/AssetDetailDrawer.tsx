@@ -75,9 +75,11 @@ export function AssetDetailDrawer({
   // ==========================================================
 
   const {
-    data: activeAssignmentsResponse,
+    currentData: activeAssignmentsResponse,
     isLoading: assignmentLoading,
     isFetching: assignmentFetching,
+    isError: assignmentError,
+    refetch: refetchAssignments,
   } = useGetActiveAssetAssignmentsByAssetQuery(
     asset?.id != null ? String(asset.id) : "",
     {
@@ -326,8 +328,20 @@ export function AssetDetailDrawer({
                   ACTIVE ASSIGNMENTS
               ================================================== */}
 
+              {assignmentError && !assignmentFetching && (
+                <div role="alert" className="rounded-lg border border-destructive/30 p-4">
+                  <p className="text-sm text-destructive">
+                    Could not load assignments. Please try again.
+                  </p>
+                  <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => refetchAssignments()}>
+                    Retry
+                  </Button>
+                </div>
+              )}
+
               {!assignmentLoading &&
                 !assignmentFetching &&
+                !assignmentError &&
                 activeAssignments.length > 0 && (
                   <div className="space-y-3">
                     {activeAssignments.map((assignment) => {
@@ -509,6 +523,7 @@ export function AssetDetailDrawer({
 
               {!assignmentLoading &&
                 !assignmentFetching &&
+                !assignmentError &&
                 activeAssignments.length === 0 && (
                   <div className="rounded-lg border border-dashed p-4">
                     <p className="text-sm text-muted-foreground">
