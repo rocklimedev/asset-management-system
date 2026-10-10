@@ -147,7 +147,7 @@ export function AssetHistoryModal({
     return null;
   }
 
-  const history = data?.data ?? [];
+  const history = data ?? [];
 
   return (
     <div

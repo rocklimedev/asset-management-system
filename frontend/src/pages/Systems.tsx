@@ -5,8 +5,8 @@ import { Monitor, Plus, Search, Building2 } from "lucide-react";
 import {
   useGetSystemsQuery,
   useDeleteSystemMutation,
-  type Asset,
 } from "../services/api/asset.api";
+import type { Asset } from "../types";
 import { useGetOrganisationsQuery } from "../services/api/employees.api";
 
 import { AssetPool } from "../components/asset-manager/AssetPool";

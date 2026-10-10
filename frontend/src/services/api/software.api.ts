@@ -1,5 +1,5 @@
 import { assetApi } from "./asset.api";
-import type { Asset, SystemRecord } from "./asset.api";
+import type { Asset, SystemRecord } from "../../types";
 
 // ============================================================
 // ENUMS

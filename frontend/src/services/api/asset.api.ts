@@ -1,123 +1,41 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
 import { BACKEND } from "../../lib/api";
+import type {
+  Asset,
+  AssetAssignment,
+  AssetCategory,
+  AssetHistoryEntry,
+  AssetKind,
+  AssetStatus,
+  AssetCondition,
+  AssignmentStatus,
+  PaginatedResponse,
+  SystemInput,
+  SystemRecord,
+  SystemSpecs,
+} from "../../types";
+
+// Re-exported so existing imports (e.g. src/types/systems.ts) keep working.
+export type { Asset, AssetAssignment, AssetCategory, AssetHistory, AssetKind, AssetStatus, AssetCondition, AssetTrackingMode, SystemRecord, SystemSpecs } from "../../types";
 
 // ============================================================
-// ENUMS (unchanged)
+// ENDPOINT-LEVEL TYPES
 // ============================================================
-
-export type AssetKind = "HARDWARE" | "SOFTWARE";
-
-export type AssetTrackingMode = "INDIVIDUAL" | "QUANTITY";
-
-export type AssetStatus =
-  | "AVAILABLE"
-  | "ASSIGNED"
-  | "REPAIR"
-  | "LOST"
-  | "DAMAGED"
-  | "RETIRED"
-  | "DISPOSED";
-
-export type AssetCondition = "NEW" | "GOOD" | "FAIR" | "POOR";
 
 export type AssetUnitStatus = AssetStatus;
-
 export type AssetUnitCondition = AssetCondition;
-
-export type AssignmentStatus = "ACTIVE" | "RETURNED";
-
 export type TransferStatus =
   | "PENDING"
   | "APPROVED"
   | "REJECTED"
   | "COMPLETED"
   | "CANCELLED";
-
-// ============================================================
-// PERFORMANCE CONFIG CONSTANTS
-// ============================================================
-
-const CACHE_CONFIG = {
-  // Keep unused data for 5 minutes before removing from cache
-  keepUnusedDataFor: 5 * 60,
-
-  // Keep failed requests for only 30 seconds before allowing retry
-  keepUnusedDataForError: 30,
-
-  // Refetch when window regains focus
-  refetchOnFocus: true,
-
-  // Refetch when network reconnects
-  refetchOnReconnect: true,
-
-  // Don't automatically re-fetch when component mounts if data exists
-  refetchOnMountOrArgChange: false,
-};
-
-const SHORT_CACHE_CONFIG = {
-  ...CACHE_CONFIG,
-  keepUnusedDataFor: 60, // 1 minute for frequently changing data
-};
-
-const LIST_CACHE_CONFIG = {
-  ...CACHE_CONFIG,
-  keepUnusedDataFor: 3 * 60, // 3 minutes for list views
-  refetchOnFocus: true,
-};
-
-// ============================================================
-// PAGINATION CONSTANTS
-// ============================================================
-
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 100;
-
-// ============================================================
-// TYPES (Keep existing types from original, show key ones below)
-// ============================================================
-
-export interface AssetOrganisation {
-  id: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface AssetEmployee {
-  id: string;
-  name?: string;
-  firstName?: string;
-  lastName?: string;
-  employeeId?: string;
-  email?: string;
-  [key: string]: unknown;
-}
-
-export interface AssetLocation {
-  id: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface AssetVendor {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-export interface AssetCategory {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: AssetKind;
-  organisationId?: string | null;
-  isActive: boolean;
-  assets?: Asset[];
-  createdAt?: string;
-  updatedAt?: string;
-  organisation?: AssetOrganisation;
-  [key: string]: unknown;
-}
+export type InventoryChangeType =
+  | "RESTOCK"
+  | "CONSUMED"
+  | "RETURNED"
+  | "ADJUSTMENT"
+  | "WRITE_OFF";
 
 export interface AssetUnit {
   id: string;
@@ -127,77 +45,59 @@ export interface AssetUnit {
   status: AssetUnitStatus;
   condition: AssetUnitCondition;
   locationId?: string | null;
-  location?: AssetLocation | null;
+  location?: { id: string; name: string } | null;
   notes?: string | null;
   createdAt?: string;
   updatedAt?: string;
   asset?: Asset;
   assignments?: AssetAssignment[];
-  history?: AssetHistory[];
-  [key: string]: unknown;
 }
 
-// [Include all other type definitions from original file...]
+export interface AssetPoolItem extends Asset {
+  quantityAvailable: number;
+}
 
-export interface Asset {
+export interface InventoryHistoryEntry {
   id: string;
-  name: string;
-  kind: AssetKind;
-  category?: AssetCategory;
-  categoryId?: string;
-  [key: string]: unknown;
+  assetId: string;
+  changeType: InventoryChangeType;
+  quantityDelta: number;
+  quantityAfter: number;
+  quantityAssignedAfter: number;
+  performedBy: string;
+  reason?: string | null;
+  createdAt: string;
 }
 
 export interface AssetResponse {
   data?: Asset;
   message?: string;
-  [key: string]: unknown;
 }
 
-export interface AssetsResponse {
-  items: Asset[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  [key: string]: unknown;
-}
+export type AssetsResponse = PaginatedResponse<Asset>;
+export type AssetPoolResponse = PaginatedResponse<AssetPoolItem>;
+export type AssetUnitsResponse = PaginatedResponse<AssetUnit>;
 
 export interface GetAssetsParams {
   search?: string;
   organisationId?: string;
   kind?: AssetKind;
   categoryId?: string;
+  status?: AssetStatus;
+  sortBy?: string;
+  sortDir?: "ASC" | "DESC";
   page?: number;
   pageSize?: number;
 }
 
-export interface AssetHistory {
-  id: string;
-  assetId: string;
-  action: string;
-  performedBy: string;
-  [key: string]: unknown;
-}
-
-export interface AssetAssignment {
-  id: string;
-  assetId: string;
-  employeeId: string;
-  status: AssignmentStatus;
-  [key: string]: unknown;
-}
-
-export interface SoftwareAsset {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-export interface SystemRecord {
-  id: string;
-  name: string;
-  [key: string]: unknown;
+export interface AssetPoolParams {
+  search?: string;
+  organisationId?: string;
+  kind?: AssetKind;
+  categoryId?: string;
+  locationId?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface GetAssetUnitsParams {
@@ -208,6 +108,46 @@ export interface GetAssetUnitsParams {
   locationId?: string;
   page?: number;
   pageSize?: number;
+}
+
+export type AssetInput = Partial<
+  Pick<
+    Asset,
+    | "name"
+    | "kind"
+    | "assetTag"
+    | "manufacturer"
+    | "model"
+    | "serialNumber"
+    | "purchaseDate"
+    | "purchasePrice"
+    | "warrantyExpiry"
+    | "status"
+    | "condition"
+    | "notes"
+    | "trackingMode"
+    | "quantity"
+    | "organisationId"
+    | "vendorId"
+    | "invoiceNumber"
+    | "warrantyStart"
+  > & { categoryId: string; locationId: string | null }
+>;
+
+export type CreateAssetRequest = AssetInput & {
+  name: string;
+  kind: AssetKind;
+  categoryId: string;
+  initialUnits?: Omit<CreateAssetUnitRequest, "assetId">[];
+};
+export type UpdateAssetRequest = AssetInput & { id: string };
+
+export interface AssetCategoryInput {
+  name: string;
+  description?: string | null;
+  type: AssetKind;
+  organisationId?: string | null;
+  isActive?: boolean;
 }
 
 export interface CreateAssetUnitRequest {
@@ -230,56 +170,56 @@ export interface UpdateAssetUnitRequest {
   notes?: string | null;
 }
 
+export interface AssignAssetRequest {
+  id: string;
+  employeeId?: string | null;
+  systemId?: string;
+  assetUnitId?: string;
+  notes?: string;
+}
+
 export interface ReturnAssetRequest {
   id: string;
   assetUnitId?: string;
   notes?: string;
 }
 
-export interface AssetPoolParams {
-  search?: string;
-  organisationId?: string;
-  kind?: AssetKind;
-  categoryId?: string;
-  locationId?: string;
-  page?: number;
-  pageSize?: number;
-}
-
-export interface AssetPoolItem extends Asset {
-  quantityAvailable: number;
-}
-
-export interface AssetPoolResponse {
-  items: AssetPoolItem[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface InventoryHistoryEntry {
+export interface TransferAssetRequest {
   id: string;
-  assetId: string;
-  changeType: string;
-  quantityDelta: number;
-  quantityAfter: number;
-  quantityAssignedAfter: number;
-  performedBy: string;
-  reason?: string | null;
-  createdAt: string;
+  toEmployeeId: string;
+  fromSystemId?: string;
+  toSystemId?: string;
+  reason: string;
+  notes?: string;
 }
 
 export interface AdjustInventoryRequest {
   id: string;
-  changeType: "RESTOCK" | "CONSUMED" | "RETURNED" | "ADJUSTMENT" | "WRITE_OFF";
+  changeType: InventoryChangeType;
   quantity: number;
   direction?: "increase" | "decrease";
   reason?: string;
 }
 
 // ============================================================
-// ASSET API - WITH PERFORMANCE OPTIMIZATIONS
+// CONFIG
+// Only keepUnusedDataFor is a valid endpoint option. Focus and
+// reconnect refetching are hook options or store-level listeners.
+// ============================================================
+
+const CACHE_CONFIG = { keepUnusedDataFor: 5 * 60 };
+const SHORT_CACHE_CONFIG = { keepUnusedDataFor: 60 };
+const LIST_CACHE_CONFIG = { keepUnusedDataFor: 3 * 60 };
+const LONG_CACHE_CONFIG = { keepUnusedDataFor: 10 * 60 };
+
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
+
+const toPageSize = (size?: number) =>
+  Math.min(size || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+
+// ============================================================
+// ASSET API
 // ============================================================
 
 export const assetApi = createApi({
@@ -287,23 +227,15 @@ export const assetApi = createApi({
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
-
-    // ✅ FIX: Add request timeout (30 seconds)
     timeout: 30000,
 
-    // ✅ FIX: Add compression headers and proper request headers
-    prepareHeaders: (headers, { getState }) => {
-      const state = getState() as RootState;
-
+    // Do not set Content-Type here. fetchBaseQuery sets it for JSON
+    // bodies, and FormData uploads need the browser to set the boundary.
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem("accessToken");
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
-
-      headers.set("Content-Type", "application/json");
-      // ✅ FIX: Explicitly request gzip compression
-      headers.set("Accept-Encoding", "gzip, deflate");
-
       return headers;
     },
   }),
@@ -321,7 +253,7 @@ export const assetApi = createApi({
 
   endpoints: (builder) => ({
     // ============================================================
-    // GET ASSETS - WITH PAGINATION & CACHING
+    // ASSETS
     // ============================================================
 
     getAssets: builder.query<AssetsResponse, GetAssetsParams | undefined>({
@@ -333,12 +265,11 @@ export const assetApi = createApi({
           organisationId: params.organisationId || undefined,
           kind: params.kind || undefined,
           categoryId: params.categoryId || undefined,
-          // ✅ FIX: Add default pagination
+          status: params.status || undefined,
+          sortBy: params.sortBy || undefined,
+          sortDir: params.sortDir || undefined,
           page: params.page || 1,
-          pageSize: Math.min(
-            params.pageSize || DEFAULT_PAGE_SIZE,
-            MAX_PAGE_SIZE,
-          ),
+          pageSize: toPageSize(params.pageSize),
         },
       }),
 
@@ -353,13 +284,8 @@ export const assetApi = createApi({
             ]
           : [{ type: "Asset" as const, id: "LIST" }],
 
-      // ✅ FIX: Add cache and refetch configuration
       ...LIST_CACHE_CONFIG,
     }),
-
-    // ============================================================
-    // GET SINGLE ASSET
-    // ============================================================
 
     getAsset: builder.query<AssetResponse, string>({
       query: (id) => ({
@@ -375,46 +301,35 @@ export const assetApi = createApi({
       ...CACHE_CONFIG,
     }),
 
-    // ============================================================
-    // CREATE ASSET
-    // ============================================================
-
-    createAsset: builder.mutation<AssetResponse, any>({
+    createAsset: builder.mutation<AssetResponse, AssetInput>({
       query: (body) => ({
         url: "/assets",
         method: "POST",
         body,
       }),
 
-      // ✅ FIX: Only invalidate specific tags instead of all
       invalidatesTags: [
         { type: "Asset", id: "LIST" },
         { type: "Asset", id: "POOL" },
       ],
     }),
 
-    // ============================================================
-    // UPDATE ASSET
-    // ============================================================
-
-    updateAsset: builder.mutation<AssetResponse, { id: string; body: any }>({
+    updateAsset: builder.mutation<
+      AssetResponse,
+      { id: string; body: AssetInput }
+    >({
       query: ({ id, body }) => ({
         url: `/assets/${id}`,
         method: "PATCH",
         body,
       }),
 
-      // ✅ FIX: Invalidate specific asset instead of all
       invalidatesTags: (result, error, { id }) => [
         { type: "Asset", id },
         { type: "Asset", id: "LIST" },
         { type: "Asset", id: "POOL" },
       ],
     }),
-
-    // ============================================================
-    // DELETE ASSET
-    // ============================================================
 
     deleteAsset: builder.mutation<{ message: string }, string>({
       query: (id) => ({
@@ -422,257 +337,12 @@ export const assetApi = createApi({
         method: "DELETE",
       }),
 
-      invalidatesTags: [
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
-      ],
-    }),
-
-    // ============================================================
-    // ASSET CATEGORIES
-    // ============================================================
-
-    getAssetCategories: builder.query<AssetCategory[], void>({
-      query: () => "/assets/categories",
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({
-                type: "AssetCategory" as const,
-                id,
-              })),
-              { type: "AssetCategory" as const, id: "LIST" },
-            ]
-          : [{ type: "AssetCategory" as const, id: "LIST" }],
-
-      // ✅ FIX: Categories rarely change, keep cached longer
-      keepUnusedDataFor: 10 * 60,
-      refetchOnFocus: false,
-    }),
-
-    // ============================================================
-    // ASSET UNITS - WITH PAGINATION
-    // ============================================================
-
-    getAssetUnits: builder.query<
-      {
-        items: AssetUnit[];
-        total: number;
-        page: number;
-        pageSize: number;
-        totalPages: number;
-      },
-      GetAssetUnitsParams | undefined
-    >({
-      query: (params = {}) => ({
-        url: "/assets/units",
-        method: "GET",
-        params: {
-          assetId: params.assetId || undefined,
-          search: params.search || undefined,
-          status: params.status || undefined,
-          condition: params.condition || undefined,
-          locationId: params.locationId || undefined,
-          // ✅ FIX: Add pagination defaults
-          page: params.page || 1,
-          pageSize: Math.min(
-            params.pageSize || DEFAULT_PAGE_SIZE,
-            MAX_PAGE_SIZE,
-          ),
-        },
-      }),
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.items.map(({ id }) => ({
-                type: "AssetUnit" as const,
-                id,
-              })),
-              { type: "AssetUnit" as const, id: "LIST" },
-            ]
-          : [{ type: "AssetUnit" as const, id: "LIST" }],
-
-      ...LIST_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET HISTORY
-    // ============================================================
-
-    getAssetHistory: builder.query<AssetHistory[], string>({
-      query: (id) => `/assets/${id}/history`,
-
-      providesTags: (result, error, id) => [
-        { type: "AssetHistory" as const, id },
-      ],
-
-      ...SHORT_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET ASSIGNMENT
-    // ============================================================
-
-    assignAsset: builder.mutation<
-      AssetResponse,
-      {
-        id: string;
-        employeeId: string;
-        assetUnitId?: string;
-        notes?: string;
-      }
-    >({
-      query: ({ id, ...body }) => ({
-        url: `/assets/${id}/assign`,
-        method: "POST",
-        body,
-      }),
-
-      // ✅ FIX: Only invalidate relevant tags
-      invalidatesTags: (result, error, { id, employeeId }) => [
-        { type: "Asset", id: "POOL" },
+      invalidatesTags: (result, error, id) => [
         { type: "Asset", id },
         { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetAssignment", id },
-      ],
-    }),
-
-    // ============================================================
-    // ASSET TRANSFER
-    // ============================================================
-
-    transferAsset: builder.mutation<
-      Asset,
-      {
-        id: string;
-        toEmployeeId: string;
-        fromSystemId?: string;
-        toSystemId?: string;
-        reason: string;
-        notes?: string;
-      }
-    >({
-      query: ({ id, ...body }) => ({
-        url: `/assets/${id}/transfer`,
-        method: "POST",
-        body,
-      }),
-
-      invalidatesTags: (result, error, { id }) => [
         { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetTransfer", id },
       ],
     }),
-
-    // ============================================================
-    // ASSET RETURN
-    // ============================================================
-
-    returnAsset: builder.mutation<AssetResponse, ReturnAssetRequest>({
-      query: ({ id, assetUnitId, notes }) => ({
-        url: `/assets/${id}/return`,
-        method: "POST",
-        body: { assetUnitId, notes },
-      }),
-
-      invalidatesTags: (result, error, { id, assetUnitId }) => [
-        { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetAssignment", id },
-        ...(assetUnitId ? [{ type: "AssetUnit", id: assetUnitId }] : []),
-      ],
-    }),
-
-    // ============================================================
-    // SOFTWARE ASSETS - WITH PAGINATION
-    // ============================================================
-
-    getSoftwareAssets: builder.query<SoftwareAsset[], void>({
-      query: () => ({
-        url: "/assets/software",
-        method: "GET",
-        // ✅ FIX: Add default pagination even for software
-        params: { pageSize: MAX_PAGE_SIZE },
-      }),
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({
-                type: "SoftwareAsset" as const,
-                id,
-              })),
-              { type: "SoftwareAsset" as const, id: "LIST" },
-            ]
-          : [{ type: "SoftwareAsset" as const, id: "LIST" }],
-
-      // ✅ FIX: Add cache configuration
-      ...CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET POOL - WITH PAGINATION
-    // ============================================================
-
-    getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>(
-      {
-        query: (params = {}) => ({
-          url: "/assets/pool",
-          method: "GET",
-          params: {
-            search: params.search || undefined,
-            organisationId: params.organisationId || undefined,
-            kind: params.kind || undefined,
-            categoryId: params.categoryId || undefined,
-            locationId: params.locationId || undefined,
-            // ✅ FIX: Add pagination
-            page: params.page || 1,
-            pageSize: Math.min(
-              params.pageSize || DEFAULT_PAGE_SIZE,
-              MAX_PAGE_SIZE,
-            ),
-          },
-        }),
-
-        providesTags: [{ type: "Asset", id: "POOL" }],
-
-        // ✅ FIX: Add cache config for pool
-        ...LIST_CACHE_CONFIG,
-      },
-    ),
-
-    // ============================================================
-    // RELEASE ASSETS FOR EMPLOYEE
-    // ============================================================
-
-    releaseAssetsForEmployee: builder.mutation<
-      { employeeId: string; releasedCount: number },
-      string
-    >({
-      query: (employeeId) => ({
-        url: `/assets/release-for-employee/${employeeId}`,
-        method: "POST",
-      }),
-
-      invalidatesTags: [
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
-        { type: "AssetUnit", id: "LIST" },
-        { type: "AssetAssignment", id: "LIST" },
-      ],
-    }),
-
-    // ============================================================
-    // ASSET IMAGE
-    // ============================================================
 
     setAssetImage: builder.mutation<AssetResponse, { id: string; file: File }>({
       query: ({ id, file }) => {
@@ -692,13 +362,81 @@ export const assetApi = createApi({
       ],
     }),
 
+    removeAssetImage: builder.mutation<AssetResponse, string>({
+      query: (id) => ({
+        url: `/assets/${id}/image/remove`,
+        method: "POST",
+      }),
+
+      invalidatesTags: (result, error, id) => [
+        { type: "Asset", id },
+        { type: "Asset", id: "POOL" },
+      ],
+    }),
+
+    getSoftwareAssets: builder.query<Asset[], void>({
+      query: () => ({
+        url: "/assets",
+        method: "GET",
+        params: { kind: "SOFTWARE", pageSize: MAX_PAGE_SIZE },
+      }),
+      transformResponse: (response: AssetsResponse) => response.items,
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: "SoftwareAsset" as const,
+                id,
+              })),
+              { type: "SoftwareAsset" as const, id: "LIST" },
+            ]
+          : [{ type: "SoftwareAsset" as const, id: "LIST" }],
+
+      ...CACHE_CONFIG,
+    }),
+
+    getAssetHistory: builder.query<AssetHistoryEntry[], string>({
+      query: (id) => `/assets/${id}/history`,
+
+      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
+
+      ...SHORT_CACHE_CONFIG,
+    }),
+
     // ============================================================
-    // INVENTORY ADJUSTMENT
+    // POOL
     // ============================================================
 
-    adjustInventory: builder.mutation<AssetResponse, AdjustInventoryRequest>({
+    getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>(
+      {
+        query: (params = {}) => ({
+          url: "/assets/pool",
+          method: "GET",
+          params: {
+            search: params.search || undefined,
+            organisationId: params.organisationId || undefined,
+            kind: params.kind || undefined,
+            categoryId: params.categoryId || undefined,
+            locationId: params.locationId || undefined,
+            page: params.page || 1,
+            pageSize: toPageSize(params.pageSize),
+          },
+        }),
+
+        providesTags: [{ type: "Asset", id: "POOL" }],
+
+        ...LIST_CACHE_CONFIG,
+      },
+    ),
+
+    // ============================================================
+    // ASSIGNMENT / TRANSFER / RETURN
+    // ============================================================
+
+    assignAsset: builder.mutation<AssetResponse, AssignAssetRequest>({
       query: ({ id, ...body }) => ({
-        url: `/assets/${id}/inventory/adjust`,
+        url: `/assets/${id}/assign`,
         method: "POST",
         body,
       }),
@@ -708,120 +446,64 @@ export const assetApi = createApi({
         { type: "Asset", id },
         { type: "Asset", id: "LIST" },
         { type: "AssetHistory", id },
+        { type: "AssetAssignment", id },
       ],
     }),
 
-    // ============================================================
-    // INVENTORY HISTORY - WITH CACHING
-    // ============================================================
-
-    getInventoryHistory: builder.query<InventoryHistoryEntry[], string>({
-      query: (id) => `/assets/${id}/inventory/history`,
-
-      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
-
-      // ✅ FIX: History rarely changes, keep cached
-      keepUnusedDataFor: 10 * 60,
-      refetchOnFocus: false,
-    }),
-
-    // ============================================================
-    // SYSTEMS (placeholder - expand based on your needs)
-    // ============================================================
-
-    getSystems: builder.query<SystemRecord[], void>({
-      query: () => "/systems",
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({
-                type: "System" as const,
-                id,
-              })),
-              { type: "System" as const, id: "LIST" },
-            ]
-          : [{ type: "System" as const, id: "LIST" }],
-
-      ...LIST_CACHE_CONFIG,
-    }),
-
-    createSystem: builder.mutation<SystemRecord, any>({
-      query: (body) => ({
-        url: "/systems",
+    transferAsset: builder.mutation<Asset, TransferAssetRequest>({
+      query: ({ id, ...body }) => ({
+        url: `/assets/${id}/transfer`,
         method: "POST",
         body,
       }),
 
-      invalidatesTags: [{ type: "System", id: "LIST" }],
-    }),
-
-    updateSystem: builder.mutation<SystemRecord, { id: string; body: any }>({
-      query: ({ id, body }) => ({
-        url: `/systems/${id}`,
-        method: "PATCH",
-        body,
-      }),
-
       invalidatesTags: (result, error, { id }) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
+        { type: "Asset", id: "POOL" },
+        { type: "Asset", id },
+        { type: "Asset", id: "LIST" },
+        { type: "AssetHistory", id },
+        { type: "AssetTransfer", id },
       ],
     }),
 
-    assignSystem: builder.mutation<
-      SystemRecord,
-      { id: string; employeeId: string }
+    returnAsset: builder.mutation<AssetResponse, ReturnAssetRequest>({
+      query: ({ id, assetUnitId, notes }) => ({
+        url: `/assets/${id}/return`,
+        method: "POST",
+        body: { assetUnitId, notes },
+      }),
+
+      invalidatesTags: (result, error, { id, assetUnitId }) => [
+        { type: "Asset", id: "POOL" },
+        { type: "Asset", id },
+        { type: "Asset", id: "LIST" },
+        { type: "AssetHistory", id },
+        { type: "AssetAssignment", id },
+        ...(assetUnitId
+          ? [{ type: "AssetUnit" as const, id: assetUnitId }]
+          : []),
+      ],
+    }),
+
+    releaseAssetsForEmployee: builder.mutation<
+      { employeeId: string; releasedCount: number },
+      string
     >({
-      query: ({ id, employeeId }) => ({
-        url: `/systems/${id}/assign`,
+      query: (employeeId) => ({
+        url: `/assets/release-for-employee/${employeeId}`,
         method: "POST",
-        body: { employeeId },
       }),
 
-      invalidatesTags: (result, error, { id }) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
-      ],
-    }),
-
-    deleteSystem: builder.mutation<{ message: string }, string>({
-      query: (id) => ({
-        url: `/systems/${id}`,
-        method: "DELETE",
-      }),
-
-      invalidatesTags: [{ type: "System", id: "LIST" }],
-    }),
-
-    // ============================================================
-    // SYSTEM SPECS
-    // ============================================================
-
-    getSystemSpecs: builder.query<any, string>({
-      query: (systemId) => `/systems/${systemId}/specs`,
-
-      providesTags: (result, error, systemId) => [
-        { type: "System", id: systemId },
-      ],
-
-      ...CACHE_CONFIG,
-    }),
-
-    upsertSystemSpecs: builder.mutation<any, { systemId: string; body: any }>({
-      query: ({ systemId, body }) => ({
-        url: `/systems/${systemId}/specs`,
-        method: "PUT",
-        body,
-      }),
-
-      invalidatesTags: (result, error, { systemId }) => [
-        { type: "System", id: systemId },
+      invalidatesTags: [
+        { type: "Asset", id: "LIST" },
+        { type: "Asset", id: "POOL" },
+        { type: "AssetUnit", id: "LIST" },
+        { type: "AssetAssignment", id: "LIST" },
       ],
     }),
 
     // ============================================================
-    // ASSET ASSIGNMENTS - WITH CACHING
+    // ASSIGNMENT QUERIES
     // ============================================================
 
     getAssetAssignments: builder.query<AssetAssignment[], void>({
@@ -841,115 +523,6 @@ export const assetApi = createApi({
       ...LIST_CACHE_CONFIG,
     }),
 
-    // ============================================================
-    // ASSET ASSIGNMENTS BY EMPLOYEE
-    // ============================================================
-
-    getAssetAssignmentsByEmployee: builder.query<AssetAssignment[], string>({
-      query: (employeeId) => `/employees/${employeeId}/assignments`,
-
-      providesTags: (result, error, employeeId) => [
-        { type: "AssetAssignment", id: employeeId },
-      ],
-
-      ...LIST_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET ASSIGNMENTS BY ASSET
-    // ============================================================
-
-    getAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
-      query: (assetId) => `/assets/${assetId}/assignments`,
-
-      providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: assetId },
-      ],
-
-      ...LIST_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ACTIVE ASSET ASSIGNMENTS BY EMPLOYEE
-    // ============================================================
-
-    getActiveAssetAssignmentsByEmployee: builder.query<
-      AssetAssignment[],
-      string
-    >({
-      query: (employeeId) => `/employees/${employeeId}/assignments/active`,
-
-      providesTags: (result, error, employeeId) => [
-        { type: "AssetAssignment", id: `${employeeId}-active` },
-      ],
-
-      // Active assignments change frequently
-      ...SHORT_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ACTIVE ASSET ASSIGNMENTS BY ASSET
-    // ============================================================
-
-    getActiveAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
-      query: (assetId) => `/assets/${assetId}/assignments/active`,
-
-      providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: `${assetId}-active` },
-      ],
-
-      ...SHORT_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET ASSIGNMENT SUMMARY
-    // ============================================================
-
-    getAssetAssignmentSummary: builder.query<any, string>({
-      query: (assetId) => `/assets/${assetId}/assignments/summary`,
-
-      providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: `${assetId}-summary` },
-      ],
-
-      ...SHORT_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ASSET ASSIGNMENT BY ASSET UNIT
-    // ============================================================
-
-    getAssetAssignmentsByAssetUnit: builder.query<AssetAssignment[], string>({
-      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments`,
-
-      providesTags: (result, error, assetUnitId) => [
-        { type: "AssetAssignment", id: assetUnitId },
-      ],
-
-      ...LIST_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // ACTIVE ASSET ASSIGNMENT BY ASSET UNIT
-    // ============================================================
-
-    getActiveAssetAssignmentByAssetUnit: builder.query<
-      AssetAssignment | null,
-      string
-    >({
-      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments/active`,
-
-      providesTags: (result, error, assetUnitId) => [
-        { type: "AssetAssignment", id: `${assetUnitId}-active` },
-      ],
-
-      ...SHORT_CACHE_CONFIG,
-    }),
-
-    // ============================================================
-    // GET SINGLE ASSET ASSIGNMENT
-    // ============================================================
-
     getAssetAssignment: builder.query<AssetAssignment, string>({
       query: (id) => `/assets/assignments/${id}`,
 
@@ -958,9 +531,115 @@ export const assetApi = createApi({
       ...CACHE_CONFIG,
     }),
 
+    getAssetAssignmentsByEmployee: builder.query<AssetAssignment[], string>({
+      query: (employeeId) => `/employees/${employeeId}/assignments`,
+
+      providesTags: (result, error, employeeId) => [
+        { type: "AssetAssignment", id: `employee-${employeeId}` },
+      ],
+
+      ...LIST_CACHE_CONFIG,
+    }),
+
+    getActiveAssetAssignmentsByEmployee: builder.query<
+      AssetAssignment[],
+      string
+    >({
+      query: (employeeId) => `/employees/${employeeId}/assignments/active`,
+
+      providesTags: (result, error, employeeId) => [
+        { type: "AssetAssignment", id: `employee-${employeeId}-active` },
+      ],
+
+      ...SHORT_CACHE_CONFIG,
+    }),
+
+    getAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
+      query: (assetId) => `/assets/${assetId}/assignments`,
+
+      providesTags: (result, error, assetId) => [
+        { type: "AssetAssignment", id: `asset-${assetId}` },
+      ],
+
+      ...LIST_CACHE_CONFIG,
+    }),
+
+    getActiveAssetAssignmentsByAsset: builder.query<AssetAssignment[], string>({
+      query: (assetId) => `/assets/${assetId}/assignments/active`,
+
+      providesTags: (result, error, assetId) => [
+        { type: "AssetAssignment", id: `asset-${assetId}-active` },
+      ],
+
+      ...SHORT_CACHE_CONFIG,
+    }),
+
+    getAssetAssignmentSummary: builder.query<unknown, string>({
+      query: (assetId) => `/assets/${assetId}/assignments/summary`,
+
+      providesTags: (result, error, assetId) => [
+        { type: "AssetAssignment", id: `asset-${assetId}-summary` },
+      ],
+
+      ...SHORT_CACHE_CONFIG,
+    }),
+
+    getAssetAssignmentsByAssetUnit: builder.query<AssetAssignment[], string>({
+      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments`,
+
+      providesTags: (result, error, assetUnitId) => [
+        { type: "AssetAssignment", id: `unit-${assetUnitId}` },
+      ],
+
+      ...LIST_CACHE_CONFIG,
+    }),
+
+    getActiveAssetAssignmentByAssetUnit: builder.query<
+      AssetAssignment | null,
+      string
+    >({
+      query: (assetUnitId) => `/assets/units/${assetUnitId}/assignments/active`,
+
+      providesTags: (result, error, assetUnitId) => [
+        { type: "AssetAssignment", id: `unit-${assetUnitId}-active` },
+      ],
+
+      ...SHORT_CACHE_CONFIG,
+    }),
+
     // ============================================================
-    // CATEGORY OPERATIONS
+    // CATEGORIES
     // ============================================================
+
+    getAssetCategories: builder.query<
+      AssetCategory[],
+      { isActive?: boolean } | void
+    >({
+      query: (arg) => {
+        const params = arg || undefined;
+        return {
+          url: "/assets/categories",
+          method: "GET",
+          params:
+            params?.isActive === undefined
+              ? undefined
+              : { isActive: params.isActive },
+        };
+      },
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: "AssetCategory" as const,
+                id,
+              })),
+              { type: "AssetCategory" as const, id: "LIST" },
+            ]
+          : [{ type: "AssetCategory" as const, id: "LIST" }],
+
+      ...LONG_CACHE_CONFIG,
+    }),
 
     getAssetCategory: builder.query<AssetCategory, string>({
       query: (id) => `/assets/categories/${id}`,
@@ -970,7 +649,7 @@ export const assetApi = createApi({
       ...CACHE_CONFIG,
     }),
 
-    createAssetCategory: builder.mutation<AssetCategory, any>({
+    createAssetCategory: builder.mutation<AssetCategory, AssetCategoryInput>({
       query: (body) => ({
         url: "/assets/categories",
         method: "POST",
@@ -982,7 +661,7 @@ export const assetApi = createApi({
 
     updateAssetCategory: builder.mutation<
       AssetCategory,
-      { id: string; body: any }
+      { id: string; body: Partial<AssetCategoryInput> }
     >({
       query: ({ id, body }) => ({
         url: `/assets/categories/${id}`,
@@ -1018,8 +697,40 @@ export const assetApi = createApi({
     }),
 
     // ============================================================
-    // ASSET UNITS OPERATIONS
+    // ASSET UNITS
     // ============================================================
+
+    getAssetUnits: builder.query<
+      AssetUnitsResponse,
+      GetAssetUnitsParams | undefined
+    >({
+      query: (params = {}) => ({
+        url: "/assets/units",
+        method: "GET",
+        params: {
+          assetId: params.assetId || undefined,
+          search: params.search || undefined,
+          status: params.status || undefined,
+          condition: params.condition || undefined,
+          locationId: params.locationId || undefined,
+          page: params.page || 1,
+          pageSize: toPageSize(params.pageSize),
+        },
+      }),
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.items.map(({ id }) => ({
+                type: "AssetUnit" as const,
+                id,
+              })),
+              { type: "AssetUnit" as const, id: "LIST" },
+            ]
+          : [{ type: "AssetUnit" as const, id: "LIST" }],
+
+      ...LIST_CACHE_CONFIG,
+    }),
 
     getAssetUnit: builder.query<AssetUnit, string>({
       query: (id) => `/assets/units/${id}`,
@@ -1033,7 +744,7 @@ export const assetApi = createApi({
       query: (assetId) => `/assets/${assetId}/units`,
 
       providesTags: (result, error, assetId) => [
-        { type: "AssetUnit", id: assetId },
+        { type: "AssetUnit", id: `asset-${assetId}` },
       ],
 
       ...LIST_CACHE_CONFIG,
@@ -1048,7 +759,7 @@ export const assetApi = createApi({
 
       invalidatesTags: (result, error, { assetId }) => [
         { type: "AssetUnit", id: "LIST" },
-        { type: "AssetUnit", id: assetId },
+        { type: "AssetUnit", id: `asset-${assetId}` },
         { type: "Asset", id: assetId },
         { type: "Asset", id: "POOL" },
       ],
@@ -1115,27 +826,149 @@ export const assetApi = createApi({
         method: "DELETE",
       }),
 
-      invalidatesTags: [
+      invalidatesTags: (result, error, id) => [
+        { type: "AssetUnit", id },
         { type: "AssetUnit", id: "LIST" },
         { type: "Asset", id: "POOL" },
       ],
     }),
 
-    getAssetUnitHistory: builder.query<any[], string>({
+    getAssetUnitHistory: builder.query<AssetHistoryEntry[], string>({
       query: (id) => `/assets/units/${id}/history`,
 
-      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
+      providesTags: (result, error, id) => [
+        { type: "AssetHistory", id: `unit-${id}` },
+      ],
 
       ...CACHE_CONFIG,
     }),
 
-    removeAssetImage: builder.mutation<AssetResponse, string>({
-      query: (id) => ({
-        url: `/assets/${id}/image/remove`,
+    // ============================================================
+    // INVENTORY
+    // ============================================================
+
+    adjustInventory: builder.mutation<AssetResponse, AdjustInventoryRequest>({
+      query: ({ id, ...body }) => ({
+        url: `/assets/${id}/inventory/adjust`,
         method: "POST",
+        body,
       }),
 
-      invalidatesTags: (result, error, id) => [{ type: "Asset", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Asset", id: "POOL" },
+        { type: "Asset", id },
+        { type: "Asset", id: "LIST" },
+        { type: "AssetHistory", id },
+      ],
+    }),
+
+    getInventoryHistory: builder.query<InventoryHistoryEntry[], string>({
+      query: (id) => `/assets/${id}/inventory/history`,
+
+      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
+
+      ...LONG_CACHE_CONFIG,
+    }),
+
+    // ============================================================
+    // SYSTEMS
+    // ============================================================
+
+    getSystems: builder.query<SystemRecord[], { search?: string; employeeId?: string; organisationId?: string } | void>({
+      query: (params) => ({ url: "/systems", params: params || undefined }),
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: "System" as const,
+                id,
+              })),
+              { type: "System" as const, id: "LIST" },
+            ]
+          : [{ type: "System" as const, id: "LIST" }],
+
+      ...LIST_CACHE_CONFIG,
+    }),
+
+    createSystem: builder.mutation<SystemRecord, SystemInput>({
+      query: (body) => ({
+        url: "/systems",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: [{ type: "System", id: "LIST" }],
+    }),
+
+    updateSystem: builder.mutation<
+      SystemRecord,
+      { id: string; body: Partial<SystemInput> }
+    >({
+      query: ({ id, body }) => ({
+        url: `/systems/${id}`,
+        method: "PATCH",
+        body,
+      }),
+
+      invalidatesTags: (result, error, { id }) => [
+        { type: "System", id },
+        { type: "System", id: "LIST" },
+      ],
+    }),
+
+    assignSystem: builder.mutation<
+      SystemRecord,
+      { id: string; employeeId: string | null }
+    >({
+      query: ({ id, employeeId }) => ({
+        url: `/systems/${id}/assign`,
+        method: "POST",
+        body: { employeeId },
+      }),
+
+      invalidatesTags: (result, error, { id }) => [
+        { type: "System", id },
+        { type: "System", id: "LIST" },
+      ],
+    }),
+
+    deleteSystem: builder.mutation<{ message: string }, string>({
+      query: (id) => ({
+        url: `/systems/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: (result, error, id) => [
+        { type: "System", id },
+        { type: "System", id: "LIST" },
+      ],
+    }),
+
+    getSystemSpecs: builder.query<SystemSpecs, string>({
+      query: (systemId) => `/systems/${systemId}/specs`,
+
+      providesTags: (result, error, systemId) => [
+        { type: "System", id: `specs-${systemId}` },
+      ],
+
+      ...CACHE_CONFIG,
+    }),
+
+    upsertSystemSpecs: builder.mutation<
+      SystemSpecs,
+      { systemId: string; body: Partial<Omit<SystemSpecs, "systemId">> & { cloudStoragePassword?: string } }
+    >({
+      query: ({ systemId, body }) => ({
+        url: `/systems/${systemId}/specs`,
+        method: "PUT",
+        body,
+      }),
+
+      invalidatesTags: (result, error, { systemId }) => [
+        { type: "System", id: `specs-${systemId}` },
+        { type: "System", id: systemId },
+      ],
     }),
   }),
 });
@@ -1145,22 +978,35 @@ export const assetApi = createApi({
 // ============================================================
 
 export const {
-  useGetSystemsQuery,
-  useCreateSystemMutation,
-  useUpdateSystemMutation,
-  useAssignSystemMutation,
-  useDeleteSystemMutation,
-  useGetSystemSpecsQuery,
-  useUpsertSystemSpecsMutation,
   useGetAssetsQuery,
   useGetAssetQuery,
   useGetAssetHistoryQuery,
   useCreateAssetMutation,
   useUpdateAssetMutation,
   useDeleteAssetMutation,
+  useRemoveAssetImageMutation,
+  useSetAssetImageMutation,
+  useGetSoftwareAssetsQuery,
+  useGetAssetPoolQuery,
   useAssignAssetMutation,
   useTransferAssetMutation,
   useReturnAssetMutation,
+  useReleaseAssetsForEmployeeMutation,
+  useGetAssetAssignmentsQuery,
+  useGetAssetAssignmentQuery,
+  useGetAssetAssignmentsByEmployeeQuery,
+  useGetActiveAssetAssignmentsByEmployeeQuery,
+  useGetAssetAssignmentsByAssetQuery,
+  useGetActiveAssetAssignmentsByAssetQuery,
+  useGetAssetAssignmentSummaryQuery,
+  useGetAssetAssignmentsByAssetUnitQuery,
+  useGetActiveAssetAssignmentByAssetUnitQuery,
+  useGetAssetCategoriesQuery,
+  useGetAssetCategoryQuery,
+  useCreateAssetCategoryMutation,
+  useUpdateAssetCategoryMutation,
+  useToggleAssetCategoryMutation,
+  useDeleteAssetCategoryMutation,
   useGetAssetUnitsQuery,
   useGetAssetUnitQuery,
   useGetAssetUnitsByAssetQuery,
@@ -1171,28 +1017,15 @@ export const {
   useUpdateAssetUnitLocationMutation,
   useDeleteAssetUnitMutation,
   useGetAssetUnitHistoryQuery,
-  useGetSoftwareAssetsQuery,
-  useGetAssetAssignmentsQuery,
-  useGetAssetAssignmentsByEmployeeQuery,
-  useGetActiveAssetAssignmentsByEmployeeQuery,
-  useGetAssetAssignmentsByAssetQuery,
-  useGetActiveAssetAssignmentsByAssetQuery,
-  useGetAssetAssignmentSummaryQuery,
-  useGetAssetAssignmentsByAssetUnitQuery,
-  useGetActiveAssetAssignmentByAssetUnitQuery,
-  useGetAssetAssignmentQuery,
-  useGetAssetCategoriesQuery,
-  useGetAssetCategoryQuery,
-  useCreateAssetCategoryMutation,
-  useUpdateAssetCategoryMutation,
-  useToggleAssetCategoryMutation,
-  useDeleteAssetCategoryMutation,
-  useGetAssetPoolQuery,
-  useReleaseAssetsForEmployeeMutation,
-  useSetAssetImageMutation,
-  useRemoveAssetImageMutation,
   useAdjustInventoryMutation,
   useGetInventoryHistoryQuery,
+  useGetSystemsQuery,
+  useCreateSystemMutation,
+  useUpdateSystemMutation,
+  useAssignSystemMutation,
+  useDeleteSystemMutation,
+  useGetSystemSpecsQuery,
+  useUpsertSystemSpecsMutation,
 } = assetApi;
 
 export default assetApi;

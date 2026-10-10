@@ -682,7 +682,7 @@ export function CreateAssetModal({
         isActive: true,
       }).unwrap();
 
-      const createdCategory = response.data;
+      const createdCategory = response;
 
       if (!createdCategory?.id) {
         throw new Error(
@@ -728,7 +728,8 @@ export function CreateAssetModal({
       if (isEditMode) {
         const payload = buildUpdatePayload();
 
-        await updateAsset(payload).unwrap();
+        const { id, ...body } = payload;
+        await updateAsset({ id, body }).unwrap();
 
         toast.add({
           title: "Asset updated",

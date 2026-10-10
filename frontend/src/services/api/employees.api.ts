@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
-import type { AssetAssignment, SystemRecord } from "./asset.api";
+import type { AssetAssignment, SystemRecord } from "../../types";
 import { BACKEND } from "../../lib/api";
 
 // ============================================================

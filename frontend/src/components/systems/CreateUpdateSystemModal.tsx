@@ -77,10 +77,7 @@ export function CreateUpdateSystemModal({
     skip: !open || !system?.id,
   });
 
-  const existingSpecs =
-    specsResponse && "data" in specsResponse
-      ? specsResponse.data
-      : specsResponse;
+  const existingSpecs = specsResponse;
 
   useEffect(() => {
     if (!open) return;
@@ -130,30 +127,32 @@ export function CreateUpdateSystemModal({
       };
 
       const result = system
-        ? await update({ ...body, id: system.id }).unwrap()
+        ? await update({ body, id: system.id }).unwrap()
         : await create(body).unwrap();
 
       const systemId = result.id;
 
       await upsertSpecs({
         systemId,
-        processor: specsForm.processor.trim() || null,
-        ram: specsForm.ram.trim() || null,
-        localStorage: specsForm.localStorage.trim() || null,
-        graphicsCard: specsForm.graphicsCard.trim() || null,
-        motherboard: specsForm.motherboard.trim() || null,
-        powerSupply: specsForm.powerSupply.trim() || null,
-        monitor: specsForm.monitor.trim() || null,
-        monitorSize: specsForm.monitorSize.trim() || null,
-        operatingSystem: specsForm.operatingSystem.trim() || null,
-        osVersion: specsForm.osVersion.trim() || null,
-        cloudStorage: specsForm.cloudStorage.trim() || null,
-        cloudStorageEmail: specsForm.cloudStorageEmail.trim() || null,
-        cloudStoragePassword:
-          specsForm.cloudStoragePassword.trim() || undefined,
-        macAddress: specsForm.macAddress.trim() || null,
-        ipAddress: specsForm.ipAddress.trim() || null,
-        notes: specsForm.notes.trim() || null,
+        body: {
+          processor: specsForm.processor.trim() || null,
+          ram: specsForm.ram.trim() || null,
+          localStorage: specsForm.localStorage.trim() || null,
+          graphicsCard: specsForm.graphicsCard.trim() || null,
+          motherboard: specsForm.motherboard.trim() || null,
+          powerSupply: specsForm.powerSupply.trim() || null,
+          monitor: specsForm.monitor.trim() || null,
+          monitorSize: specsForm.monitorSize.trim() || null,
+          operatingSystem: specsForm.operatingSystem.trim() || null,
+          osVersion: specsForm.osVersion.trim() || null,
+          cloudStorage: specsForm.cloudStorage.trim() || null,
+          cloudStorageEmail: specsForm.cloudStorageEmail.trim() || null,
+          cloudStoragePassword:
+            specsForm.cloudStoragePassword.trim() || undefined,
+          macAddress: specsForm.macAddress.trim() || null,
+          ipAddress: specsForm.ipAddress.trim() || null,
+          notes: specsForm.notes.trim() || null,
+        },
       }).unwrap();
 
       toast.add({ title: "System saved", type: "success" });

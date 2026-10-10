@@ -439,14 +439,14 @@ export default function Dashboard() {
   assets
     .filter((asset) => asset.status === "ASSIGNED")
     .forEach((asset) => {
-      const employee = asset.employee || asset.assignedTo || null;
+      const employee = asset.assignments?.find(
+        (assignment) => assignment.status === "ACTIVE",
+      )?.employee;
 
       const employeeName =
-        typeof employee === "object"
+        employee
           ? getEmployeeName(employee as Employee)
-          : typeof employee === "string"
-            ? employee
-            : "Unknown employee";
+          : "Unknown employee";
 
       employeeAssignmentMap.set(
         employeeName,

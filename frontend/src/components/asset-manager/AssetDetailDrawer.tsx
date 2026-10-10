@@ -17,11 +17,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-import type {
-  Asset,
-  AssetHistory,
-  AssetAssignment,
-} from "../../services/api/asset.api";
+import type { Asset, AssetHistory, AssetAssignment } from "../../types";
 
 // ============================================================
 // FIELD

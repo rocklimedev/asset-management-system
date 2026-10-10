@@ -19,7 +19,7 @@ import { clsx } from "clsx";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-import type { Asset } from "../../services/api/asset.api";
+import type { Asset } from "../../types";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Laptop,

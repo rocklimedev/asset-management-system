@@ -20,9 +20,8 @@ import {
   useGetSystemSpecsQuery,
   useReturnAssetMutation,
   useAssignSystemMutation,
-  type Asset,
 } from "../../services/api/asset.api";
-
+import type { Asset } from "../../types";
 import {
   useGetSystemSoftwareQuery,
   useRemoveSoftwareInstallationMutation,
@@ -37,7 +36,10 @@ import {
 } from "../../types/systems";
 
 import { SoftwareAssignModal } from "../asset-manager/SoftwareAssignModal";
-import { TransferSystemAssetModal, type SystemTransferTarget } from "./TransferSystemAssetModal";
+import {
+  TransferSystemAssetModal,
+  type SystemTransferTarget,
+} from "./TransferSystemAssetModal";
 
 function SpecItem({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -72,7 +74,8 @@ export function SystemDetailDrawer({
   onShowHistory,
 }: Props) {
   const [softwareModalOpen, setSoftwareModalOpen] = useState(false);
-  const [transferTarget, setTransferTarget] = useState<SystemTransferTarget | null>(null);
+  const [transferTarget, setTransferTarget] =
+    useState<SystemTransferTarget | null>(null);
 
   const [remove, removeState] = useReturnAssetMutation();
   const [assign, assignState] = useAssignSystemMutation();
@@ -91,10 +94,7 @@ export function SystemDetailDrawer({
     skip: !system?.id,
   });
 
-  const systemSpecs =
-    specsResponse && "data" in specsResponse
-      ? specsResponse.data
-      : specsResponse;
+  const systemSpecs = specsResponse;
 
   /*
    * ============================================================
@@ -667,7 +667,18 @@ export function SystemDetailDrawer({
                           )}
                         </div>
 
-                        <Button size="sm" variant="outline" disabled={isBusy} onClick={() => setTransferTarget({ id: installation.id, name: softwareName, kind: "software" })}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={() =>
+                            setTransferTarget({
+                              id: installation.id,
+                              name: softwareName,
+                              kind: "software",
+                            })
+                          }
+                        >
                           Transfer asset
                         </Button>
                         <Button
@@ -754,7 +765,18 @@ export function SystemDetailDrawer({
                     History
                   </Button>
 
-                  <Button size="sm" variant="outline" disabled={isBusy} onClick={() => setTransferTarget({ id: assignment.assetId, name: assignment.asset?.name ?? "Component", kind: "component" })}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isBusy}
+                    onClick={() =>
+                      setTransferTarget({
+                        id: assignment.assetId,
+                        name: assignment.asset?.name ?? "Component",
+                        kind: "component",
+                      })
+                    }
+                  >
                     Transfer asset
                   </Button>
                   <Button
@@ -776,7 +798,8 @@ export function SystemDetailDrawer({
             )}
 
             <p className="mt-4 text-xs text-muted-foreground">
-              Transfer a component directly to another employee, or remove it to make it available for another system.
+              Transfer a component directly to another employee, or remove it to
+              make it available for another system.
             </p>
           </div>
         </section>
@@ -797,7 +820,15 @@ export function SystemDetailDrawer({
         installedAssetIds={installedSoftwareAssetIds}
         onClose={() => setSoftwareModalOpen(false)}
       />
-      {transferTarget && <TransferSystemAssetModal key={`${system.id}-${transferTarget.kind}-${transferTarget.id}`} target={transferTarget} systemId={system.id} employeeId={system.employeeId} onClose={() => setTransferTarget(null)} />}
+      {transferTarget && (
+        <TransferSystemAssetModal
+          key={`${system.id}-${transferTarget.kind}-${transferTarget.id}`}
+          target={transferTarget}
+          systemId={system.id}
+          employeeId={system.employeeId}
+          onClose={() => setTransferTarget(null)}
+        />
+      )}
     </>
   );
 }
