@@ -228,6 +228,7 @@ export class AssetUnitsService {
     data: {
       unitCode?: string | null;
       serialNumber?: string | null;
+      cellularIdentities?: { imei?: string; simNumber?: string }[];
       status?: AssetUnitStatus;
       condition?: AssetUnitCondition;
       locationId?: string | null;
@@ -318,6 +319,7 @@ export class AssetUnitsService {
           unitCode: data.unitCode ?? null,
 
           serialNumber: data.serialNumber ?? null,
+          cellularIdentities: data.cellularIdentities ?? [],
 
           status: data.status ?? AssetUnitStatus.AVAILABLE,
 
@@ -398,6 +400,7 @@ export class AssetUnitsService {
     data: {
       unitCode?: string | null;
       serialNumber?: string | null;
+      cellularIdentities?: { imei?: string; simNumber?: string }[];
       status?: AssetUnitStatus;
       condition?: AssetUnitCondition;
       locationId?: string | null;
@@ -539,6 +542,7 @@ export class AssetUnitsService {
               }
             : {}),
 
+          ...(data.cellularIdentities !== undefined ? { cellularIdentities: data.cellularIdentities } : {}),
           ...(data.serialNumber !== undefined
             ? {
                 serialNumber: data.serialNumber,

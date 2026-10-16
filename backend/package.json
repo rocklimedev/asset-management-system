@@ -8,6 +8,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "migrate:systems": "node scripts/migrate-systems.cjs",
+    "migrate:cellular": "node scripts/migrate-cellular-identities.cjs",
     "test:systems": "npm run build && node --test test/systems.test.cjs"
   },
   "dependencies": {

@@ -33,7 +33,8 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
     { employeeId }, { skip: !employeeId },
   );
   const destinations = systems.filter(s => s.id !== systemId && s.employeeId === employeeId);
-  const requiresSystem = target.kind === "software" || employeeId === currentEmployeeId;
+  const requiresSystem = target.kind === "software";
+  const detachToEmployee = target.kind === "component" && employeeId === currentEmployeeId && !toSystemId;
   const validDestination = !loadingSystems && !systemsError && (toSystemId ? destinations.some(s => s.id === toSystemId) : !requiresSystem);
 
   async function confirm() {
@@ -42,9 +43,9 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
       if (target.kind === "software") {
         await transferSoftware({ id: target.id, toSystemId, notes: notes || undefined }).unwrap();
       } else {
-        await transferAsset({ id: target.id, fromSystemId: systemId, toSystemId: toSystemId || undefined, toEmployeeId: employeeId, reason: toSystemId ? "System reassignment" : "Employee transfer", notes: notes || undefined }).unwrap();
+        await transferAsset({ id: target.id, fromSystemId: systemId, toSystemId: toSystemId || undefined, toEmployeeId: employeeId, reason: toSystemId ? "System reassignment" : detachToEmployee ? "Detached from system to same employee" : "Employee transfer", notes: notes || undefined }).unwrap();
       }
-      toast.add({ title: "Asset transferred", type: "success" });
+      toast.add({ title: detachToEmployee ? "Asset assigned directly to employee" : "Asset transferred", type: "success" });
       onClose();
     } catch (error) {
       toast.add({ title: "Could not transfer asset", description: apiErrorMessage(error), type: "error" });
@@ -60,7 +61,7 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
           <DialogTitle>Transfer asset</DialogTitle>
           <DialogDescription>
             Transfer {target.name} to an employee or another system.
-            {target.kind === "software" ? " Choose the employee’s destination system for this installation." : " Choose another system belonging to the same employee, or transfer to another employee."}
+            {target.kind === "software" ? " Choose the employee’s destination system for this installation." : " Choose Assign directly to employee to detach it from this system and keep it with the same employee, or select a different destination."}
           </DialogDescription>
         </DialogHeader>
         <Input aria-label="Search employees" placeholder="Search employees" value={search} disabled={busy} onChange={e => { setSearch(e.target.value); changePage(1); }} />
@@ -88,7 +89,7 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
         <Textarea id="system-transfer-notes" value={notes} disabled={busy} onChange={e => setNotes(e.target.value)} />
         <DialogFooter>
           <Button variant="outline" disabled={busy} onClick={onClose}>Cancel</Button>
-          <Button loading={busy} disabled={busy || isFetching || isError || !employeeId || !validDestination} onClick={confirm}>Confirm transfer</Button>
+          <Button loading={busy} disabled={busy || isFetching || isError || !employeeId || !validDestination} onClick={confirm}>{detachToEmployee ? "Detach and assign to employee" : "Confirm transfer"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

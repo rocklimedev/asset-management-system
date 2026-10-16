@@ -232,6 +232,8 @@ export class AssetsService {
             input?.unitCode?.trim() ||
             this.generateUnitCode(asset.assetTag ?? null, index),
 
+          cellularIdentities: input?.cellularIdentities ?? [],
+
           serialNumber:
             input?.serialNumber?.trim() ||
             (safeQuantity === 1 ? (options?.serialNumber ?? null) : null),
@@ -1530,7 +1532,7 @@ export class AssetsService {
       throw new BadRequestException("Asset is already on this system.");
     }
 
-    if (fromEmployeeId === dto.toEmployeeId && !dto.toSystemId) {
+    if (fromEmployeeId === dto.toEmployeeId && !dto.toSystemId && !currentAssignment.systemId) {
       throw new BadRequestException(
         "Cannot transfer an asset to its current owner.",
       );

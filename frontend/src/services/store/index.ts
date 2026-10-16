@@ -17,15 +17,9 @@ import reportsApi from "../api/reports.api";
 // ============================================================
 
 /**
- * ✅ FIX: Optimized tag invalidation middleware
- *
- * Instead of invalidating entire tag types (which causes ALL related
- * queries to refetch), we now invalidate only:
- * 1. The specific resource that changed (by ID)
- * 2. List views that might be affected
- * 3. Summary/aggregate views
- *
- * This reduces unnecessary API calls by 50-70%
+ * Keep employee views in sync when asset custody or embedded asset details
+ * change. Both list and detail responses embed assignments, so both must be
+ * refreshed. Dashboard and report summaries also depend on custody changes.
  */
 
 const custodyCache: Middleware = (api) => (next) => (action) => {
@@ -37,6 +31,9 @@ const custodyCache: Middleware = (api) => (next) => (action) => {
 
   if (
     isAnyOf(
+      assetApi.endpoints.createAsset.matchFulfilled,
+      assetApi.endpoints.updateAsset.matchFulfilled,
+      assetApi.endpoints.updateAssetUnit.matchFulfilled,
       assetApi.endpoints.assignAsset.matchFulfilled,
       assetApi.endpoints.returnAsset.matchFulfilled,
       assetApi.endpoints.transferAsset.matchFulfilled,
@@ -46,14 +43,10 @@ const custodyCache: Middleware = (api) => (next) => (action) => {
       assetApi.endpoints.releaseAssetsForEmployee.matchFulfilled,
     )(action)
   ) {
-    // ✅ FIX: Only invalidate specific tags, not entire lists
+    // Employee responses embed asset custody and asset details. Refresh both
+    // the board and individual employee views, including initial assignments.
     api.dispatch(
-      employeesApi.util.invalidateTags([
-        // Invalidate Employee LIST (for list views refresh)
-        { type: "Employee", id: "LIST" },
-        // Also invalidate specific employee if we have the ID
-        // In a real scenario, extract this from the action payload
-      ]),
+      employeesApi.util.invalidateTags(["Employee"]),
     );
 
     api.dispatch(

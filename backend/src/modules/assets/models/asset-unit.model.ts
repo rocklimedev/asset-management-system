@@ -13,6 +13,7 @@ import { Optional } from "sequelize";
 
 import { Asset } from "./asset.model";
 import { AssetAssignment } from "./asset-assignment.model";
+import { Location } from "@/modules/organisation/models/location.model";
 
 export enum AssetUnitStatus {
   AVAILABLE = "AVAILABLE",
@@ -36,6 +37,7 @@ export interface AssetUnitAttributes {
   assetId: string;
   unitCode?: string | null;
   serialNumber?: string | null;
+  cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
   status: AssetUnitStatus;
   condition: AssetUnitCondition;
   locationId?: string | null;
@@ -49,6 +51,7 @@ export type AssetUnitCreationAttributes = Optional<
   | "id"
   | "unitCode"
   | "serialNumber"
+  | "cellularIdentities"
   | "status"
   | "condition"
   | "locationId"
@@ -104,6 +107,9 @@ export class AssetUnit extends Model<
   })
   serialNumber?: string | null;
 
+  @Column({ type: DataType.JSON, allowNull: true, field: "cellular_identities" })
+  cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
+
   @Index
   @Column({
     type: DataType.ENUM(...Object.values(AssetUnitStatus)),
@@ -121,12 +127,16 @@ export class AssetUnit extends Model<
   condition!: AssetUnitCondition;
 
   @Index
+  @ForeignKey(() => Location)
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
     field: "location_id",
   })
   locationId?: string | null;
+
+  @BelongsTo(() => Location, { foreignKey: "locationId" })
+  location?: Location;
 
   @Column({
     type: DataType.TEXT,

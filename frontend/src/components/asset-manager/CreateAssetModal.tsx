@@ -4,6 +4,8 @@ import { Plus, Trash2, X } from "lucide-react";
 import {
   useCreateAssetMutation,
   useUpdateAssetMutation,
+  useUpdateAssetUnitMutation,
+  useGetAssetUnitsByAssetQuery,
   useGetAssetCategoriesQuery,
   useCreateAssetCategoryMutation,
 } from "../../services/api/asset.api";
@@ -41,10 +43,16 @@ interface ApiError {
 
 type AssetTrackingMode = "INDIVIDUAL" | "QUANTITY";
 
+function normalizeIdentities(rows: { imei?: string; simNumber?: string }[]) {
+  return rows.map(row => ({ imei: row.imei?.trim() || undefined, simNumber: row.simNumber?.trim() || undefined }))
+    .filter(row => row.imei || row.simNumber);
+}
+
 interface AssetUnitForm {
   id?: string;
   unitCode: string;
   serialNumber: string;
+  cellularIdentities: { imei?: string; simNumber?: string }[];
   status: AssetStatus;
   condition: AssetCondition;
   locationId: string;
@@ -241,6 +249,7 @@ function createEmptyUnit(
   return {
     unitCode: `UNIT-${String(index + 1).padStart(3, "0")}-${uniqueSuffix}`,
     serialNumber: "",
+    cellularIdentities: [],
     status: defaults?.status ?? "AVAILABLE",
     condition: defaults?.condition ?? "GOOD",
     locationId: "",
@@ -321,6 +330,8 @@ export function CreateAssetModal({
   const [values, setValues] = useState<AssetFormValues>(EMPTY_FORM);
 
   const [units, setUnits] = useState<AssetUnitForm[]>([]);
+  const [saving, setSaving] = useState(false);
+  const { currentData: fetchedUnits, isFetching: loadingUnits, isError: unitsError } = useGetAssetUnitsByAssetQuery(asset?.id ?? "", { skip: !open || !asset?.id });
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -343,7 +354,7 @@ export function CreateAssetModal({
   // ==========================================================
 
   useEffect(() => {
-    if (!open) {
+    if (!open || saving) {
       return;
     }
 
@@ -353,7 +364,7 @@ export function CreateAssetModal({
 
     setValues(nextValues);
 
-    const existingUnits =
+    const existingUnits = fetchedUnits ??
       (
         asset as
           | (Asset & {
@@ -370,6 +381,7 @@ export function CreateAssetModal({
           unitCode:
             unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
           serialNumber: unit.serialNumber ?? "",
+          cellularIdentities: unit.cellularIdentities ?? [],
           status: unit.status ?? nextValues.status ?? "AVAILABLE",
           condition: unit.condition ?? nextValues.condition ?? "GOOD",
           locationId: unit.locationId ?? "",
@@ -385,7 +397,7 @@ export function CreateAssetModal({
         ),
       );
     }
-  }, [open, asset]);
+  }, [open, asset, fetchedUnits]);
 
   // ==========================================================
   // CATEGORY API
@@ -411,8 +423,9 @@ export function CreateAssetModal({
   const [createAsset, { isLoading: isCreating }] = useCreateAssetMutation();
 
   const [updateAsset, { isLoading: isUpdating }] = useUpdateAssetMutation();
+  const [updateAssetUnit, { isLoading: isUpdatingUnit }] = useUpdateAssetUnitMutation();
 
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting = saving || isCreating || isUpdating || isUpdatingUnit || (isEditMode && loadingUnits);
 
   // ==========================================================
   // FIELD HELPER
@@ -496,7 +509,7 @@ export function CreateAssetModal({
   // UNIT HELPERS
   // ==========================================================
 
-  function updateUnit(index: number, key: keyof AssetUnitForm, value: string) {
+  function updateUnit<K extends keyof AssetUnitForm>(index: number, key: K, value: AssetUnitForm[K]) {
     setUnits((current) =>
       current.map((unit, unitIndex) =>
         unitIndex === index
@@ -545,6 +558,7 @@ export function CreateAssetModal({
     const normalizedUnits = units.map((unit, index) => ({
       unitCode: unit.unitCode.trim() || undefined,
       serialNumber: unit.serialNumber.trim() || undefined,
+      cellularIdentities: normalizeIdentities(unit.cellularIdentities),
       status: unit.status || "AVAILABLE",
       condition: unit.condition || "GOOD",
       locationId: unit.locationId || undefined,
@@ -647,6 +661,15 @@ export function CreateAssetModal({
     for (let index = 0; index < units.length; index += 1) {
       const unit = units[index];
 
+      for (const identity of unit.cellularIdentities) {
+        if (identity.imei?.trim() && !/^\d{15}$/.test(identity.imei.trim())) {
+          return `Unit ${index + 1}: IMEI must contain exactly 15 digits.`;
+        }
+        if ((identity.simNumber?.trim().length ?? 0) > 64) {
+          return `Unit ${index + 1}: SIM number must be 64 characters or fewer.`;
+        }
+      }
+
       if (!unit.unitCode.trim()) {
         return `Unit ${index + 1}: unit code is required.`;
       }
@@ -714,6 +737,11 @@ export function CreateAssetModal({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (isSubmitting) return;
+    if (isEditMode && unitsError) {
+      setFormError("Could not load unit details. Reopen the form and try again.");
+      return;
+    }
 
     const validationError = validate();
 
@@ -724,12 +752,19 @@ export function CreateAssetModal({
 
     setFormError(null);
 
+    setSaving(true);
     try {
       if (isEditMode) {
         const payload = buildUpdatePayload();
 
         const { id, ...body } = payload;
         await updateAsset({ id, body }).unwrap();
+        for (const unit of units) {
+          if (unit.id) await updateAssetUnit({ id: unit.id,
+            serialNumber: unit.serialNumber.trim() || null,
+            cellularIdentities: normalizeIdentities(unit.cellularIdentities),
+          }).unwrap();
+        }
 
         toast.add({
           title: "Asset updated",
@@ -760,6 +795,8 @@ export function CreateAssetModal({
         ),
         type: "error",
       });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -1281,13 +1318,28 @@ export function CreateAssetModal({
 
                     {/* STATUS */}
 
+                    <div className="col-span-full space-y-2">
+                      <label className={LABEL_CLASSES}>IMEI codes / SIM numbers</label>
+                      {unit.cellularIdentities.map((identity, slot) => (
+                        <div key={slot} className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-muted-foreground">SIM {slot + 1}</span>
+                          <Input className="min-w-40 flex-1" aria-label={`Unit ${index + 1} IMEI ${slot + 1}`} placeholder="IMEI (15 digits)" inputMode="numeric" maxLength={15} value={identity.imei ?? ""} disabled={isSubmitting}
+                            onChange={e => updateUnit(index, "cellularIdentities", unit.cellularIdentities.map((item, i) => i === slot ? { ...item, imei: e.target.value } : item))} />
+                          <Input className="min-w-40 flex-1" aria-label={`Unit ${index + 1} SIM number ${slot + 1}`} placeholder="SIM number" maxLength={64} value={identity.simNumber ?? ""} disabled={isSubmitting}
+                            onChange={e => updateUnit(index, "cellularIdentities", unit.cellularIdentities.map((item, i) => i === slot ? { ...item, simNumber: e.target.value } : item))} />
+                          <Button type="button" variant="ghost" disabled={isSubmitting} aria-label={`Remove SIM ${slot + 1}`} onClick={() => updateUnit(index, "cellularIdentities", unit.cellularIdentities.filter((_, i) => i !== slot))}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => updateUnit(index, "cellularIdentities", [...unit.cellularIdentities, {}])}><Plus className="h-4 w-4" /> Add IMEI / SIM</Button>
+                    </div>
+
                     <div>
                       <label className={LABEL_CLASSES}>Status</label>
 
                       <select
                         value={unit.status}
                         onChange={(event) =>
-                          updateUnit(index, "status", event.target.value)
+                          updateUnit(index, "status", event.target.value as AssetStatus)
                         }
                         disabled={isSubmitting}
                         className={SELECT_CLASSES}
@@ -1308,7 +1360,7 @@ export function CreateAssetModal({
                       <select
                         value={unit.condition}
                         onChange={(event) =>
-                          updateUnit(index, "condition", event.target.value)
+                          updateUnit(index, "condition", event.target.value as AssetCondition)
                         }
                         disabled={isSubmitting}
                         className={SELECT_CLASSES}

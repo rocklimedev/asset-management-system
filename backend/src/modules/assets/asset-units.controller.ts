@@ -11,6 +11,8 @@ import {
 } from "@nestjs/common";
 import {
   IsEnum,
+  IsArray,
+  ValidateNested,
   IsInt,
   IsOptional,
   IsString,
@@ -20,6 +22,7 @@ import {
   Min,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { CellularIdentityDto } from "./dto/cellular-identity.dto";
 
 import { AssetUnitsService } from "./asset-units.service";
 import { AssetUnitCondition, AssetUnitStatus } from "./models/asset-unit.model";
@@ -75,6 +78,11 @@ export class ListAssetUnitsQueryDto {
 
 export class CreateAssetUnitDto {
   @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CellularIdentityDto)
+  cellularIdentities?: CellularIdentityDto[];
+  @IsOptional()
   @IsString()
   @MaxLength(255)
   unitCode?: string;
@@ -102,6 +110,11 @@ export class CreateAssetUnitDto {
 }
 
 export class UpdateAssetUnitDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CellularIdentityDto)
+  cellularIdentities?: CellularIdentityDto[];
   @IsOptional()
   @IsString()
   @MaxLength(255)

@@ -12,6 +12,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { CellularIdentityDto } from "./cellular-identity.dto";
 
 import { AssetCondition, AssetStatus } from "../models/asset.model";
 
@@ -50,6 +51,12 @@ export class CreateAssetUnitInputDto {
   @IsString()
   @MaxLength(255)
   serialNumber?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CellularIdentityDto)
+  cellularIdentities?: CellularIdentityDto[];
   // ----------------------------------------------------------
   // UNIT STATUS
   // ----------------------------------------------------------

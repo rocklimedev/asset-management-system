@@ -798,8 +798,9 @@ export function SystemDetailDrawer({
             )}
 
             <p className="mt-4 text-xs text-muted-foreground">
-              Transfer a component directly to another employee, or remove it to
-              make it available for another system.
+              Use Transfer asset to detach a component and assign it directly
+              to the same employee, or choose another destination. Remove
+              returns it to the available pool.
             </p>
           </div>
         </section>

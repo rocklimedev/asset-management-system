@@ -532,6 +532,23 @@ export class SoftwareService {
       : [];
 
     const countMap = new Map(counts.map((c) => [c.assetId, Number(c.count)]));
+    if (assetIds.length) {
+      const legacyCounts = await this.legacyAssignmentModel.findAll({
+        attributes: [
+          [col("software_asset_id"), "assetId"],
+          [fn("COUNT", col("id")), "count"],
+        ],
+        where: {
+          softwareAssetId: { [Op.in]: assetIds },
+          status: LegacyAssignmentStatus.ACTIVE,
+        },
+        group: ["software_asset_id"],
+        raw: true,
+      }) as unknown as { assetId: string; count: string }[];
+      for (const row of legacyCounts) {
+        countMap.set(row.assetId, (countMap.get(row.assetId) ?? 0) + Number(row.count));
+      }
+    }
 
     return {
       data: rows.map((r) => ({
@@ -1519,8 +1536,7 @@ export class SoftwareService {
   }
 
   /**
-   * List modern assignments (software_license_assignments).
-   * For system-scoped lists prefer getSystemSoftware which merges both tables.
+   * List assignments from both tables using the modern response shape.
    */
   async getAssignments(params?: {
     softwareAssetId?: string;
@@ -1539,7 +1555,7 @@ export class SoftwareService {
     if (params?.installationStatus)
       where.installationStatus = params.installationStatus;
 
-    return this.assignmentModel.findAll({
+    const modern = await this.assignmentModel.findAll({
       where,
       include: [
         { model: Asset, as: "asset" },
@@ -1556,6 +1572,37 @@ export class SoftwareService {
       ],
       order: [["installedAt", "DESC"]],
     });
+
+    const results = modern.map((row) => row.toJSON());
+    if (params?.licenseId) return results;
+    const legacy = await this.legacyAssignmentModel.findAll({
+      where: {
+        ...(params?.softwareAssetId ? { softwareAssetId: params.softwareAssetId } : {}),
+        ...(params?.systemId ? { systemId: params.systemId } : {}),
+        ...(params?.status ? { status: params.status === SoftwareAssignmentStatus.ACTIVE
+          ? LegacyAssignmentStatus.ACTIVE
+          : { [Op.in]: [LegacyAssignmentStatus.RETURNED, LegacyAssignmentStatus.REVOKED] } } : {}),
+      },
+      include: [
+        { model: Asset, as: "softwareAsset" },
+        { model: System, as: "system", required: Boolean(params?.employeeId),
+          where: params?.employeeId ? { employeeId: params.employeeId } : undefined,
+          include: [{ model: Employee, as: "employee", required: false }] },
+      ],
+      order: [["assignedAt", "DESC"]],
+    });
+    for (const row of legacy) {
+      const j = row.toJSON() as any;
+      const active = j.status === LegacyAssignmentStatus.ACTIVE;
+      const installationStatus = active ? SoftwareInstallationStatus.INSTALLED : SoftwareInstallationStatus.UNINSTALLED;
+      if (params?.installationStatus && params.installationStatus !== installationStatus) continue;
+      results.push({ ...j, assetId: j.softwareAssetId,
+        assignmentStatus: active ? SoftwareAssignmentStatus.ACTIVE : SoftwareAssignmentStatus.REMOVED,
+        installationStatus, installedAt: j.assignedAt, removedAt: j.endedAt,
+        asset: j.softwareAsset ?? null, license: null, licenseId: null, version: null,
+        _source: "legacy" });
+    }
+    return results.sort((a, b) => new Date(b.installedAt ?? 0).getTime() - new Date(a.installedAt ?? 0).getTime());
   }
 
   /**
@@ -1637,9 +1684,9 @@ export class SoftwareService {
   async getSoftwareUsers(softwareAssetId: string) {
     await this.assertSoftwareAsset(softwareAssetId);
 
-    const modern = await this.getAssignments({
-      softwareAssetId,
-      status: SoftwareAssignmentStatus.ACTIVE,
+    const modern = await this.assignmentModel.findAll({
+      where: { assetId: softwareAssetId, assignmentStatus: SoftwareAssignmentStatus.ACTIVE },
+      include: this.assignmentIncludes,
     });
 
     const legacy = await this.legacyAssignmentModel.findAll({

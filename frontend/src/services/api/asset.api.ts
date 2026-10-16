@@ -38,6 +38,7 @@ export type InventoryChangeType =
   | "WRITE_OFF";
 
 export interface AssetUnit {
+  cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
   id: string;
   assetId: string;
   unitCode?: string | null;
@@ -151,6 +152,7 @@ export interface AssetCategoryInput {
 }
 
 export interface CreateAssetUnitRequest {
+  cellularIdentities?: { imei?: string; simNumber?: string }[];
   assetId: string;
   unitCode?: string | null;
   serialNumber?: string | null;
@@ -161,6 +163,7 @@ export interface CreateAssetUnitRequest {
 }
 
 export interface UpdateAssetUnitRequest {
+  cellularIdentities?: { imei?: string; simNumber?: string }[];
   id: string;
   unitCode?: string | null;
   serialNumber?: string | null;
@@ -457,7 +460,10 @@ export const assetApi = createApi({
         body,
       }),
 
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (result, error, { id, fromSystemId, toSystemId }) => [
+        { type: "System", id: "LIST" },
+        ...(fromSystemId ? [{ type: "System" as const, id: fromSystemId }] : []),
+        ...(toSystemId ? [{ type: "System" as const, id: toSystemId }] : []),
         { type: "Asset", id: "POOL" },
         { type: "Asset", id },
         { type: "Asset", id: "LIST" },
@@ -783,6 +789,9 @@ export const assetApi = createApi({
       invalidatesTags: (result, error, { id }) => [
         { type: "AssetUnit", id },
         { type: "AssetUnit", id: "LIST" },
+        { type: "AssetUnit", id: `asset-${result?.assetId}` },
+        { type: "Asset", id: result?.assetId },
+        { type: "Asset", id: "LIST" },
       ],
     }),
 

@@ -11,6 +11,7 @@ import {
 import {
   useGetAssetHistoryQuery,
   useGetActiveAssetAssignmentsByAssetQuery,
+  useGetAssetUnitsByAssetQuery,
 } from "../../services/api/asset.api";
 
 import { Badge } from "../ui/badge";
@@ -54,6 +55,7 @@ export function AssetDetailDrawer({
   onEdit,
   onUnassign,
 }: AssetDetailDrawerProps) {
+  const { currentData: units } = useGetAssetUnitsByAssetQuery(asset?.id ?? "", { skip: !asset?.id });
   // ==========================================================
   // ASSET HISTORY
   // ==========================================================
@@ -295,6 +297,18 @@ export function AssetDetailDrawer({
             ================================================== */}
 
             <section>
+              {(units ?? asset.units ?? []).map(unit => (
+                <div key={unit.id} className="mb-4 rounded-lg border p-3">
+                  <p className="mb-2 text-sm font-medium">{unit.unitCode ?? "Unit"}</p>
+                  <Field label="Serial number" value={unit.serialNumber} />
+                  {(unit.cellularIdentities ?? []).map((identity, index) => (
+                    <div key={index} className="mt-3 grid grid-cols-2 gap-4">
+                      <Field label={`IMEI ${index + 1}`} value={identity.imei} />
+                      <Field label={`SIM number ${index + 1}`} value={identity.simNumber} />
+                    </div>
+                  ))}
+                </div>
+              ))}
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Assignment
