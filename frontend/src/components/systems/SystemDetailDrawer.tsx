@@ -19,7 +19,7 @@ import {
 import {
   useGetSystemSpecsQuery,
   useReturnAssetMutation,
-  useAssignSystemMutation,
+  useReturnSystemMutation,
 } from "../../services/api/asset.api";
 import type { Asset } from "../../types";
 import {
@@ -78,7 +78,7 @@ export function SystemDetailDrawer({
     useState<SystemTransferTarget | null>(null);
 
   const [remove, removeState] = useReturnAssetMutation();
-  const [assign, assignState] = useAssignSystemMutation();
+  const [returnAssignedSystem, returnSystemState] = useReturnSystemMutation();
 
   /*
    * ============================================================
@@ -143,7 +143,7 @@ export function SystemDetailDrawer({
   const isBusy =
     busy ||
     removeState.isLoading ||
-    assignState.isLoading ||
+    returnSystemState.isLoading ||
     removeSoftwareState.isLoading;
 
   /*
@@ -182,10 +182,7 @@ export function SystemDetailDrawer({
     if (!system) return;
 
     try {
-      await assign({
-        id: system.id,
-        employeeId: null,
-      }).unwrap();
+      await returnAssignedSystem(system.id).unwrap();
 
       toast.add({
         title: "System returned",
@@ -194,7 +191,7 @@ export function SystemDetailDrawer({
       });
     } catch (error) {
       toast.add({
-        title: "Assignment failed",
+        title: "Could not return system",
         description: apiErrorMessage(error),
         type: "error",
       });

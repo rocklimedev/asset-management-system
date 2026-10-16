@@ -38,6 +38,7 @@ const custodyCache: Middleware = (api) => (next) => (action) => {
       assetApi.endpoints.returnAsset.matchFulfilled,
       assetApi.endpoints.transferAsset.matchFulfilled,
       assetApi.endpoints.assignSystem.matchFulfilled,
+      assetApi.endpoints.returnSystem.matchFulfilled,
       assetApi.endpoints.updateSystem.matchFulfilled,
       assetApi.endpoints.createSystem.matchFulfilled,
       assetApi.endpoints.releaseAssetsForEmployee.matchFulfilled,

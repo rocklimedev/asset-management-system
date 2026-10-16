@@ -1513,12 +1513,6 @@ export class AssetsService {
 
     const currentAssignment = asset.assignments[0];
 
-    if (currentAssignment.systemId && currentAssignment.systemId !== dto.fromSystemId) {
-      throw new BadRequestException(
-        "Remove this component from its system before assigning it directly to an employee.",
-      );
-    }
-
     if (dto.fromSystemId && currentAssignment.systemId !== dto.fromSystemId) {
       throw new ConflictException("Assignment changed. Refresh and try again.");
     }
@@ -1526,13 +1520,35 @@ export class AssetsService {
     const sourceSystem = currentAssignment.systemId
       ? await System.findByPk(currentAssignment.systemId)
       : null;
-    const fromEmployeeId = sourceSystem?.employeeId ?? currentAssignment.employeeId;
+    const fromEmployeeId =
+      sourceSystem?.employeeId ?? currentAssignment.employeeId;
+
+    // A direct assignment to the system's owner detaches the component from
+    // that system. Older callers do not send fromSystemId for this operation.
+    const detachToSystemOwner = Boolean(
+      sourceSystem &&
+      sourceSystem.employeeId === dto.toEmployeeId &&
+      !dto.toSystemId,
+    );
+    if (
+      currentAssignment.systemId &&
+      !dto.fromSystemId &&
+      !detachToSystemOwner
+    ) {
+      throw new BadRequestException(
+        "Remove this component from its system before assigning it directly to an employee.",
+      );
+    }
 
     if (dto.toSystemId && dto.toSystemId === currentAssignment.systemId) {
       throw new BadRequestException("Asset is already on this system.");
     }
 
-    if (fromEmployeeId === dto.toEmployeeId && !dto.toSystemId && !currentAssignment.systemId) {
+    if (
+      fromEmployeeId === dto.toEmployeeId &&
+      !dto.toSystemId &&
+      !currentAssignment.systemId
+    ) {
       throw new BadRequestException(
         "Cannot transfer an asset to its current owner.",
       );
@@ -1598,20 +1614,33 @@ export class AssetsService {
         lock: t.LOCK.UPDATE,
       });
 
-      if (!active || active.id !== currentAssignment.id || active.systemId !== currentAssignment.systemId || active.employeeId !== currentAssignment.employeeId) {
+      if (
+        !active ||
+        active.id !== currentAssignment.id ||
+        active.systemId !== currentAssignment.systemId ||
+        active.employeeId !== currentAssignment.employeeId
+      ) {
         throw new ConflictException(
           "Assignment changed. Refresh and try again.",
         );
       }
 
       const destinationSystem = dto.toSystemId
-        ? await System.findByPk(dto.toSystemId, { transaction: t, lock: t.LOCK.UPDATE })
+        ? await System.findByPk(dto.toSystemId, {
+            transaction: t,
+            lock: t.LOCK.UPDATE,
+          })
         : null;
       if (dto.toSystemId && !destinationSystem) {
         throw new NotFoundException("Destination system not found.");
       }
-      if (destinationSystem && destinationSystem.employeeId !== dto.toEmployeeId) {
-        throw new ConflictException("Destination system is not assigned to the selected employee. Refresh and try again.");
+      if (
+        destinationSystem &&
+        destinationSystem.employeeId !== dto.toEmployeeId
+      ) {
+        throw new ConflictException(
+          "Destination system is not assigned to the selected employee. Refresh and try again.",
+        );
       }
 
       // ======================================================
@@ -1623,8 +1652,13 @@ export class AssetsService {
           transaction: t,
           lock: t.LOCK.UPDATE,
         });
-        if (!lockedSystem || lockedSystem.employeeId !== sourceSystem?.employeeId) {
-          throw new ConflictException("System assignment changed. Refresh and try again.");
+        if (
+          !lockedSystem ||
+          lockedSystem.employeeId !== sourceSystem?.employeeId
+        ) {
+          throw new ConflictException(
+            "System assignment changed. Refresh and try again.",
+          );
         }
       }
 
@@ -1769,9 +1803,13 @@ export class AssetsService {
 
           performedBy: actor.name,
 
-          fromValue: sourceSystem ? `System: ${sourceSystem.name} (${fromEmployee?.name ?? "Unassigned"})` : fromEmployee?.name ?? "Unassigned",
+          fromValue: sourceSystem
+            ? `System: ${sourceSystem.name} (${fromEmployee?.name ?? "Unassigned"})`
+            : (fromEmployee?.name ?? "Unassigned"),
 
-          toValue: destinationSystem ? `System: ${destinationSystem.name} (${toEmployee.name})` : toEmployee.name,
+          toValue: destinationSystem
+            ? `System: ${destinationSystem.name} (${toEmployee.name})`
+            : toEmployee.name,
 
           notes: dto.notes ?? null,
         } as AssetHistory,

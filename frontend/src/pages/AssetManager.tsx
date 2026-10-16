@@ -23,6 +23,7 @@ import {
   useReleaseAssetsForEmployeeMutation,
   useReturnAssetMutation,
   useAssignSystemMutation,
+  useReturnSystemMutation,
   type Asset,
   type SystemRecord,
 } from "../services/api/asset.api";
@@ -185,6 +186,7 @@ export default function AssetManager() {
 
   const [assignSystem, { isLoading: isAssigningSystem }] =
     useAssignSystemMutation();
+  const [returnSystem, { isLoading: isReturningSystem }] = useReturnSystemMutation();
 
   // ============================================================
   // API - RELEASE ASSETS
@@ -410,10 +412,7 @@ export default function AssetManager() {
 
     try {
       for (const sys of systems) {
-        await assignSystem({
-          id: sys.id,
-          employeeId: null,
-        }).unwrap();
+        await returnSystem(sys.id).unwrap();
       }
 
       toast.add({
@@ -813,7 +812,7 @@ export default function AssetManager() {
       <TransferSystemModal
         open={Boolean(systemTransfer)}
         onClose={() => {
-          if (!isAssigningSystem) {
+          if (!isAssigningSystem && !isReturningSystem) {
             setSystemTransfer(null);
           }
         }}
@@ -837,7 +836,7 @@ export default function AssetManager() {
         }
         onConfirm={confirmSystemTransfer}
         onReturnExistingSystem={handleReturnExistingSystem}
-        loading={isAssigningSystem}
+        loading={isAssigningSystem || isReturningSystem}
         allowReplace={true}
       />
 

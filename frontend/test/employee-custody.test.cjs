@@ -17,7 +17,7 @@ require.extensions['.ts'] = (module, filename) => {
 const { store } = require('../src/services/store/index.ts');
 const { employeesApi } = require('../src/services/api/employees.api.ts');
 
-for (const endpointName of ['createAsset', 'updateAsset', 'updateAssetUnit', 'assignAsset', 'returnAsset', 'transferAsset', 'assignSystem', 'releaseAssetsForEmployee']) {
+for (const endpointName of ['createAsset', 'updateAsset', 'updateAssetUnit', 'assignAsset', 'returnAsset', 'transferAsset', 'assignSystem', 'returnSystem', 'releaseAssetsForEmployee']) {
   test(`${endpointName} refreshes employee board and employee details`, async () => {
     store.dispatch(employeesApi.util.resetApiState());
     const employee = { id: 'employee', name: 'Ada', status: 'ACTIVE', systems: [], assignments: [] };

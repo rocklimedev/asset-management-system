@@ -54,7 +54,7 @@ test('component transfer preserves its unit, closes system membership and record
   try {
     await assert.rejects(service.transfer('asset', { toEmployeeId: 'destination' }, { id: 'actor' }), /Remove this component/);
     assert.equal(writes.length, 0);
-    await service.transfer('asset', { fromSystemId: 'system', toEmployeeId: 'source', reason: 'Detached from system to same employee' }, { id: 'actor', name: 'Admin' });
+    await service.transfer('asset', { toEmployeeId: 'source', reason: 'Detached from system to same employee' }, { id: 'actor', name: 'Admin' });
     const directAssignment = writes.find(([kind]) => kind === 'assign')[1];
     assert.equal(directAssignment.assetUnitId, 'unit');
     assert.equal(directAssignment.employeeId, 'source');

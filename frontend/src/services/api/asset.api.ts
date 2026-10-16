@@ -936,7 +936,7 @@ export const assetApi = createApi({
 
     assignSystem: builder.mutation<
       SystemRecord,
-      { id: string; employeeId: string | null }
+      { id: string; employeeId: string }
     >({
       query: ({ id, employeeId }) => ({
         url: `/systems/${id}/assign`,
@@ -945,6 +945,17 @@ export const assetApi = createApi({
       }),
 
       invalidatesTags: (result, error, { id }) => [
+        { type: "System", id },
+        { type: "System", id: "LIST" },
+      ],
+    }),
+
+    returnSystem: builder.mutation<SystemRecord, string>({
+      query: (id) => ({
+        url: `/systems/${id}/return`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [
         { type: "System", id },
         { type: "System", id: "LIST" },
       ],
@@ -1040,6 +1051,7 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useAssignSystemMutation,
+  useReturnSystemMutation,
   useDeleteSystemMutation,
   useGetSystemSpecsQuery,
   useUpsertSystemSpecsMutation,
