@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
 
 import {
@@ -7,7 +7,8 @@ import {
   useSetUserStatusMutation,
 } from "../services/api/users.api";
 
-import { useGetRolesQuery } from "../services/api/role.api";
+import { useGetRoleAccessQuery } from "../services/api/role.api";
+import PermissionsWorkspace from "../components/users/PermissionsWorkspace";
 
 import AddUserModal from "../components/users/AddUserModal";
 import UpdateRoleModal from "../components/users/UpdateRoleModal";
@@ -31,6 +32,10 @@ type Tab = "users" | "roles";
 
 export default function UsersRoles() {
   const [activeTab, setActiveTab] = useState<Tab>("users");
+  const { data: access, isLoading: accessLoading, isError: accessError } = useGetRoleAccessQuery(undefined, { refetchOnMountOrArgChange: true, pollingInterval: 30000 });
+  const canManageUsers = access?.permissions.includes("users.manage") ?? false;
+  const canManageRoles = access?.permissions.includes("roles.manage") ?? false;
+  useEffect(() => { if (access && !canManageUsers) setActiveTab("roles"); }, [access, canManageUsers]);
 
   // ==========================================================
   // USER MODALS
@@ -50,7 +55,7 @@ export default function UsersRoles() {
     data: usersData,
     isLoading: usersLoading,
     isError: usersError,
-  } = useGetUsersQuery();
+  } = useGetUsersQuery(undefined, { skip: !canManageUsers });
 
   // ==========================================================
   // USER MUTATIONS
@@ -65,11 +70,7 @@ export default function UsersRoles() {
   // ROLES
   // ==========================================================
 
-  const {
-    data: rolesData,
-    isLoading: rolesLoading,
-    isError: rolesError,
-  } = useGetRolesQuery();
+
 
   // ==========================================================
   // NORMALIZE USERS RESPONSE
@@ -83,7 +84,7 @@ export default function UsersRoles() {
   // NORMALIZE ROLES RESPONSE
   // ==========================================================
 
-  const roles = Array.isArray(rolesData) ? rolesData : (rolesData?.data ?? []);
+
 
   // ==========================================================
   // OPEN CREATE USER MODAL
@@ -197,6 +198,9 @@ export default function UsersRoles() {
   // RENDER
   // ============================================================
 
+  if (accessLoading) return <p className="p-6 text-sm text-muted-foreground">Loading access…</p>;
+  if (accessError) return <p role="alert" className="p-6 text-sm text-destructive">Unable to verify your permissions. Reload to try again.</p>;
+
   return (
     <>
       <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -215,7 +219,7 @@ export default function UsersRoles() {
             </p>
           </div>
 
-          {activeTab === "users" && (
+          {activeTab === "users" && canManageUsers && (
             <Button
               className="w-fit"
               onClick={handleCreateUser}
@@ -242,6 +246,7 @@ export default function UsersRoles() {
 
               <button
                 type="button"
+                disabled={!canManageUsers}
                 onClick={() => setActiveTab("users")}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                   activeTab === "users"
@@ -274,7 +279,7 @@ export default function UsersRoles() {
               USERS TAB
           ==================================================== */}
 
-          {activeTab === "users" && (
+          {activeTab === "users" && canManageUsers && (
             <div>
               <div className="border-b border-border px-5 py-3">
                 <h2 className="text-sm font-semibold text-foreground">
@@ -444,83 +449,8 @@ export default function UsersRoles() {
               ROLES TAB
           ==================================================== */}
 
-          {activeTab === "roles" && (
-            <div className="p-5">
-              <div className="mb-5">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Roles & Permissions
-                </h2>
+          {activeTab === "roles" && <PermissionsWorkspace canManage={canManageRoles} />}
 
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Manage application roles and their assigned permissions.
-                </p>
-              </div>
-
-              {/* LOADING */}
-
-              {rolesLoading && (
-                <div className="text-sm text-muted-foreground">
-                  Loading roles...
-                </div>
-              )}
-
-              {/* ERROR */}
-
-              {rolesError && !rolesLoading && (
-                <EmptyState
-                  title="Unable to load roles"
-                  description="There was a problem loading application roles."
-                />
-              )}
-
-              {/* EMPTY */}
-
-              {!rolesLoading && !rolesError && roles.length === 0 && (
-                <EmptyState
-                  title="No roles found"
-                  description="Create roles and assign permissions to control access."
-                />
-              )}
-
-              {/* ROLES */}
-
-              {!rolesLoading && !rolesError && roles.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {roles.map((role) => {
-                    const permissions = role.permissions ?? [];
-
-                    return (
-                      <Card key={role.id} className="p-4">
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {role.name}
-                            </p>
-
-                            {role.description && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {role.description}
-                              </p>
-                            )}
-                          </div>
-
-                          <ShieldCheck className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        </div>
-
-                        <p className="mb-3 text-xs text-muted-foreground">
-                          {permissions.length}{" "}
-                          {permissions.length === 1
-                            ? "permission"
-                            : "permissions"}{" "}
-                          granted
-                        </p>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </Card>
       </div>
 

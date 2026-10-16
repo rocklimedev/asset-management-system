@@ -22,6 +22,7 @@ export interface Role {
 
 export interface Permission {
   id: string;
+  key?: string;
   name?: string;
   display_name?: string;
   description?: string;
@@ -53,6 +54,8 @@ export interface PermissionsResponse {
 }
 
 export interface SetRolePermissionsResponse {
+  id?: string;
+  permissionIds?: string[];
   data?: Role;
   message?: string;
 
@@ -95,12 +98,27 @@ export const rolesApi = createApi({
   tagTypes: ["Role", "Permission"],
 
   endpoints: (builder) => ({
+    getRoleAccess: builder.query<{ roleId: string; permissions: string[] }, void>({
+      query: () => '/roles/access',
+      providesTags: ['Role'],
+    }),
+    createRole: builder.mutation<Role, { name: string; description: string; permissionIds: string[] }>({
+      query: body => ({ url: '/roles', method: 'POST', body }),
+      invalidatesTags: ['Role'],
+    }),
     // ============================================================
     // GET ALL ROLES
     // GET /roles
     // ============================================================
 
     getRoles: builder.query<Role[] | RolesResponse, void>({
+      transformResponse: (response: Role[] | RolesResponse) => {
+        const rows = Array.isArray(response) ? response : response.data || [];
+        return rows.map(role => ({ ...role, permissions: (role.permissions || []).map(value => {
+          const nested = value as unknown as { permission?: Permission };
+          return nested.permission || value;
+        }) }));
+      },
       query: () => ({
         url: "/roles",
         method: "GET",
@@ -173,17 +191,7 @@ export const rolesApi = createApi({
         },
       }),
 
-      invalidatesTags: (result, error, { id }) => [
-        {
-          type: "Role" as const,
-          id,
-        },
-
-        {
-          type: "Role" as const,
-          id: "LIST",
-        },
-      ],
+      invalidatesTags: ['Role'],
     }),
   }),
 });
@@ -193,6 +201,8 @@ export const rolesApi = createApi({
 // ============================================================
 
 export const {
+  useGetRoleAccessQuery,
+  useCreateRoleMutation,
   useGetRolesQuery,
   useGetPermissionsQuery,
   useSetRolePermissionsMutation,

@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { CredentialsModule } from './modules/credentials/credentials.module';
 import { ConfigModule } from "@nestjs/config";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
@@ -43,6 +44,7 @@ import { ReportsModule } from "./modules/reports/reports.module";
     ]),
 
     AuthModule,
+    CredentialsModule,
     AssetsModule,
     UsersModule,
     RolesModule,

@@ -626,7 +626,7 @@ export const assetApi = createApi({
       query: (arg) => {
         const params = arg || undefined;
         return {
-          url: "/assets/categories",
+          url: "/asset-categories",
           method: "GET",
           params:
             params?.isActive === undefined
@@ -650,7 +650,7 @@ export const assetApi = createApi({
     }),
 
     getAssetCategory: builder.query<AssetCategory, string>({
-      query: (id) => `/assets/categories/${id}`,
+      query: (id) => `/asset-categories/${id}`,
 
       providesTags: (result, error, id) => [{ type: "AssetCategory", id }],
 
@@ -659,7 +659,7 @@ export const assetApi = createApi({
 
     createAssetCategory: builder.mutation<AssetCategory, AssetCategoryInput>({
       query: (body) => ({
-        url: "/assets/categories",
+        url: "/asset-categories",
         method: "POST",
         body,
       }),
@@ -672,7 +672,7 @@ export const assetApi = createApi({
       { id: string; body: Partial<AssetCategoryInput> }
     >({
       query: ({ id, body }) => ({
-        url: `/assets/categories/${id}`,
+        url: `/asset-categories/${id}`,
         method: "PATCH",
         body,
       }),
@@ -685,7 +685,7 @@ export const assetApi = createApi({
 
     toggleAssetCategory: builder.mutation<AssetCategory, string>({
       query: (id) => ({
-        url: `/assets/categories/${id}/toggle`,
+        url: `/asset-categories/${id}/toggle-active`,
         method: "PATCH",
       }),
 
@@ -697,7 +697,7 @@ export const assetApi = createApi({
 
     deleteAssetCategory: builder.mutation<{ message: string }, string>({
       query: (id) => ({
-        url: `/assets/categories/${id}`,
+        url: `/asset-categories/${id}`,
         method: "DELETE",
       }),
 

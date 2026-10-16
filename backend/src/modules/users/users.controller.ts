@@ -17,6 +17,7 @@ import {
 } from "class-validator";
 
 import { UsersService } from "./users.service";
+import { RequirePermissions } from '@/common/decorator/roles.decorator';
 import { UserStatus } from "./models/user.model";
 
 import {
@@ -73,6 +74,7 @@ class ChangeUserRoleDto {
 }
 
 @Controller("users")
+@RequirePermissions('users.manage')
 export class UsersController {
   constructor(private readonly service: UsersService) {}
 

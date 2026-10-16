@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import React from "react";
+import EmployeeCredentials from './EmployeeCredentials';
 import dayjs from "dayjs";
 
 import {
@@ -225,6 +226,7 @@ const EmployeeDetailDrawer = ({
           </DrawerHeader>
 
           <div className="space-y-6 px-6 pb-6">
+            {open && <EmployeeCredentials key={employee.id} employeeId={employee.id} />}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <SummaryCard
                 icon={Users}
