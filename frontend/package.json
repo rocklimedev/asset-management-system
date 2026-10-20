@@ -7,7 +7,10 @@
     "dev": "vite",
     "test": "node --test test/*.test.cjs",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:contrast": "python3 scripts/check-contrast.py",
+    "check:tokens": "python3 scripts/check-tokens.py",
+    "verify:design": "npm run build && python3 scripts/check-contrast.py && python3 scripts/check-tokens.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

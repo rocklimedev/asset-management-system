@@ -83,7 +83,7 @@ export function AssignmentRow({
         <button
           type="button"
           aria-label={`Drag ${asset.name} onto another person to move it`}
-          title="Drag onto someone in the list to move it"
+          title="Drag onto a person to move it, or use Move"
           className="hidden h-7 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing sm:flex"
           {...listeners}
           {...attributes}
@@ -131,7 +131,7 @@ export function AssignmentRow({
             className="text-muted-foreground"
           >
             <Undo2 className="h-3.5 w-3.5" />
-            Return
+            Take back
           </Button>
         )}
       </div>

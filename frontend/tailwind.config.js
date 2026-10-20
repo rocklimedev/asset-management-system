@@ -107,6 +107,10 @@ export default {
           accent: hsl("sidebar-accent"),
           "accent-foreground": hsl("sidebar-accent-foreground"),
           ring: hsl("sidebar-ring"),
+          strong: hsl("sidebar-strong"),
+          muted: hsl("sidebar-muted"),
+          hover: hsl("sidebar-hover"),
+          indicator: hsl("sidebar-indicator"),
         },
 
         chart: {
@@ -135,18 +139,29 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 12px)",
       },
 
       boxShadow: {
-        card: "0 1px 2px 0 hsl(var(--neutral-900) / 0.04), 0 1px 3px 0 hsl(var(--neutral-900) / 0.06)",
-        raised:
-          "0 1px 3px 0 hsl(var(--neutral-900) / 0.08), 0 4px 12px -2px hsl(var(--neutral-900) / 0.08)",
-        overlay:
-          "0 8px 24px -4px hsl(var(--neutral-900) / 0.16), 0 2px 8px -2px hsl(var(--neutral-900) / 0.10)",
+        // Flat, border-led elevation. Values live in src/index.css so
+        // dark mode and rebranding stay in one place.
+        flat: "var(--elev-flat)",
+        card: "var(--elev-card)",
+        raised: "var(--elev-raised)",
+        inset: "var(--elev-inset)",
+        pressed: "var(--elev-pressed)",
+        overlay: "var(--elev-overlay)",
+        "focus-ring": "0 0 0 2px hsl(var(--ring))",
       },
 
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: [
+          '"Plus Jakarta Sans"',
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
       },
 
       fontSize: {

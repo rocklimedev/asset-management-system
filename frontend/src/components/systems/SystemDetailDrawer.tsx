@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as Tabs from "@radix-ui/react-tabs";
 import {
   Monitor,
   Pencil,
@@ -358,11 +359,32 @@ export function SystemDetailDrawer({
             </div>
           </div>
 
+          <Tabs.Root key={system.id} defaultValue="specifications" className="min-w-0">
+            <Tabs.List
+              aria-label="Computer details"
+              className="flex gap-1 overflow-x-auto border-b px-5 py-2"
+            >
+              {[
+                { value: "specifications", label: "Specifications", icon: Cpu },
+                { value: "components", label: "Components", icon: Package },
+                { value: "software", label: "Software", icon: AppWindow },
+              ].map(({ value, label, icon: Icon }) => (
+                <Tabs.Trigger
+                  key={value}
+                  value={value}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-muted data-[state=active]:text-foreground"
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {label}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+
           {/* ============================================================
               SPECIFICATIONS
           ============================================================ */}
 
-          <div className="border-b p-5">
+          <Tabs.Content value="specifications" className="p-5">
             <div className="rounded-xl border bg-muted/10 p-4">
               <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -545,13 +567,13 @@ export function SystemDetailDrawer({
                 </div>
               )}
             </div>
-          </div>
+          </Tabs.Content>
 
           {/* ============================================================
               SOFTWARE
           ============================================================ */}
 
-          <div className="border-b p-5">
+          <Tabs.Content value="software" className="p-5">
             <div className="rounded-xl border bg-muted/10 p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -711,13 +733,13 @@ export function SystemDetailDrawer({
                 </p>
               )}
             </div>
-          </div>
+          </Tabs.Content>
 
           {/* ============================================================
               COMPONENTS
           ============================================================ */}
 
-          <div className="p-5">
+          <Tabs.Content value="components" className="p-5">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-medium">
                 Components ({system.assignments?.length ?? 0})
@@ -799,7 +821,8 @@ export function SystemDetailDrawer({
               to the same employee, or choose another destination. Remove
               returns it to the available pool.
             </p>
-          </div>
+          </Tabs.Content>
+          </Tabs.Root>
         </section>
       </div>
 

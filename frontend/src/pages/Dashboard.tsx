@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
   Boxes,
@@ -12,6 +13,7 @@ import {
   Users,
   Wrench,
   ChevronRight,
+  Search,
 } from "lucide-react";
 
 import { useGetAssetsQuery } from "../services/api/asset.api";
@@ -23,6 +25,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { PageHeader } from "../components/layout/PageHeader";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
+import { QuickAddAsset } from "../components/quick/QuickAddAsset";
 
 // ============================================================
 // TYPES
@@ -32,15 +35,112 @@ import type { Asset, AssetStatus } from "../services/api/asset.api";
 import type { Employee } from "../services/api/employees.api";
 
 // ============================================================
+// TASKS
+// The first thing a new user sees: what they can do, in their
+// own words. Each card goes straight to the place that does it.
+// ============================================================
+
+interface HomeTask {
+  title: string;
+  body: string;
+  icon: LucideIcon;
+  /** Routes to a page. Tasks without a route open the Add Asset form. */
+  to?: string;
+}
+
+const HOME_TASKS: HomeTask[] = [
+  {
+    title: "Give equipment to someone",
+    body: "Pick a person, then choose a laptop, phone or licence from stock.",
+    icon: PackageOpen,
+    to: "/asset-manager",
+  },
+  {
+    title: "Build a computer",
+    body: "Combine parts into one computer, then give the whole machine to someone.",
+    icon: Wrench,
+    to: "/asset-manager?view=computers",
+  },
+  {
+    title: "Add new equipment",
+    body: "Record something you have just bought so it can be given out.",
+    icon: Plus,
+  },
+  {
+    title: "Find an item",
+    body: "Search every asset and see who has it, or whether it is in stock.",
+    icon: Search,
+    to: "/inventory",
+  },
+];
+
+// ============================================================
+// HOME TASKS COMPONENT
+// Rendered on the first paint, before any statistics load, so a
+// new user always has a clear next step.
+// ============================================================
+
+function HomeTasks({ onAddAsset }: { onAddAsset: () => void }) {
+  return (
+    <section aria-labelledby="home-tasks-heading" className="mb-6">
+      <h2 id="home-tasks-heading" className="text-sm font-semibold text-foreground">
+        What would you like to do?
+      </h2>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {HOME_TASKS.map((task) => {
+          const Icon = task.icon;
+
+          const content = (
+            <>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-foreground">
+                  {task.title}
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                  {task.body}
+                </span>
+              </span>
+
+              <ChevronRight
+                className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </>
+          );
+
+          const className =
+            "group flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-raised transition-colors hover:border-primary-border focus-visible:ring-2 focus-visible:ring-ring outline-none";
+
+          return task.to ? (
+            <Link key={task.title} to={task.to} className={className}>
+              {content}
+            </Link>
+          ) : (
+            <button key={task.title} type="button" onClick={onAddAsset} className={className}>
+              {content}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
 // STATUS COLORS
 // ============================================================
 
 const STATUS_COLORS: Record<string, string> = {
   ASSIGNED: "bg-brand-500",
-  AVAILABLE: "bg-success-muted0",
-  REPAIR: "bg-warning-muted0",
+  AVAILABLE: "bg-success",
+  REPAIR: "bg-warning",
   RETIRED: "bg-muted-foreground",
-  LOST: "bg-destructive-muted0",
+  LOST: "bg-destructive",
   DAMAGED: "bg-destructive",
   DISPOSED: "bg-border",
 };
@@ -147,6 +247,8 @@ function PercentageBar({ value, label }: { value: number; label: string }) {
 
 export default function Dashboard() {
   const [isAddAssetOpen, setIsAddAssetOpen] = useState(false);
+  // The full asset form, opened from the quick wizard for advanced fields.
+  const [isFullAssetOpen, setIsFullAssetOpen] = useState(false);
 
   // ==========================================================
   // API
@@ -195,6 +297,8 @@ export default function Dashboard() {
 
           <div className="mt-2 h-4 w-72 animate-pulse rounded bg-muted" />
         </div>
+
+        <HomeTasks onAddAsset={() => setIsAddAssetOpen(true)} />
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -568,6 +672,8 @@ export default function Dashboard() {
       />
 
 
+      <HomeTasks onAddAsset={() => setIsAddAssetOpen(true)} />
+
       {/* ======================================================
           NEEDS ATTENTION
           Only items that actually need action; each opens the
@@ -847,7 +953,7 @@ export default function Dashboard() {
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-2 text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-warning-muted0" />
+                <span className="h-2 w-2 rounded-full bg-warning" />
                 Under repair
               </span>
 
@@ -869,7 +975,7 @@ export default function Dashboard() {
 
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-2 text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-destructive-muted0" />
+                <span className="h-2 w-2 rounded-full bg-destructive" />
                 Lost
               </span>
 
@@ -1266,9 +1372,18 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <CreateAssetModal
+      <QuickAddAsset
         open={isAddAssetOpen}
         onClose={() => setIsAddAssetOpen(false)}
+        onOpenFullForm={() => {
+          setIsAddAssetOpen(false);
+          setIsFullAssetOpen(true);
+        }}
+      />
+
+      <CreateAssetModal
+        open={isFullAssetOpen}
+        onClose={() => setIsFullAssetOpen(false)}
         asset={null}
         locations={[]}
         vendors={[]}

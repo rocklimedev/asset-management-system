@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const badgeVariants = cva(
   [
     "inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap",
-    "rounded-md border border-transparent px-2 py-0.5 text-xs font-medium leading-5",
+    "rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium leading-5",
     "transition-colors duration-150",
     "[&>svg]:pointer-events-none [&>svg]:h-3 [&>svg]:w-3",
   ].join(" "),
@@ -16,7 +16,7 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground",
         secondary: "bg-secondary text-secondary-foreground",
-        outline: "border-border bg-card text-muted-foreground",
+        outline: "border-border bg-card text-muted-foreground shadow-card",
         subtle: "bg-accent text-accent-foreground",
         success: "bg-success-muted text-success-strong",
         warning: "bg-warning-muted text-warning-strong",

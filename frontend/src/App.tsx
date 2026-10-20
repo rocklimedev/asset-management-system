@@ -141,11 +141,11 @@ function MobileNavDrawer({ onClose }: { onClose: () => void }) {
       >
         <div className="flex h-header shrink-0 items-center justify-between border-b border-sidebar-border px-4">
           <div className="flex items-center gap-2.5">
-            <AppMark size="sm" />
+            <AppMark size="sm" inverted />
 
             <div className="min-w-0">
-              <p className="text-sm font-semibold leading-tight tracking-tight">ITAM</p>
-              <p className="text-2xs leading-tight text-muted-foreground">Asset Management</p>
+              <p className="text-sm font-semibold leading-tight tracking-tight text-sidebar-strong">ITAM</p>
+              <p className="text-2xs leading-tight text-sidebar-muted">Asset Management</p>
             </div>
           </div>
 
@@ -153,7 +153,7 @@ function MobileNavDrawer({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-strong"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>

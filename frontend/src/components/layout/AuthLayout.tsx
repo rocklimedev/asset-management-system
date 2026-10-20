@@ -28,7 +28,7 @@ export default function AuthLayout() {
           BRAND PANEL
       ====================================================== */}
 
-      <div className="hidden w-1/2 flex-col justify-between bg-brand-900 p-10 text-white lg:flex">
+      <div className="hidden w-1/2 flex-col justify-between bg-sidebar p-10 text-sidebar-strong lg:flex">
         <div className="flex items-center gap-3">
           <AppMark size="lg" inverted />
 
@@ -67,7 +67,7 @@ export default function AuthLayout() {
         </div>
 
         <p className="text-xs text-brand-400">
-          © {new Date().getFullYear()} IT Asset Management System
+          © {new Date().getFullYear()} SP Syndicate. All rights reserved.
         </p>
       </div>
 

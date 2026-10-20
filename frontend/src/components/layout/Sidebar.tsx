@@ -31,12 +31,12 @@ function SidebarLink({
       aria-label={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(
-          "group relative flex items-center rounded-md text-sm font-medium transition-colors duration-150",
+          "group relative flex items-center rounded-lg text-sm font-medium transition-[box-shadow,color,background-color] duration-150",
           "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
           collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-2.5 py-2",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground hover:bg-muted hover:text-foreground",
+            : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-strong",
         )
       }
     >
@@ -45,7 +45,7 @@ function SidebarLink({
           {isActive && (
             <span
               aria-hidden="true"
-              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
+              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-sidebar-indicator"
             />
           )}
 
@@ -82,7 +82,7 @@ export function NavList({
               <div aria-hidden="true" className="mx-2 mb-1 border-t border-sidebar-border" />
             )
           ) : (
-            <p className="px-2.5 pb-1 pt-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="px-2.5 pb-1 pt-1 text-2xs font-semibold uppercase tracking-wider text-sidebar-muted">
               {group.label}
             </p>
           )}
@@ -128,14 +128,14 @@ export function Sidebar({
           collapsed ? "justify-center px-0" : "px-4",
         )}
       >
-        <AppMark />
+        <AppMark inverted />
 
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold leading-tight tracking-tight text-foreground">
+            <p className="truncate text-sm font-semibold leading-tight tracking-tight text-sidebar-strong">
               ITAM
             </p>
-            <p className="truncate text-2xs leading-tight text-muted-foreground">
+            <p className="truncate text-2xs leading-tight text-sidebar-muted">
               Asset Management
             </p>
           </div>
@@ -153,7 +153,7 @@ export function Sidebar({
         aria-expanded={!collapsed}
         className={cn(
           "flex h-11 shrink-0 items-center gap-2 border-t border-sidebar-border text-xs font-medium",
-          "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+          "text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-strong",
           "outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sidebar-ring",
           collapsed ? "justify-center px-0" : "px-4",
         )}

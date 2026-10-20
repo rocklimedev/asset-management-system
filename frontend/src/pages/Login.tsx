@@ -78,7 +78,7 @@ export default function LoginPage() {
               placeholder="you@company.com"
               autoComplete="email"
               required
-              className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring"
+              className="h-11 w-full rounded-lg border border-input bg-card pl-10 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
               placeholder="Enter your password"
               autoComplete="current-password"
               required
-              className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring"
+              className="h-11 w-full rounded-lg border border-input bg-card pl-10 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>

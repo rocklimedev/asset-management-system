@@ -52,6 +52,7 @@ import {
 } from "../components/ui/dropdown-menu";
 
 import { EmptyState, SkeletonCard } from "../components/ui/EmptyState";
+import { QuickAddAsset } from "../components/quick/QuickAddAsset";
 
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
@@ -88,7 +89,7 @@ const COLUMNS: {
   },
   {
     key: "name",
-    label: "Name",
+    label: "Item",
     sortable: true,
   },
   {
@@ -97,12 +98,12 @@ const COLUMNS: {
   },
   {
     key: "quantity",
-    label: "Quantity",
+    label: "In stock",
     sortable: true,
   },
   {
     key: "assignedTo",
-    label: "Assigned to",
+    label: "Held by",
   },
   {
     key: "status",
@@ -119,9 +120,32 @@ const COLUMNS: {
 // HELPERS
 // ============================================================
 
+// Plain words people use day to day, instead of database values.
+const PLAIN_STATUS: Record<string, string> = {
+  AVAILABLE: "In stock",
+  ASSIGNED: "With someone",
+  REPAIR: "In repair",
+  LOST: "Lost",
+  DAMAGED: "Damaged",
+  RETIRED: "Retired",
+  DISPOSED: "Disposed",
+};
+
 function formatStatus(status: string) {
-  return status.charAt(0) + status.slice(1).toLowerCase();
+  return (
+    PLAIN_STATUS[status] ?? status.charAt(0) + status.slice(1).toLowerCase()
+  );
 }
+
+// The most common views sit as one-tap chips. Rare statuses go in a dropdown.
+const STATUS_CHIPS: { value: string; label: string }[] = [
+  { value: "", label: "All" },
+  { value: "AVAILABLE", label: "In stock" },
+  { value: "ASSIGNED", label: "With someone" },
+  { value: "REPAIR", label: "In repair" },
+];
+
+const OTHER_STATUSES = ["LOST", "DAMAGED", "RETIRED", "DISPOSED"] as const;
 
 function getStatusBadgeVariant(
   status: AssetStatus,
@@ -172,6 +196,7 @@ export default function Inventory() {
   });
 
   const [categoryId, setCategoryId] = useState("");
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   const [sortBy, setSortBy] = useState("assetTag");
 
@@ -734,92 +759,116 @@ export default function Inventory() {
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
           title="All Assets"
-          description="Every hardware and software asset, whether it is assigned to someone or not."
+          description="Everything you own in one list. Select an item to see who has it and its history."
         />
 
-        <Button className="w-fit" onClick={openCreateAsset}>
+        <Button className="w-fit" onClick={() => setQuickAddOpen(true)}>
           <Plus className="h-4 w-4" />
-          Add Asset
+          Add equipment
         </Button>
       </div>
 
       {/* ======================================================
-          FILTERS
+          QUICK ADD
       ====================================================== */}
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-        {/* Search */}
+      <QuickAddAsset
+        open={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        onOpenFullForm={() => {
+          setQuickAddOpen(false);
+          openCreateAsset();
+        }}
+      />
 
-        <div className="relative flex-1 sm:min-w-[220px] sm:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      {/* ======================================================
+          FILTERS
+          Status is one tap away as chips. Search comes first;
+          type and category are secondary.
+      ====================================================== */}
 
-          <Input
-            value={search}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            placeholder="Asset ID, serial number, name, employee..."
-            className="pl-9"
-          />
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder="Search by name, tag, serial number or person"
+              aria-label="Search equipment"
+              className="pl-9"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Select value={kind || "all"} onValueChange={handleKindChange}>
+              <SelectTrigger className="w-full sm:w-36" aria-label="Filter by type">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="HARDWARE">Physical items</SelectItem>
+                <SelectItem value="SOFTWARE">Software licences</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={categoryId || "all"}
+              onValueChange={handleCategoryChange}
+              disabled={isCategoriesLoading}
+            >
+              <SelectTrigger className="w-full sm:w-44" aria-label="Filter by category">
+                <SelectValue
+                  placeholder={isCategoriesLoading ? "Loading…" : "All categories"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Category */}
+        <div role="group" aria-label="Filter by status" className="flex flex-wrap items-center gap-2">
+          {STATUS_CHIPS.map((chip) => {
+            const active = status === chip.value;
+            return (
+              <button
+                key={chip.label}
+                type="button"
+                aria-pressed={active}
+                onClick={() => handleStatusChange(chip.value || "all")}
+                className={
+                  "rounded-full px-3.5 py-1.5 text-sm font-medium outline-none transition-[box-shadow,background-color,color] focus-visible:ring-2 focus-visible:ring-ring " +
+                  (active
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-foreground shadow-card hover:shadow-card")
+                }
+              >
+                {chip.label}
+              </button>
+            );
+          })}
 
-        <Select
-          value={categoryId || "all"}
-          onValueChange={handleCategoryChange}
-          disabled={isCategoriesLoading}
-        >
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue
-              placeholder={
-                isCategoriesLoading ? "Loading categories..." : "All categories"
-              }
-            />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
+          <select
+            aria-label="Other statuses"
+            value={(OTHER_STATUSES as readonly string[]).includes(status) ? status : ""}
+            onChange={(event) => handleStatusChange(event.target.value || "all")}
+            className="h-9 rounded-full border border-input bg-card px-3 text-sm text-foreground shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">More statuses…</option>
+            {OTHER_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {formatStatus(value)}
+              </option>
             ))}
-          </SelectContent>
-        </Select>
-
-        {/* Asset Type */}
-
-        <Select value={kind || "all"} onValueChange={handleKindChange}>
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-
-            <SelectItem value="HARDWARE">Hardware</SelectItem>
-
-            <SelectItem value="SOFTWARE">Software</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Status */}
-
-        <Select value={status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-
-            {STATUS_OPTIONS.map((item) => (
-              <SelectItem key={item} value={item}>
-                {formatStatus(item)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          </select>
+        </div>
       </div>
 
       {/* ======================================================
@@ -828,8 +877,8 @@ export default function Inventory() {
 
       {isError ? (
         <EmptyState
-          title="Unable to load assets"
-          description="There was a problem loading the inventory. Please try again."
+          title="Couldn't load equipment"
+          description="Something went wrong while loading the list. Refresh the page or try again in a moment."
         />
       ) : isLoading ? (
         <div className="space-y-2">
@@ -838,10 +887,28 @@ export default function Inventory() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState
-          title="No assets found"
-          description="Try changing your filters, or add a new asset."
-        />
+        <div className="space-y-4">
+          <EmptyState
+            title={
+              search || status || kind || categoryId
+                ? "No matches"
+                : "No equipment yet"
+            }
+            description={
+              search || status || kind || categoryId
+                ? "Nothing matches these filters. Clear a filter or try another word."
+                : "Add your first laptop, phone or licence to start tracking it."
+            }
+          />
+          {!(search || status || kind || categoryId) && (
+            <div className="flex justify-center">
+              <Button onClick={() => setQuickAddOpen(true)}>
+                <Plus className="h-4 w-4" />
+                Add equipment
+              </Button>
+            </div>
+          )}
+        </div>
       ) : (
         <>
           {/* ==================================================
@@ -855,7 +922,7 @@ export default function Inventory() {
                 {selectedIds.size === 1 ? "" : "s"} selected
                 <span className="text-muted-foreground">
                   {" "}
-                  (available quantity only)
+                  (only items in stock can be given out)
                 </span>
               </span>
 
@@ -865,7 +932,7 @@ export default function Inventory() {
                   size="sm"
                   onClick={() => setAssignToSystemModal(true)}
                 >
-                  Assign to system
+                  Add to a computer
                 </Button>
 
                 <Button variant="ghost" size="sm" onClick={clearSelection}>
@@ -1004,11 +1071,11 @@ export default function Inventory() {
                             {lowStock && (
                               <AlertTriangle className="h-3.5 w-3.5" />
                             )}
-                            {available} / {quantity} available
+                            {available} of {quantity} in stock
                           </span>
                         ) : (
                           <span className="tabular-nums text-muted-foreground">
-                            {available} / 1
+                            {available} of 1 in stock
                           </span>
                         )}
                       </td>
@@ -1018,7 +1085,7 @@ export default function Inventory() {
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
                         {asset.assignments?.[0]?.system
                           ? `System: ${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? "Unassigned"}`
-                          : (assignee?.name ?? "—")}
+                          : (assignee?.name ?? (asset.status === "AVAILABLE" ? "In stock" : "—"))}
                       </td>
 
                       {/* Status */}

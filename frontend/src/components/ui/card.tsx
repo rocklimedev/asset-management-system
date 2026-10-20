@@ -98,7 +98,7 @@ const CardFooter = React.forwardRef<
     ref={ref}
     data-slot="card-footer"
     className={cn(
-      "flex items-center gap-2 rounded-b-xl border-t border-border bg-muted px-5 py-3",
+      "flex items-center gap-2 rounded-b-xl border-t border-border bg-muted/60 px-5 py-3",
       className,
     )}
     {...props}

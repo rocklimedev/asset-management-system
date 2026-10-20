@@ -3,64 +3,76 @@
 @tailwind utilities;
 
 /* ============================================================
-   DESIGN TOKENS
+   DESIGN TOKENS — "SP Syndicate"
 
-   All colours are opaque HSL triplets. Surfaces are solid —
-   no translucency, no backdrop blur, no glassmorphism.
+   Identity:
+     • brand blue #0061ff (the theme colour of spsyndicate.com)
+       is the one action colour; everything else stays quiet
+     • crisp white cards on a cool, near-white canvas
+     • deep navy sidebar anchors the layout in both themes
+     • flat, border-led surfaces: depth is a hairline and a
+       soft single shadow, never a dual light/dark bevel
+     • 10px radius on cards and controls, pill badges
 
-   To rebrand: edit the BRAND RAMP block only. Everything else
-   is derived from it.
+   Accessibility floor (checked by scripts/check-contrast.py):
+     • text          ≥ 4.5 : 1 against its surface
+     • UI boundaries ≥ 3   : 1 against the surface beside them
+   Borders and focus rings carry meaning; shadows only decorate.
+
+   To rebrand: edit the BRAND RAMP block (brand-600 is the
+   action colour) and the sidebar block.
 ============================================================ */
 
 :root {
   /* ----------------------------------------------------------
-     BRAND RAMP
-     Swap these eleven values to match the company logo.
+     BRAND RAMP — SP Syndicate blue. 600 is exactly #0061ff.
   ---------------------------------------------------------- */
 
-  --brand-50: 210 40% 97%;
-  --brand-100: 210 38% 93%;
-  --brand-200: 211 34% 85%;
-  --brand-300: 212 30% 72%;
-  --brand-400: 214 28% 56%;
-  --brand-500: 216 34% 44%;
-  --brand-600: 218 42% 35%;
-  --brand-700: 220 46% 28%;
-  --brand-800: 222 48% 21%;
-  --brand-900: 224 50% 15%;
-  --brand-950: 226 54% 10%;
+  --brand-50: 217 100% 97%;
+  --brand-100: 217 100% 94%;
+  --brand-200: 217 100% 88%;
+  --brand-300: 217 100% 78%;
+  --brand-400: 217 100% 65%;
+  --brand-500: 217 100% 57%;
+  --brand-600: 217.2 100% 50%;
+  --brand-700: 217 100% 41%;
+  --brand-800: 218 100% 32%;
+  --brand-900: 219 100% 23%;
+  --brand-950: 221 100% 14%;
 
   /* ----------------------------------------------------------
-     NEUTRAL RAMP
+     NEUTRAL RAMP — cool slate with a faint blue undertone
   ---------------------------------------------------------- */
 
-  --neutral-50: 210 40% 98%;
-  --neutral-100: 210 36% 96%;
-  --neutral-200: 214 28% 91%;
-  --neutral-300: 213 24% 84%;
-  --neutral-400: 215 18% 65%;
-  --neutral-500: 215 16% 47%;
-  --neutral-600: 215 20% 37%;
-  --neutral-700: 217 24% 27%;
-  --neutral-800: 218 30% 18%;
-  --neutral-900: 221 39% 11%;
-  --neutral-950: 224 47% 7%;
+  --neutral-50: 216 33% 98%;
+  --neutral-100: 216 30% 96%;
+  --neutral-200: 217 24% 92%;
+  --neutral-300: 217 20% 84%;
+  --neutral-400: 218 15% 66%;
+  --neutral-500: 218 12% 48%;
+  --neutral-600: 219 15% 36%;
+  --neutral-700: 220 20% 27%;
+  --neutral-800: 221 28% 18%;
+  --neutral-900: 222 38% 12%;
+  --neutral-950: 223 45% 8%;
 
   /* ----------------------------------------------------------
      SURFACES
+     Canvas is a cool off-white. Cards are pure white and
+     separated from it by a border, not a bevel.
   ---------------------------------------------------------- */
 
-  --background: var(--neutral-50);
-  --foreground: var(--neutral-900);
+  --background: 216 33% 97%;
+  --foreground: 222 40% 11%;
 
   --card: 0 0% 100%;
-  --card-foreground: var(--neutral-900);
+  --card-foreground: 222 40% 11%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: var(--neutral-900);
+  --popover-foreground: 222 40% 11%;
 
-  --muted: var(--neutral-100);
-  --muted-foreground: var(--neutral-500);
+  --muted: 217 28% 94%;
+  --muted-foreground: 219 14% 36%;
 
   --accent: var(--brand-50);
   --accent-foreground: var(--brand-700);
@@ -74,79 +86,108 @@
   --primary-foreground: 0 0% 100%;
   --primary-hover: var(--brand-700);
   --primary-strong: var(--brand-800);
-  --primary-muted: var(--brand-50);
+  --primary-muted: var(--brand-100);
   --primary-border: var(--brand-200);
 
-  --secondary: var(--neutral-100);
+  --secondary: 217 24% 92%;
   --secondary-foreground: var(--neutral-800);
-  --secondary-hover: var(--neutral-200);
+  --secondary-hover: 217 22% 87%;
 
   /* ----------------------------------------------------------
-     STATUS
+     STATUS — the -strong variants are the text colour used on
+     the -muted tint, and both meet 4.5:1. Info is a teal-cyan
+     so it never reads as the brand blue.
   ---------------------------------------------------------- */
 
-  --success: 152 62% 32%;
+  --success: 158 66% 28%;
   --success-foreground: 0 0% 100%;
-  --success-muted: 150 56% 95%;
-  --success-strong: 154 66% 24%;
-  --success-border: 150 42% 82%;
+  --success-muted: 152 50% 93%;
+  --success-strong: 160 70% 20%;
+  --success-border: 156 40% 76%;
 
-  --warning: 32 84% 42%;
+  --warning: 30 92% 34%;
   --warning-foreground: 0 0% 100%;
-  --warning-muted: 40 92% 95%;
-  --warning-strong: 26 78% 32%;
-  --warning-border: 38 70% 80%;
+  --warning-muted: 42 96% 93%;
+  --warning-strong: 25 82% 28%;
+  --warning-border: 40 80% 72%;
 
-  --destructive: 0 68% 47%;
+  --destructive: 352 70% 45%;
   --destructive-foreground: 0 0% 100%;
-  --destructive-hover: 0 70% 40%;
-  --destructive-muted: 0 80% 96%;
-  --destructive-strong: 0 66% 38%;
-  --destructive-border: 0 60% 86%;
+  --destructive-hover: 352 72% 38%;
+  --destructive-muted: 355 85% 96%;
+  --destructive-strong: 352 72% 36%;
+  --destructive-border: 352 60% 84%;
 
-  --info: 205 78% 42%;
+  --info: 190 90% 28%;
   --info-foreground: 0 0% 100%;
-  --info-muted: 204 84% 95%;
-  --info-strong: 207 72% 32%;
-  --info-border: 204 62% 82%;
+  --info-muted: 190 70% 94%;
+  --info-strong: 192 95% 21%;
+  --info-border: 190 50% 76%;
 
   /* ----------------------------------------------------------
      LINES, FOCUS, OVERLAYS
   ---------------------------------------------------------- */
 
-  --border: var(--neutral-200);
-  --input: var(--neutral-300);
+  --border: 217 22% 87%;
+  --input: 218 14% 50%;
   --ring: var(--brand-500);
 
-  /* The modal scrim is the one intentionally translucent layer —
-     it dims the page behind a dialog. It carries no blur. */
-  --scrim: 221 39% 11%;
-  --scrim-opacity: 0.55;
+  --scrim: 222 45% 8%;
+  --scrim-opacity: 0.5;
 
   /* ----------------------------------------------------------
-     SIDEBAR
+     SIDEBAR — deep navy in both themes. The active item uses
+     the full brand blue so the current location is unmissable.
   ---------------------------------------------------------- */
 
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: var(--neutral-600);
-  --sidebar-border: var(--neutral-200);
-  --sidebar-accent: var(--brand-50);
-  --sidebar-accent-foreground: var(--brand-700);
-  --sidebar-ring: var(--brand-500);
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 217 30% 80%;
+  --sidebar-strong: 0 0% 100%;
+  --sidebar-muted: 218 20% 66%;
+  --sidebar-border: 222 36% 19%;
+  --sidebar-hover: 222 40% 16%;
+  --sidebar-accent: var(--brand-600);
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: var(--brand-300);
+  --sidebar-indicator: 0 0% 100%;
 
   /* ----------------------------------------------------------
-     CHARTS
+     CHARTS — distinct hues so series never blur together
   ---------------------------------------------------------- */
 
   --chart-1: var(--brand-600);
-  --chart-2: 188 62% 38%;
-  --chart-3: 32 84% 46%;
-  --chart-4: 264 44% 52%;
-  --chart-5: 152 52% 36%;
-  --chart-6: 340 62% 50%;
+  --chart-2: 34 92% 46%;
+  --chart-3: 168 60% 34%;
+  --chart-4: 344 66% 52%;
+  --chart-5: 262 56% 56%;
+  --chart-6: 188 72% 36%;
 
-  --chart-grid: var(--neutral-200);
-  --chart-axis: var(--neutral-400);
+  --chart-grid: 217 22% 90%;
+  --chart-axis: var(--neutral-500);
+
+  /* ----------------------------------------------------------
+     ELEVATION — flat and border-led. One soft shadow tinted
+     with the brand navy; no highlight/lowlight pairs.
+       flat     → no shadow
+       card     → resting cards, outline buttons, badges
+       raised   → hover lift, sticky bars, sidebar edge
+       inset    → text fields and segmented-control wells
+       pressed  → selected toggles and active nav
+       overlay  → dialogs, drawers, menus
+  ---------------------------------------------------------- */
+
+  --shadow-lo: 222 50% 14%;
+
+  --elev-flat: none;
+  --elev-card: 0 1px 2px hsl(var(--shadow-lo) / 0.06);
+  --elev-raised:
+    0 4px 12px -2px hsl(var(--shadow-lo) / 0.10),
+    0 1px 3px hsl(var(--shadow-lo) / 0.06);
+  --elev-inset: inset 0 1px 2px hsl(var(--shadow-lo) / 0.06);
+  --elev-pressed: inset 0 1px 3px hsl(var(--shadow-lo) / 0.20);
+  --elev-overlay:
+    0 24px 48px -16px hsl(var(--shadow-lo) / 0.30),
+    0 6px 16px -6px hsl(var(--shadow-lo) / 0.16);
 
   /* ----------------------------------------------------------
      SHAPE
@@ -156,21 +197,21 @@
 }
 
 /* ============================================================
-   DARK THEME
+   DARK THEME — deep navy night. Sidebar goes darker still.
 ============================================================ */
 
 .dark {
-  --background: var(--neutral-950);
-  --foreground: var(--neutral-100);
+  --background: 222 40% 7%;
+  --foreground: 216 30% 95%;
 
-  --card: var(--neutral-900);
-  --card-foreground: var(--neutral-100);
+  --card: 222 34% 10%;
+  --card-foreground: 216 30% 95%;
 
-  --popover: var(--neutral-800);
-  --popover-foreground: var(--neutral-100);
+  --popover: 222 32% 12%;
+  --popover-foreground: 216 30% 95%;
 
-  --muted: var(--neutral-800);
-  --muted-foreground: var(--neutral-400);
+  --muted: 222 28% 15%;
+  --muted-foreground: 218 14% 70%;
 
   --accent: var(--brand-900);
   --accent-foreground: var(--brand-100);
@@ -183,54 +224,74 @@
   --primary-muted: var(--brand-900);
   --primary-border: var(--brand-700);
 
-  --secondary: var(--neutral-800);
-  --secondary-foreground: var(--neutral-100);
-  --secondary-hover: var(--neutral-700);
+  --secondary: 222 26% 18%;
+  --secondary-foreground: 216 30% 95%;
+  --secondary-hover: 222 24% 22%;
 
-  --success: 152 48% 46%;
-  --success-muted: 154 40% 16%;
-  --success-strong: 150 52% 72%;
-  --success-border: 154 34% 26%;
+  --success: 152 52% 50%;
+  --success-foreground: var(--neutral-950);
+  --success-muted: 158 40% 14%;
+  --success-strong: 150 56% 72%;
+  --success-border: 156 34% 26%;
 
-  --warning: 36 78% 54%;
-  --warning-muted: 30 52% 16%;
-  --warning-strong: 40 84% 72%;
+  --warning: 36 84% 58%;
+  --warning-foreground: var(--neutral-950);
+  --warning-muted: 30 46% 14%;
+  --warning-strong: 40 90% 74%;
   --warning-border: 32 44% 28%;
 
-  --destructive: 0 62% 55%;
-  --destructive-hover: 0 62% 48%;
-  --destructive-muted: 0 44% 17%;
-  --destructive-strong: 0 74% 78%;
-  --destructive-border: 0 40% 30%;
+  --destructive: 352 70% 64%;
+  --destructive-foreground: var(--neutral-950);
+  --destructive-hover: 352 70% 58%;
+  --destructive-muted: 352 44% 16%;
+  --destructive-strong: 352 84% 80%;
+  --destructive-border: 352 40% 30%;
 
-  --info: 205 66% 56%;
-  --info-muted: 207 48% 17%;
-  --info-strong: 204 74% 76%;
-  --info-border: 206 40% 28%;
+  --info: 188 70% 52%;
+  --info-foreground: var(--neutral-950);
+  --info-muted: 192 50% 14%;
+  --info-strong: 188 80% 76%;
+  --info-border: 190 40% 26%;
 
-  --border: var(--neutral-800);
-  --input: var(--neutral-700);
+  --border: 222 24% 19%;
+  --input: 220 14% 44%;
   --ring: var(--brand-400);
 
-  --scrim: 224 47% 4%;
+  --scrim: 222 50% 3%;
   --scrim-opacity: 0.7;
 
-  --sidebar: var(--neutral-900);
-  --sidebar-foreground: var(--neutral-400);
-  --sidebar-border: var(--neutral-800);
-  --sidebar-accent: var(--brand-900);
-  --sidebar-accent-foreground: var(--brand-100);
+  --sidebar: 222 50% 5%;
+  --sidebar-foreground: 217 26% 74%;
+  --sidebar-strong: 216 30% 97%;
+  --sidebar-muted: 218 16% 58%;
+  --sidebar-border: 222 34% 13%;
+  --sidebar-hover: 222 36% 11%;
+  --sidebar-accent: var(--brand-600);
+  --sidebar-accent-foreground: 0 0% 100%;
   --sidebar-ring: var(--brand-400);
+  --sidebar-indicator: 0 0% 100%;
 
   --chart-1: var(--brand-400);
-  --chart-2: 188 56% 52%;
-  --chart-3: 36 78% 58%;
-  --chart-4: 264 52% 66%;
-  --chart-5: 152 46% 50%;
-  --chart-6: 340 60% 62%;
+  --chart-2: 36 90% 60%;
+  --chart-3: 168 56% 52%;
+  --chart-4: 344 70% 68%;
+  --chart-5: 262 70% 74%;
+  --chart-6: 188 72% 56%;
 
-  --chart-grid: var(--neutral-800);
-  --chart-axis: var(--neutral-600);
+  --chart-grid: 222 24% 19%;
+  --chart-axis: 220 10% 46%;
+
+  --shadow-lo: 224 80% 2%;
+
+  --elev-card: 0 1px 2px hsl(var(--shadow-lo) / 0.50);
+  --elev-raised:
+    0 4px 14px -2px hsl(var(--shadow-lo) / 0.60),
+    0 1px 3px hsl(var(--shadow-lo) / 0.40);
+  --elev-inset: inset 0 1px 2px hsl(var(--shadow-lo) / 0.45);
+  --elev-pressed: inset 0 1px 3px hsl(var(--shadow-lo) / 0.60);
+  --elev-overlay:
+    0 24px 48px -16px hsl(var(--shadow-lo) / 0.75),
+    0 6px 16px -6px hsl(var(--shadow-lo) / 0.50);
 }
 
 /* ============================================================
@@ -253,16 +314,18 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family:
-      Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-feature-settings:
-      "cv02" 1,
-      "cv03" 1,
-      "cv04" 1;
+      "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Numeric columns line up across rows. */
+  /* Visible focus for every control: soft shadows alone fail keyboard users. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
   .tabular-nums,
   table td,
   table th {
@@ -271,11 +334,20 @@
 }
 
 /* ============================================================
-   NO TRANSPARENCY / NO GLASSMORPHISM
+   COMPONENT HELPERS
+============================================================ */
 
-   Hard guard. Any blur that slips in from a component library
-   or a copied snippet is neutralised here. The modal scrim is
-   the single exception and is excluded by name.
+@layer components {
+  /* Eyebrow label above a section. */
+  .eyebrow {
+    @apply text-2xs font-semibold uppercase tracking-[0.1em] text-muted-foreground;
+  }
+}
+
+/* ============================================================
+   NO TRANSPARENCY / NO GLASSMORPHISM
+   Hard guard: any blur from a library or copied snippet is
+   neutralised. The modal scrim is the one exception.
 ============================================================ */
 
 @layer utilities {

@@ -59,6 +59,8 @@ import { TransferModal } from "../components/asset-manager/TransferModal";
 import { TransferSystemModal } from "../components/asset-manager/TransferSystemModal";
 import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
 import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
+import { QuickAddAsset } from "../components/quick/QuickAddAsset";
+import { QuickBuildComputer } from "../components/quick/QuickBuildComputer";
 import { AssetPool } from "../components/asset-manager/AssetPool";
 import { SystemPool } from "../components/asset-manager/SystemPool";
 
@@ -125,6 +127,9 @@ export default function AssetManager() {
   const [deleteSystem, deleteSystemState] = useDeleteSystemMutation();
 
   const [editorOpen, setEditorOpen] = useState(false);
+  // Simple three-step creators. The full forms stay behind their links.
+  const [quickAssetOpen, setQuickAssetOpen] = useState(false);
+  const [quickComputerOpen, setQuickComputerOpen] = useState(false);
   const [editingSystem, setEditingSystem] =
     useState<SystemWithOrganisation | null>(null);
   const [assignSystemOpen, setAssignSystemOpen] = useState(false);
@@ -504,10 +509,10 @@ export default function AssetManager() {
 
       toast.add({
         type: "success",
-        title: "System returned",
-        description: `${employee.name}'s system${
+        title: "Computer taken back",
+        description: `${employee.name}'s computer${
           systems.length > 1 ? "s were" : " was"
-        } returned to the pool.`,
+        } back in stock.`,
       });
     } catch (error) {
       toast.add({
@@ -569,13 +574,13 @@ export default function AssetManager() {
       toast.add({
         type: "error",
         title: "Cannot unassign",
-        description: "Only assigned assets can be returned to the pool.",
+        description: "Only equipment that someone holds can be taken back.",
       });
       return;
     }
 
     const confirmed = window.confirm(
-      `Return "${asset.name}" to the asset pool? This will unassign it from the current employee.`,
+      `Take "${asset.name}" back to stock? It will no longer be with its current holder.`,
     );
 
     if (!confirmed) {
@@ -591,14 +596,14 @@ export default function AssetManager() {
       toast.add({
         type: "success",
         title: "Asset unassigned",
-        description: `${asset.name} has been returned to the pool.`,
+        description: `${asset.name} is back in stock.`,
       });
 
       setDetailAsset(null);
     } catch (error) {
       toast.add({
         type: "error",
-        title: "Unassign failed",
+        title: "Couldn't take it back",
         description: getErrorMessage(
           error,
           "Could not return this asset. Please try again.",
@@ -661,7 +666,7 @@ export default function AssetManager() {
     }
 
     const confirmed = window.confirm(
-      `Return every asset currently assigned to ${employee.name}? This can't be undone.`,
+      `Take back everything ${employee.name} has? All of it goes back to stock. This can't be undone.`,
     );
 
     if (!confirmed) {
@@ -896,21 +901,48 @@ export default function AssetManager() {
       <PageHeader
         className="mb-6"
         title="Assign assets"
-        description="Give equipment to people, or build a computer from parts and assign the whole machine."
+        description="Give equipment from stock to people, or build a computer from parts and give the whole machine to someone."
         actions={
           <>
-            <Button variant="outline" onClick={openCreateComputer}>
+            <Button variant="outline" onClick={() => setQuickComputerOpen(true)}>
               <Monitor className="h-4 w-4" />
               New computer
             </Button>
 
-            <Button onClick={openCreateAsset}>
+            <Button onClick={() => setQuickAssetOpen(true)}>
               <Plus className="h-4 w-4" />
               New asset
             </Button>
           </>
         }
       />
+
+      {/* ======================================================
+          HOW IT WORKS
+          Three plain steps, always visible, so nobody has to be
+          trained before they can use the page.
+      ====================================================== */}
+
+      <ol
+        aria-label="How this page works"
+        className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-4 shadow-card sm:grid-cols-3"
+      >
+        {[
+          ["1", "Pick someone", "Choose a person from the list, or a computer you have built."],
+          ["2", "Give them equipment", "Pick a laptop, phone or licence that is in stock, then confirm."],
+          ["3", "Take it back when done", "Use Take back to return an item to stock when someone leaves or swaps."],
+        ].map(([step, title, body]) => (
+          <li key={step} className="flex gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+              {step}
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">{title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
 
       <DndContext
         sensors={sensors}
@@ -930,7 +962,7 @@ export default function AssetManager() {
               <div
                 role="tablist"
                 aria-label="What to show"
-                className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
+                className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1 shadow-inset"
               >
                 {(
                   [
@@ -947,7 +979,7 @@ export default function AssetManager() {
                     className={
                       "flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors " +
                       (view === value
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-card text-primary shadow-card"
                         : "text-muted-foreground hover:text-foreground")
                     }
                   >
@@ -1052,7 +1084,7 @@ export default function AssetManager() {
                 <EmptyState
                   icon={Users}
                   title="Select a person"
-                  description="Choose someone from the list to see and manage their equipment."
+                  description="Pick someone from the list on the left. Their equipment appears here, and you can give them more."
                 />
               </div>
             ) : (
@@ -1096,7 +1128,7 @@ export default function AssetManager() {
                     <div className="flex shrink-0 flex-wrap gap-2">
                       <Button onClick={() => handleAssignFromPool(selectedEmployee)}>
                         <Package className="h-4 w-4" />
-                        Assign asset
+                        Give equipment
                       </Button>
 
                       <Button
@@ -1106,7 +1138,7 @@ export default function AssetManager() {
                         <Monitor className="h-4 w-4" />
                         {selectedSystems.length > 0
                           ? "Change computer"
-                          : "Assign computer"}
+                          : "Give a computer"}
                       </Button>
                     </div>
                   ) : (
@@ -1116,7 +1148,7 @@ export default function AssetManager() {
                         disabled={isReleasing}
                         onClick={() => handleReleaseAssets(selectedEmployee)}
                       >
-                        {isReleasing ? "Returning…" : "Return all assets"}
+                        {isReleasing ? "Taking back…" : "Take back everything"}
                       </Button>
                     )
                   )}
@@ -1157,14 +1189,14 @@ export default function AssetManager() {
                         <p className="mt-1 text-xs text-muted-foreground">
                           {selectedHasExited
                             ? "This person has left and holds no equipment."
-                            : "Add a laptop, phone or software licence to get started."}
+                            : "Give them a laptop, phone or software licence from stock."}
                         </p>
                       </div>
 
                       {!selectedHasExited && (
                         <Button onClick={() => handleAssignFromPool(selectedEmployee)}>
                           <Plus className="h-4 w-4" />
-                          Assign an asset
+                          Give equipment
                         </Button>
                       )}
                     </div>
@@ -1401,6 +1433,24 @@ export default function AssetManager() {
         open={Boolean(historyAsset)}
         asset={historyAsset}
         onClose={() => setHistoryAsset(null)}
+      />
+
+      <QuickAddAsset
+        open={quickAssetOpen}
+        onClose={() => setQuickAssetOpen(false)}
+        onOpenFullForm={() => {
+          setQuickAssetOpen(false);
+          openCreateAsset();
+        }}
+      />
+
+      <QuickBuildComputer
+        open={quickComputerOpen}
+        onClose={() => setQuickComputerOpen(false)}
+        onOpenFullForm={() => {
+          setQuickComputerOpen(false);
+          openCreateComputer();
+        }}
       />
 
       <CreateAssetModal

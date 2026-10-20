@@ -53,7 +53,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
   return (
     <>
-      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-card px-4">
+      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-background px-4 shadow-card">
         {/* ==================================================
             MOBILE MENU
         ================================================== */}

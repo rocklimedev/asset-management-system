@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Package, Search } from "lucide-react";
 
 import {
@@ -62,6 +62,13 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [kind, setKind] = useState<"" | "HARDWARE" | "SOFTWARE">("");
+  // The item chosen in step 1, waiting for confirmation in step 2.
+  const [picked, setPicked] = useState<AssetPoolItem | null>(null);
+
+  // Start every opening fresh, so a stale choice never gets confirmed.
+  useEffect(() => {
+    if (!open) setPicked(null);
+  }, [open]);
 
   const { data, isLoading, isFetching, isError, refetch } =
     useGetAssetPoolQuery(
@@ -79,6 +86,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
   const items = data?.items ?? [];
+  const recipient = system?.name ?? employee?.name ?? "this person";
 
   // ============================================================
   // ASSIGN
@@ -94,18 +102,18 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
       }).unwrap();
 
       toast.add({
-        title: "Asset assigned",
-        description: `${asset.name} assigned to ${system?.name ?? employee?.name}.`,
+        title: "Equipment given",
+        description: `${asset.name} is now with ${recipient}.`,
         type: "success",
       });
 
       onClose();
     } catch (error) {
       toast.add({
-        title: "Assignment failed",
+        title: "Couldn't give this item",
         description: getErrorMessage(
           error,
-          "Could not assign this asset. Please try again.",
+          "Nothing was changed. Please try again.",
         ),
         type: "error",
       });
@@ -149,15 +157,19 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
         <DialogHeader className="border-b border-border bg-background px-6 py-4 text-left">
           <DialogTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
             <Package className="h-4 w-4 text-muted-foreground" />
-            Assign from asset pool
+            {system
+              ? `Add to ${system.name}`
+              : employee
+                ? `Give equipment to ${employee.name}`
+                : "Give equipment"}
           </DialogTitle>
 
           <DialogDescription className="text-sm text-muted-foreground">
             {system
-              ? `Choose an available asset for ${system.name}.`
+              ? `Pick an item from stock to add to ${system.name}.`
               : employee
-                ? `Choose an available asset to hand to ${employee.name}.`
-                : "Choose an available asset."}
+                ? "These items are in stock. Choose one, then confirm."
+                : "Choose an item from stock."}
           </DialogDescription>
         </DialogHeader>
 
@@ -172,7 +184,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             <Input
               value={search}
               onChange={(event) => (setPage(1), setSearch(event.target.value))}
-              placeholder="Search asset tag, name, serial number..."
+              placeholder="Search by name or asset tag"
               className="
                 h-10
                 border-border
@@ -230,8 +242,8 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
           ) : items.length === 0 ? (
             <EmptyState
               icon={Package}
-              title="No available assets"
-              description="Nothing in the pool matches this search. Try a different filter."
+              title="Nothing in stock"
+              description="Nothing matches this search. Try a different word, or add new equipment from All Assets."
             />
           ) : (
             <ul
@@ -317,10 +329,10 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
                     type="button"
                     size="sm"
                     disabled={isAssigning}
-                    onClick={() => handleAssign(asset)}
+                    onClick={() => setPicked(asset)}
                     className="shrink-0 shadow-none"
                   >
-                    {isAssigning ? "Assigning..." : "Assign"}
+                    Choose
                   </Button>
                 </li>
               ))}
@@ -335,6 +347,49 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             </Button>
           </div>
         )}
+        {/* ==================================================
+            CONFIRM — step 2. Names the item and the recipient so
+            nobody gives the wrong thing to the wrong person.
+        ================================================== */}
+
+        {picked && (
+          <div
+            role="region"
+            aria-label="Confirm"
+            className="flex flex-col gap-3 border-t border-primary-border bg-primary-muted px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="text-sm text-foreground">
+              {system ? "Add" : "Give"}{" "}
+              <span className="font-semibold">{picked.name}</span>{" "}
+              to <span className="font-semibold">{recipient}</span>?
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                It will appear under {system ? "this computer" : "their equipment"} straight away.
+              </span>
+            </p>
+
+            <div className="flex shrink-0 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isAssigning}
+                onClick={() => setPicked(null)}
+              >
+                Go back
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                disabled={isAssigning}
+                onClick={() => handleAssign(picked)}
+              >
+                {isAssigning ? "Giving…" : "Yes, give it"}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between border-t px-6 py-3">
           <Button
             variant="outline"
