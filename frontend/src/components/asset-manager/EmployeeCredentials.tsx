@@ -3,6 +3,7 @@ import { BACKEND } from "../../lib/api";
 import { useAuth } from "../../services/context/AuthContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { useConfirm } from "../ui/confirm-dialog";
 
 interface Credential {
   id: string;
@@ -34,6 +35,7 @@ export default function EmployeeCredentials({
 }: {
   employeeId: string;
 }) {
+  const confirm = useConfirm();
   const { accessToken } = useAuth();
   const [items, setItems] = useState<Credential[]>([]);
   const [form, setForm] = useState(empty);
@@ -329,13 +331,22 @@ export default function EmployeeCredentials({
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                onClick={() => {
-                  if (window.confirm(`Delete the saved login “${item.title}”?`))
-                    void act(async () => {
-                      await request(`/${item.id}`, "DELETE");
-                      setRevealed(null);
-                      setItems(await request());
-                    });
+                onClick={async () => {
+                  const confirmed = await confirm({
+                    title: `Delete “${item.title}”?`,
+                    description:
+                      "This saved login will be permanently deleted. This cannot be undone.",
+                    confirmLabel: "Delete login",
+                    tone: "danger",
+                  });
+
+                  if (!confirmed) return;
+
+                  void act(async () => {
+                    await request(`/${item.id}`, "DELETE");
+                    setRevealed(null);
+                    setItems(await request());
+                  });
                 }}
               >
                 Delete

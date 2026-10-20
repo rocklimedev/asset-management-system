@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { OverlayRoot } from "@/components/ui/overlay-root";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -18,6 +19,7 @@ import {
 
 import {
   useGetAssetsQuery,
+  useGetAssetQuery,
   useDeleteAssetMutation,
   useGetAssetCategoriesQuery,
   useAssignAssetMutation,
@@ -58,6 +60,8 @@ import { UpdateInventoryModal } from "../components/asset-manager/UpdateInventor
 import { InventoryHistoryModal } from "../components/asset-manager/InventoryHistoryModal";
 
 import { toast } from "../components/ui/toast";
+import { useConfirm } from "../components/ui/confirm-dialog";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // ============================================================
 // CONSTANTS
@@ -148,11 +152,24 @@ function getStatusBadgeVariant(
 // ============================================================
 
 export default function Inventory() {
+  const confirm = useConfirm();
   const [search, setSearch] = useState("");
 
-  const [status, setStatus] = useState<AssetStatus | "">("");
+  // Dashboard links open this list already filtered, e.g.
+  // /inventory?status=REPAIR. Unknown values are ignored.
+  const [status, setStatus] = useState<AssetStatus | "">(() => {
+    const value = new URLSearchParams(window.location.search).get("status");
 
-  const [kind, setKind] = useState<AssetKind | "">("");
+    return STATUS_OPTIONS.includes(value as AssetStatus)
+      ? (value as AssetStatus)
+      : "";
+  });
+
+  const [kind, setKind] = useState<AssetKind | "">(() => {
+    const value = new URLSearchParams(window.location.search).get("kind");
+
+    return value === "HARDWARE" || value === "SOFTWARE" ? value : "";
+  });
 
   const [categoryId, setCategoryId] = useState("");
 
@@ -186,6 +203,28 @@ export default function Inventory() {
   }
 
   const [selected, setSelected] = useState<Asset | null>(null);
+
+  // ============================================================
+  // DEEP LINK: /inventory?assetId=... opens that asset's details
+  // once, so search results can jump straight to the record.
+  // ============================================================
+
+  const deepLinkAssetId = params.get("assetId");
+  const { data: deepLinkAssetResponse } = useGetAssetQuery(deepLinkAssetId ?? "", {
+    skip: !deepLinkAssetId,
+  });
+  const handledDeepLinkRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const asset = deepLinkAssetResponse?.data;
+
+    if (!deepLinkAssetId || !asset || handledDeepLinkRef.current === deepLinkAssetId) {
+      return;
+    }
+
+    handledDeepLinkRef.current = deepLinkAssetId;
+    setSelected(asset);
+  }, [deepLinkAssetId, deepLinkAssetResponse]);
 
   // ============================================================
   // MULTISELECT
@@ -594,11 +633,14 @@ export default function Inventory() {
   // ============================================================
 
   async function handleDeleteAsset(asset: Asset) {
-    const confirmed = window.confirm(
-      `Delete "${asset.name}"?${
-        asset.assetTag ? `\n\nAsset Tag: ${asset.assetTag}` : ""
-      }\n\nThis action cannot be undone.`,
-    );
+    const confirmed = await confirm({
+      title: `Delete ${asset.name}?`,
+      description: `${asset.name}${
+        asset.assetTag ? ` (${asset.assetTag})` : ""
+      } will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete asset",
+      tone: "danger",
+    });
 
     if (!confirmed) {
       return;
@@ -690,13 +732,10 @@ export default function Inventory() {
       ====================================================== */}
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Inventory</h1>
-
-          <p className="text-sm text-muted-foreground">
-            All hardware and software assets, regardless of assignment.
-          </p>
-        </div>
+        <PageHeader
+          title="All Assets"
+          description="Every hardware and software asset, whether it is assigned to someone or not."
+        />
 
         <Button className="w-fit" onClick={openCreateAsset}>
           <Plus className="h-4 w-4" />
@@ -1174,7 +1213,10 @@ export default function Inventory() {
       ====================================================== */}
 
       {assignToSystemModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
+      onClose={() => setAssignToSystemModal(false)}
+      label="Assign assets to a system"
+    >
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-lg">
             <h2 className="text-base font-semibold text-foreground">
               Assign {selectedIds.size} asset
@@ -1244,7 +1286,7 @@ export default function Inventory() {
               </Button>
             </div>
           </div>
-        </div>
+        </OverlayRoot>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -34,9 +35,11 @@ import { apiErrorMessage } from "@/types/systems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 import { SoftwareFormModal } from "../components/asset-manager/SoftwareFormModal";
 import { SoftwareLicenseModal } from "../components/asset-manager/SoftwareLicenseModal";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // ============================================================
 // CONSTANTS
@@ -157,8 +160,18 @@ function SoftwareDetailPanel({
     useDeleteSoftwareLicenseMutation();
 
   const busy = removeState.isLoading || deleteLicenseState.isLoading;
+  const confirm = useConfirm();
 
-  async function handleRemoveInstallation(id: string) {
+  async function handleRemoveInstallation(id: string, systemName: string) {
+    const confirmed = await confirm({
+      title: `Remove ${software.asset?.name ?? "this software"} from ${systemName}?`,
+      description: `The installation on ${systemName} will be marked as removed.`,
+      confirmLabel: "Remove installation",
+      tone: "danger",
+    });
+
+    if (!confirmed) return;
+
     try {
       await removeInstallation({
         id,
@@ -179,9 +192,12 @@ function SoftwareDetailPanel({
   }
 
   async function handleDeleteLicense(license: SoftwareLicenseRecord) {
-    const confirmed = window.confirm(
-      `Delete license "${license.vendor} · ${license.licenseType}"?`,
-    );
+    const confirmed = await confirm({
+      title: "Delete this license?",
+      description: `The ${license.vendor} · ${license.licenseType} license will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete license",
+      tone: "danger",
+    });
 
     if (!confirmed) return;
 
@@ -202,7 +218,11 @@ function SoftwareDetailPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-50">
+    <OverlayRoot
+      className="fixed inset-0 z-50"
+      onClose={onClose}
+      label="Software details"
+    >
       {/* SCRIM */}
       <button
         type="button"
@@ -480,9 +500,14 @@ function SoftwareDetailPanel({
                   size="sm"
                   variant="outline"
                   disabled={busy}
-                  onClick={() => handleRemoveInstallation(install.id)}
+                  onClick={() =>
+                    handleRemoveInstallation(
+                      install.id,
+                      install.system?.name ?? "this computer",
+                    )
+                  }
                 >
-                  Remove
+                  Remove installation
                 </Button>
               </div>
             ))}
@@ -507,7 +532,7 @@ function SoftwareDetailPanel({
           setEditingLicense(null);
         }}
       />
-    </div>
+    </OverlayRoot>
   );
 }
 
@@ -641,7 +666,7 @@ export function SoftwareList() {
   const hasFilters = Boolean(search || usage || subscriptionType || rootOnly);
 
   const attention =
-    (summary?.licenses.expired ?? 0) + (summary?.licenses.expiringSoon ?? 0);
+    (summary?.licenses?.expired ?? 0) + (summary?.licenses?.expiringSoon ?? 0);
 
   // ============================================================
   // RENDER
@@ -651,13 +676,10 @@ export function SoftwareList() {
     <div className="space-y-6">
       {/* HEADER */}
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Software</h1>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Catalog of software, licenses and installations.
-          </p>
-        </div>
+        <PageHeader
+          title="Software & Licenses"
+          description="Software your organisation uses, the licenses you have bought, and where each license is installed."
+        />
 
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />

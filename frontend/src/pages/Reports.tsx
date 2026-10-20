@@ -45,6 +45,7 @@ import {
 } from "../components/ui/table";
 
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // ============================================================
 // TYPES
@@ -1247,16 +1248,10 @@ export default function Reports() {
       ====================================================== */}
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Reports
-          </h1>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Asset, inventory, assignment, damage, status and system IT data
-            reports from live system data.
-          </p>
-        </div>
+        <PageHeader
+          title="Reports"
+          description="Asset, inventory, assignment, damage, status and system IT data reports from live system data."
+        />
 
         <ReportActions reportType={activeReportType} filters={appliedFilters} />
       </div>

@@ -16,6 +16,7 @@ import { AssetHistoryModal } from "../components/asset-manager/AssetHistoryModal
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "../components/ui/toast";
+import { useConfirm } from "../components/ui/confirm-dialog";
 
 import { SystemDetailDrawer } from "../components/systems/SystemDetailDrawer";
 import { CreateUpdateSystemModal } from "../components/systems/CreateUpdateSystemModal";
@@ -25,8 +26,10 @@ import {
   type OrganisationInfo,
   type SystemWithOrganisation,
 } from "../types/systems";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function SystemsPage() {
+  const confirm = useConfirm();
   const [params, setParams] = useSearchParams();
 
   const [search, setSearch] = useState("");
@@ -126,9 +129,12 @@ export default function SystemsPage() {
   }
 
   async function deleteSelectedSystem(system: SystemWithOrganisation) {
-    const confirmed = window.confirm(
-      `Delete "${system.name}" (${system.systemTag})?\n\nThis action cannot be undone.`,
-    );
+    const confirmed = await confirm({
+      title: `Delete ${system.name}?`,
+      description: `${system.name} (${system.systemTag}) will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete computer build",
+      tone: "danger",
+    });
 
     if (!confirmed) return;
 
@@ -166,13 +172,10 @@ export default function SystemsPage() {
       ============================================================ */}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Systems</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Build a PC from assets, optionally scope it to an organisation, then
-            assign the whole system to an employee.
-          </p>
-        </div>
+        <PageHeader
+          title="Computer Builds"
+          description="Combine individual parts into one computer, optionally limit it to an organisation, then assign the whole computer to an employee."
+        />
 
         <Button onClick={openCreate} disabled={busy}>
           <Plus className="mr-2 h-4 w-4" />

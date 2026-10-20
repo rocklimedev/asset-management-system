@@ -1,135 +1,106 @@
-import { useState } from "react";
-import { Card } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Select } from "@/components/ui/select";
-const TABS = [
-  "Organization",
-  "Asset Settings",
-  "Transfer Settings",
-  "Notifications",
-  "Security",
-  "Audit",
-] as const;
+import { Link } from "react-router-dom";
+import { LogOut, ShieldCheck } from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "../services/context/AuthContext";
+
+// ============================================================
+// SETTINGS
+//
+// Only shows what the system can actually do today: the signed-in
+// user's real account details, sign out, and the way to manage other
+// people's access. Organisation-wide preferences have no backend yet,
+// so no controls are shown for them.
+// ============================================================
+
+function formatRole(role?: string) {
+  if (!role) return "No role assigned";
+
+  return role
+    .replace(/[_-]+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 export default function Settings() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Organization");
-  const [approvalRequired, setApprovalRequired] = useState(false);
+  const { user, logout } = useAuth();
+
+  const details = [
+    { label: "Name", value: user?.name || "—" },
+    { label: "Email", value: user?.email || "—" },
+    { label: "Role", value: formatRole(user?.role) },
+  ];
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-5">
-        <h1 className="text-lg font-semibold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Configure organization, asset, transfer, and security preferences.
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-6 p-6">
+      <PageHeader
+        title="Settings"
+        description="Your account details, and where to manage access for other people."
+      />
 
-      <div className="flex gap-6">
-        <nav className="w-48 shrink-0 space-y-0.5">
-          {TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`block w-full rounded-lg px-3 py-2 text-left text-sm font-medium ${
-                tab === t
-                  ? "bg-brand-50 text-brand-700"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </nav>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your account</CardTitle>
+          <CardDescription>
+            The account you are signed in with. To change your name, email or
+            role, ask an administrator.
+          </CardDescription>
+        </CardHeader>
 
-        <Card className="flex-1 p-6">
-          {tab === "Organization" && (
-            <div className="max-w-md space-y-4">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Company name
-                </label>
-                <Input defaultValue="Acme Corporation" />
+        <CardContent className="space-y-5">
+          <dl className="divide-y divide-border rounded-lg border border-border">
+            {details.map((item) => (
+              <div
+                key={item.label}
+                className="grid gap-1 px-4 py-3 sm:grid-cols-[8rem_1fr] sm:gap-4"
+              >
+                <dt className="text-sm text-muted-foreground">{item.label}</dt>
+                <dd className="min-w-0 break-words text-sm font-medium text-foreground">
+                  {item.value}
+                </dd>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Timezone
-                </label>
-                <Select defaultValue="America/New_York">
-                  <option value="America/New_York">Eastern Time (US)</option>
-                  <option value="America/Los_Angeles">Pacific Time (US)</option>
-                  <option value="Europe/London">London</option>
-                  <option value="Asia/Kolkata">India</option>
-                </Select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Currency
-                </label>
-                <Select defaultValue="USD">
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="INR">INR</option>
-                </Select>
-              </div>
-              <Button>Save changes</Button>
-            </div>
-          )}
+            ))}
+          </dl>
 
-          {tab === "Transfer Settings" && (
-            <div className="max-w-md space-y-4">
-              <label className="flex items-center justify-between rounded-lg border border-border p-3">
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    Require approval for transfers
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    When enabled, transfers create a pending request instead of
-                    completing immediately.
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={approvalRequired}
-                  onChange={(e) => setApprovalRequired(e.target.checked)}
-                  className="h-4 w-4"
-                />
-              </label>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Default transfer reason list
-                </label>
-                <Input defaultValue="Employee transfer, Team reassignment, Manager request, Equipment upgrade" />
-              </div>
-              <Button>Save changes</Button>
-            </div>
-          )}
+          <Button type="button" variant="outline" onClick={() => logout()}>
+            <LogOut aria-hidden="true" />
+            Sign out
+          </Button>
+        </CardContent>
+      </Card>
 
-          {(tab === "Asset Settings" ||
-            tab === "Notifications" ||
-            tab === "Security" ||
-            tab === "Audit") && (
-            <div className="max-w-md space-y-3 text-sm text-muted-foreground">
-              <p>
-                {tab === "Asset Settings" &&
-                  "Manage asset categories, types, statuses, conditions, and locations here."}
-                {tab === "Notifications" &&
-                  "Configure warranty alerts, license expiry alerts, and transfer notifications."}
-                {tab === "Security" &&
-                  "Set password policies, session timeout, and two-factor authentication."}
-                {tab === "Audit" &&
-                  "Configure how long audit log entries are retained."}
-              </p>
-              <p className="rounded-lg border border-dashed border-input p-3 text-xs text-muted-foreground">
-                This section is scaffolded with the correct API surface (Setting
-                model + PATCH /api/settings) but the form fields are a follow-up
-                build item.
-              </p>
-            </div>
-          )}
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Who can use ITAM</CardTitle>
+          <CardDescription>
+            Add people, change what they are allowed to do, or turn off their
+            access from Users &amp; Roles.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <Link
+            to="/users-roles"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            <ShieldCheck aria-hidden="true" />
+            Open Users &amp; Roles
+          </Link>
+        </CardContent>
+      </Card>
+
+      <p className="text-sm text-muted-foreground">
+        Organisation-wide preferences, such as notification rules and transfer
+        approvals, are not configurable in this version of ITAM.
+      </p>
     </div>
   );
 }

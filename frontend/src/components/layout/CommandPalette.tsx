@@ -106,7 +106,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   // ==========================================================
 
   const handleEmployeeClick = (employeeId: string) => {
-    navigate(`/asset-manager?employee=${employeeId}`);
+    navigate(`/employees?employee=${employeeId}`);
     onClose();
   };
 
@@ -160,7 +160,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </p>
           )}
 
-          {query.length > 0 && !systemsLoading && systems.length > 0 && <div className="mb-2"><p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Systems</p>{systems.slice(0, 10).map(system => <button key={system.id} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { navigate(`/systems?system=${system.id}`); onClose(); }}><Monitor className="h-4 w-4" /><span>{system.name} · {system.systemTag}</span></button>)}</div>}
+          {query.length > 0 && !systemsLoading && systems.length > 0 && <div className="mb-2"><p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Systems</p>{systems.slice(0, 10).map(system => <button key={system.id} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { navigate(`/asset-manager?view=computers&system=${system.id}`); onClose(); }}><Monitor className="h-4 w-4" /><span>{system.name} · {system.systemTag}</span></button>)}</div>}
           {/* LOADING */}
           {query.length > 0 && isLoading && (
             <div className="px-3 py-6 text-center text-sm text-muted-foreground">

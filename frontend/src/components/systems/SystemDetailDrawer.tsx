@@ -247,7 +247,7 @@ export function SystemDetailDrawer({
       <div className="fixed inset-0 z-40 flex justify-end lg:static lg:z-auto lg:block">
         {/* Backdrop only used on small screens */}
         <div
-          className="fixed inset-0 bg-black/40 lg:hidden"
+          className="fixed inset-0 bg-scrim lg:hidden"
           onClick={onClose}
         />
 
@@ -582,7 +582,7 @@ export function SystemDetailDrawer({
               </div>
 
               {!system.employeeId && (
-                <div className="mb-4 rounded-lg border border-amber-300/50 bg-amber-50/50 p-3 text-xs text-amber-800">
+                <div className="mb-4 rounded-lg border border-warning-border bg-warning-muted p-3 text-xs text-warning-strong">
                   Assign this system to an employee before installing software.
                 </div>
               )}

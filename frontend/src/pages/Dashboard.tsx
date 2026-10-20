@@ -1,13 +1,17 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   AppWindow,
   Boxes,
   CheckCircle2,
   Clock3,
   Laptop,
+  Plus,
   PackageOpen,
   ShieldAlert,
   Users,
   Wrench,
+  ChevronRight,
 } from "lucide-react";
 
 import { useGetAssetsQuery } from "../services/api/asset.api";
@@ -16,6 +20,9 @@ import { useGetEmployeesQuery } from "../services/api/employees.api";
 import { StatCard } from "../components/dashboard/StatCard";
 import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { PageHeader } from "../components/layout/PageHeader";
+import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
 
 // ============================================================
 // TYPES
@@ -139,6 +146,8 @@ function PercentageBar({ value, label }: { value: number; label: string }) {
 // ============================================================
 
 export default function Dashboard() {
+  const [isAddAssetOpen, setIsAddAssetOpen] = useState(false);
+
   // ==========================================================
   // API
   // ==========================================================
@@ -505,30 +514,37 @@ export default function Dashboard() {
   const operationalAlerts = [
     {
       label: "Licenses expiring within 30 days",
+      to: "/software",
       count: licensesExpiring30Days,
       tone: licensesExpiring30Days > 0 ? "danger" : "neutral",
     },
     {
       label: "Warranties expiring within 30 days",
+      to: "/inventory",
       count: warrantiesExpiring30Days,
       tone: warrantiesExpiring30Days > 0 ? "warn" : "neutral",
     },
     {
       label: "Assets under repair",
+      to: "/inventory?status=REPAIR",
       count: underRepair,
       tone: underRepair > 0 ? "warn" : "neutral",
     },
     {
       label: "Damaged assets",
+      to: "/inventory?status=DAMAGED",
       count: damagedAssets,
       tone: damagedAssets > 0 ? "danger" : "neutral",
     },
     {
       label: "Lost assets",
+      to: "/inventory?status=LOST",
       count: lostAssets,
       tone: lostAssets > 0 ? "danger" : "neutral",
     },
   ] as const;
+
+  const attentionItems = operationalAlerts.filter((item) => item.count > 0);
 
   // ==========================================================
   // RENDER
@@ -540,41 +556,112 @@ export default function Dashboard() {
           HEADER
       ====================================================== */}
 
-      <div>
-        <h1 className="text-lg font-semibold text-foreground">Reports</h1>
+      <PageHeader
+        title="Dashboard"
+        description="An overview of your assets and what needs attention."
+        actions={
+          <Button onClick={() => setIsAddAssetOpen(true)}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Add Asset
+          </Button>
+        }
+      />
 
-        <p className="text-sm text-muted-foreground">
-          Operational analytics across your asset environment.
-        </p>
-      </div>
+
+      {/* ======================================================
+          NEEDS ATTENTION
+          Only items that actually need action; each opens the
+          matching list.
+      ====================================================== */}
+
+      <Card className="p-5">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-foreground">
+            Needs attention
+          </h2>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Select an item to see the assets or licenses involved.
+          </p>
+        </div>
+
+        {attentionItems.length === 0 ? (
+          <div className="flex items-center gap-2 rounded-lg bg-success-muted px-3 py-3 text-sm text-success-strong">
+            <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Nothing needs attention right now.
+          </div>
+        ) : (
+          <ul className="divide-y divide-border rounded-lg border border-border">
+            {attentionItems.map((item) => (
+              <li key={item.label}>
+                <Link
+                  to={item.to}
+                  className="flex items-center justify-between gap-3 px-3 py-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                >
+                  <span className="min-w-0 truncate text-foreground">
+                    {item.label}
+                  </span>
+
+                  <span className="flex shrink-0 items-center gap-2">
+                    <Badge tone={item.tone}>{item.count}</Badge>
+
+                    <ChevronRight
+                      className="h-4 w-4 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       {/* ======================================================
           KPI CARDS
       ====================================================== */}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Total Assets" value={totalAssets} icon={Boxes} />
+        <StatCard
+          label="Total Assets"
+          value={totalAssets}
+          icon={Boxes}
+          to="/inventory"
+        />
 
-        <StatCard label="Assigned" value={assignedAssets} icon={CheckCircle2} />
+        <StatCard
+          label="Assigned"
+          value={assignedAssets}
+          icon={CheckCircle2}
+          to="/inventory?status=ASSIGNED"
+        />
 
         <StatCard
           label="Available"
           value={availableAssets}
           icon={PackageOpen}
+          to="/inventory?status=AVAILABLE"
         />
 
-        <StatCard label="Employees" value={employees.length} icon={Users} />
+        <StatCard
+          label="Employees"
+          value={employees.length}
+          icon={Users}
+          to="/employees"
+        />
 
         <StatCard
           label="Hardware"
           value={hardwareAssets.length}
           icon={Laptop}
+          to="/inventory?kind=HARDWARE"
         />
 
         <StatCard
           label="Software"
           value={softwareAssets.length}
           icon={AppWindow}
+          to="/software"
         />
 
         <StatCard
@@ -582,6 +669,7 @@ export default function Dashboard() {
           value={underRepair}
           icon={Wrench}
           tone="warn"
+          to="/inventory?status=REPAIR"
         />
 
         <StatCard
@@ -589,6 +677,7 @@ export default function Dashboard() {
           value={licenseExpirations.length}
           icon={ShieldAlert}
           tone="danger"
+          to="/software"
         />
       </div>
 
@@ -915,51 +1004,6 @@ export default function Dashboard() {
             )}
           </div>
         </Card>
-
-        {/* OPERATIONAL ALERTS */}
-
-        <Card className="p-5">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Operational Alerts
-              </h2>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Items that may require attention.
-              </p>
-            </div>
-
-            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-          </div>
-
-          <div className="space-y-3">
-            {operationalAlerts.map((alert) => (
-              <div
-                key={alert.label}
-                className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${
-                      alert.tone === "danger"
-                        ? "bg-destructive"
-                        : alert.tone === "warn"
-                          ? "bg-warning-muted0"
-                          : "bg-success-muted0"
-                    }`}
-                  />
-
-                  <span className="truncate text-sm text-foreground">
-                    {alert.label}
-                  </span>
-                </div>
-
-                <Badge tone={alert.tone}>{alert.count}</Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
 
       {/* ======================================================
@@ -1221,6 +1265,14 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+
+      <CreateAssetModal
+        open={isAddAssetOpen}
+        onClose={() => setIsAddAssetOpen(false)}
+        asset={null}
+        locations={[]}
+        vendors={[]}
+      />
     </div>
   );
 }

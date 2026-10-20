@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
@@ -140,7 +141,11 @@ export function SoftwareLicenseModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4">
+    <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+      onClose={onClose}
+      label="License details"
+      disableClose={busy}
+    >
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-sm font-semibold text-foreground">
@@ -268,7 +273,7 @@ export function SoftwareLicenseModal({
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }
 
