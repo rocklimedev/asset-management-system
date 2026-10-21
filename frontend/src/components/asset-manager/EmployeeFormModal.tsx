@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useId, useMemo, useState } from "react";
 
 import { Pencil, Plus, RefreshCw } from "lucide-react";
 
@@ -90,20 +90,45 @@ interface OrganisationOption {
 const FormField = ({
   label,
   required,
+  htmlFor,
+  error,
+  hint,
   children,
 }: {
   label: string;
   required?: boolean;
+  /** Id of the input, so the label is announced and clickable. */
+  htmlFor?: string;
+  /** Validation message shown directly under the field. */
+  error?: string;
+  /** Short guidance shown under the field when there is no error. */
+  hint?: React.ReactNode;
   children: React.ReactNode;
 }) => {
   return (
     <div className="space-y-2">
-      <Label>
+      <Label htmlFor={htmlFor}>
         {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
+        {required && (
+          <span className="ml-1 text-destructive" aria-hidden="true">
+            *
+          </span>
+        )}
       </Label>
 
       {children}
+
+      {error ? (
+        <p
+          id={htmlFor ? `${htmlFor}-error` : undefined}
+          role="alert"
+          className="text-xs text-destructive-strong"
+        >
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 };
@@ -119,6 +144,35 @@ const EmployeeFormModal = ({
   onClose,
   onSubmit,
 }: EmployeeFormModalProps) => {
+  // ============================================================
+  // VALIDATION
+  // Errors only appear after the first save attempt, next to the
+  // field that needs fixing.
+  // ============================================================
+
+  const formId = useId();
+  const [attempted, setAttempted] = useState(false);
+
+  useEffect(() => {
+    if (open) setAttempted(false);
+  }, [open]);
+
+  const codeError =
+    attempted && !value.employeeCode.trim()
+      ? "Enter the employee code, for example EMP-001."
+      : undefined;
+
+  const nameError =
+    attempted && !value.name.trim() ? "Enter the employee's full name." : undefined;
+
+  const handleSave = () => {
+    setAttempted(true);
+
+    if (!value.employeeCode.trim() || !value.name.trim()) return;
+
+    onSubmit();
+  };
+
   // ============================================================
   // DEPARTMENT OPTIONS
   // ============================================================
@@ -176,13 +230,13 @@ const EmployeeFormModal = ({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
         <DialogHeader>
           <DialogTitle>
-            {editingEmployee ? "Edit Employee" : "Add Employee"}
+            {editingEmployee ? "Edit employee" : "Add employee"}
           </DialogTitle>
 
           <DialogDescription>
             {editingEmployee
               ? "Update the employee information below."
-              : "Create a new employee record."}
+              : "Add the code and name first. Everything else is optional and can be added later."}
           </DialogDescription>
         </DialogHeader>
 
@@ -190,8 +244,16 @@ const EmployeeFormModal = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* EMPLOYEE CODE */}
 
-            <FormField label="Employee Code" required>
+            <FormField
+              label="Employee code"
+              required
+              htmlFor={`${formId}-code`}
+              error={codeError}
+            >
               <Input
+                id={`${formId}-code`}
+                aria-invalid={!!codeError}
+                aria-describedby={codeError ? `${formId}-code-error` : undefined}
                 value={value.employeeCode}
                 onChange={(event) =>
                   onChange("employeeCode", event.target.value)
@@ -202,8 +264,16 @@ const EmployeeFormModal = ({
 
             {/* EMPLOYEE NAME */}
 
-            <FormField label="Employee Name" required>
+            <FormField
+              label="Full name"
+              required
+              htmlFor={`${formId}-name`}
+              error={nameError}
+            >
               <Input
+                id={`${formId}-name`}
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? `${formId}-name-error` : undefined}
                 value={value.name}
                 onChange={(event) => onChange("name", event.target.value)}
                 placeholder="Enter employee name"
@@ -289,7 +359,17 @@ const EmployeeFormModal = ({
 
             {/* STATUS */}
 
-            <FormField label="Status">
+            <FormField
+              label="Status"
+              hint={
+                value.status === "EXITED" ? (
+                  <span className="text-warning-strong">
+                    Saving as Exited returns every asset and computer assigned
+                    to this person to stock.
+                  </span>
+                ) : undefined
+              }
+            >
               <Select
                 value={value.status}
                 onValueChange={(selected) => onChange("status", selected)}
@@ -310,7 +390,7 @@ const EmployeeFormModal = ({
 
             {/* JOINING DATE */}
 
-            <FormField label="Joining Date">
+            <FormField label="Joining date">
               <Input
                 type="date"
                 value={value.joiningDate}
@@ -332,13 +412,8 @@ const EmployeeFormModal = ({
           </Button>
 
           <Button
-            onClick={onSubmit}
-            disabled={
-              isCreating ||
-              isUpdating ||
-              !value.employeeCode.trim() ||
-              !value.name.trim()
-            }
+            onClick={handleSave}
+            disabled={isCreating || isUpdating}
           >
             {isCreating || isUpdating ? (
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -348,7 +423,11 @@ const EmployeeFormModal = ({
               <Plus className="mr-2 h-4 w-4" />
             )}
 
-            {editingEmployee ? "Update Employee" : "Create Employee"}
+            {isCreating || isUpdating
+              ? "Saving…"
+              : editingEmployee
+                ? "Save changes"
+                : "Add employee"}
           </Button>
         </DialogFooter>
       </DialogContent>

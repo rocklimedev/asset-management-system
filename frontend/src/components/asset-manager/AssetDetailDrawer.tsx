@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import {
   X,
   Clock,
@@ -192,7 +193,10 @@ export function AssetDetailDrawer({
   // ============================================================
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <OverlayRoot className="fixed inset-0 z-50 flex justify-end"
+      onClose={onClose}
+      label="Asset details"
+    >
       {/* ======================================================
           BACKDROP
       ====================================================== */}
@@ -200,7 +204,7 @@ export function AssetDetailDrawer({
       <button
         type="button"
         aria-label="Close asset details"
-        className="absolute inset-0 cursor-default bg-black/20"
+        className="absolute inset-0 cursor-default bg-scrim"
         onClick={onClose}
       />
 
@@ -387,7 +391,7 @@ export function AssetDetailDrawer({
                                   {system ? (
                                     <a
                                       className="underline underline-offset-4"
-                                      href={`/systems?system=${system.id}`}
+                                      href={`/asset-manager?view=computers&system=${system.id}`}
                                     >
                                       {assignmentName}
                                     </a>
@@ -634,7 +638,7 @@ export function AssetDetailDrawer({
           </div>
         </div>
       </aside>
-    </div>
+    </OverlayRoot>
   );
 }
 

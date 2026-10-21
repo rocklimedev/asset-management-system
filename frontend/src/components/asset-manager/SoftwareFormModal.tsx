@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 
@@ -153,7 +154,11 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4">
+    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+      onClose={onClose}
+      label="Software details"
+      disableClose={busy}
+    >
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
@@ -346,7 +351,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }
 

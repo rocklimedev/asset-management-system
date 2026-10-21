@@ -28,8 +28,8 @@ export default defineConfig({
         scope: "/",
         display: "standalone",
         orientation: "any",
-        background_color: "#f8fafc",
-        theme_color: "#1C2B4F",
+        background_color: "#F5F7FA",
+        theme_color: "#0F1729",
         categories: ["business", "productivity"],
         icons: [
           {

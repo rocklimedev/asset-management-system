@@ -128,7 +128,7 @@ export function EmployeeCard({
                 className={clsx(
                   "rounded-md p-1.5 hover:bg-muted",
                   hasSystem
-                    ? "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+                    ? "text-warning-strong hover:text-warning-strong"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -158,7 +158,7 @@ export function EmployeeCard({
                   {systems.map((system) => (
                     <Link
                       key={system.id}
-                      to={`/systems?system=${system.id}`}
+                      to={`/asset-manager?view=computers&system=${system.id}`}
                       className="group flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm transition hover:border-brand-300 hover:bg-brand-50/50"
                     >
                       <div className="min-w-0 flex-1">

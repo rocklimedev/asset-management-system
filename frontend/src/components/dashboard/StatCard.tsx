@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ export function StatCard({
   tone = "default",
   hint,
   delta,
+  to,
   className,
 }: {
   label: string;
@@ -30,16 +32,19 @@ export function StatCard({
   hint?: string;
   /** Percentage change vs. the previous period. */
   delta?: number;
+  /** Where the number leads. Makes the whole card a link. */
+  to?: string;
   className?: string;
 }) {
   const resolvedTone = (TONE_CLASSES[tone as Tone] ? tone : "default") as Tone;
 
   const deltaUp = typeof delta === "number" && delta >= 0;
 
-  return (
+  const card = (
     <div
       className={cn(
         "rounded-xl border border-border bg-card p-4 shadow-card",
+        to && "transition-colors group-hover:border-primary-border",
         className,
       )}
     >
@@ -84,5 +89,16 @@ export function StatCard({
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       )}
     </div>
+  );
+
+  if (!to) return card;
+
+  return (
+    <Link
+      to={to}
+      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      {card}
+    </Link>
   );
 }

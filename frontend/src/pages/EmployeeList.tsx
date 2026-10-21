@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
+import { useSearchParams } from "react-router-dom";
 
 import {
   Search,
@@ -7,7 +8,7 @@ import {
   RefreshCw,
   Eye,
   Pencil,
-  Trash2,
+  UserMinus,
   User,
   Mail,
   Phone,
@@ -21,6 +22,7 @@ import {
 
 import {
   useGetEmployeesQuery,
+  useGetEmployeeQuery,
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useRemoveEmployeeMutation,
@@ -68,6 +70,11 @@ import EmployeeFormModal, {
   STATUS_OPTIONS,
   getEmptyEmployeeForm,
 } from "../components/asset-manager/EmployeeFormModal";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { toast } from "@/components/ui/toast";
+import { RowActions } from "@/components/ui/row-actions";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { apiErrorMessage } from "../types";
 
 // ============================================================
 // HELPERS
@@ -212,6 +219,7 @@ const SummaryCard = ({
 // ============================================================
 
 const EmployeeList: React.FC = () => {
+  const confirm = useConfirm();
   const [search, setSearch] = useState("");
 
   const [status, setStatus] = useState<EmployeeStatus | undefined>();
@@ -231,6 +239,32 @@ const EmployeeList: React.FC = () => {
   );
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // ============================================================
+  // DEEP LINK: /employees?employee=... opens that person's details
+  // once, so search results can jump straight to the record.
+  // ============================================================
+
+  const [searchParams] = useSearchParams();
+  const deepLinkEmployeeId = searchParams.get("employee");
+  const { data: deepLinkEmployeeResponse } = useGetEmployeeQuery(
+    deepLinkEmployeeId ?? "",
+    { skip: !deepLinkEmployeeId },
+  );
+  const handledDeepLinkRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!deepLinkEmployeeId || !deepLinkEmployeeResponse) return;
+    if (handledDeepLinkRef.current === deepLinkEmployeeId) return;
+
+    const raw = deepLinkEmployeeResponse as { data?: Employee } & Partial<Employee>;
+    const employee = (raw.data ?? raw) as Employee;
+    if (!employee.id) return;
+
+    handledDeepLinkRef.current = deepLinkEmployeeId;
+    setSelectedEmployee(employee);
+    setDrawerOpen(true);
+  }, [deepLinkEmployeeId, deepLinkEmployeeResponse]);
 
   // Employee whose assets are being managed via EmployeeAssetModal.
   const [assetModalEmployee, setAssetModalEmployee] = useState<Employee | null>(
@@ -377,9 +411,24 @@ const EmployeeList: React.FC = () => {
       }
 
       closeModal();
+
+      toast.add({
+        title: editingEmployee ? "Changes saved" : "Employee added",
+        description: editingEmployee
+          ? `${payload.name} has been updated.`
+          : `${payload.name} can now be assigned assets.`,
+        type: "success",
+      });
+
       await refetch();
     } catch (error) {
-      console.error("Failed to save employee", error);
+      toast.add({
+        title: editingEmployee
+          ? "Could not save changes"
+          : "Could not add employee",
+        description: apiErrorMessage(error),
+        type: "error",
+      });
     }
   };
 
@@ -388,7 +437,39 @@ const EmployeeList: React.FC = () => {
   // ============================================================
 
   const handleDelete = async (employee: Employee) => {
-    const confirmed = window.confirm(`Remove employee "${employee.name}"?`);
+    const computers = (employee.systems ?? []).map(
+      (system) => `${system.name} (${system.systemTag})`,
+    );
+
+    const assetsHeld = (employee.assignments ?? [])
+      .filter((assignment) => assignment.status === "ACTIVE" && !assignment.systemId)
+      .map((assignment) =>
+        assignment.asset
+          ? `${assignment.asset.name}${
+              assignment.asset.assetTag ? ` (${assignment.asset.assetTag})` : ""
+            }`
+          : "Unnamed asset",
+      );
+
+    const returned = [...computers, ...assetsHeld];
+    const shown = returned.slice(0, 6).map((line) => `• ${line}`);
+    const more = returned.length - shown.length;
+
+    const preview =
+      returned.length === 0
+        ? `${employee.name} has nothing assigned right now.`
+        : `These ${returned.length} item${
+            returned.length === 1 ? "" : "s"
+          } will be returned to stock:\n${shown.join("\n")}${
+            more > 0 ? `\n…and ${more} more` : ""
+          }`;
+
+    const confirmed = await confirm({
+      title: `Mark ${employee.name} as exited?`,
+      description: `${employee.name} will be marked as Exited.\n\n${preview}\n\nThe return is recorded in each item's history.`,
+      confirmLabel: "Mark as exited",
+      tone: "danger",
+    });
 
     if (!confirmed) {
       return;
@@ -402,9 +483,19 @@ const EmployeeList: React.FC = () => {
         setDrawerOpen(false);
       }
 
+      toast.add({
+        title: "Employee marked as exited",
+        description: `${employee.name}'s assets have been returned to stock.`,
+        type: "success",
+      });
+
       await refetch();
     } catch (error) {
-      console.error("Failed to remove employee", error);
+      toast.add({
+        title: "Could not mark employee as exited",
+        description: apiErrorMessage(error),
+        type: "error",
+      });
     }
   };
 
@@ -458,14 +549,10 @@ const EmployeeList: React.FC = () => {
       {/* HEADER */}
 
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Employees</h1>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage employees, reporting structure, assignments and employee
-            records.
-          </p>
-        </div>
+        <PageHeader
+          title="Employees"
+          description="People in your organisation, who they report to, and the assets they currently hold."
+        />
 
         <div className="flex items-center gap-2">
           <Button
@@ -706,45 +793,35 @@ const EmployeeList: React.FC = () => {
                           {/* ACTIONS */}
 
                           <TableCell>
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => openDetails(employee)}
-                                title="View details"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => openAssetManager(employee)}
-                                title="Manage assets"
-                              >
-                                <Package className="h-4 w-4" />
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => openEdit(employee)}
-                                title="Edit"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => handleDelete(employee)}
-                                disabled={isDeleting}
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <RowActions
+                              recordName={employee.name}
+                              primary={{
+                                label: "Manage assets",
+                                icon: Package,
+                                onClick: () => openAssetManager(employee),
+                              }}
+                              items={[
+                                {
+                                  label: "View details",
+                                  icon: Eye,
+                                  onSelect: () => openDetails(employee),
+                                },
+                                {
+                                  label: "Edit employee",
+                                  icon: Pencil,
+                                  onSelect: () => openEdit(employee),
+                                },
+                                {
+                                  label: "Mark as exited",
+                                  icon: UserMinus,
+                                  destructive: true,
+                                  separatorBefore: true,
+                                  disabled:
+                                    isDeleting || employee.status === "EXITED",
+                                  onSelect: () => handleDelete(employee),
+                                },
+                              ]}
+                            />
                           </TableCell>
                         </TableRow>
                       ))

@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 
@@ -858,7 +859,10 @@ export function CreateAssetModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4">
+    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+      onClose={onClose}
+      label="Asset form"
+    >
       {/* ======================================================
           MAIN ASSET MODAL
       ====================================================== */}
@@ -1479,7 +1483,10 @@ export function CreateAssetModal({
       ====================================================== */}
 
       {showCategoryModal ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4">
+        <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+      onClose={() => setShowCategoryModal(false)}
+      label="Create asset category"
+    >
           <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
             {/* CATEGORY HEADER */}
 
@@ -1587,9 +1594,9 @@ export function CreateAssetModal({
               </div>
             </form>
           </div>
-        </div>
+        </OverlayRoot>
       ) : null}
-    </div>
+    </OverlayRoot>
   );
 }
 

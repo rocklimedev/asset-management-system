@@ -1,24 +1,20 @@
-import { ChevronRight, LogOut, Menu, Search } from "lucide-react";
+import { ChevronRight, LogOut, Menu, Search, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import { CommandPalette } from "./CommandPalette";
+import { ROUTE_LABELS } from "./nav-config";
 import { useAuth } from "../../services/context/AuthContext";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 
-const LABELS: Record<string, string> = {
-  "": "Dashboard",
-  "asset-manager": "Asset Manager",
-  inventory: "Inventory",
-  systems: "Systems",
-  employees: "Employees",
-  reports: "Reports",
-  "users-roles": "Users & Roles",
-  settings: "Settings",
-};
+
+
+const IS_MAC =
+  typeof navigator !== "undefined" &&
+  /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
 
 function getInitials(name?: string, email?: string) {
   if (name && name.trim()) {
@@ -57,7 +53,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
   return (
     <>
-      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-card px-4">
+      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-background px-4 shadow-card">
         {/* ==================================================
             MOBILE MENU
         ================================================== */}
@@ -67,7 +63,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
           onClick={onMobileMenu}
           aria-label="Open navigation"
           className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground md:hidden",
+            "inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground md:hidden",
             "transition-colors hover:bg-muted hover:text-foreground",
             "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card",
           )}
@@ -95,7 +91,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
 
               <span className="font-medium text-foreground">
-                {LABELS[segment] ?? segment}
+                {ROUTE_LABELS[segment] ?? segment}
               </span>
             </span>
           ))}
@@ -116,10 +112,11 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
         >
           <Search className="h-4 w-4" />
 
-          <span className="hidden sm:inline">Search</span>
+          <span className="hidden sm:inline">Search pages…</span>
+          <span className="sr-only sm:hidden">Search pages</span>
 
           <kbd className="ml-2 hidden rounded border border-border bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground sm:inline">
-            ⌘K
+            {IS_MAC ? "⌘K" : "Ctrl K"}
           </kbd>
         </button>
 
@@ -168,6 +165,19 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
               </div>
 
               <Separator className="my-1" />
+
+              <DropdownMenu.Item
+                asChild
+                className={cn(
+                  "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-2 text-sm outline-none",
+                  "text-foreground focus:bg-muted",
+                )}
+              >
+                <Link to="/settings">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  Settings
+                </Link>
+              </DropdownMenu.Item>
 
               <DropdownMenu.Item
                 onSelect={() => logout()}

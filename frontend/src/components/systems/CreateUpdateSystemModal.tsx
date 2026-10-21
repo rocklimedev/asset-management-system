@@ -249,7 +249,7 @@ export function CreateUpdateSystemModal({
 
               {system?.employeeId &&
                 editor.organisationId !== (system.organisationId ?? "") && (
-                  <p className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2 text-xs text-amber-700">
+                  <p className="rounded-md border border-warning-border bg-warning-muted p-2 text-xs text-warning-strong">
                     If the system is currently assigned, the backend will verify
                     that its employee belongs to the selected organisation.
                   </p>

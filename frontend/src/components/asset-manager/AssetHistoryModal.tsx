@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import {
   History,
   Loader2,
@@ -150,18 +151,17 @@ export function AssetHistoryModal({
   const history = data ?? [];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
         }
       }}
+      onClose={onClose}
+      labelledBy="asset-history-title"
     >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="asset-history-title"
         className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl"
       >
         {/* Header */}
@@ -248,7 +248,7 @@ export function AssetHistoryModal({
           </Button>
         </div>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }
 

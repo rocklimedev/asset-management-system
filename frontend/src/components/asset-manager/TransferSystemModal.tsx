@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 // components/asset-manager/TransferSystemModal.tsx
 import { useState, useEffect } from "react";
 import { Monitor, X, Undo2 } from "lucide-react";
@@ -110,7 +111,11 @@ export function TransferSystemModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4">
+    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+      onClose={onClose}
+      label="Assign or transfer system"
+      disableClose={busy}
+    >
       <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -199,7 +204,7 @@ export function TransferSystemModal({
               <div
                 className={`space-y-2 rounded-md px-3 py-2 text-xs ${
                   allowReplace
-                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+                    ? "bg-warning-muted text-warning-strong"
                     : "bg-destructive-muted text-destructive-strong"
                 }`}
               >
@@ -244,7 +249,7 @@ export function TransferSystemModal({
 
             {clearedEmployeeId &&
               String(destination?.id) === clearedEmployeeId && (
-                <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                <p className="rounded-md bg-success-muted px-3 py-2 text-xs text-success-strong">
                   Existing system returned. You can confirm the new assignment
                   below if it didn’t complete automatically.
                 </p>
@@ -286,6 +291,6 @@ export function TransferSystemModal({
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }

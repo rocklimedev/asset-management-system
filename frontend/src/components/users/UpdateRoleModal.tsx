@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import React, { useEffect, useState } from "react";
 import { ShieldCheck, X } from "lucide-react";
 
@@ -101,28 +102,31 @@ export default function UpdateRoleModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !isSaving) {
           onClose();
         }
       }}
+      onClose={onClose}
+      label="Update role"
+      disableClose={isSaving}
     >
-      <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
+      <div className="w-full max-w-md overflow-hidden rounded-xl bg-card shadow-overlay">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1F453B]/10">
-              <ShieldCheck className="h-5 w-5 text-[#1F453B]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-muted">
+              <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-foreground">
                 Update Role
               </h2>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Change the role assigned to this user
               </p>
             </div>
@@ -132,7 +136,7 @@ export default function UpdateRoleModal({
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-md p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
@@ -142,17 +146,17 @@ export default function UpdateRoleModal({
         <form onSubmit={handleSubmit}>
           <div className="space-y-5 px-6 py-6">
             {/* User */}
-            <div className="rounded-lg border bg-gray-50 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+            <div className="rounded-lg border bg-muted p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 User
               </p>
 
-              <p className="mt-1 font-medium text-gray-900">
+              <p className="mt-1 font-medium text-foreground">
                 {user.name || "Unnamed User"}
               </p>
 
               {user.email && (
-                <p className="mt-0.5 text-sm text-gray-500">{user.email}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{user.email}</p>
               )}
             </div>
 
@@ -163,14 +167,14 @@ export default function UpdateRoleModal({
               <Input
                 value={user.role?.name || "No Role"}
                 disabled
-                className="mt-2 bg-gray-50"
+                className="mt-2 bg-muted"
               />
             </div>
 
             {/* New Role */}
             <div>
               <Label htmlFor="user-role">
-                New Role <span className="text-red-500">*</span>
+                New Role <span className="text-destructive">*</span>
               </Label>
 
               <select
@@ -194,19 +198,19 @@ export default function UpdateRoleModal({
 
             {/* Selected Role Description */}
             {form.roleId && (
-              <div className="rounded-lg border border-[#1F453B]/20 bg-[#1F453B]/5 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <div className="rounded-lg border border-primary-border bg-primary-muted p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Selected Role
                 </p>
 
-                <p className="mt-1 font-medium text-[#1F453B]">
+                <p className="mt-1 font-medium text-primary">
                   {roles.find((role: any) => role.id === form.roleId)?.name ||
                     "Selected Role"}
                 </p>
 
                 {roles.find((role: any) => role.id === form.roleId)
                   ?.description && (
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {
                       roles.find((role: any) => role.id === form.roleId)
                         ?.description
@@ -218,14 +222,14 @@ export default function UpdateRoleModal({
 
             {/* Error */}
             {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <div className="rounded-md border border-destructive-border bg-destructive-muted px-4 py-3 text-sm text-destructive-strong">
                 {error}
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 border-t bg-gray-50 px-6 py-4">
+          <div className="flex items-center justify-end gap-3 border-t bg-muted px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -238,13 +242,13 @@ export default function UpdateRoleModal({
             <Button
               type="submit"
               disabled={isSaving || rolesLoading || !form.roleId}
-              className="bg-[#1F453B] hover:bg-[#16382F]"
+
             >
               {isSaving ? "Updating..." : "Update Role"}
             </Button>
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }

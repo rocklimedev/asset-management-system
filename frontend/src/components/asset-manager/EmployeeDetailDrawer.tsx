@@ -334,7 +334,7 @@ const EmployeeDetailDrawer = ({
                 {employee.systems.map((system) => (
                   <Link
                     key={system.id}
-                    to={`/systems?system=${system.id}`}
+                    to={`/asset-manager?view=computers&system=${system.id}`}
                     className="mb-2 block rounded-lg border p-3 text-sm"
                   >
                     <p className="font-medium">

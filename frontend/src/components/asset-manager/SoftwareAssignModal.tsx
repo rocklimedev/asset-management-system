@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 
@@ -136,7 +137,11 @@ export function SoftwareAssignModal({
   if (!open || !system) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4">
+    <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+      onClose={onClose}
+      label="Install software"
+      disableClose={busy}
+    >
       <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
@@ -258,7 +263,7 @@ export function SoftwareAssignModal({
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }
 

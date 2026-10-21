@@ -1,3 +1,4 @@
+import { OverlayRoot } from "@/components/ui/overlay-root";
 import { useEffect, useState } from "react";
 import { X, UserPlus, Save } from "lucide-react";
 
@@ -242,13 +243,16 @@ export default function AddUserModal({
   // ==========================================================
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClose={handleClose}
+      label="User details"
+    >
       {/* BACKDROP */}
 
       <button
         type="button"
         aria-label="Close modal"
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-scrim"
         onClick={handleClose}
       />
 
@@ -438,6 +442,6 @@ export default function AddUserModal({
           </div>
         </form>
       </div>
-    </div>
+    </OverlayRoot>
   );
 }
