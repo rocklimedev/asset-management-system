@@ -207,6 +207,16 @@ export class AssetUnitsService {
   // FIND ONE
   // ============================================================
 
+  async findByAsset(assetId: string) {
+    const asset = await this.assetModel.findByPk(assetId);
+    if (!asset) throw new NotFoundException("Asset not found.");
+    return this.assetUnitModel.findAll({
+      where: { assetId },
+      include: this.unitInclude,
+      order: [["createdAt", "ASC"], ["id", "ASC"]],
+    });
+  }
+
   async findOne(id: string) {
     const unit = await this.assetUnitModel.findByPk(id, {
       include: this.unitInclude,
