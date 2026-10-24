@@ -1,3 +1,4 @@
+import { useGetRoleAccessQuery } from "../services/api/role.api";
 import React, { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { useSearchParams } from "react-router-dom";
@@ -9,6 +10,7 @@ import {
   Eye,
   Pencil,
   UserMinus,
+  Trash2,
   User,
   Mail,
   Phone,
@@ -26,6 +28,7 @@ import {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useRemoveEmployeeMutation,
+  useDeleteEmployeeMutation,
 } from "../services/api/employees.api";
 
 import type {
@@ -436,6 +439,31 @@ const EmployeeList: React.FC = () => {
   // DELETE
   // ============================================================
 
+  const { data: deleteAccess } = useGetRoleAccessQuery(undefined);
+  const canDeleteEmployees = deleteAccess?.permissions.includes("assets:write") ?? false;
+  const [deleteEmployee, { isLoading: isDeletingRecord }] = useDeleteEmployeeMutation();
+
+  const handleDeleteRecord = async (employee: Employee) => {
+    const confirmed = await confirm({
+      title: `Delete ${employee.name}?`,
+      description: "This employee will be removed from employee lists. Their history will be retained. All assigned assets and computers must be returned first.",
+      confirmLabel: "Delete employee",
+      tone: "danger",
+    });
+    if (!confirmed) return;
+    try {
+      await deleteEmployee(employee.id).unwrap();
+      if (selectedEmployee?.id === employee.id) {
+        setSelectedEmployee(null);
+        setDrawerOpen(false);
+      }
+      setPage(current => employees.length === 1 ? Math.max(1, current - 1) : current);
+      toast.add({ title: "Employee deleted", description: `${employee.name} has been removed from employee lists.`, type: "success" });
+    } catch (error) {
+      toast.add({ title: "Could not delete employee", description: apiErrorMessage(error), type: "error" });
+    }
+  };
+
   const handleDelete = async (employee: Employee) => {
     const computers = (employee.systems ?? []).map(
       (system) => `${system.name} (${system.systemTag})`,
@@ -820,6 +848,7 @@ const EmployeeList: React.FC = () => {
                                     isDeleting || employee.status === "EXITED",
                                   onSelect: () => handleDelete(employee),
                                 },
+                                { label: "Delete employee", icon: Trash2, destructive: true, disabled: !canDeleteEmployees || isDeleting || isDeletingRecord, onSelect: () => handleDeleteRecord(employee) },
                               ]}
                             />
                           </TableCell>

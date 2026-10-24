@@ -53,6 +53,8 @@ interface AssetUnitForm {
   id?: string;
   unitCode: string;
   serialNumber: string;
+  deviceId: string;
+  pcPassword: string;
   cellularIdentities: { imei?: string; simNumber?: string }[];
   status: AssetStatus;
   condition: AssetCondition;
@@ -250,6 +252,8 @@ function createEmptyUnit(
   return {
     unitCode: `UNIT-${String(index + 1).padStart(3, "0")}-${uniqueSuffix}`,
     serialNumber: "",
+    deviceId: "",
+    pcPassword: "",
     cellularIdentities: [],
     status: defaults?.status ?? "AVAILABLE",
     condition: defaults?.condition ?? "GOOD",
@@ -382,6 +386,8 @@ export function CreateAssetModal({
           unitCode:
             unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
           serialNumber: unit.serialNumber ?? "",
+          deviceId: unit.deviceId ?? "",
+          pcPassword: "",
           cellularIdentities: unit.cellularIdentities ?? [],
           status: unit.status ?? nextValues.status ?? "AVAILABLE",
           condition: unit.condition ?? nextValues.condition ?? "GOOD",
@@ -559,7 +565,9 @@ export function CreateAssetModal({
     const normalizedUnits = units.map((unit, index) => ({
       unitCode: unit.unitCode.trim() || undefined,
       serialNumber: unit.serialNumber.trim() || undefined,
-      cellularIdentities: normalizeIdentities(unit.cellularIdentities),
+      deviceId: unit.deviceId.trim() || null,
+            pcPassword: unit.pcPassword || undefined,
+            cellularIdentities: normalizeIdentities(unit.cellularIdentities),
       status: unit.status || "AVAILABLE",
       condition: unit.condition || "GOOD",
       locationId: unit.locationId || undefined,
@@ -763,6 +771,8 @@ export function CreateAssetModal({
         for (const unit of units) {
           if (unit.id) await updateAssetUnit({ id: unit.id,
             serialNumber: unit.serialNumber.trim() || null,
+            deviceId: unit.deviceId.trim() || null,
+            pcPassword: unit.pcPassword || undefined,
             cellularIdentities: normalizeIdentities(unit.cellularIdentities),
           }).unwrap();
         }
@@ -1305,6 +1315,15 @@ export function CreateAssetModal({
                       />
                     </div>
 
+                    <div>
+                      <label className={LABEL_CLASSES}>Device ID (PC / laptop / mobile)</label>
+                      <Input aria-label={`Unit ${index + 1} Device ID`} value={unit.deviceId} maxLength={255} onChange={event => updateUnit(index, "deviceId", event.target.value)} disabled={isSubmitting} placeholder="Device ID" />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASSES}>PC / laptop password</label>
+                      <Input aria-label={`Unit ${index + 1} PC password`} type="password" autoComplete="new-password" value={unit.pcPassword} maxLength={4000} onChange={event => updateUnit(index, "pcPassword", event.target.value)} disabled={isSubmitting} placeholder={isEditMode ? "Leave blank to keep saved password" : "PC login password"} />
+                      <p className="mt-1 text-xs text-muted-foreground">Stored encrypted. Enter a new value to replace the saved password.</p>
+                    </div>
                     {/* SERIAL */}
 
                     <div>

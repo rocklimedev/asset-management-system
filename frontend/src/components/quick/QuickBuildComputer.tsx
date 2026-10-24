@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { ComputerCategorySelect } from "../systems/ComputerCategorySelect";
+import { LaptopAssetPicker, type LaptopSelection } from "../systems/LaptopAssetPicker";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Cpu, HardDrive, MemoryStick, Monitor } from "lucide-react";
 
 import {
   useAssignSystemMutation,
   useCreateSystemMutation,
+  useUpdateSystemMutation,
+  useAssignAssetMutation,
   useUpsertSystemSpecsMutation,
 } from "../../services/api/asset.api";
 import { useGetEmployeesQuery, type Employee } from "../../services/api/employees.api";
@@ -24,7 +28,7 @@ import { cn } from "@/lib/utils";
 // QUICK BUILD COMPUTER
 //
 // Three steps: name the computer, add its main parts, then review
-// and save. Only the name is required. The computer code is filled
+// and save. Name and category are required. The computer code is filled
 // in for you. Giving it to someone is an optional last step.
 // The full builder stays available for every specification field.
 // ============================================================
@@ -46,7 +50,7 @@ function errorText(error: unknown) {
 
 function newComputerCode() {
   const stamp = Date.now().toString(36).slice(-5).toUpperCase();
-  return `PC-${stamp}`;
+  return `COMP-${stamp}`;
 }
 
 export function QuickBuildComputer({
@@ -55,6 +59,12 @@ export function QuickBuildComputer({
   onOpenFullForm,
   employeeId: presetEmployeeId = null,
 }: QuickBuildComputerProps) {
+  const [laptop, setLaptop] = useState<LaptopSelection>(null);
+  const progress = useRef<{ id?: string; laptopUnitId?: string }>({});
+  const [finishing, setFinishing] = useState(false);
+  const [updateSystem] = useUpdateSystemMutation();
+  const [assignAsset] = useAssignAssetMutation();
+  const [categoryId, setCategoryId] = useState("");
   const [step, setStep] = useState<Step>(1);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -66,7 +76,7 @@ export function QuickBuildComputer({
   const [createSystem, { isLoading: creating }] = useCreateSystemMutation();
   const [upsertSpecs, { isLoading: savingSpecs }] = useUpsertSystemSpecsMutation();
   const [assignSystem, { isLoading: assigning }] = useAssignSystemMutation();
-  const saving = creating || savingSpecs || assigning;
+  const saving = finishing || creating || savingSpecs || assigning;
 
   // Loaded up front, not only when the dialog opens, so the list is ready by the last step.
   const { data: employeesData } = useGetEmployeesQuery({});
@@ -80,6 +90,9 @@ export function QuickBuildComputer({
 
   useEffect(() => {
     if (!open) return;
+    progress.current = {};
+    setLaptop(null);
+    setCategoryId("");
     setStep(1);
     setName("");
     setCode(newComputerCode());
@@ -93,14 +106,20 @@ export function QuickBuildComputer({
   const selectedPerson = people.find((person) => String(person.id) === giveTo) ?? null;
 
   async function save() {
+    if (saving || (laptop && !laptop.assetUnitId)) return;
+    setFinishing(true);
     try {
-      const created = await createSystem({
+      const body = {
+        categoryId,
         name: name.trim(),
         systemTag: code.trim() || newComputerCode(),
         notes: null,
         organisationId: null,
-      }).unwrap();
-
+      };
+      const created = progress.current.id
+        ? await updateSystem({ id: progress.current.id, body }).unwrap()
+        : await createSystem(body).unwrap();
+      progress.current.id = created.id;
       const systemId = created.id;
 
       if (hasParts) {
@@ -126,6 +145,10 @@ export function QuickBuildComputer({
         }).unwrap();
       }
 
+      if (laptop && !progress.current.laptopUnitId) {
+        await assignAsset({ id: laptop.assetId, assetUnitId: laptop.assetUnitId, systemId }).unwrap();
+        progress.current.laptopUnitId = laptop.assetUnitId;
+      }
       if (giveTo) {
         await assignSystem({ id: systemId, employeeId: giveTo }).unwrap();
       }
@@ -142,8 +165,10 @@ export function QuickBuildComputer({
       toast.add({
         type: "error",
         title: "Couldn't build this computer",
-        description: errorText(error),
+        description: `${errorText(error)}${progress.current.id ? " Computer details were saved. Retry to finish the remaining steps." : ""}`,
       });
+    } finally {
+      setFinishing(false);
     }
   }
 
@@ -192,6 +217,7 @@ export function QuickBuildComputer({
                   onChange={(event) => setName(event.target.value)}
                 />
               </div>
+              <ComputerCategorySelect value={categoryId} onChange={value => { setCategoryId(value); setLaptop(null); }} disabled={saving || Boolean(progress.current.laptopUnitId)} />
 
               <div>
                 <label htmlFor="qc-code" className="text-sm font-medium text-foreground">
@@ -213,6 +239,7 @@ export function QuickBuildComputer({
 
           {step === 2 && (
             <>
+              <LaptopAssetPicker key={categoryId} categoryId={categoryId} value={laptop} onChange={setLaptop} disabled={saving || Boolean(progress.current.laptopUnitId)} />
               <p className="text-sm text-muted-foreground">
                 The main parts. Skip any you don’t know yet; you can add them later.
               </p>
@@ -282,14 +309,14 @@ export function QuickBuildComputer({
           {step < 3 ? (
             <Button
               type="button"
-              disabled={step === 1 && !name.trim()}
+              disabled={saving || (step === 1 && (!name.trim() || !categoryId)) || (step === 2 && Boolean(laptop && !laptop.assetUnitId))}
               onClick={() => setStep((s) => (s + 1) as Step)}
             >
               Continue
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (
-            <Button type="button" disabled={saving || !name.trim()} onClick={save}>
+            <Button type="button" disabled={saving || !name.trim() || !categoryId || Boolean(laptop && !laptop.assetUnitId)} onClick={save}>
               <Check className="h-4 w-4" aria-hidden="true" />
               {saving ? "Building…" : "Build computer"}
             </Button>

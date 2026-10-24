@@ -38,6 +38,8 @@ export type InventoryChangeType =
   | "WRITE_OFF";
 
 export interface AssetUnit {
+  deviceId?: string | null;
+  pcPassword?: string;
   cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
   id: string;
   assetId: string;
@@ -152,6 +154,8 @@ export interface AssetCategoryInput {
 }
 
 export interface CreateAssetUnitRequest {
+  deviceId?: string | null;
+  pcPassword?: string;
   cellularIdentities?: { imei?: string; simNumber?: string }[];
   assetId: string;
   unitCode?: string | null;
@@ -163,6 +167,8 @@ export interface CreateAssetUnitRequest {
 }
 
 export interface UpdateAssetUnitRequest {
+  deviceId?: string | null;
+  pcPassword?: string;
   cellularIdentities?: { imei?: string; simNumber?: string }[];
   id: string;
   unitCode?: string | null;

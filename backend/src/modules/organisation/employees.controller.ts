@@ -79,6 +79,12 @@ export class EmployeesController {
   // REMOVE / EXIT EMPLOYEE
   // ============================================================
 
+  @Delete(":id/record")
+  @RequirePermissions("assets:write")
+  deleteRecord(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.service.deleteRecord(id, user);
+  }
+
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user);

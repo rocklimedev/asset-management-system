@@ -207,7 +207,7 @@ export function SystemPool({ open, employee, onClose }: SystemPoolProps) {
                   <p className="truncate text-sm font-medium">{system.name}</p>
 
                   <p className="truncate text-xs text-muted-foreground">
-                    {system.systemTag} · {system.assignments?.length ?? 0}{" "}
+                    {system.systemTag} · {system.category?.name ?? "Category not set"} · {system.assignments?.length ?? 0}{" "}
                     component
                     {(system.assignments?.length ?? 0) === 1 ? "" : "s"}
                   </p>

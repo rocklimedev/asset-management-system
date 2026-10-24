@@ -9,6 +9,8 @@ import {
   Index,
   PrimaryKey,
 } from "sequelize-typescript";
+import { ServiceUnavailableException } from "@nestjs/common";
+import { CredentialCrypto } from "../../credentials/credential-crypto";
 import { Optional } from "sequelize";
 
 import { Asset } from "./asset.model";
@@ -37,6 +39,9 @@ export interface AssetUnitAttributes {
   assetId: string;
   unitCode?: string | null;
   serialNumber?: string | null;
+  deviceId?: string | null;
+  pcPassword?: string;
+  encryptedPcPassword?: string | null;
   cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
   status: AssetUnitStatus;
   condition: AssetUnitCondition;
@@ -51,6 +56,9 @@ export type AssetUnitCreationAttributes = Optional<
   | "id"
   | "unitCode"
   | "serialNumber"
+  | "deviceId"
+  | "pcPassword"
+  | "encryptedPcPassword"
   | "cellularIdentities"
   | "status"
   | "condition"
@@ -107,6 +115,24 @@ export class AssetUnit extends Model<
   })
   serialNumber?: string | null;
 
+  @Column({ type: DataType.STRING(255), allowNull: true, field: "device_id" })
+  deviceId?: string | null;
+  @Column({ type: DataType.TEXT, allowNull: true, field: "encrypted_pc_password", get() { return undefined; } })
+  encryptedPcPassword?: string | null;
+  @Column({ type: DataType.VIRTUAL, set(value: string) {
+    if (!value) return;
+    let crypto: CredentialCrypto;
+    try { crypto = new CredentialCrypto(process.env.CREDENTIAL_ENCRYPTION_KEY || ""); }
+    catch { throw new ServiceUnavailableException("Credential vault encryption is not configured."); }
+    (this as AssetUnit).setDataValue("encryptedPcPassword", crypto.encrypt(value, "asset-unit:pc-password"));
+  } })
+  pcPassword?: string;
+  toJSON(): any {
+    const result = { ...this.get({ plain: true }) };
+    delete result.encryptedPcPassword;
+    delete result.pcPassword;
+    return result;
+  }
   @Column({ type: DataType.JSON, allowNull: true, field: "cellular_identities" })
   cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
 

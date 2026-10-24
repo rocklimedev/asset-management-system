@@ -1,6 +1,6 @@
 import { System } from "../assets/models/system.model";
 import { AssetsService } from "../assets/assets.service";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Op, WhereOptions } from "sequelize";
 
@@ -124,6 +124,7 @@ export class EmployeesService {
             model: System,
 
             include: [
+              { model: AssetCategory, as: "category", required: false },
               {
                 model: AssetAssignment,
                 where: {
@@ -224,6 +225,7 @@ export class EmployeesService {
           model: System,
 
           include: [
+              { model: AssetCategory, as: "category", required: false },
             {
               model: AssetAssignment,
               where: {
@@ -381,6 +383,24 @@ export class EmployeesService {
   // ============================================================
   // REMOVE / EXIT EMPLOYEE
   // ============================================================
+
+  // Keep the record for historical references while removing it from active queries.
+  async deleteRecord(id: string, actor: AuthUser) {
+    return this.employeeModel.sequelize!.transaction(async transaction => {
+      const employee = await this.employeeModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!employee) throw new NotFoundException("Employee not found.");
+      const assignments = await AssetAssignment.count({ where: { employeeId: id, status: AssignmentStatus.ACTIVE }, transaction });
+      const systems = await System.count({ where: { employeeId: id }, transaction });
+      if (assignments || systems) {
+        throw new ConflictException("Return all assigned assets and computers before deleting this employee. Use Mark as exited to return their assets.");
+      }
+      await employee.update({ status: EmployeeStatus.EXITED }, { transaction });
+      await employee.destroy({ transaction });
+      await this.audit.log({ userId: actor.id, action: "EMPLOYEE_DELETED", entity: "Employee", entityId: id,
+        metadata: { name: employee.name, employeeCode: employee.employeeCode } }, transaction);
+      return { success: true };
+    });
+  }
 
   async remove(id: string, actor: AuthUser) {
     const existing = await this.findOne(id);

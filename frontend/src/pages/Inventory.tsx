@@ -1318,6 +1318,7 @@ export default function Inventory() {
                       <SelectItem key={sys.id} value={sys.id}>
                         {sys.systemTag}
                         {sys.name ? ` · ${sys.name}` : ""}
+                        {sys.category?.name ? ` · ${sys.category.name}` : ""}
                         {sys.employee?.name ? ` · ${sys.employee.name}` : ""}
                       </SelectItem>
                     ))

@@ -338,7 +338,7 @@ const EmployeeDetailDrawer = ({
                     className="mb-2 block rounded-lg border p-3 text-sm"
                   >
                     <p className="font-medium">
-                      {system.name} · {system.systemTag}
+                      {system.name} · {system.systemTag} · {system.category?.name ?? "Category not set"}
                     </p>
                     <p className="text-muted-foreground">
                       {system.assignments
