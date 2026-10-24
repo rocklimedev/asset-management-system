@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -14,6 +15,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 
 import { AssetPoolQueryDto } from "./dto/asset-pool-query.dto";
 import { AdjustInventoryDto } from "./dto/adjust-inventory.dto";
+import { AssetUnitsService } from "./asset-units.service";
 import { AssetsService } from "./assets.service";
 import { CreateAssetDto } from "./dto/create-asset.dto";
 import { UpdateAssetDto } from "./dto/update-asset.dto";
@@ -30,7 +32,10 @@ import { CdnUploadFile } from "../cdn/cdn.service";
 
 @Controller("assets")
 export class AssetsController {
-  constructor(private readonly service: AssetsService) {}
+  constructor(
+    private readonly service: AssetsService,
+    private readonly units: AssetUnitsService,
+  ) {}
 
   // ============================================================
   // GET ALL ASSETS
@@ -98,6 +103,11 @@ export class AssetsController {
   // ============================================================
   // GET SINGLE ASSET
   // ============================================================
+
+  @Get(":id/units")
+  findUnits(@Param("id", ParseUUIDPipe) id: string) {
+    return this.units.findByAsset(id);
+  }
 
   @Get(":id")
   findOne(@Param("id") id: string) {
