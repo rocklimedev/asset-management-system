@@ -381,6 +381,11 @@ export const employeesApi = createApi({
     // DELETE /employees/:id
     // ============================================================
 
+    deleteEmployee: builder.mutation<{ success: boolean }, string>({
+      query: id => ({ url: `/employees/${id}/record`, method: "DELETE" }),
+      invalidatesTags: (result, error, id) => error ? [] : [{ type: "Employee", id }, { type: "Employee", id: "LIST" }],
+    }),
+
     removeEmployee: builder.mutation<unknown, string>({
       query: (id) => ({
         url: `/employees/${id}`,
@@ -537,6 +542,7 @@ export const {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useRemoveEmployeeMutation,
+  useDeleteEmployeeMutation,
 
   useGetOrganisationsQuery,
   useGetOrganisationQuery,

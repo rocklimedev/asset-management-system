@@ -28,9 +28,11 @@ test('asset creation stores identifiers on the correct physical units', async ()
     assert.equal(options.transaction, transaction); writes.push(data); return data;
   } };
   await service.createAssetUnits({ id: 'phone', assetTag: 'PHONE' }, 2, transaction, {
-    initialUnits: [{ serialNumber: 'SN1', cellularIdentities: identities }, { serialNumber: 'SN2' }],
+    initialUnits: [{ serialNumber: 'SN1', deviceId: 'DEVICE-001', pcPassword: ' secret ', cellularIdentities: identities }, { serialNumber: 'SN2' }],
   });
   assert.equal(writes[0].serialNumber, 'SN1');
+  assert.equal(writes[0].deviceId, 'DEVICE-001');
+  assert.equal(writes[0].pcPassword, ' secret ');
   assert.deepEqual(writes[0].cellularIdentities, identities);
   assert.equal(writes[0].cellularIdentities[0].simNumber, '001234567890');
   assert.deepEqual(writes[1].cellularIdentities, []);
@@ -45,9 +47,9 @@ test('unit editing can replace and clear cellular identifiers without altering c
     sequelize: { transaction: async callback => callback(transaction) },
     assetUnitModel: { findByPk: async () => unit },
     assetModel: { findByPk: async () => ({ id: 'phone' }) },
-    audit: { log: async () => {} },
+    audit: { log: async data => { assert.ok(!JSON.stringify(data).includes("top-secret")); } },
   });
-  await service.update('unit', { cellularIdentities: [identities[1]] }, { id: 'admin' });
+  await service.update('unit', { deviceId: 'PC-001', pcPassword: 'top-secret', cellularIdentities: [identities[1]] }, { id: 'admin' });
   assert.deepEqual(unit.cellularIdentities, [identities[1]]);
   assert.equal(unit.serialNumber, 'SN1');
   assert.equal(unit.status, 'ASSIGNED');

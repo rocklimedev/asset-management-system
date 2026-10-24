@@ -132,6 +132,8 @@ export interface AssetHistoryEntry {
 export type AssetHistory = AssetHistoryEntry;
 
 export interface SystemRecord {
+  categoryId?: string | null;
+  category?: AssetCategory | null;
   id: string;
   systemTag: string;
   name: string;
@@ -145,6 +147,7 @@ export interface SystemRecord {
 }
 
 export interface SystemInput {
+  categoryId?: string | null;
   systemTag: string;
   name?: string | null;
   employeeId?: string | null;

@@ -249,7 +249,7 @@ export default function AssetManager() {
 
       const matchesSearch =
         !query ||
-        `${system.name} ${system.systemTag} ${system.employee?.name ?? ""} ${
+        `${system.name} ${system.systemTag} ${system.category?.name ?? ""} ${system.employee?.name ?? ""} ${
           system.organisation?.name ?? ""
         }`
           .toLowerCase()
@@ -854,7 +854,7 @@ export default function AssetManager() {
     <EmptyState
       icon={Monitor}
       title="No computers yet"
-      description="Build a computer from parts, then assign it to someone."
+      description="Create a desktop PC or mobile phone record, add its assets, then assign it to someone."
     />
   ) : (
     visibleSystems.map((system) => (
@@ -1223,7 +1223,7 @@ export default function AssetManager() {
                                   {system.name}
                                 </p>
                                 <p className="truncate text-xs text-muted-foreground">
-                                  {system.systemTag}
+                                  {system.systemTag} · {system.category?.name ?? "Category not set"}
                                   {system.assignments?.length
                                     ? ` · ${system.assignments.length} parts`
                                     : ""}
@@ -1553,7 +1553,7 @@ function ComputerRow({
           ) : (
             <span className="font-medium text-warning-strong">Unassigned</span>
           )}
-          {` · ${parts} part${parts === 1 ? "" : "s"}`}
+          {` · ${system.category?.name ?? "Category not set"} · ${parts} part${parts === 1 ? "" : "s"}`}
           {system.organisation?.name && (
             <>
               {" · "}

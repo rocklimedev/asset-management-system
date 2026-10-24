@@ -233,6 +233,8 @@ export class AssetsService {
             this.generateUnitCode(asset.assetTag ?? null, index),
 
           cellularIdentities: input?.cellularIdentities ?? [],
+          deviceId: input?.deviceId ?? null,
+          pcPassword: input?.pcPassword,
 
           serialNumber:
             input?.serialNumber?.trim() ||
@@ -254,6 +256,7 @@ export class AssetsService {
         },
         {
           transaction,
+          logging: false,
         },
       );
 

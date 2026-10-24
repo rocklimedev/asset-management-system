@@ -30,6 +30,7 @@ export enum EmployeeStatus {
 @Table({
   tableName: "employees",
   timestamps: true,
+  paranoid: true,
 })
 export class Employee extends Model<Employee> {
   // ============================================================

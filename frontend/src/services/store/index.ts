@@ -73,6 +73,7 @@ const custodyCache: Middleware = (api) => (next) => (action) => {
     isAnyOf(
       employeesApi.endpoints.updateEmployee.matchFulfilled,
       employeesApi.endpoints.removeEmployee.matchFulfilled,
+      employeesApi.endpoints.deleteEmployee.matchFulfilled,
     )(action)
   ) {
     // ✅ FIX: Invalidate specific asset lists, not all assets

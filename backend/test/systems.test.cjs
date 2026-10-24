@@ -9,6 +9,7 @@ const { validate } = require('class-validator');
 const { AssetsService } = require('../dist/modules/assets/assets.service');
 const { SystemsService } = require('../dist/modules/assets/systems.service');
 const { System } = require('../dist/modules/assets/models/system.model');
+const { AssetCategory } = require('../dist/modules/assets/models/asset-category.model');
 const { Employee } = require('../dist/modules/organisation/models/employees.model');
 const { AssetAssignment } = require('../dist/modules/assets/models/asset-assignment.model');
 const { AssetHistory } = require('../dist/modules/assets/models/asset-history.model');
@@ -49,6 +50,8 @@ test('all models initialize with the correct logical assignment foreign keys', a
   assert.equal(AssetAssignment.rawAttributes.employee_id, undefined);
   assert.equal(AssetAssignment.rawAttributes.asset_id, undefined);
   assert.equal(System.associations.assignments.foreignKey, 'systemId');
+  assert.equal(System.associations.category.foreignKey, 'categoryId');
+  assert.equal(System.rawAttributes.categoryId.field, 'category_id');
   assert.equal(Employee.associations.systems.foreignKey, 'employeeId');
   await db.close();
 });
@@ -119,7 +122,7 @@ test('removing a damaged component preserves its lifecycle status', async () => 
 
 test('system transfer and return keep component membership unchanged', async () => {
   const f = fixture();
-  const system = { id: 'system', systemTag: 'PC-001', employeeId: 'previous', update: async data => Object.assign(system, data) };
+  const system = { id: 'system', systemTag: 'LAP-001', categoryId: 'laptops', employeeId: 'previous', update: async data => Object.assign(system, data) };
   const components = [{ assetId: 'asset', systemId: 'system', status: 'ACTIVE' }];
   stub(System, 'findByPk', async () => system);
   stub(Employee, 'findByPk', async id => ({ id, name: id, status: 'ACTIVE' }));
@@ -128,6 +131,7 @@ test('system transfer and return keep component membership unchanged', async () 
   const service = new SystemsService(f.db, f.auditService);
   await service.setEmployee('system', 'next', actor);
   assert.equal(system.employeeId, 'next');
+  assert.equal(system.categoryId, 'laptops');
   await service.setEmployee('system', null, actor);
   assert.equal(system.employeeId, null);
   assert.deepEqual(components, [{ assetId: 'asset', systemId: 'system', status: 'ACTIVE' }]);
@@ -142,7 +146,7 @@ test('system cannot be assigned to an exited employee', async () => {
 });
 
 test('blank system names and tags are rejected after trimming', async () => {
-  const dto = plainToInstance(CreateSystemDto, { name: '  ', systemTag: '  ' });
+  const dto = plainToInstance(CreateSystemDto, { name: '  ', systemTag: '  ', categoryId: '11111111-1111-4111-8111-111111111111' });
   const errors = await validate(dto);
   assert.deepEqual(errors.map(e => e.property).sort(), ['name', 'systemTag']);
 });
@@ -164,7 +168,8 @@ test('creating a system needs no employee and saves it unassigned', async () => 
   stub(System, 'create', async (data) => { created = { id: 'inventory-system', ...data }; return created; });
   stub(System, 'findByPk', async () => created);
   const service = new SystemsService({ transaction: async fn => fn(transaction) }, { log: async () => {} });
-  const dto = plainToInstance(CreateSystemDto, { name: 'Spare PC', systemTag: 'SPARE-001' });
+  stub(AssetCategory, 'findByPk', async () => ({ id: '11111111-1111-4111-8111-111111111111', name: 'Desktop PC', type: 'HARDWARE', isActive: true }));
+  const dto = plainToInstance(CreateSystemDto, { name: 'Spare PC', systemTag: 'SPARE-001', categoryId: '11111111-1111-4111-8111-111111111111' });
   assert.equal((await validate(dto)).length, 0);
   const result = await service.create(dto, actor);
   assert.equal(result.employeeId, null);
@@ -186,4 +191,58 @@ test('system reports and Excel explicitly identify unassigned inventory', async 
   assert.equal(table.getCell('E1').value, 'Assignment Status');
   assert.equal(table.getCell('E2').value, 'Unassigned (Inventory)');
   assert.equal(table.getCell('E3').value, 'Assigned');
+});
+
+test('computer creation stores its selected laptop category without assigning an employee', async () => {
+  const transaction = { LOCK: { UPDATE: 'UPDATE' } };
+  const categoryId = '11111111-1111-4111-8111-111111111111';
+  let created;
+  stub(AssetCategory, 'findByPk', async id => { assert.equal(id, categoryId); return { id, name: 'Laptop', type: 'HARDWARE', isActive: true }; });
+  stub(System, 'create', async data => { created = { id: 'laptop-system', ...data }; return created; });
+  stub(System, 'findByPk', async () => created);
+  const service = new SystemsService({ transaction: async fn => fn(transaction) }, { log: async () => {} });
+  const result = await service.create({ name: 'Finance laptop', systemTag: 'LAP-001', categoryId }, actor);
+  assert.equal(result.categoryId, categoryId);
+  assert.equal(result.employeeId, null);
+});
+
+test('computer categories must exist, be active hardware, and match the organisation', async () => {
+  const transaction = { LOCK: { UPDATE: 'UPDATE' } };
+  const service = new SystemsService({ transaction: async fn => fn(transaction) }, { log: async () => {} });
+  let category;
+  stub(AssetCategory, 'findByPk', async () => category);
+  const create = categoryId => service.create({ name: 'Laptop', systemTag: 'LAP-001', categoryId }, actor);
+  await assert.rejects(create(undefined), /Select a computer category/);
+  await assert.rejects(create('missing'), /category not found/);
+  category = { type: 'SOFTWARE', isActive: true };
+  await assert.rejects(create('software'), /active hardware category/);
+  category = { type: 'HARDWARE', isActive: false };
+  await assert.rejects(create('inactive'), /active hardware category/);
+  category = { name: 'Desktop PC', type: 'HARDWARE', isActive: true, organisationId: 'other' };
+  await assert.rejects(create('other-company'), /selected organisation/);
+});
+
+test('computer category can be corrected on an existing record without changing its employee', async () => {
+  const transaction = { LOCK: { UPDATE: 'UPDATE' } };
+  const record = { id: 'system', categoryId: null, employeeId: 'employee', organisationId: null,
+    update: async data => Object.assign(record, data) };
+  stub(System, 'findByPk', async () => record);
+  stub(AssetCategory, 'findByPk', async () => ({ name: 'Desktop PC', type: 'HARDWARE', isActive: true }));
+  const service = new SystemsService({ transaction: async fn => fn(transaction) }, { log: async () => {} });
+  await service.update('system', { categoryId: 'laptops' }, actor);
+  assert.equal(record.categoryId, 'laptops');
+  assert.equal(record.employeeId, 'employee');
+  await assert.rejects(service.update('system', { categoryId: null }, actor), /Select a computer category/);
+});
+
+test('computer category selection allows only Desktop PC and Laptop', async () => {
+  const service = new SystemsService({}, {});
+  let name;
+  stub(AssetCategory, 'findByPk', async () => ({ name, type: 'HARDWARE', isActive: true }));
+  for (name of ['Desktop PC', 'Laptop', ' desktop pc ', 'LAPTOP']) {
+    await service.validateCategory('category', null, { LOCK: { UPDATE: 'UPDATE' } });
+  }
+  for (name of ['Mobile Phone', 'Camera', 'Mobile charger', 'Monitor', 'Tablet', 'INFINIX GT 30 PRO']) {
+    await assert.rejects(service.validateCategory('category', null, { LOCK: { UPDATE: 'UPDATE' } }), /must be Desktop PC or Laptop/);
+  }
 });

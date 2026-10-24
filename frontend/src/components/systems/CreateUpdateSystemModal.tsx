@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
+import { ComputerCategorySelect } from "./ComputerCategorySelect";
+import { LaptopAssetPicker, type LaptopSelection } from "./LaptopAssetPicker";
+import { useGetEmployeesQuery } from "../../services/api/employees.api";
+import { useEffect, useRef, useState } from "react";
 import { Cpu, Wifi, Cloud, HardDrive, Monitor } from "lucide-react";
 
 import {
   useCreateSystemMutation,
+  useAssignAssetMutation,
+  useAssignSystemMutation,
   useUpdateSystemMutation,
   useUpsertSystemSpecsMutation,
   useGetSystemSpecsQuery,
@@ -40,6 +45,7 @@ type Props = {
 };
 
 type EditorState = {
+  categoryId: string;
   name: string;
   systemTag: string;
   notes: string;
@@ -47,6 +53,7 @@ type EditorState = {
 };
 
 const emptyEditor: EditorState = {
+  categoryId: "",
   name: "",
   systemTag: "",
   notes: "",
@@ -60,6 +67,22 @@ export function CreateUpdateSystemModal({
   onClose,
   onSaved,
 }: Props) {
+  const [laptop, setLaptop] = useState<LaptopSelection>(null);
+  const [employeeId, setEmployeeId] = useState("");
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const progress = useRef<{ id?: string; laptopUnitId?: string }>({});
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [assignAsset, assetAssignment] = useAssignAssetMutation();
+  const [assignSystem, systemAssignment] = useAssignSystemMutation();
+  const { currentData: employeeData, isFetching: loadingEmployees } = useGetEmployeesQuery({ search: employeeSearch }, { skip: !open });
+  const employees = (Array.isArray(employeeData) ? employeeData : employeeData?.items ?? []).filter(employee => employee.status === "ACTIVE" || employee.status === "ON_LEAVE");
+  useEffect(() => {
+    progress.current = {};
+    setLaptop(null);
+    setEmployeeId("");
+    setEmployeeSearch("");
+  }, [open, system?.id]);
   const [editor, setEditor] = useState<EditorState>(emptyEditor);
   const [specsForm, setSpecsForm] = useState<SpecsForm>({ ...emptySpecs });
 
@@ -80,10 +103,11 @@ export function CreateUpdateSystemModal({
   const existingSpecs = specsResponse;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || savingRef.current) return;
 
     if (system) {
       setEditor({
+        categoryId: system.categoryId ?? "",
         name: system.name,
         systemTag: system.systemTag,
         notes: system.notes ?? "",
@@ -101,7 +125,7 @@ export function CreateUpdateSystemModal({
     }
   }, [open, system?.id, existingSpecs]);
 
-  const busy =
+  const busy = saving || assetAssignment.isLoading || systemAssignment.isLoading ||
     createState.isLoading ||
     updateState.isLoading ||
     upsertSpecsState.isLoading;
@@ -117,18 +141,24 @@ export function CreateUpdateSystemModal({
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (busy || (laptop && !laptop.assetUnitId)) return;
+    savingRef.current = true;
+    setSaving(true);
 
     try {
       const body = {
+        categoryId: editor.categoryId,
         name: editor.name.trim(),
         systemTag: editor.systemTag.trim(),
         notes: editor.notes.trim() || null,
         organisationId: editor.organisationId || null,
       };
 
-      const result = system
-        ? await update({ body, id: system.id }).unwrap()
+      const existingId = system?.id ?? progress.current.id;
+      const result = existingId
+        ? await update({ body, id: existingId }).unwrap()
         : await create(body).unwrap();
+      progress.current.id = result.id;
 
       const systemId = result.id;
 
@@ -155,14 +185,24 @@ export function CreateUpdateSystemModal({
         },
       }).unwrap();
 
+      if (laptop && !progress.current.laptopUnitId) {
+        await assignAsset({ id: laptop.assetId, assetUnitId: laptop.assetUnitId, systemId }).unwrap();
+        progress.current.laptopUnitId = laptop.assetUnitId;
+      }
+      if (employeeId && employeeId !== system?.employeeId) {
+        await assignSystem({ id: systemId, employeeId }).unwrap();
+      }
       toast.add({ title: "System saved", type: "success" });
       onSaved(systemId);
     } catch (error) {
       toast.add({
         title: "Could not save system",
-        description: apiErrorMessage(error),
+        description: `${apiErrorMessage(error)}${progress.current.id ? " Computer details were saved. Retry to finish the remaining steps." : ""}`,
         type: "error",
       });
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }
 
@@ -174,7 +214,7 @@ export function CreateUpdateSystemModal({
 
           <DialogDescription>
             A system groups the assets and hardware specifications that make up
-            a PC. Organisation is optional. New systems are saved to Inventory without an employee; you can assign them later.
+            a desktop PC or laptop. Organisation is optional. Choose a laptop and employee below, or leave assignment for later.
           </DialogDescription>
         </DialogHeader>
 
@@ -189,6 +229,18 @@ export function CreateUpdateSystemModal({
               <h3 className="font-medium">System Information</h3>
             </div>
 
+            <ComputerCategorySelect value={editor.categoryId} organisationId={editor.organisationId} disabled={busy || Boolean(progress.current.laptopUnitId)} onChange={categoryId => { setEditor(current => ({ ...current, categoryId })); setLaptop(null); }} />
+            <LaptopAssetPicker key={editor.categoryId} categoryId={editor.categoryId} value={laptop} onChange={setLaptop} system={system} disabled={busy || Boolean(progress.current.laptopUnitId)} />
+            <div className="space-y-2 rounded-md border p-3">
+              <Label htmlFor="computer-employee">Assign this computer to an employee (optional)</Label>
+              <Input aria-label="Search employee to assign computer" placeholder="Search employees" value={employeeSearch} disabled={busy} onChange={event => setEmployeeSearch(event.target.value)} />
+              <select id="computer-employee" value={employeeId} disabled={busy || loadingEmployees} onChange={event => setEmployeeId(event.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
+                <option value="">{system?.employeeId ? "Keep current employee" : "Assign later — keep in inventory"}</option>
+                {employeeId && !employees.some(employee => employee.id === employeeId) && <option value={employeeId}>Selected employee</option>}
+                {employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name} · {employee.employeeCode}</option>)}
+              </select>
+              <p className="text-xs text-muted-foreground">The linked laptop and all other computer assets follow this employee assignment.</p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="system-tag">System tag</Label>
@@ -196,7 +248,7 @@ export function CreateUpdateSystemModal({
                   id="system-tag"
                   required
                   maxLength={100}
-                  placeholder="PC-001"
+                  placeholder="COMP-001"
                   value={editor.systemTag}
                   onChange={(e) =>
                     setEditor((c) => ({ ...c, systemTag: e.target.value }))
@@ -536,6 +588,8 @@ export function CreateUpdateSystemModal({
               disabled={
                 busy ||
                 loadingSpecs ||
+                Boolean(laptop && !laptop.assetUnitId) ||
+                !editor.categoryId ||
                 !editor.name.trim() ||
                 !editor.systemTag.trim()
               }

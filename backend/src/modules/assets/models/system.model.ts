@@ -14,6 +14,7 @@ import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
 import { Employee } from "@/modules/organisation/models/employees.model";
 import { Organisation } from "@/modules/organisation/models/organisation.model";
 import { AssetAssignment } from "./asset-assignment.model";
+import { AssetCategory } from "./asset-category.model";
 import { SystemSpecs } from "./system-specs.model";
 
 @Table({
@@ -44,6 +45,15 @@ export class System extends Model<System> {
     allowNull: false,
   })
   name!: string;
+
+  @Index
+  @ForeignKey(() => AssetCategory)
+  @Column({ type: DataType.CHAR(36), allowNull: true, field: "category_id" })
+  categoryId!: string | null;
+
+  @BelongsTo(() => AssetCategory, { foreignKey: "categoryId" })
+  category?: AssetCategory;
+
 
   @Column({
     type: DataType.TEXT,

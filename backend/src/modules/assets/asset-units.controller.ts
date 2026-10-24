@@ -78,6 +78,15 @@ export class ListAssetUnitsQueryDto {
 
 export class CreateAssetUnitDto {
   @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  deviceId?: string | null;
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  pcPassword?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CellularIdentityDto)
@@ -110,6 +119,15 @@ export class CreateAssetUnitDto {
 }
 
 export class UpdateAssetUnitDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  deviceId?: string | null;
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  pcPassword?: string;
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

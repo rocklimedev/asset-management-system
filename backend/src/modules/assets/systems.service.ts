@@ -17,6 +17,8 @@ import {
 } from "./models/asset-assignment.model";
 
 import { Asset } from "./models/asset.model";
+import { AssetKind } from "./models/asset-category.model";
+import { Transaction } from "sequelize";
 import { AssetCategory } from "./models/asset-category.model";
 import { AssetHistory } from "./models/asset-history.model";
 
@@ -45,6 +47,7 @@ export class SystemsService {
 
   private get include() {
     return [
+      { model: AssetCategory, as: "category", required: false },
       // Organisation
       {
         model: Organisation,
@@ -135,6 +138,21 @@ export class SystemsService {
   // CREATE SYSTEM
   // ============================================================
 
+  private async validateCategory(categoryId: string | null | undefined, organisationId: string | null | undefined, transaction: Transaction) {
+    if (!categoryId) throw new BadRequestException("Select a computer category, PC/Desktop or Laptop.");
+    const category = await AssetCategory.findByPk(categoryId, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!category) throw new NotFoundException("Computer category not found.");
+    if (category.type !== AssetKind.HARDWARE || !category.isActive) {
+      throw new BadRequestException("Select an active hardware category for this computer.");
+    }
+    if (!["desktop pc", "laptop"].includes(category.name.trim().toLowerCase())) {
+      throw new BadRequestException("Computer category must be Desktop PC or Laptop.");
+    }
+    if (category.organisationId && category.organisationId !== organisationId) {
+      throw new BadRequestException("Computer category must belong to the selected organisation.");
+    }
+  }
+
   async create(dto: CreateSystemDto, actor: AuthUser) {
     try {
       return await this.db.transaction(async (transaction) => {
@@ -162,6 +180,8 @@ export class SystemsService {
         // ======================================================
         // CREATE SYSTEM
         // ======================================================
+
+        await this.validateCategory(dto.categoryId, dto.organisationId, transaction);
 
         const system = await System.create(
           {
@@ -302,6 +322,10 @@ export class SystemsService {
         // UPDATE
         // ======================================================
 
+        if (dto.categoryId !== undefined || (dto.organisationId !== undefined && system.categoryId)) {
+          await this.validateCategory(dto.categoryId !== undefined ? dto.categoryId : system.categoryId,
+            dto.organisationId !== undefined ? dto.organisationId : system.organisationId, transaction);
+        }
         await system.update(dto, {
           transaction,
         });

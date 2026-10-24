@@ -34,6 +34,15 @@ import { AssetTrackingMode } from "../models/asset.model";
  * ]
  */
 export class CreateAssetUnitInputDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  deviceId?: string | null;
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  pcPassword?: string;
+
   // ----------------------------------------------------------
   // UNIT CODE
   // ----------------------------------------------------------

@@ -227,6 +227,8 @@ export class AssetUnitsService {
     assetId: string,
     data: {
       unitCode?: string | null;
+      deviceId?: string | null;
+      pcPassword?: string;
       serialNumber?: string | null;
       cellularIdentities?: { imei?: string; simNumber?: string }[];
       status?: AssetUnitStatus;
@@ -320,6 +322,8 @@ export class AssetUnitsService {
 
           serialNumber: data.serialNumber ?? null,
           cellularIdentities: data.cellularIdentities ?? [],
+          deviceId: data.deviceId ?? null,
+          pcPassword: data.pcPassword,
 
           status: data.status ?? AssetUnitStatus.AVAILABLE,
 
@@ -331,6 +335,7 @@ export class AssetUnitsService {
         } as AssetUnit,
         {
           transaction: t,
+          logging: false,
         },
       );
 
@@ -399,6 +404,8 @@ export class AssetUnitsService {
     id: string,
     data: {
       unitCode?: string | null;
+      deviceId?: string | null;
+      pcPassword?: string;
       serialNumber?: string | null;
       cellularIdentities?: { imei?: string; simNumber?: string }[];
       status?: AssetUnitStatus;
@@ -542,6 +549,8 @@ export class AssetUnitsService {
               }
             : {}),
 
+          ...(data.deviceId !== undefined ? { deviceId: data.deviceId } : {}),
+          ...(data.pcPassword ? { pcPassword: data.pcPassword } : {}),
           ...(data.cellularIdentities !== undefined ? { cellularIdentities: data.cellularIdentities } : {}),
           ...(data.serialNumber !== undefined
             ? {
@@ -575,6 +584,7 @@ export class AssetUnitsService {
         },
         {
           transaction: t,
+          logging: false,
         },
       );
 
@@ -637,7 +647,7 @@ export class AssetUnitsService {
 
           entityId: unit.id,
 
-          metadata: data as Record<string, unknown>,
+          metadata: Object.fromEntries(Object.entries(data).filter(([key]) => key !== "pcPassword")),
         },
         t,
       );

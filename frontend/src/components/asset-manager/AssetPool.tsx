@@ -3,6 +3,7 @@ import { Package, Search } from "lucide-react";
 
 import {
   useGetAssetPoolQuery,
+  useGetAssetCategoriesQuery,
   useAssignAssetMutation,
 } from "../../services/api/asset.api";
 
@@ -59,6 +60,11 @@ function getErrorMessage(error: unknown, fallback: string): string {
 // ============================================================
 
 export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
+  const [categoryId, setCategoryId] = useState("");
+  const { data: categories = [] } = useGetAssetCategoriesQuery({ isActive: true }, { skip: !open });
+  useEffect(() => {
+    if (open) { setCategoryId(system?.categoryId ?? ""); setKind(system?.categoryId ? "HARDWARE" : ""); setPage(1); setPicked(null); }
+  }, [open, system?.id, system?.categoryId]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [kind, setKind] = useState<"" | "HARDWARE" | "SOFTWARE">("");
@@ -74,6 +80,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
     useGetAssetPoolQuery(
       {
         search: search || undefined,
+        categoryId: categoryId || undefined,
         kind: kind || undefined,
         pageSize: 20,
         page,
@@ -203,6 +210,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             value={kind}
             onChange={(event) => (
               setPage(1),
+              setCategoryId(""),
               setKind(event.target.value as typeof kind)
             )}
             className="
@@ -225,6 +233,10 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             <option value="">All types</option>
             <option value="HARDWARE">Hardware</option>
             <option value="SOFTWARE">Software</option>
+          </select>
+          <select aria-label="Asset category" value={categoryId} onChange={event => { setCategoryId(event.target.value); setPage(1); }} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">All asset categories</option>
+            {categories.filter(category => !kind || category.type === kind).map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
           </select>
         </div>
 

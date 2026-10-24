@@ -270,7 +270,7 @@ export function SystemDetailDrawer({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  {system.systemTag}
+                  {system.systemTag} · {system.category?.name ?? "Category not set"}
                 </p>
 
                 <h2 className="mt-1 text-xl font-semibold">{system.name}</h2>
