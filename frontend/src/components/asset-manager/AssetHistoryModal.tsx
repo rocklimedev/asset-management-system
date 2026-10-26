@@ -1,20 +1,13 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import {
-  History,
-  Loader2,
-  User,
-  ArrowRight,
-  CalendarDays,
-  FileText,
-} from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { History, Loader2, User, ArrowRight, CalendarDays, FileText } from 'lucide-react';
 
 import {
   useGetAssetHistoryQuery,
   type Asset,
   type AssetHistory,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { Button } from "../ui/button";
+import { Button } from '../ui/button';
 
 interface AssetHistoryModalProps {
   open: boolean;
@@ -24,7 +17,7 @@ interface AssetHistoryModalProps {
 
 function formatDate(value?: string | null) {
   if (!value) {
-    return "—";
+    return '—';
   }
 
   const date = new Date(value);
@@ -33,26 +26,26 @@ function formatDate(value?: string | null) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  return new Intl.DateTimeFormat('en-IN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(date);
 }
 
 function formatAction(action: string) {
   if (!action) {
-    return "Unknown action";
+    return 'Unknown action';
   }
 
   return action
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function displayValue(value?: string | null) {
-  if (value === null || value === undefined || value === "") {
-    return "—";
+  if (value === null || value === undefined || value === '') {
+    return '—';
   }
 
   return value;
@@ -69,14 +62,12 @@ function HistoryItem({ item }: { item: AssetHistory }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">
-                {formatAction(item.action)}
-              </p>
+              <p className="font-medium text-foreground">{formatAction(item.action)}</p>
 
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <User className="h-3.5 w-3.5" />
-                  {item.performedBy || "System"}
+                  {item.performedBy || 'System'}
                 </span>
 
                 <span className="inline-flex items-center gap-1">
@@ -119,9 +110,7 @@ function HistoryItem({ item }: { item: AssetHistory }) {
             <div className="mt-3 flex gap-2 rounded-lg border border-border bg-card p-3">
               <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
 
-              <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                {item.notes}
-              </p>
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">{item.notes}</p>
             </div>
           )}
         </div>
@@ -130,19 +119,12 @@ function HistoryItem({ item }: { item: AssetHistory }) {
   );
 }
 
-export function AssetHistoryModal({
-  open,
-  asset,
-  onClose,
-}: AssetHistoryModalProps) {
-  const assetId = asset?.id ?? "";
+export function AssetHistoryModal({ open, asset, onClose }: AssetHistoryModalProps) {
+  const assetId = asset?.id ?? '';
 
-  const { data, isLoading, isFetching, isError } = useGetAssetHistoryQuery(
-    assetId,
-    {
-      skip: !open || !assetId,
-    },
-  );
+  const { data, isLoading, isFetching, isError } = useGetAssetHistoryQuery(assetId, {
+    skip: !open || !assetId,
+  });
 
   if (!open || !asset) {
     return null;
@@ -161,19 +143,14 @@ export function AssetHistoryModal({
       onClose={onClose}
       labelledBy="asset-history-title"
     >
-      <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl"
-      >
+      <div className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border px-5 py-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-muted-foreground" />
 
-              <h2
-                id="asset-history-title"
-                className="text-base font-semibold text-foreground"
-              >
+              <h2 id="asset-history-title" className="text-base font-semibold text-foreground">
                 Asset History
               </h2>
             </div>
@@ -208,9 +185,7 @@ export function AssetHistoryModal({
             <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
               <History className="mb-3 h-8 w-8 text-muted-foreground" />
 
-              <h3 className="text-sm font-medium text-foreground">
-                Unable to load history
-              </h3>
+              <h3 className="text-sm font-medium text-foreground">Unable to load history</h3>
 
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 There was a problem loading the audit history for this asset.
@@ -220,9 +195,7 @@ export function AssetHistoryModal({
             <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
               <History className="mb-3 h-8 w-8 text-muted-foreground" />
 
-              <h3 className="text-sm font-medium text-foreground">
-                No history yet
-              </h3>
+              <h3 className="text-sm font-medium text-foreground">No history yet</h3>
 
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
                 Changes and actions performed on this asset will appear here.
@@ -240,7 +213,7 @@ export function AssetHistoryModal({
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-border px-5 py-3">
           <p className="text-xs text-muted-foreground">
-            {history.length} {history.length === 1 ? "entry" : "entries"}
+            {history.length} {history.length === 1 ? 'entry' : 'entries'}
           </p>
 
           <Button type="button" variant="secondary" onClick={onClose}>

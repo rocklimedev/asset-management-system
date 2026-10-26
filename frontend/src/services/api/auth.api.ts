@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // TYPES
@@ -42,24 +42,24 @@ export interface LoginApiResponse {
 // ============================================================
 
 export const authApi = createApi({
-  reducerPath: "authApi",
+  reducerPath: 'authApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
 
     prepareHeaders: (headers) => {
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
       return headers;
     },
   }),
 
-  tagTypes: ["Auth", "Profile"],
+  tagTypes: ['Auth', 'Profile'],
 
   endpoints: (builder) => ({
     // ============================================================
@@ -69,8 +69,8 @@ export const authApi = createApi({
 
     login: builder.mutation<LoginApiResponse, LoginRequest>({
       query: ({ email, password }) => ({
-        url: "/auth/login",
-        method: "POST",
+        url: '/auth/login',
+        method: 'POST',
         body: {
           email,
           password,

@@ -1,14 +1,13 @@
-import React, { useEffect, useId, useMemo, useState } from "react";
+import React, { useEffect, useId, useState } from 'react';
 
-import { Pencil, Plus, RefreshCw } from "lucide-react";
+import { Pencil, Plus, RefreshCw } from 'lucide-react';
 
-import type {
-  Employee,
-  EmployeeStatus,
-} from "../../services/api/employees.api";
+import { useGetOrganisationsQuery } from '../../services/api/employees.api';
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import type { Employee, EmployeeStatus } from '../../services/api/employees.api';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import {
   Dialog,
   DialogContent,
@@ -16,22 +15,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Label } from "../ui/label";
+} from '../ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Label } from '../ui/label';
 
 export interface EmployeeFormValues {
   employeeCode: string;
   name: string;
   email: string;
   phone: string;
-  departmentId: string;
   status: EmployeeStatus;
   joiningDate: string;
   organisationId: string;
@@ -42,32 +34,31 @@ export const STATUS_OPTIONS: {
   value: EmployeeStatus;
 }[] = [
   {
-    label: "Active",
-    value: "ACTIVE",
+    label: 'Active',
+    value: 'ACTIVE',
   },
   {
-    label: "On Leave",
-    value: "ON_LEAVE",
+    label: 'On Leave',
+    value: 'ON_LEAVE',
   },
   {
-    label: "Inactive",
-    value: "INACTIVE",
+    label: 'Inactive',
+    value: 'INACTIVE',
   },
   {
-    label: "Exited",
-    value: "EXITED",
+    label: 'Exited',
+    value: 'EXITED',
   },
 ];
 
 export const getEmptyEmployeeForm = (): EmployeeFormValues => ({
-  employeeCode: "",
-  name: "",
-  email: "",
-  phone: "",
-  departmentId: "",
-  status: "ACTIVE",
-  joiningDate: "",
-  organisationId: "",
+  employeeCode: '',
+  name: '',
+  email: '',
+  phone: '',
+  status: 'ACTIVE',
+  joiningDate: '',
+  organisationId: '',
 });
 
 interface EmployeeFormModalProps {
@@ -159,11 +150,10 @@ const EmployeeFormModal = ({
 
   const codeError =
     attempted && !value.employeeCode.trim()
-      ? "Enter the employee code, for example EMP-001."
+      ? 'Enter the employee code, for example EMP-001.'
       : undefined;
 
-  const nameError =
-    attempted && !value.name.trim() ? "Enter the employee's full name." : undefined;
+  const nameError = attempted && !value.name.trim() ? "Enter the employee's full name." : undefined;
 
   const handleSave = () => {
     setAttempted(true);
@@ -173,50 +163,14 @@ const EmployeeFormModal = ({
     onSubmit();
   };
 
-  // ============================================================
-  // DEPARTMENT OPTIONS
-  // ============================================================
-
-  const departmentOptions = useMemo(() => {
-    const map = new Map<string, string>();
-
-    employees.forEach((employee) => {
-      if (employee.department?.id) {
-        map.set(
-          employee.department.id,
-          employee.department.name || employee.department.id,
-        );
-      }
-    });
-
-    return Array.from(map.entries());
-  }, [employees]);
-
-  // ============================================================
-  // ORGANISATION OPTIONS
-  // ============================================================
-
-  const organisationOptions = useMemo<OrganisationOption[]>(() => {
-    const map = new Map<string, string>();
-
-    employees.forEach((employee) => {
-      const organisation = employee.organisation as
-        | {
-            id?: string;
-            name?: string;
-          }
-        | undefined;
-
-      if (organisation?.id) {
-        map.set(organisation.id, organisation.name || organisation.id);
-      }
-    });
-
-    return Array.from(map.entries()).map(([id, name]) => ({
-      id,
-      name,
-    }));
-  }, [employees]);
+  const {
+    data: organisationsData,
+    isLoading: loadingOrganisations,
+    isError: organisationsError,
+  } = useGetOrganisationsQuery(undefined, { skip: !open });
+  const organisationOptions = Array.isArray(organisationsData)
+    ? organisationsData
+    : (organisationsData?.items ?? []);
 
   return (
     <Dialog
@@ -229,14 +183,12 @@ const EmployeeFormModal = ({
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
         <DialogHeader>
-          <DialogTitle>
-            {editingEmployee ? "Edit employee" : "Add employee"}
-          </DialogTitle>
+          <DialogTitle>{editingEmployee ? 'Edit employee' : 'Add employee'}</DialogTitle>
 
           <DialogDescription>
             {editingEmployee
-              ? "Update the employee information below."
-              : "Add the code and name first. Everything else is optional and can be added later."}
+              ? 'Update the employee information below.'
+              : 'Add the code and name first. Everything else is optional and can be added later.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -244,38 +196,26 @@ const EmployeeFormModal = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* EMPLOYEE CODE */}
 
-            <FormField
-              label="Employee code"
-              required
-              htmlFor={`${formId}-code`}
-              error={codeError}
-            >
+            <FormField label="Employee code" required htmlFor={`${formId}-code`} error={codeError}>
               <Input
                 id={`${formId}-code`}
                 aria-invalid={!!codeError}
                 aria-describedby={codeError ? `${formId}-code-error` : undefined}
                 value={value.employeeCode}
-                onChange={(event) =>
-                  onChange("employeeCode", event.target.value)
-                }
+                onChange={(event) => onChange('employeeCode', event.target.value)}
                 placeholder="EMP-001"
               />
             </FormField>
 
             {/* EMPLOYEE NAME */}
 
-            <FormField
-              label="Full name"
-              required
-              htmlFor={`${formId}-name`}
-              error={nameError}
-            >
+            <FormField label="Full name" required htmlFor={`${formId}-name`} error={nameError}>
               <Input
                 id={`${formId}-name`}
                 aria-invalid={!!nameError}
                 aria-describedby={nameError ? `${formId}-name-error` : undefined}
                 value={value.name}
-                onChange={(event) => onChange("name", event.target.value)}
+                onChange={(event) => onChange('name', event.target.value)}
                 placeholder="Enter employee name"
               />
             </FormField>
@@ -286,7 +226,7 @@ const EmployeeFormModal = ({
               <Input
                 type="email"
                 value={value.email}
-                onChange={(event) => onChange("email", event.target.value)}
+                onChange={(event) => onChange('email', event.target.value)}
                 placeholder="employee@company.com"
               />
             </FormField>
@@ -296,7 +236,7 @@ const EmployeeFormModal = ({
             <FormField label="Phone">
               <Input
                 value={value.phone}
-                onChange={(event) => onChange("phone", event.target.value)}
+                onChange={(event) => onChange('phone', event.target.value)}
                 placeholder="+91 XXXXX XXXXX"
               />
             </FormField>
@@ -305,10 +245,9 @@ const EmployeeFormModal = ({
 
             <FormField label="Organisation">
               <Select
+                disabled={loadingOrganisations || organisationsError}
                 value={value.organisationId || undefined}
-                onValueChange={(selected) =>
-                  onChange("organisationId", selected)
-                }
+                onValueChange={(selected) => onChange('organisationId', selected)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select organisation" />
@@ -323,34 +262,11 @@ const EmployeeFormModal = ({
                     ))
                   ) : (
                     <SelectItem value="__no_organisations__" disabled>
-                      No organisations available
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </FormField>
-
-            {/* DEPARTMENT */}
-
-            <FormField label="Department">
-              <Select
-                value={value.departmentId || undefined}
-                onValueChange={(selected) => onChange("departmentId", selected)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {departmentOptions.length > 0 ? (
-                    departmentOptions.map(([id, name]) => (
-                      <SelectItem key={id} value={id}>
-                        {name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="__no_departments__" disabled>
-                      No departments available
+                      {loadingOrganisations
+                        ? 'Loading organisations�'
+                        : organisationsError
+                          ? 'Could not load organisations'
+                          : 'No organisations available'}
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -362,17 +278,17 @@ const EmployeeFormModal = ({
             <FormField
               label="Status"
               hint={
-                value.status === "EXITED" ? (
+                value.status === 'EXITED' ? (
                   <span className="text-warning-strong">
-                    Saving as Exited returns every asset and computer assigned
-                    to this person to stock.
+                    Saving as Exited returns every asset and computer assigned to this person to
+                    stock.
                   </span>
                 ) : undefined
               }
             >
               <Select
                 value={value.status}
-                onValueChange={(selected) => onChange("status", selected)}
+                onValueChange={(selected) => onChange('status', selected)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -394,27 +310,18 @@ const EmployeeFormModal = ({
               <Input
                 type="date"
                 value={value.joiningDate}
-                onChange={(event) =>
-                  onChange("joiningDate", event.target.value)
-                }
+                onChange={(event) => onChange('joiningDate', event.target.value)}
               />
             </FormField>
           </div>
         </div>
 
         <DialogFooter className="mt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isCreating || isUpdating}
-          >
+          <Button variant="outline" onClick={onClose} disabled={isCreating || isUpdating}>
             Cancel
           </Button>
 
-          <Button
-            onClick={handleSave}
-            disabled={isCreating || isUpdating}
-          >
+          <Button onClick={handleSave} disabled={isCreating || isUpdating}>
             {isCreating || isUpdating ? (
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
             ) : editingEmployee ? (
@@ -424,10 +331,10 @@ const EmployeeFormModal = ({
             )}
 
             {isCreating || isUpdating
-              ? "Saving…"
+              ? 'Saving…'
               : editingEmployee
-                ? "Save changes"
-                : "Add employee"}
+                ? 'Save changes'
+                : 'Add employee'}
           </Button>
         </DialogFooter>
       </DialogContent>

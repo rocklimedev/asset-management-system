@@ -1,8 +1,8 @@
-import { ComputerCategorySelect } from "./ComputerCategorySelect";
-import { LaptopAssetPicker, type LaptopSelection } from "./LaptopAssetPicker";
-import { useGetEmployeesQuery } from "../../services/api/employees.api";
-import { useEffect, useRef, useState } from "react";
-import { Cpu, Wifi, Cloud, HardDrive, Monitor } from "lucide-react";
+import { ComputerCategorySelect } from './ComputerCategorySelect';
+import { LaptopAssetPicker, type LaptopSelection } from './LaptopAssetPicker';
+import { useGetEmployeesQuery } from '../../services/api/employees.api';
+import { useEffect, useRef, useState } from 'react';
+import { Cpu, Wifi, Cloud, HardDrive, Monitor } from 'lucide-react';
 
 import {
   useCreateSystemMutation,
@@ -11,20 +11,20 @@ import {
   useUpdateSystemMutation,
   useUpsertSystemSpecsMutation,
   useGetSystemSpecsQuery,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Textarea } from "../../components/ui/textarea";
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../../components/ui/dialog";
-import { toast } from "../../components/ui/toast";
+} from '../../components/ui/dialog';
+import { toast } from '../../components/ui/toast';
 
 import {
   emptySpecs,
@@ -33,7 +33,7 @@ import {
   type OrganisationInfo,
   type SpecsForm,
   type SystemWithOrganisation,
-} from "../../types/systems";
+} from '../../types/systems';
 
 type Props = {
   open: boolean;
@@ -53,35 +53,34 @@ type EditorState = {
 };
 
 const emptyEditor: EditorState = {
-  categoryId: "",
-  name: "",
-  systemTag: "",
-  notes: "",
-  organisationId: "",
+  categoryId: '',
+  name: '',
+  systemTag: '',
+  notes: '',
+  organisationId: '',
 };
 
-export function CreateUpdateSystemModal({
-  open,
-  system,
-  organisations,
-  onClose,
-  onSaved,
-}: Props) {
+export function CreateUpdateSystemModal({ open, system, organisations, onClose, onSaved }: Props) {
   const [laptop, setLaptop] = useState<LaptopSelection>(null);
-  const [employeeId, setEmployeeId] = useState("");
-  const [employeeSearch, setEmployeeSearch] = useState("");
+  const [employeeId, setEmployeeId] = useState('');
+  const [employeeSearch, setEmployeeSearch] = useState('');
   const progress = useRef<{ id?: string; laptopUnitId?: string }>({});
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [assignAsset, assetAssignment] = useAssignAssetMutation();
   const [assignSystem, systemAssignment] = useAssignSystemMutation();
-  const { currentData: employeeData, isFetching: loadingEmployees } = useGetEmployeesQuery({ search: employeeSearch }, { skip: !open });
-  const employees = (Array.isArray(employeeData) ? employeeData : employeeData?.items ?? []).filter(employee => employee.status === "ACTIVE" || employee.status === "ON_LEAVE");
+  const { currentData: employeeData, isFetching: loadingEmployees } = useGetEmployeesQuery(
+    { search: employeeSearch },
+    { skip: !open },
+  );
+  const employees = (
+    Array.isArray(employeeData) ? employeeData : (employeeData?.items ?? [])
+  ).filter((employee) => employee.status === 'ACTIVE' || employee.status === 'ON_LEAVE');
   useEffect(() => {
     progress.current = {};
     setLaptop(null);
-    setEmployeeId("");
-    setEmployeeSearch("");
+    setEmployeeId('');
+    setEmployeeSearch('');
   }, [open, system?.id]);
   const [editor, setEditor] = useState<EditorState>(emptyEditor);
   const [specsForm, setSpecsForm] = useState<SpecsForm>({ ...emptySpecs });
@@ -96,7 +95,7 @@ export function CreateUpdateSystemModal({
     data: specsResponse,
     isFetching: loadingSpecs,
     isError: specsError,
-  } = useGetSystemSpecsQuery(system?.id ?? "", {
+  } = useGetSystemSpecsQuery(system?.id ?? '', {
     skip: !open || !system?.id,
   });
 
@@ -107,11 +106,11 @@ export function CreateUpdateSystemModal({
 
     if (system) {
       setEditor({
-        categoryId: system.categoryId ?? "",
+        categoryId: system.categoryId ?? '',
         name: system.name,
         systemTag: system.systemTag,
-        notes: system.notes ?? "",
-        organisationId: system.organisationId ?? "",
+        notes: system.notes ?? '',
+        organisationId: system.organisationId ?? '',
       });
     } else {
       setEditor(emptyEditor);
@@ -125,7 +124,10 @@ export function CreateUpdateSystemModal({
     }
   }, [open, system?.id, existingSpecs]);
 
-  const busy = saving || assetAssignment.isLoading || systemAssignment.isLoading ||
+  const busy =
+    saving ||
+    assetAssignment.isLoading ||
+    systemAssignment.isLoading ||
     createState.isLoading ||
     updateState.isLoading ||
     upsertSpecsState.isLoading;
@@ -177,8 +179,7 @@ export function CreateUpdateSystemModal({
           osVersion: specsForm.osVersion.trim() || null,
           cloudStorage: specsForm.cloudStorage.trim() || null,
           cloudStorageEmail: specsForm.cloudStorageEmail.trim() || null,
-          cloudStoragePassword:
-            specsForm.cloudStoragePassword.trim() || undefined,
+          cloudStoragePassword: specsForm.cloudStoragePassword.trim() || undefined,
           macAddress: specsForm.macAddress.trim() || null,
           ipAddress: specsForm.ipAddress.trim() || null,
           notes: specsForm.notes.trim() || null,
@@ -186,19 +187,23 @@ export function CreateUpdateSystemModal({
       }).unwrap();
 
       if (laptop && !progress.current.laptopUnitId) {
-        await assignAsset({ id: laptop.assetId, assetUnitId: laptop.assetUnitId, systemId }).unwrap();
+        await assignAsset({
+          id: laptop.assetId,
+          assetUnitId: laptop.assetUnitId,
+          systemId,
+        }).unwrap();
         progress.current.laptopUnitId = laptop.assetUnitId;
       }
       if (employeeId && employeeId !== system?.employeeId) {
         await assignSystem({ id: systemId, employeeId }).unwrap();
       }
-      toast.add({ title: "System saved", type: "success" });
+      toast.add({ title: 'System saved', type: 'success' });
       onSaved(systemId);
     } catch (error) {
       toast.add({
-        title: "Could not save system",
-        description: `${apiErrorMessage(error)}${progress.current.id ? " Computer details were saved. Retry to finish the remaining steps." : ""}`,
-        type: "error",
+        title: 'Could not save system',
+        description: `${apiErrorMessage(error)}${progress.current.id ? ' Computer details were saved. Retry to finish the remaining steps.' : ''}`,
+        type: 'error',
       });
     } finally {
       savingRef.current = false;
@@ -210,11 +215,12 @@ export function CreateUpdateSystemModal({
     <Dialog open={open} onOpenChange={(next) => !next && close()}>
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{system ? "Edit system" : "New system"}</DialogTitle>
+          <DialogTitle>{system ? 'Edit system' : 'New system'}</DialogTitle>
 
           <DialogDescription>
-            A system groups the assets and hardware specifications that make up
-            a desktop PC or laptop. Organisation is optional. Choose a laptop and employee below, or leave assignment for later.
+            A system groups the assets and hardware specifications that make up a desktop PC or
+            laptop. Organisation is optional. Choose a laptop and employee below, or leave
+            assignment for later.
           </DialogDescription>
         </DialogHeader>
 
@@ -229,17 +235,58 @@ export function CreateUpdateSystemModal({
               <h3 className="font-medium">System Information</h3>
             </div>
 
-            <ComputerCategorySelect value={editor.categoryId} organisationId={editor.organisationId} disabled={busy || Boolean(progress.current.laptopUnitId)} onChange={categoryId => { setEditor(current => ({ ...current, categoryId })); setLaptop(null); }} />
-            <LaptopAssetPicker key={editor.categoryId} categoryId={editor.categoryId} value={laptop} onChange={setLaptop} system={system} disabled={busy || Boolean(progress.current.laptopUnitId)} />
+            <ComputerCategorySelect
+              value={editor.categoryId}
+              organisationId={editor.organisationId}
+              disabled={busy || Boolean(progress.current.laptopUnitId)}
+              onChange={(categoryId) => {
+                setEditor((current) => ({ ...current, categoryId }));
+                setLaptop(null);
+              }}
+            />
+            <LaptopAssetPicker
+              key={editor.categoryId}
+              categoryId={editor.categoryId}
+              value={laptop}
+              onChange={setLaptop}
+              system={system}
+              disabled={busy || Boolean(progress.current.laptopUnitId)}
+            />
             <div className="space-y-2 rounded-md border p-3">
-              <Label htmlFor="computer-employee">Assign this computer to an employee (optional)</Label>
-              <Input aria-label="Search employee to assign computer" placeholder="Search employees" value={employeeSearch} disabled={busy} onChange={event => setEmployeeSearch(event.target.value)} />
-              <select id="computer-employee" value={employeeId} disabled={busy || loadingEmployees} onChange={event => setEmployeeId(event.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
-                <option value="">{system?.employeeId ? "Keep current employee" : "Assign later — keep in inventory"}</option>
-                {employeeId && !employees.some(employee => employee.id === employeeId) && <option value={employeeId}>Selected employee</option>}
-                {employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name} · {employee.employeeCode}</option>)}
+              <Label htmlFor="computer-employee">
+                Assign this computer to an employee (optional)
+              </Label>
+              <Input
+                aria-label="Search employee to assign computer"
+                placeholder="Search employees"
+                value={employeeSearch}
+                disabled={busy}
+                onChange={(event) => setEmployeeSearch(event.target.value)}
+              />
+              <select
+                id="computer-employee"
+                value={employeeId}
+                disabled={busy || loadingEmployees}
+                onChange={(event) => setEmployeeId(event.target.value)}
+                className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="">
+                  {system?.employeeId
+                    ? 'Keep current employee'
+                    : 'Assign later — keep in inventory'}
+                </option>
+                {employeeId && !employees.some((employee) => employee.id === employeeId) && (
+                  <option value={employeeId}>Selected employee</option>
+                )}
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.name} · {employee.employeeCode}
+                  </option>
+                ))}
               </select>
-              <p className="text-xs text-muted-foreground">The linked laptop and all other computer assets follow this employee assignment.</p>
+              <p className="text-xs text-muted-foreground">
+                The linked laptop and all other computer assets follow this employee assignment.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -250,9 +297,7 @@ export function CreateUpdateSystemModal({
                   maxLength={100}
                   placeholder="COMP-001"
                   value={editor.systemTag}
-                  onChange={(e) =>
-                    setEditor((c) => ({ ...c, systemTag: e.target.value }))
-                  }
+                  onChange={(e) => setEditor((c) => ({ ...c, systemTag: e.target.value }))}
                 />
               </div>
 
@@ -264,9 +309,7 @@ export function CreateUpdateSystemModal({
                   maxLength={255}
                   placeholder="Design workstation"
                   value={editor.name}
-                  onChange={(e) =>
-                    setEditor((c) => ({ ...c, name: e.target.value }))
-                  }
+                  onChange={(e) => setEditor((c) => ({ ...c, name: e.target.value }))}
                 />
               </div>
             </div>
@@ -295,17 +338,15 @@ export function CreateUpdateSystemModal({
               </select>
 
               <p className="text-xs text-muted-foreground">
-                Leave this empty for a system that is not scoped to an
-                organisation.
+                Leave this empty for a system that is not scoped to an organisation.
               </p>
 
-              {system?.employeeId &&
-                editor.organisationId !== (system.organisationId ?? "") && (
-                  <p className="rounded-md border border-warning-border bg-warning-muted p-2 text-xs text-warning-strong">
-                    If the system is currently assigned, the backend will verify
-                    that its employee belongs to the selected organisation.
-                  </p>
-                )}
+              {system?.employeeId && editor.organisationId !== (system.organisationId ?? '') && (
+                <p className="rounded-md border border-warning-border bg-warning-muted p-2 text-xs text-warning-strong">
+                  If the system is currently assigned, the backend will verify that its employee
+                  belongs to the selected organisation.
+                </p>
+              )}
             </div>
 
             <div>
@@ -314,9 +355,7 @@ export function CreateUpdateSystemModal({
                 id="system-notes"
                 maxLength={5000}
                 value={editor.notes}
-                onChange={(e) =>
-                  setEditor((c) => ({ ...c, notes: e.target.value }))
-                }
+                onChange={(e) => setEditor((c) => ({ ...c, notes: e.target.value }))}
               />
             </div>
           </div>
@@ -343,7 +382,7 @@ export function CreateUpdateSystemModal({
                   id="processor"
                   placeholder="Intel Core i7-14700K"
                   value={specsForm.processor}
-                  onChange={(e) => updateSpec("processor", e.target.value)}
+                  onChange={(e) => updateSpec('processor', e.target.value)}
                 />
               </div>
 
@@ -353,7 +392,7 @@ export function CreateUpdateSystemModal({
                   id="ram"
                   placeholder="32 GB DDR5"
                   value={specsForm.ram}
-                  onChange={(e) => updateSpec("ram", e.target.value)}
+                  onChange={(e) => updateSpec('ram', e.target.value)}
                 />
               </div>
 
@@ -363,7 +402,7 @@ export function CreateUpdateSystemModal({
                   id="local-storage"
                   placeholder="1 TB NVMe SSD"
                   value={specsForm.localStorage}
-                  onChange={(e) => updateSpec("localStorage", e.target.value)}
+                  onChange={(e) => updateSpec('localStorage', e.target.value)}
                 />
               </div>
 
@@ -373,7 +412,7 @@ export function CreateUpdateSystemModal({
                   id="graphics-card"
                   placeholder="NVIDIA RTX 4070 12GB"
                   value={specsForm.graphicsCard}
-                  onChange={(e) => updateSpec("graphicsCard", e.target.value)}
+                  onChange={(e) => updateSpec('graphicsCard', e.target.value)}
                 />
               </div>
 
@@ -383,7 +422,7 @@ export function CreateUpdateSystemModal({
                   id="motherboard"
                   placeholder="ASUS ROG STRIX B650"
                   value={specsForm.motherboard}
-                  onChange={(e) => updateSpec("motherboard", e.target.value)}
+                  onChange={(e) => updateSpec('motherboard', e.target.value)}
                 />
               </div>
 
@@ -393,7 +432,7 @@ export function CreateUpdateSystemModal({
                   id="power-supply"
                   placeholder="750W 80+ Gold"
                   value={specsForm.powerSupply}
-                  onChange={(e) => updateSpec("powerSupply", e.target.value)}
+                  onChange={(e) => updateSpec('powerSupply', e.target.value)}
                 />
               </div>
 
@@ -403,7 +442,7 @@ export function CreateUpdateSystemModal({
                   id="monitor"
                   placeholder="Dell U2723QE"
                   value={specsForm.monitor}
-                  onChange={(e) => updateSpec("monitor", e.target.value)}
+                  onChange={(e) => updateSpec('monitor', e.target.value)}
                 />
               </div>
 
@@ -413,7 +452,7 @@ export function CreateUpdateSystemModal({
                   id="monitor-size"
                   placeholder="27 inch"
                   value={specsForm.monitorSize}
-                  onChange={(e) => updateSpec("monitorSize", e.target.value)}
+                  onChange={(e) => updateSpec('monitorSize', e.target.value)}
                 />
               </div>
             </div>
@@ -441,9 +480,7 @@ export function CreateUpdateSystemModal({
                   id="operating-system"
                   placeholder="Windows 11 Pro"
                   value={specsForm.operatingSystem}
-                  onChange={(e) =>
-                    updateSpec("operatingSystem", e.target.value)
-                  }
+                  onChange={(e) => updateSpec('operatingSystem', e.target.value)}
                 />
               </div>
 
@@ -453,7 +490,7 @@ export function CreateUpdateSystemModal({
                   id="os-version"
                   placeholder="24H2"
                   value={specsForm.osVersion}
-                  onChange={(e) => updateSpec("osVersion", e.target.value)}
+                  onChange={(e) => updateSpec('osVersion', e.target.value)}
                 />
               </div>
 
@@ -463,7 +500,7 @@ export function CreateUpdateSystemModal({
                   id="mac-address"
                   placeholder="00:1A:2B:3C:4D:5E"
                   value={specsForm.macAddress}
-                  onChange={(e) => updateSpec("macAddress", e.target.value)}
+                  onChange={(e) => updateSpec('macAddress', e.target.value)}
                 />
               </div>
 
@@ -473,7 +510,7 @@ export function CreateUpdateSystemModal({
                   id="ip-address"
                   placeholder="192.168.1.100"
                   value={specsForm.ipAddress}
-                  onChange={(e) => updateSpec("ipAddress", e.target.value)}
+                  onChange={(e) => updateSpec('ipAddress', e.target.value)}
                 />
               </div>
             </div>
@@ -501,7 +538,7 @@ export function CreateUpdateSystemModal({
                   id="cloud-storage"
                   placeholder="Google Drive / OneDrive / Dropbox"
                   value={specsForm.cloudStorage}
-                  onChange={(e) => updateSpec("cloudStorage", e.target.value)}
+                  onChange={(e) => updateSpec('cloudStorage', e.target.value)}
                 />
               </div>
 
@@ -512,32 +549,22 @@ export function CreateUpdateSystemModal({
                   type="email"
                   placeholder="user@example.com"
                   value={specsForm.cloudStorageEmail}
-                  onChange={(e) =>
-                    updateSpec("cloudStorageEmail", e.target.value)
-                  }
+                  onChange={(e) => updateSpec('cloudStorageEmail', e.target.value)}
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <Label htmlFor="cloud-storage-password">
-                  Cloud Storage Password
-                </Label>
+                <Label htmlFor="cloud-storage-password">Cloud Storage Password</Label>
                 <Input
                   id="cloud-storage-password"
                   type="password"
-                  placeholder={
-                    system
-                      ? "Leave blank to keep existing password"
-                      : "Enter password"
-                  }
+                  placeholder={system ? 'Leave blank to keep existing password' : 'Enter password'}
                   value={specsForm.cloudStoragePassword}
-                  onChange={(e) =>
-                    updateSpec("cloudStoragePassword", e.target.value)
-                  }
+                  onChange={(e) => updateSpec('cloudStoragePassword', e.target.value)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Password is stored securely by the backend and is never loaded
-                  back into this form.
+                  Password is stored securely by the backend and is never loaded back into this
+                  form.
                 </p>
               </div>
             </div>
@@ -557,14 +584,12 @@ export function CreateUpdateSystemModal({
               placeholder="Additional hardware or configuration notes..."
               maxLength={5000}
               value={specsForm.notes}
-              onChange={(e) => updateSpec("notes", e.target.value)}
+              onChange={(e) => updateSpec('notes', e.target.value)}
             />
           </div>
 
           {system && loadingSpecs && (
-            <p className="text-xs text-muted-foreground">
-              Loading existing specifications…
-            </p>
+            <p className="text-xs text-muted-foreground">Loading existing specifications…</p>
           )}
 
           {system && specsError && (
@@ -574,12 +599,7 @@ export function CreateUpdateSystemModal({
           )}
 
           <div className="flex items-center justify-end gap-2 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={close}
-            >
+            <Button type="button" variant="outline" disabled={busy} onClick={close}>
               Cancel
             </Button>
 
@@ -594,7 +614,7 @@ export function CreateUpdateSystemModal({
                 !editor.systemTag.trim()
               }
             >
-              {busy ? "Saving…" : system ? "Save changes" : "Create system"}
+              {busy ? 'Saving…' : system ? 'Save changes' : 'Create system'}
             </Button>
           </div>
         </form>

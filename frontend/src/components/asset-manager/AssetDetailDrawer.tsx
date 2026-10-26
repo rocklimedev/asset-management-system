@@ -1,25 +1,17 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import {
-  X,
-  Clock,
-  ArrowRightLeft,
-  Undo2,
-  UserRound,
-  Monitor,
-  Package,
-} from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { X, Clock, ArrowRightLeft, Undo2, UserRound, Monitor, Package } from 'lucide-react';
 
 import {
   useGetAssetHistoryQuery,
   useGetActiveAssetAssignmentsByAssetQuery,
   useGetAssetUnitsByAssetQuery,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { Badge } from "../ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from '../ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
-import type { Asset, AssetHistory, AssetAssignment } from "../../types";
+import type { Asset, AssetHistory, AssetAssignment } from '../../types';
 
 // ============================================================
 // FIELD
@@ -32,7 +24,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
         {label}
       </p>
 
-      <p className="mt-0.5 truncate text-sm text-foreground">{value ?? "—"}</p>
+      <p className="mt-0.5 truncate text-sm text-foreground">{value ?? '—'}</p>
     </div>
   );
 }
@@ -56,7 +48,9 @@ export function AssetDetailDrawer({
   onEdit,
   onUnassign,
 }: AssetDetailDrawerProps) {
-  const { currentData: units } = useGetAssetUnitsByAssetQuery(asset?.id ?? "", { skip: !asset?.id });
+  const { currentData: units } = useGetAssetUnitsByAssetQuery(asset?.id ?? '', {
+    skip: !asset?.id,
+  });
   // ==========================================================
   // ASSET HISTORY
   // ==========================================================
@@ -65,7 +59,7 @@ export function AssetDetailDrawer({
     data: historyResponse,
     isLoading: historyLoading,
     isFetching: historyFetching,
-  } = useGetAssetHistoryQuery(asset?.id != null ? String(asset.id) : "", {
+  } = useGetAssetHistoryQuery(asset?.id != null ? String(asset.id) : '', {
     skip: asset?.id == null,
   });
 
@@ -83,12 +77,9 @@ export function AssetDetailDrawer({
     isFetching: assignmentFetching,
     isError: assignmentError,
     refetch: refetchAssignments,
-  } = useGetActiveAssetAssignmentsByAssetQuery(
-    asset?.id != null ? String(asset.id) : "",
-    {
-      skip: asset?.id == null,
-    },
-  );
+  } = useGetActiveAssetAssignmentsByAssetQuery(asset?.id != null ? String(asset.id) : '', {
+    skip: asset?.id == null,
+  });
 
   /*
    * Quantity-tracked assets can have multiple active assignments.
@@ -101,9 +92,7 @@ export function AssetDetailDrawer({
    * Therefore we intentionally keep the complete array instead
    * of selecting only [0].
    */
-  const activeAssignments: AssetAssignment[] = Array.isArray(
-    activeAssignmentsResponse,
-  )
+  const activeAssignments: AssetAssignment[] = Array.isArray(activeAssignmentsResponse)
     ? activeAssignmentsResponse
     : [];
 
@@ -119,38 +108,37 @@ export function AssetDetailDrawer({
 
   const condition = asset.condition
     ? asset.condition.charAt(0) + asset.condition.slice(1).toLowerCase()
-    : "Unknown";
+    : 'Unknown';
 
   const status = asset.status
     ? asset.status.charAt(0) + asset.status.slice(1).toLowerCase()
-    : "Unknown";
+    : 'Unknown';
 
-  const isAssigned =
-    asset.status?.toUpperCase() === "ASSIGNED" || activeAssignments.length > 0;
+  const isAssigned = asset.status?.toUpperCase() === 'ASSIGNED' || activeAssignments.length > 0;
 
   // ==========================================================
   // DATE HELPERS
   // ==========================================================
 
   const formatDate = (date?: string | null) => {
-    if (!date) return "—";
+    if (!date) return '—';
 
     const parsed = new Date(date);
 
     if (Number.isNaN(parsed.getTime())) {
-      return "—";
+      return '—';
     }
 
     return parsed.toLocaleDateString();
   };
 
   const formatDateTime = (date?: string | null) => {
-    if (!date) return "—";
+    if (!date) return '—';
 
     const parsed = new Date(date);
 
     if (Number.isNaN(parsed.getTime())) {
-      return "—";
+      return '—';
     }
 
     return parsed.toLocaleString();
@@ -177,15 +165,15 @@ export function AssetDetailDrawer({
       return assignment.systemId;
     }
 
-    return "Unknown assignee";
+    return 'Unknown assignee';
   };
 
   const getAssignmentType = (assignment: AssetAssignment) => {
     if (assignment.systemId || assignment.system) {
-      return "System";
+      return 'System';
     }
 
-    return "Employee";
+    return 'Employee';
   };
 
   // ============================================================
@@ -193,7 +181,8 @@ export function AssetDetailDrawer({
   // ============================================================
 
   return (
-    <OverlayRoot className="fixed inset-0 z-50 flex justify-end"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex justify-end"
       onClose={onClose}
       label="Asset details"
     >
@@ -220,21 +209,16 @@ export function AssetDetailDrawer({
         <div className="flex items-start justify-between border-b px-6 py-4">
           <div className="min-w-0 pr-4">
             <h2 className="truncate text-base font-semibold text-foreground">
-              {asset.name || "Unnamed asset"}
+              {asset.name || 'Unnamed asset'}
             </h2>
 
             <p className="text-xs tabular-nums text-muted-foreground">
-              {asset.assetTag || "No asset tag"}
+              {asset.assetTag || 'No asset tag'}
             </p>
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(asset)}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => onEdit(asset)}>
               Edit
             </Button>
 
@@ -265,9 +249,7 @@ export function AssetDetailDrawer({
 
               <span className="text-xs text-muted-foreground">·</span>
 
-              <span className="text-xs text-muted-foreground">
-                {condition} condition
-              </span>
+              <span className="text-xs text-muted-foreground">{condition} condition</span>
             </div>
 
             <Separator />
@@ -301,9 +283,9 @@ export function AssetDetailDrawer({
             ================================================== */}
 
             <section>
-              {(units ?? asset.units ?? []).map(unit => (
+              {(units ?? asset.units ?? []).map((unit) => (
                 <div key={unit.id} className="mb-4 rounded-lg border p-3">
-                  <p className="mb-2 text-sm font-medium">{unit.unitCode ?? "Unit"}</p>
+                  <p className="mb-2 text-sm font-medium">{unit.unitCode ?? 'Unit'}</p>
                   <Field label="Serial number" value={unit.serialNumber} />
                   {(unit.cellularIdentities ?? []).map((identity, index) => (
                     <div key={index} className="mt-3 grid grid-cols-2 gap-4">
@@ -318,16 +300,12 @@ export function AssetDetailDrawer({
                   Assignment
                 </h3>
 
-                {!assignmentLoading &&
-                  !assignmentFetching &&
-                  activeAssignments.length > 0 && (
-                    <Badge variant="secondary">
-                      {activeAssignments.length}{" "}
-                      {activeAssignments.length === 1
-                        ? "assignment"
-                        : "assignments"}
-                    </Badge>
-                  )}
+                {!assignmentLoading && !assignmentFetching && activeAssignments.length > 0 && (
+                  <Badge variant="secondary">
+                    {activeAssignments.length}{' '}
+                    {activeAssignments.length === 1 ? 'assignment' : 'assignments'}
+                  </Badge>
+                )}
               </div>
 
               {/* ==================================================
@@ -336,9 +314,7 @@ export function AssetDetailDrawer({
 
               {(assignmentLoading || assignmentFetching) && (
                 <div className="rounded-lg border border-dashed p-4">
-                  <p className="text-sm text-muted-foreground">
-                    Loading assignments...
-                  </p>
+                  <p className="text-sm text-muted-foreground">Loading assignments...</p>
                 </div>
               )}
 
@@ -351,7 +327,13 @@ export function AssetDetailDrawer({
                   <p className="text-sm text-destructive">
                     Could not load assignments. Please try again.
                   </p>
-                  <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => refetchAssignments()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => refetchAssignments()}
+                  >
                     Retry
                   </Button>
                 </div>
@@ -370,10 +352,7 @@ export function AssetDetailDrawer({
                       const system = assignment.system;
 
                       return (
-                        <div
-                          key={assignment.id}
-                          className="rounded-lg border bg-muted/20 p-3"
-                        >
+                        <div key={assignment.id} className="rounded-lg border bg-muted/20 p-3">
                           {/* ----------------------------------------
                               ASSIGNEE
                           ---------------------------------------- */}
@@ -381,7 +360,7 @@ export function AssetDetailDrawer({
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                {assignmentType === "System" ? (
+                                {assignmentType === 'System' ? (
                                   <Monitor className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 ) : (
                                   <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -405,9 +384,7 @@ export function AssetDetailDrawer({
                                   TYPE
                               -------------------------------------- */}
 
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {assignmentType}
-                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">{assignmentType}</p>
                             </div>
 
                             <Badge variant="outline" className="shrink-0">
@@ -436,7 +413,7 @@ export function AssetDetailDrawer({
                                   </p>
 
                                   <p className="text-xs">
-                                    {assignment.assetUnit.serialNumber || "—"}
+                                    {assignment.assetUnit.serialNumber || '—'}
                                   </p>
                                 </div>
 
@@ -447,13 +424,9 @@ export function AssetDetailDrawer({
 
                                   <p className="text-xs">
                                     {assignment.assetUnit.condition
-                                      ? assignment.assetUnit.condition
-                                          .charAt(0)
-                                          .toUpperCase() +
-                                        assignment.assetUnit.condition
-                                          .slice(1)
-                                          .toLowerCase()
-                                      : "—"}
+                                      ? assignment.assetUnit.condition.charAt(0).toUpperCase() +
+                                        assignment.assetUnit.condition.slice(1).toLowerCase()
+                                      : '—'}
                                   </p>
                                 </div>
                               </div>
@@ -465,10 +438,7 @@ export function AssetDetailDrawer({
                           ---------------------------------------- */}
 
                           <div className="mt-3 grid grid-cols-2 gap-3">
-                            <Field
-                              label="Assigned"
-                              value={formatDate(assignment.assignedAt)}
-                            />
+                            <Field label="Assigned" value={formatDate(assignment.assignedAt)} />
 
                             <Field
                               label="Assigned at"
@@ -476,17 +446,11 @@ export function AssetDetailDrawer({
                             />
 
                             {assignment.system?.name && (
-                              <Field
-                                label="System name"
-                                value={assignment.system.name}
-                              />
+                              <Field label="System name" value={assignment.system.name} />
                             )}
 
                             {assignment.system?.employeeId && (
-                              <Field
-                                label="System employee"
-                                value={assignment.system.employeeId}
-                              />
+                              <Field label="System employee" value={assignment.system.employeeId} />
                             )}
                           </div>
 
@@ -576,8 +540,7 @@ export function AssetDetailDrawer({
                   </div>
 
                   <p className="mt-3 text-xs text-muted-foreground">
-                    License reference hidden — visible to roles with license
-                    view permission.
+                    License reference hidden — visible to roles with license view permission.
                   </p>
                 </section>
               </>
@@ -597,9 +560,7 @@ export function AssetDetailDrawer({
 
               {(historyLoading || historyFetching) && (
                 <div className="rounded-lg border border-dashed p-4">
-                  <p className="text-sm text-muted-foreground">
-                    Loading asset history...
-                  </p>
+                  <p className="text-sm text-muted-foreground">Loading asset history...</p>
                 </div>
               )}
 
@@ -613,14 +574,10 @@ export function AssetDetailDrawer({
                         {formatDateTime(item.createdAt)}
                       </p>
 
-                      <p className="mt-0.5 text-sm text-foreground">
-                        {formatHistoryAction(item)}
-                      </p>
+                      <p className="mt-0.5 text-sm text-foreground">{formatHistoryAction(item)}</p>
 
                       {item.notes && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {item.notes}
-                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{item.notes}</p>
                       )}
                     </li>
                   ))}
@@ -629,9 +586,7 @@ export function AssetDetailDrawer({
 
               {!historyLoading && !historyFetching && history.length === 0 && (
                 <div className="rounded-lg border border-dashed p-4">
-                  <p className="text-sm text-muted-foreground">
-                    No history yet.
-                  </p>
+                  <p className="text-sm text-muted-foreground">No history yet.</p>
                 </div>
               )}
             </section>
@@ -648,32 +603,30 @@ export function AssetDetailDrawer({
 
 function formatHistoryAction(history: AssetHistory) {
   switch (history.action?.toUpperCase()) {
-    case "TRANSFERRED":
+    case 'TRANSFERRED':
       return `Asset transferred${
-        history.fromValue ? ` from ${history.fromValue}` : ""
-      }${history.toValue ? ` to ${history.toValue}` : ""}`;
+        history.fromValue ? ` from ${history.fromValue}` : ''
+      }${history.toValue ? ` to ${history.toValue}` : ''}`;
 
-    case "ASSIGNED":
-      return `Asset assigned${history.toValue ? ` to ${history.toValue}` : ""}`;
+    case 'ASSIGNED':
+      return `Asset assigned${history.toValue ? ` to ${history.toValue}` : ''}`;
 
-    case "RETURNED":
-      return "Asset returned to inventory";
+    case 'RETURNED':
+      return 'Asset returned to inventory';
 
-    case "STATUS_CHANGED":
-      return `Asset status changed${
-        history.toValue ? ` to ${history.toValue}` : ""
-      }`;
+    case 'STATUS_CHANGED':
+      return `Asset status changed${history.toValue ? ` to ${history.toValue}` : ''}`;
 
-    case "LOCATION_CHANGED":
+    case 'LOCATION_CHANGED':
       return `Asset location changed${
-        history.fromValue ? ` from ${history.fromValue}` : ""
-      }${history.toValue ? ` to ${history.toValue}` : ""}`;
+        history.fromValue ? ` from ${history.fromValue}` : ''
+      }${history.toValue ? ` to ${history.toValue}` : ''}`;
 
-    case "CREATED":
-      return "Asset added to inventory";
+    case 'CREATED':
+      return 'Asset added to inventory';
 
     default:
-      return history.action || "Asset updated";
+      return history.action || 'Asset updated';
   }
 }
 

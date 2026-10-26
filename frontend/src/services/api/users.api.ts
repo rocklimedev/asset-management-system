@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { RootState } from '../store';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // TYPES
@@ -24,7 +24,7 @@ export interface User {
 
   role?: UserRole;
 
-  status: "ACTIVE" | "DISABLED";
+  status: 'ACTIVE' | 'DISABLED';
 
   createdAt?: string;
   updatedAt?: string;
@@ -88,7 +88,7 @@ export interface UpdateUserRequest {
 
 export interface SetUserStatusRequest {
   id: string;
-  status: "ACTIVE" | "DISABLED";
+  status: 'ACTIVE' | 'DISABLED';
 }
 
 // ============================================================
@@ -115,7 +115,7 @@ export interface DeleteUserResponse {
 // ============================================================
 
 export const usersApi = createApi({
-  reducerPath: "usersApi",
+  reducerPath: 'usersApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -123,19 +123,19 @@ export const usersApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
 
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
       return headers;
     },
   }),
 
-  tagTypes: ["User"],
+  tagTypes: ['User'],
 
   endpoints: (builder) => ({
     // ============================================================
@@ -145,24 +145,22 @@ export const usersApi = createApi({
 
     getUsers: builder.query<User[] | UsersResponse, void>({
       query: () => ({
-        url: "/users",
-        method: "GET",
+        url: '/users',
+        method: 'GET',
       }),
 
       providesTags: (result) => {
-        const users: User[] = Array.isArray(result)
-          ? result
-          : result?.data || [];
+        const users: User[] = Array.isArray(result) ? result : result?.data || [];
 
         return [
           ...users.map(({ id }) => ({
-            type: "User" as const,
+            type: 'User' as const,
             id,
           })),
 
           {
-            type: "User" as const,
-            id: "LIST",
+            type: 'User' as const,
+            id: 'LIST',
           },
         ];
       },
@@ -175,15 +173,15 @@ export const usersApi = createApi({
 
     createUser: builder.mutation<UserResponse, CreateUserRequest>({
       query: (body) => ({
-        url: "/users",
-        method: "POST",
+        url: '/users',
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: [
         {
-          type: "User",
-          id: "LIST",
+          type: 'User',
+          id: 'LIST',
         },
       ],
     }),
@@ -196,18 +194,18 @@ export const usersApi = createApi({
     updateUser: builder.mutation<UserResponse, UpdateUserRequest>({
       query: ({ id, ...body }) => ({
         url: `/users/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "User" as const,
+          type: 'User' as const,
           id,
         },
         {
-          type: "User" as const,
-          id: "LIST",
+          type: 'User' as const,
+          id: 'LIST',
         },
       ],
     }),
@@ -220,17 +218,17 @@ export const usersApi = createApi({
     deleteUser: builder.mutation<DeleteUserResponse, string>({
       query: (id) => ({
         url: `/users/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
         {
-          type: "User" as const,
+          type: 'User' as const,
           id,
         },
         {
-          type: "User" as const,
-          id: "LIST",
+          type: 'User' as const,
+          id: 'LIST',
         },
       ],
     }),
@@ -243,7 +241,7 @@ export const usersApi = createApi({
     setUserStatus: builder.mutation<UserResponse, SetUserStatusRequest>({
       query: ({ id, status }) => ({
         url: `/users/${id}/status`,
-        method: "PATCH",
+        method: 'PATCH',
 
         body: {
           status,
@@ -252,12 +250,12 @@ export const usersApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "User" as const,
+          type: 'User' as const,
           id,
         },
         {
-          type: "User" as const,
-          id: "LIST",
+          type: 'User' as const,
+          id: 'LIST',
         },
       ],
     }),
@@ -270,7 +268,7 @@ export const usersApi = createApi({
     changeUserRole: builder.mutation<UserResponse, ChangeUserRoleRequest>({
       query: ({ id, roleId }) => ({
         url: `/users/${id}/role`,
-        method: "PATCH",
+        method: 'PATCH',
 
         body: {
           roleId,
@@ -279,12 +277,12 @@ export const usersApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "User" as const,
+          type: 'User' as const,
           id,
         },
         {
-          type: "User" as const,
-          id: "LIST",
+          type: 'User' as const,
+          id: 'LIST',
         },
       ],
     }),

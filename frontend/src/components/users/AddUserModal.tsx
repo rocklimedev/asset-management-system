@@ -1,19 +1,16 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useState } from "react";
-import { X, UserPlus, Save } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useState } from 'react';
+import { X, UserPlus, Save } from 'lucide-react';
 
-import {
-  useCreateUserMutation,
-  useUpdateUserMutation,
-} from "../../services/api/users.api";
+import { useCreateUserMutation, useUpdateUserMutation } from '../../services/api/users.api';
 
-import { useGetRolesQuery } from "../../services/api/role.api";
+import { useGetRolesQuery } from '../../services/api/role.api';
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
-import type { CreateUserRequest, User } from "../../services/api/users.api";
+import type { CreateUserRequest, User } from '../../services/api/users.api';
 
 // ============================================================
 // TYPES
@@ -38,22 +35,18 @@ interface FormState {
 // ============================================================
 
 const emptyForm: FormState = {
-  name: "",
-  email: "",
-  password: "",
-  employeeId: "",
-  roleId: "",
+  name: '',
+  email: '',
+  password: '',
+  employeeId: '',
+  roleId: '',
 };
 
 // ============================================================
 // COMPONENT
 // ============================================================
 
-export default function AddUserModal({
-  open,
-  onClose,
-  user,
-}: AddUserModalProps) {
+export default function AddUserModal({ open, onClose, user }: AddUserModalProps) {
   const isEdit = Boolean(user);
 
   // ==========================================================
@@ -62,7 +55,7 @@ export default function AddUserModal({
 
   const [form, setForm] = useState<FormState>(emptyForm);
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // ==========================================================
   // API
@@ -91,15 +84,15 @@ export default function AddUserModal({
       return;
     }
 
-    setError("");
+    setError('');
 
     if (user) {
       setForm({
-        name: user.name || "",
-        email: user.email || "",
-        password: "",
-        employeeId: user.employeeId || "",
-        roleId: user.roleId || user.role?.id || "",
+        name: user.name || '',
+        email: user.email || '',
+        password: '',
+        employeeId: user.employeeId || '',
+        roleId: user.roleId || user.role?.id || '',
       });
 
       return;
@@ -119,7 +112,7 @@ export default function AddUserModal({
     }));
 
     if (error) {
-      setError("");
+      setError('');
     }
   };
 
@@ -132,7 +125,7 @@ export default function AddUserModal({
       return;
     }
 
-    setError("");
+    setError('');
     setForm(emptyForm);
 
     onClose();
@@ -145,35 +138,35 @@ export default function AddUserModal({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setError("");
+    setError('');
 
     // --------------------------------------------------------
     // VALIDATION
     // --------------------------------------------------------
 
     if (!form.name.trim()) {
-      setError("Name is required.");
+      setError('Name is required.');
       return;
     }
 
     if (!form.email.trim()) {
-      setError("Email is required.");
+      setError('Email is required.');
       return;
     }
 
     if (!form.roleId) {
-      setError("Please select a role.");
+      setError('Please select a role.');
       return;
     }
 
     // Password is required only when creating
     if (!isEdit && !form.password) {
-      setError("Password is required.");
+      setError('Password is required.');
       return;
     }
 
     if (form.password && form.password.length < 8) {
-      setError("Password must contain at least 8 characters.");
+      setError('Password must contain at least 8 characters.');
       return;
     }
 
@@ -223,9 +216,7 @@ export default function AddUserModal({
       onClose();
     } catch (err: any) {
       setError(
-        err?.data?.message ||
-          err?.message ||
-          `Failed to ${isEdit ? "update" : "create"} user.`,
+        err?.data?.message || err?.message || `Failed to ${isEdit ? 'update' : 'create'} user.`,
       );
     }
   };
@@ -243,7 +234,8 @@ export default function AddUserModal({
   // ==========================================================
 
   return (
-    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClose={handleClose}
       label="User details"
     >
@@ -275,13 +267,11 @@ export default function AddUserModal({
 
             <div>
               <h2 className="text-base font-semibold text-foreground">
-                {isEdit ? "Edit User" : "Add User"}
+                {isEdit ? 'Edit User' : 'Add User'}
               </h2>
 
               <p className="text-xs text-muted-foreground">
-                {isEdit
-                  ? "Update the user's account details."
-                  : "Create a new application user."}
+                {isEdit ? "Update the user's account details." : 'Create a new application user.'}
               </p>
             </div>
           </div>
@@ -318,7 +308,7 @@ export default function AddUserModal({
             <Input
               id="user-name"
               value={form.name}
-              onChange={(event) => handleChange("name", event.target.value)}
+              onChange={(event) => handleChange('name', event.target.value)}
               placeholder="Enter full name"
               disabled={submitting}
               autoComplete="name"
@@ -334,7 +324,7 @@ export default function AddUserModal({
               id="user-email"
               type="email"
               value={form.email}
-              onChange={(event) => handleChange("email", event.target.value)}
+              onChange={(event) => handleChange('email', event.target.value)}
               placeholder="Enter email address"
               disabled={submitting}
               autoComplete="email"
@@ -357,15 +347,13 @@ export default function AddUserModal({
               id="user-password"
               type="password"
               value={form.password}
-              onChange={(event) => handleChange("password", event.target.value)}
-              placeholder={isEdit ? "Enter new password" : "Enter password"}
+              onChange={(event) => handleChange('password', event.target.value)}
+              placeholder={isEdit ? 'Enter new password' : 'Enter password'}
               disabled={submitting}
-              autoComplete={isEdit ? "new-password" : "new-password"}
+              autoComplete={isEdit ? 'new-password' : 'new-password'}
             />
 
-            <p className="text-xs text-muted-foreground">
-              Minimum 8 characters.
-            </p>
+            <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
           </div>
 
           {/* EMPLOYEE */}
@@ -373,17 +361,13 @@ export default function AddUserModal({
           <div className="space-y-2">
             <Label htmlFor="user-employee">
               Employee ID
-              <span className="ml-1 text-xs font-normal text-muted-foreground">
-                (optional)
-              </span>
+              <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
             </Label>
 
             <Input
               id="user-employee"
               value={form.employeeId}
-              onChange={(event) =>
-                handleChange("employeeId", event.target.value)
-              }
+              onChange={(event) => handleChange('employeeId', event.target.value)}
               placeholder="Employee UUID"
               disabled={submitting}
             />
@@ -397,13 +381,11 @@ export default function AddUserModal({
             <select
               id="user-role"
               value={form.roleId}
-              onChange={(event) => handleChange("roleId", event.target.value)}
+              onChange={(event) => handleChange('roleId', event.target.value)}
               disabled={submitting || rolesLoading}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">
-                {rolesLoading ? "Loading roles..." : "Select role"}
-              </option>
+              <option value="">{rolesLoading ? 'Loading roles...' : 'Select role'}</option>
 
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
@@ -418,26 +400,18 @@ export default function AddUserModal({
           ================================================== */}
 
           <div className="flex justify-end gap-2 border-t border-border pt-5">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={submitting}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={submitting}>
               Cancel
             </Button>
 
-            <Button
-              type="submit"
-              disabled={submitting || rolesLoading || !roles.length}
-            >
+            <Button type="submit" disabled={submitting || rolesLoading || !roles.length}>
               {submitting
                 ? isEdit
-                  ? "Saving..."
-                  : "Creating..."
+                  ? 'Saving...'
+                  : 'Creating...'
                 : isEdit
-                  ? "Save Changes"
-                  : "Create User"}
+                  ? 'Save Changes'
+                  : 'Create User'}
             </Button>
           </div>
         </form>

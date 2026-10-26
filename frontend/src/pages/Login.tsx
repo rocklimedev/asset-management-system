@@ -1,19 +1,19 @@
-import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { LockKeyhole, Mail } from "lucide-react";
+import { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LockKeyhole, Mail } from 'lucide-react';
 
-import { Button } from "../components/ui/button";
-import { useAuth } from "../services/context/AuthContext";
+import { Button } from '../components/ui/button';
+import { useAuth } from '../services/context/AuthContext';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // ============================================================
   // LOGIN
@@ -22,7 +22,7 @@ export default function LoginPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -35,9 +35,9 @@ export default function LoginPage() {
       // this on its own, but navigating explicitly here keeps
       // intent clear and leaves room for a "redirect to
       // originally requested page" feature later.)
-      navigate("/", { replace: true });
+      navigate('/', { replace: true });
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Invalid email or password.");
+      setError(err?.response?.data?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -47,9 +47,7 @@ export default function LoginPage() {
     <div>
       {/* Heading */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Welcome back
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
 
         <p className="mt-2 text-sm text-muted-foreground">
           Sign in to access your IT Management account.
@@ -60,10 +58,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email */}
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1.5 block text-sm font-medium text-foreground"
-          >
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
             Email address
           </label>
 
@@ -86,10 +81,7 @@ export default function LoginPage() {
         {/* Password */}
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               Password
             </label>
 
@@ -128,21 +120,16 @@ export default function LoginPage() {
         )}
 
         {/* Submit */}
-        <Button
-          type="submit"
-          loading={loading}
-          size="lg"
-          className="h-11 w-full justify-center"
-        >
-          {loading ? "Signing in…" : "Sign in"}
+        <Button type="submit" loading={loading} size="lg" className="h-11 w-full justify-center">
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
 
       {/* Security Message */}
       <div className="mt-8 border-t border-border pt-5">
         <p className="text-center text-xs leading-5 text-muted-foreground">
-          Your account access is protected by secure authentication. Contact
-          your system administrator if you need assistance.
+          Your account access is protected by secure authentication. Contact your system
+          administrator if you need assistance.
         </p>
       </div>
     </div>

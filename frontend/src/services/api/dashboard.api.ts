@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // TYPES
@@ -39,14 +39,14 @@ export interface RecentActivityItem {
 export interface LicenseExpiration {
   assetName: string;
   expiryDate: string;
-  urgency: "red" | "yellow" | string;
+  urgency: 'red' | 'yellow' | string;
 }
 
 export interface WarrantyExpiration {
   assetName: string;
   assetTag: string;
   warrantyExpiry: string;
-  urgency: "red" | "yellow" | string;
+  urgency: 'red' | 'yellow' | string;
 }
 
 export interface DashboardResponse {
@@ -84,7 +84,7 @@ const DASHBOARD_CACHE_CONFIG = {
 // ============================================================
 
 export const dashboardApi = createApi({
-  reducerPath: "dashboardApi",
+  reducerPath: 'dashboardApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -93,22 +93,22 @@ export const dashboardApi = createApi({
     timeout: 30000,
 
     prepareHeaders: (headers) => {
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
 
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
       // ✅ FIX: Add compression headers
-      headers.set("Accept-Encoding", "gzip, deflate");
+      headers.set('Accept-Encoding', 'gzip, deflate');
 
       return headers;
     },
   }),
 
-  tagTypes: ["Dashboard"],
+  tagTypes: ['Dashboard'],
 
   endpoints: (builder) => ({
     // ============================================================
@@ -117,8 +117,8 @@ export const dashboardApi = createApi({
     // ============================================================
 
     getDashboard: builder.query<DashboardResponse, void>({
-      query: () => "/dashboard",
-      providesTags: ["Dashboard"],
+      query: () => '/dashboard',
+      providesTags: ['Dashboard'],
 
       // ✅ FIX: Add cache configuration for real-time updates
       ...DASHBOARD_CACHE_CONFIG,

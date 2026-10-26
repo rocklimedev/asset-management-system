@@ -1,42 +1,34 @@
-import { useEffect, useState } from "react";
-import {
-  Pencil,
-  ShieldCheck,
-  Trash2,
-  UserCheck,
-  UserPlus,
-  UserX,
-  Users,
-} from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Pencil, ShieldCheck, Trash2, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
 
 import {
   useDeleteUserMutation,
   useGetUsersQuery,
   useSetUserStatusMutation,
-} from "../services/api/users.api";
+} from '../services/api/users.api';
 
-import { useGetRoleAccessQuery } from "../services/api/role.api";
-import PermissionsWorkspace from "../components/users/PermissionsWorkspace";
+import { useGetRoleAccessQuery } from '../services/api/role.api';
+import PermissionsWorkspace from '../components/users/PermissionsWorkspace';
 
-import AddUserModal from "../components/users/AddUserModal";
-import UpdateRoleModal from "../components/users/UpdateRoleModal";
+import AddUserModal from '../components/users/AddUserModal';
+import UpdateRoleModal from '../components/users/UpdateRoleModal';
 
-import { Card } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { EmptyState } from "../components/ui/EmptyState";
+import { Card } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { EmptyState } from '../components/ui/EmptyState';
 
-import type { User } from "../services/api/users.api";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { toast } from "@/components/ui/toast";
-import { useConfirm } from "@/components/ui/confirm-dialog";
-import { RowActions } from "@/components/ui/row-actions";
+import type { User } from '../services/api/users.api';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { RowActions } from '@/components/ui/row-actions';
 
 // ============================================================
 // TYPES
 // ============================================================
 
-type Tab = "users" | "roles";
+type Tab = 'users' | 'roles';
 
 // ============================================================
 // COMPONENT
@@ -44,11 +36,17 @@ type Tab = "users" | "roles";
 
 export default function UsersRoles() {
   const confirm = useConfirm();
-  const [activeTab, setActiveTab] = useState<Tab>("users");
-  const { data: access, isLoading: accessLoading, isError: accessError } = useGetRoleAccessQuery(undefined, { refetchOnMountOrArgChange: true, pollingInterval: 30000 });
-  const canManageUsers = access?.permissions.includes("users.manage") ?? false;
-  const canManageRoles = access?.permissions.includes("roles.manage") ?? false;
-  useEffect(() => { if (access && !canManageUsers) setActiveTab("roles"); }, [access, canManageUsers]);
+  const [activeTab, setActiveTab] = useState<Tab>('users');
+  const {
+    data: access,
+    isLoading: accessLoading,
+    isError: accessError,
+  } = useGetRoleAccessQuery(undefined, { refetchOnMountOrArgChange: true, pollingInterval: 30000 });
+  const canManageUsers = access?.permissions.includes('users.manage') ?? false;
+  const canManageRoles = access?.permissions.includes('roles.manage') ?? false;
+  useEffect(() => {
+    if (access && !canManageUsers) setActiveTab('roles');
+  }, [access, canManageUsers]);
 
   // ==========================================================
   // USER MODALS
@@ -76,28 +74,21 @@ export default function UsersRoles() {
 
   const [deleteUser, { isLoading: deletingUser }] = useDeleteUserMutation();
 
-  const [setUserStatus, { isLoading: changingStatus }] =
-    useSetUserStatusMutation();
+  const [setUserStatus, { isLoading: changingStatus }] = useSetUserStatusMutation();
 
   // ==========================================================
   // ROLES
   // ==========================================================
 
-
-
   // ==========================================================
   // NORMALIZE USERS RESPONSE
   // ==========================================================
 
-  const users: User[] = Array.isArray(usersData)
-    ? usersData
-    : (usersData?.data ?? []);
+  const users: User[] = Array.isArray(usersData) ? usersData : (usersData?.data ?? []);
 
   // ==========================================================
   // NORMALIZE ROLES RESPONSE
   // ==========================================================
-
-
 
   // ==========================================================
   // OPEN CREATE USER MODAL
@@ -152,10 +143,10 @@ export default function UsersRoles() {
     const confirmed = await confirm({
       title: `Delete ${user.name}?`,
       description: `${user.name}${
-        user.email ? ` (${user.email})` : ""
+        user.email ? ` (${user.email})` : ''
       } will lose access and the account will be permanently deleted. This cannot be undone. To keep the account but block sign-in, choose Disable instead.`,
-      confirmLabel: "Delete user",
-      tone: "danger",
+      confirmLabel: 'Delete user',
+      tone: 'danger',
     });
 
     if (!confirmed) {
@@ -166,16 +157,15 @@ export default function UsersRoles() {
       await deleteUser(user.id).unwrap();
 
       toast.add({
-        title: "User deleted",
+        title: 'User deleted',
         description: `${user.name} no longer has an account.`,
-        type: "success",
+        type: 'success',
       });
     } catch (error: any) {
       toast.add({
-        title: "Could not delete user",
-        description:
-          error?.data?.message || error?.message || "Please try again.",
-        type: "error",
+        title: 'Could not delete user',
+        description: error?.data?.message || error?.message || 'Please try again.',
+        type: 'error',
       });
     }
   };
@@ -185,19 +175,17 @@ export default function UsersRoles() {
   // ============================================================
 
   const handleToggleStatus = async (user: User) => {
-    const nextStatus = user.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const nextStatus = user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE';
 
-
-
-    const disabling = nextStatus === "DISABLED";
+    const disabling = nextStatus === 'DISABLED';
 
     const confirmed = await confirm({
       title: disabling ? `Disable ${user.name}?` : `Enable ${user.name}?`,
       description: disabling
         ? `${user.name} will no longer be able to sign in. Their account is kept and you can enable it again at any time.`
         : `${user.name} will be able to sign in again.`,
-      confirmLabel: disabling ? "Disable user" : "Enable user",
-      tone: disabling ? "danger" : "default",
+      confirmLabel: disabling ? 'Disable user' : 'Enable user',
+      tone: disabling ? 'danger' : 'default',
     });
 
     if (!confirmed) {
@@ -211,19 +199,18 @@ export default function UsersRoles() {
       }).unwrap();
 
       toast.add({
-        title: nextStatus === "ACTIVE" ? "User enabled" : "User disabled",
+        title: nextStatus === 'ACTIVE' ? 'User enabled' : 'User disabled',
         description:
-          nextStatus === "ACTIVE"
+          nextStatus === 'ACTIVE'
             ? `${user.name} can sign in again.`
             : `${user.name} can no longer sign in.`,
-        type: "success",
+        type: 'success',
       });
     } catch (error: any) {
       toast.add({
-        title: "Could not update user",
-        description:
-          error?.data?.message || error?.message || "Please try again.",
-        type: "error",
+        title: 'Could not update user',
+        description: error?.data?.message || error?.message || 'Please try again.',
+        type: 'error',
       });
     }
   };
@@ -239,7 +226,12 @@ export default function UsersRoles() {
   // ============================================================
 
   if (accessLoading) return <p className="p-6 text-sm text-muted-foreground">Loading access…</p>;
-  if (accessError) return <p role="alert" className="p-6 text-sm text-destructive">Unable to verify your permissions. Reload to try again.</p>;
+  if (accessError)
+    return (
+      <p role="alert" className="p-6 text-sm text-destructive">
+        Unable to verify your permissions. Reload to try again.
+      </p>
+    );
 
   return (
     <>
@@ -254,12 +246,8 @@ export default function UsersRoles() {
             description="Choose who can sign in to the system and what each person is allowed to do."
           />
 
-          {activeTab === "users" && canManageUsers && (
-            <Button
-              className="w-fit"
-              onClick={handleCreateUser}
-              disabled={userMutationLoading}
-            >
+          {activeTab === 'users' && canManageUsers && (
+            <Button className="w-fit" onClick={handleCreateUser} disabled={userMutationLoading}>
               <UserPlus className="h-4 w-4" />
               Add User
             </Button>
@@ -282,11 +270,11 @@ export default function UsersRoles() {
               <button
                 type="button"
                 disabled={!canManageUsers}
-                onClick={() => setActiveTab("users")}
+                onClick={() => setActiveTab('users')}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "users"
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                  activeTab === 'users'
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Users className="h-4 w-4" />
@@ -297,11 +285,11 @@ export default function UsersRoles() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab("roles")}
+                onClick={() => setActiveTab('roles')}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "roles"
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                  activeTab === 'roles'
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <ShieldCheck className="h-4 w-4" />
@@ -314,12 +302,10 @@ export default function UsersRoles() {
               USERS TAB
           ==================================================== */}
 
-          {activeTab === "users" && canManageUsers && (
+          {activeTab === 'users' && canManageUsers && (
             <div>
               <div className="border-b border-border px-5 py-3">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Application Users
-                </h2>
+                <h2 className="text-sm font-semibold text-foreground">Application Users</h2>
 
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   Manage users who have access to the application.
@@ -329,9 +315,7 @@ export default function UsersRoles() {
               {/* LOADING */}
 
               {usersLoading && (
-                <div className="p-5 text-sm text-muted-foreground">
-                  Loading users...
-                </div>
+                <div className="p-5 text-sm text-muted-foreground">Loading users...</div>
               )}
 
               {/* ERROR */}
@@ -371,9 +355,7 @@ export default function UsersRoles() {
 
                         <th className="px-5 py-2.5 font-medium">Status</th>
 
-                        <th className="px-5 py-2.5 text-right font-medium">
-                          Actions
-                        </th>
+                        <th className="px-5 py-2.5 text-right font-medium">Actions</th>
                       </tr>
                     </thead>
 
@@ -383,36 +365,28 @@ export default function UsersRoles() {
                           {/* NAME */}
 
                           <td className="px-5 py-2.5 font-medium text-foreground">
-                            {user.name || "Unnamed User"}
+                            {user.name || 'Unnamed User'}
                           </td>
 
                           {/* EMAIL */}
 
-                          <td className="px-5 py-2.5 text-muted-foreground">
-                            {user.email || "—"}
-                          </td>
+                          <td className="px-5 py-2.5 text-muted-foreground">{user.email || '—'}</td>
 
                           {/* ROLE */}
 
                           <td className="px-5 py-2.5">
-                            <Badge tone="brand">
-                              {user.role?.name || "No Role"}
-                            </Badge>
+                            <Badge tone="brand">{user.role?.name || 'No Role'}</Badge>
                           </td>
 
                           {/* STATUS */}
 
                           <td className="px-5 py-2.5">
-                            <Badge
-                              tone={
-                                user.status === "ACTIVE" ? undefined : "danger"
-                              }
-                            >
-                              {user.status === "ACTIVE"
-                                ? "Active"
-                                : user.status === "DISABLED"
-                                  ? "Disabled"
-                                  : user.status || "Disabled"}
+                            <Badge tone={user.status === 'ACTIVE' ? undefined : 'danger'}>
+                              {user.status === 'ACTIVE'
+                                ? 'Active'
+                                : user.status === 'DISABLED'
+                                  ? 'Disabled'
+                                  : user.status || 'Disabled'}
                             </Badge>
                           </td>
 
@@ -420,32 +394,28 @@ export default function UsersRoles() {
 
                           <td className="px-5 py-2.5">
                             <RowActions
-                              recordName={user.name || user.email || "user"}
+                              recordName={user.name || user.email || 'user'}
                               primary={{
-                                label: "Change role",
+                                label: 'Change role',
                                 icon: ShieldCheck,
                                 onClick: () => handleChangeRole(user),
                                 disabled: userMutationLoading,
                               }}
                               items={[
                                 {
-                                  label: "Edit user",
+                                  label: 'Edit user',
                                   icon: Pencil,
                                   disabled: userMutationLoading,
                                   onSelect: () => handleEditUser(user),
                                 },
                                 {
-                                  label:
-                                    user.status === "ACTIVE"
-                                      ? "Disable user"
-                                      : "Enable user",
-                                  icon:
-                                    user.status === "ACTIVE" ? UserX : UserCheck,
+                                  label: user.status === 'ACTIVE' ? 'Disable user' : 'Enable user',
+                                  icon: user.status === 'ACTIVE' ? UserX : UserCheck,
                                   disabled: userMutationLoading,
                                   onSelect: () => handleToggleStatus(user),
                                 },
                                 {
-                                  label: "Delete user",
+                                  label: 'Delete user',
                                   icon: Trash2,
                                   destructive: true,
                                   separatorBefore: true,
@@ -468,8 +438,7 @@ export default function UsersRoles() {
               ROLES TAB
           ==================================================== */}
 
-          {activeTab === "roles" && <PermissionsWorkspace canManage={canManageRoles} />}
-
+          {activeTab === 'roles' && <PermissionsWorkspace canManage={canManageRoles} />}
         </Card>
       </div>
 
@@ -477,21 +446,13 @@ export default function UsersRoles() {
           ADD / EDIT USER MODAL
       ======================================================== */}
 
-      <AddUserModal
-        open={userModalOpen}
-        user={editingUser}
-        onClose={handleCloseUserModal}
-      />
+      <AddUserModal open={userModalOpen} user={editingUser} onClose={handleCloseUserModal} />
 
       {/* ========================================================
           UPDATE ROLE MODAL
       ======================================================== */}
 
-      <UpdateRoleModal
-        open={roleModalOpen}
-        user={roleEditingUser}
-        onClose={handleCloseRoleModal}
-      />
+      <UpdateRoleModal open={roleModalOpen} user={roleEditingUser} onClose={handleCloseRoleModal} />
     </>
   );
 }

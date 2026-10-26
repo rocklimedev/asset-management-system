@@ -1,19 +1,10 @@
-import { ArrowDownCircle, ArrowUpCircle, Boxes } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Boxes } from 'lucide-react';
 
-import {
-  useGetInventoryHistoryQuery,
-  type Asset,
-} from "../../services/api/asset.api";
+import { useGetInventoryHistoryQuery, type Asset } from '../../services/api/asset.api';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "../ui/dialog";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 // ============================================================
 // TYPES
@@ -32,15 +23,15 @@ interface InventoryHistoryModalProps {
 function formatChangeType(changeType: string) {
   return changeType
     .toLowerCase()
-    .split("_")
+    .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ');
 }
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle: 'medium',
+    timeStyle: 'short',
   });
 }
 
@@ -48,17 +39,13 @@ function formatDate(value: string) {
 // COMPONENT
 // ============================================================
 
-export function InventoryHistoryModal({
-  open,
-  asset,
-  onClose,
-}: InventoryHistoryModalProps) {
+export function InventoryHistoryModal({ open, asset, onClose }: InventoryHistoryModalProps) {
   const {
     data: entries = [],
     isLoading,
     isError,
     refetch,
-  } = useGetInventoryHistoryQuery(asset?.id ?? "", {
+  } = useGetInventoryHistoryQuery(asset?.id ?? '', {
     skip: !open || !asset,
   });
 
@@ -77,18 +64,16 @@ export function InventoryHistoryModal({
           <DialogDescription>
             {asset
               ? `Every stock change recorded for ${asset.name}.`
-              : "Every stock change recorded for this asset."}
+              : 'Every stock change recorded for this asset.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-96 space-y-2 overflow-y-auto">
           {isLoading ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Loading history…
-            </p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading history…</p>
           ) : isError ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              Could not load inventory history.{" "}
+              Could not load inventory history.{' '}
               <Button variant="outline" size="sm" onClick={refetch}>
                 Retry
               </Button>
@@ -103,10 +88,7 @@ export function InventoryHistoryModal({
               const isIncrease = entry.quantityDelta >= 0;
 
               return (
-                <div
-                  key={entry.id}
-                  className="flex items-start gap-3 rounded-lg border p-3"
-                >
+                <div key={entry.id} className="flex items-start gap-3 rounded-lg border p-3">
                   {isIncrease ? (
                     <ArrowUpCircle className="mt-0.5 h-5 w-5 shrink-0 text-success-strong" />
                   ) : (
@@ -115,30 +97,24 @@ export function InventoryHistoryModal({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">
-                        {formatChangeType(entry.changeType)}
-                      </Badge>
+                      <Badge variant="outline">{formatChangeType(entry.changeType)}</Badge>
                       <span
                         className={
-                          "text-sm font-medium tabular-nums " +
-                          (isIncrease
-                            ? "text-success-strong"
-                            : "text-destructive-strong")
+                          'text-sm font-medium tabular-nums ' +
+                          (isIncrease ? 'text-success-strong' : 'text-destructive-strong')
                         }
                       >
-                        {isIncrease ? "+" : ""}
+                        {isIncrease ? '+' : ''}
                         {entry.quantityDelta}
                       </span>
                     </div>
 
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Quantity after: {entry.quantityAfter} · Assigned after:{" "}
+                      Quantity after: {entry.quantityAfter} · Assigned after:{' '}
                       {entry.quantityAssignedAfter}
                     </p>
 
-                    {entry.reason && (
-                      <p className="mt-1 text-sm">{entry.reason}</p>
-                    )}
+                    {entry.reason && <p className="mt-1 text-sm">{entry.reason}</p>}
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatDate(entry.createdAt)} · {entry.performedBy}

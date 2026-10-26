@@ -1,8 +1,8 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 
-import { useGetSoftwareAssetsQuery } from "../../services/api/asset.api";
+import { useGetSoftwareAssetsQuery } from '../../services/api/asset.api';
 import {
   SOFTWARE_SUBSCRIPTION_OPTIONS,
   SOFTWARE_USAGE_OPTIONS,
@@ -12,16 +12,16 @@ import {
   type SoftwareRecord,
   type SoftwareSubscriptionType,
   type SoftwareUsage,
-} from "../../services/api/software.api";
-import { apiErrorMessage } from "../../types/systems";
+} from '../../services/api/software.api';
+import { apiErrorMessage } from '../../types/systems';
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { toast } from "../ui/toast";
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { toast } from '../ui/toast';
 
 const SELECT_CLASSES =
-  "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground";
-const LABEL_CLASSES = "mb-1 block text-xs font-medium text-muted-foreground";
+  'h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground';
+const LABEL_CLASSES = 'mb-1 block text-xs font-medium text-muted-foreground';
 
 interface FormValues {
   assetId: string;
@@ -36,15 +36,15 @@ interface FormValues {
 }
 
 const EMPTY: FormValues = {
-  assetId: "",
-  parentSoftwareId: "",
-  usage: "UNKNOWN",
-  subscriptionType: "UNKNOWN",
+  assetId: '',
+  parentSoftwareId: '',
+  usage: 'UNKNOWN',
+  subscriptionType: 'UNKNOWN',
   warrantyApplicable: false,
-  version: "",
-  edition: "",
-  publisher: "",
-  notes: "",
+  version: '',
+  edition: '',
+  publisher: '',
+  notes: '',
 };
 
 interface Props {
@@ -64,10 +64,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
     skip: !open || isEdit,
   });
 
-  const { data: catalog } = useGetSoftwareListQuery(
-    { limit: 200 },
-    { skip: !open },
-  );
+  const { data: catalog } = useGetSoftwareListQuery({ limit: 200 }, { skip: !open });
 
   const [createSoftware, createState] = useCreateSoftwareMutation();
   const [updateSoftware, updateState] = useUpdateSoftwareMutation();
@@ -81,14 +78,14 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
       software
         ? {
             assetId: software.assetId,
-            parentSoftwareId: software.parentSoftwareId ?? "",
+            parentSoftwareId: software.parentSoftwareId ?? '',
             usage: software.usage,
             subscriptionType: software.subscriptionType,
             warrantyApplicable: software.warrantyApplicable,
-            version: software.version ?? "",
-            edition: software.edition ?? "",
-            publisher: software.publisher ?? "",
-            notes: software.notes ?? "",
+            version: software.version ?? '',
+            edition: software.edition ?? '',
+            publisher: software.publisher ?? '',
+            notes: software.notes ?? '',
           }
         : { ...EMPTY },
     );
@@ -97,9 +94,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
   // Software assets that do not have catalog details yet
   const availableAssets = useMemo(() => {
     const used = new Set((catalog?.data ?? []).map((s) => s.assetId));
-    return (Array.isArray(softwareAssets) ? softwareAssets : []).filter(
-      (a) => !used.has(a.id),
-    );
+    return (Array.isArray(softwareAssets) ? softwareAssets : []).filter((a) => !used.has(a.id));
   }, [softwareAssets, catalog]);
 
   // Possible parents = every other catalogued software
@@ -119,7 +114,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
     event.preventDefault();
 
     if (!isEdit && !values.assetId) {
-      setError("Please select a software asset.");
+      setError('Please select a software asset.');
       return;
     }
 
@@ -139,10 +134,10 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
     try {
       if (isEdit && software) {
         await updateSoftware({ id: software.id, ...shared }).unwrap();
-        toast.add({ title: "Software updated", type: "success" });
+        toast.add({ title: 'Software updated', type: 'success' });
       } else {
         await createSoftware({ assetId: values.assetId, ...shared }).unwrap();
-        toast.add({ title: "Software added to catalog", type: "success" });
+        toast.add({ title: 'Software added to catalog', type: 'success' });
       }
 
       onClose();
@@ -154,7 +149,8 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
   if (!open) return null;
 
   return (
-    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
       onClose={onClose}
       label="Software details"
       disableClose={busy}
@@ -163,12 +159,12 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-foreground">
-              {isEdit ? "Edit software" : "Add software"}
+              {isEdit ? 'Edit software' : 'Add software'}
             </h2>
             <p className="text-xs text-muted-foreground">
               {isEdit
-                ? "Update catalog details for this software."
-                : "Add catalog details to an existing software asset."}
+                ? 'Update catalog details for this software.'
+                : 'Add catalog details to an existing software asset.'}
             </p>
           </div>
 
@@ -189,11 +185,11 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Software asset *</label>
 
               {isEdit ? (
-                <Input value={software?.asset?.name ?? ""} disabled />
+                <Input value={software?.asset?.name ?? ''} disabled />
               ) : (
                 <select
                   value={values.assetId}
-                  onChange={(e) => setField("assetId", e.target.value)}
+                  onChange={(e) => setField('assetId', e.target.value)}
                   disabled={busy}
                   className={SELECT_CLASSES}
                 >
@@ -201,7 +197,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
                   {availableAssets.map((asset) => (
                     <option key={asset.id} value={asset.id}>
                       {asset.name}
-                      {asset.assetTag ? ` (${asset.assetTag})` : ""}
+                      {asset.assetTag ? ` (${asset.assetTag})` : ''}
                     </option>
                   ))}
                 </select>
@@ -209,20 +205,18 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
 
               {!isEdit && availableAssets.length === 0 ? (
                 <p className="mt-1 text-[10px] text-muted-foreground">
-                  Every software asset already has catalog details. Create a new
-                  asset with kind &quot;Software&quot; first.
+                  Every software asset already has catalog details. Create a new asset with kind
+                  &quot;Software&quot; first.
                 </p>
               ) : null}
             </div>
 
             {/* PARENT */}
             <div className="sm:col-span-2">
-              <label className={LABEL_CLASSES}>
-                Parent software (suite / product family)
-              </label>
+              <label className={LABEL_CLASSES}>Parent software (suite / product family)</label>
               <select
                 value={values.parentSoftwareId}
-                onChange={(e) => setField("parentSoftwareId", e.target.value)}
+                onChange={(e) => setField('parentSoftwareId', e.target.value)}
                 disabled={busy}
                 className={SELECT_CLASSES}
               >
@@ -240,9 +234,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Usage</label>
               <select
                 value={values.usage}
-                onChange={(e) =>
-                  setField("usage", e.target.value as SoftwareUsage)
-                }
+                onChange={(e) => setField('usage', e.target.value as SoftwareUsage)}
                 disabled={busy}
                 className={SELECT_CLASSES}
               >
@@ -260,10 +252,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <select
                 value={values.subscriptionType}
                 onChange={(e) =>
-                  setField(
-                    "subscriptionType",
-                    e.target.value as SoftwareSubscriptionType,
-                  )
+                  setField('subscriptionType', e.target.value as SoftwareSubscriptionType)
                 }
                 disabled={busy}
                 className={SELECT_CLASSES}
@@ -280,7 +269,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Version</label>
               <Input
                 value={values.version}
-                onChange={(e) => setField("version", e.target.value)}
+                onChange={(e) => setField('version', e.target.value)}
                 placeholder="e.g. 2024"
                 disabled={busy}
               />
@@ -290,7 +279,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Edition</label>
               <Input
                 value={values.edition}
-                onChange={(e) => setField("edition", e.target.value)}
+                onChange={(e) => setField('edition', e.target.value)}
                 placeholder="e.g. Professional"
                 disabled={busy}
               />
@@ -300,7 +289,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Publisher</label>
               <Input
                 value={values.publisher}
-                onChange={(e) => setField("publisher", e.target.value)}
+                onChange={(e) => setField('publisher', e.target.value)}
                 placeholder="e.g. Adobe"
                 disabled={busy}
               />
@@ -310,9 +299,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <input
                 type="checkbox"
                 checked={values.warrantyApplicable}
-                onChange={(e) =>
-                  setField("warrantyApplicable", e.target.checked)
-                }
+                onChange={(e) => setField('warrantyApplicable', e.target.checked)}
                 disabled={busy}
               />
               Vendor warranty / support applies
@@ -322,7 +309,7 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
               <label className={LABEL_CLASSES}>Notes</label>
               <textarea
                 value={values.notes}
-                onChange={(e) => setField("notes", e.target.value)}
+                onChange={(e) => setField('notes', e.target.value)}
                 disabled={busy}
                 rows={3}
                 className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted"
@@ -337,16 +324,11 @@ export function SoftwareFormModal({ open, onClose, software }: Props) {
           ) : null}
 
           <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={busy}
-            >
+            <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving..." : isEdit ? "Save changes" : "Add software"}
+              {busy ? 'Saving...' : isEdit ? 'Save changes' : 'Add software'}
             </Button>
           </div>
         </form>

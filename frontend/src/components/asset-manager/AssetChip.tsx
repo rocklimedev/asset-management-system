@@ -1,5 +1,5 @@
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Laptop,
   Monitor,
@@ -13,13 +13,13 @@ import {
   AppWindow,
   GripVertical,
   Undo2,
-} from "lucide-react";
-import { clsx } from "clsx";
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
-import type { Asset } from "../../types";
+import type { Asset } from '../../types';
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Laptop,
@@ -34,8 +34,8 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 function iconFor(asset: Asset) {
-  if (asset.kind === "SOFTWARE") return AppWindow;
-  return ICONS[asset.category?.name ?? ""] ?? Laptop;
+  if (asset.kind === 'SOFTWARE') return AppWindow;
+  return ICONS[asset.category?.name ?? ''] ?? Laptop;
 }
 
 export function AssetChip({
@@ -58,15 +58,15 @@ export function AssetChip({
   });
 
   const Icon = iconFor(asset);
-  const canUnassign = asset.status === "ASSIGNED" && Boolean(onUnassign);
+  const canUnassign = asset.status === 'ASSIGNED' && Boolean(onUnassign);
 
   return (
     <Card
       ref={setNodeRef}
       className={clsx(
-        "group flex flex-row items-center gap-2 rounded-lg border bg-muted/30 px-2.5 py-2",
-        "transition-shadow hover:shadow-sm",
-        isDragging && "opacity-40",
+        'group flex flex-row items-center gap-2 rounded-lg border bg-muted/30 px-2.5 py-2',
+        'transition-shadow hover:shadow-sm',
+        isDragging && 'opacity-40',
       )}
     >
       {/* Native handle — do not use shadcn Button here */}
@@ -74,16 +74,14 @@ export function AssetChip({
         type="button"
         {...(transferrable ? { ...listeners, ...attributes } : {})}
         aria-label={
-          transferrable
-            ? `Drag ${asset.name} to transfer`
-            : `${asset.name} cannot be transferred`
+          transferrable ? `Drag ${asset.name} to transfer` : `${asset.name} cannot be transferred`
         }
         disabled={!transferrable}
         className={clsx(
-          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground",
+          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground',
           transferrable
-            ? "cursor-grab touch-none hover:bg-muted hover:text-foreground active:cursor-grabbing"
-            : "cursor-not-allowed opacity-50",
+            ? 'cursor-grab touch-none hover:bg-muted hover:text-foreground active:cursor-grabbing'
+            : 'cursor-not-allowed opacity-50',
         )}
       >
         <GripVertical className="h-3.5 w-3.5" />
@@ -99,9 +97,7 @@ export function AssetChip({
         className="h-auto min-w-0 flex-1 justify-start px-1.5 py-1 text-left"
       >
         <div className="min-w-0 w-full">
-          <p className="truncate text-xs font-medium text-foreground">
-            {asset.name}
-          </p>
+          <p className="truncate text-xs font-medium text-foreground">{asset.name}</p>
           <p className="truncate text-[11px] text-muted-foreground tabular-nums">
             {asset.assetTag}
           </p>

@@ -1,37 +1,25 @@
-import { useEffect, useState } from "react";
-import { PackagePlus } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { PackagePlus } from 'lucide-react';
 
 import {
   useAdjustInventoryMutation,
   type Asset,
   type AdjustInventoryRequest,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "../ui/dialog";
-import { toast } from "../ui/toast";
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { toast } from '../ui/toast';
 
 // ============================================================
 // TYPES
 // ============================================================
 
-type ChangeType = AdjustInventoryRequest["changeType"];
+type ChangeType = AdjustInventoryRequest['changeType'];
 
 interface UpdateInventoryModalProps {
   open: boolean;
@@ -44,20 +32,20 @@ interface UpdateInventoryModalProps {
 // ============================================================
 
 const CHANGE_TYPES: { value: ChangeType; label: string }[] = [
-  { value: "RESTOCK", label: "Restock (add stock)" },
-  { value: "RETURNED", label: "Returned (add stock)" },
-  { value: "CONSUMED", label: "Consumed (remove stock)" },
-  { value: "WRITE_OFF", label: "Write-off (remove stock)" },
-  { value: "ADJUSTMENT", label: "Manual adjustment" },
+  { value: 'RESTOCK', label: 'Restock (add stock)' },
+  { value: 'RETURNED', label: 'Returned (add stock)' },
+  { value: 'CONSUMED', label: 'Consumed (remove stock)' },
+  { value: 'WRITE_OFF', label: 'Write-off (remove stock)' },
+  { value: 'ADJUSTMENT', label: 'Manual adjustment' },
 ];
 
 // A change type either always adds stock, always removes it, or (for a
 // manual ADJUSTMENT) lets the person pick the direction themselves.
-const DEFAULT_DIRECTION: Record<ChangeType, "increase" | "decrease" | null> = {
-  RESTOCK: "increase",
-  RETURNED: "increase",
-  CONSUMED: "decrease",
-  WRITE_OFF: "decrease",
+const DEFAULT_DIRECTION: Record<ChangeType, 'increase' | 'decrease' | null> = {
+  RESTOCK: 'increase',
+  RETURNED: 'increase',
+  CONSUMED: 'decrease',
+  WRITE_OFF: 'decrease',
   ADJUSTMENT: null,
 };
 
@@ -66,11 +54,10 @@ const DEFAULT_DIRECTION: Record<ChangeType, "increase" | "decrease" | null> = {
 // ============================================================
 
 function errorMessage(error: unknown, fallback: string): string {
-  const value = (error as { data?: { message?: string | string[] } })?.data
-    ?.message;
+  const value = (error as { data?: { message?: string | string[] } })?.data?.message;
 
   if (Array.isArray(value)) {
-    return value.join(". ");
+    return value.join('. ');
   }
 
   return value ?? fallback;
@@ -80,17 +67,11 @@ function errorMessage(error: unknown, fallback: string): string {
 // COMPONENT
 // ============================================================
 
-export function UpdateInventoryModal({
-  open,
-  asset,
-  onClose,
-}: UpdateInventoryModalProps) {
-  const [changeType, setChangeType] = useState<ChangeType>("RESTOCK");
-  const [quantity, setQuantity] = useState("1");
-  const [direction, setDirection] = useState<"increase" | "decrease">(
-    "increase",
-  );
-  const [reason, setReason] = useState("");
+export function UpdateInventoryModal({ open, asset, onClose }: UpdateInventoryModalProps) {
+  const [changeType, setChangeType] = useState<ChangeType>('RESTOCK');
+  const [quantity, setQuantity] = useState('1');
+  const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
+  const [reason, setReason] = useState('');
 
   const [adjustInventory, { isLoading }] = useAdjustInventoryMutation();
 
@@ -100,10 +81,10 @@ export function UpdateInventoryModal({
 
   useEffect(() => {
     if (open) {
-      setChangeType("RESTOCK");
-      setQuantity("1");
-      setDirection("increase");
-      setReason("");
+      setChangeType('RESTOCK');
+      setQuantity('1');
+      setDirection('increase');
+      setReason('');
     }
   }, [open, asset?.id]);
 
@@ -122,9 +103,7 @@ export function UpdateInventoryModal({
 
   // Prevent a decrease from taking available stock negative.
   const wouldGoNegative =
-    effectiveDirection === "decrease" &&
-    isValidQuantity &&
-    parsedQuantity > currentAvailable;
+    effectiveDirection === 'decrease' && isValidQuantity && parsedQuantity > currentAvailable;
 
   function handleClose() {
     if (!isLoading) {
@@ -149,20 +128,17 @@ export function UpdateInventoryModal({
       }).unwrap();
 
       toast.add({
-        type: "success",
-        title: "Inventory updated",
+        type: 'success',
+        title: 'Inventory updated',
         description: `${asset.name} stock was adjusted.`,
       });
 
       onClose();
     } catch (error) {
       toast.add({
-        type: "error",
-        title: "Could not update inventory",
-        description: errorMessage(
-          error,
-          "The inventory adjustment failed. Please try again.",
-        ),
+        type: 'error',
+        title: 'Could not update inventory',
+        description: errorMessage(error, 'The inventory adjustment failed. Please try again.'),
       });
     }
   }
@@ -179,9 +155,7 @@ export function UpdateInventoryModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Update inventory</DialogTitle>
-          <DialogDescription>
-            Adjust the stock on hand for {asset.name}.
-          </DialogDescription>
+          <DialogDescription>Adjust the stock on hand for {asset.name}.</DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg border bg-muted/30 p-3 text-sm">
@@ -219,14 +193,12 @@ export function UpdateInventoryModal({
             </Select>
           </div>
 
-          {changeType === "ADJUSTMENT" && (
+          {changeType === 'ADJUSTMENT' && (
             <div>
               <Label htmlFor="inventory-direction">Direction</Label>
               <Select
                 value={direction}
-                onValueChange={(value) =>
-                  setDirection(value as "increase" | "decrease")
-                }
+                onValueChange={(value) => setDirection(value as 'increase' | 'decrease')}
               >
                 <SelectTrigger id="inventory-direction">
                   <SelectValue />
@@ -253,7 +225,7 @@ export function UpdateInventoryModal({
             {wouldGoNegative && (
               <p className="mt-1 text-xs text-destructive">
                 Only {currentAvailable} unit
-                {currentAvailable === 1 ? "" : "s"} available to remove.
+                {currentAvailable === 1 ? '' : 's'} available to remove.
               </p>
             )}
           </div>
@@ -275,7 +247,7 @@ export function UpdateInventoryModal({
             disabled={isLoading || !isValidQuantity || wouldGoNegative}
           >
             <PackagePlus className="mr-2 h-4 w-4" />
-            {isLoading ? "Saving…" : "Save adjustment"}
+            {isLoading ? 'Saving…' : 'Save adjustment'}
           </Button>
         </form>
       </DialogContent>

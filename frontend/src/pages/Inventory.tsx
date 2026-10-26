@@ -1,6 +1,6 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -15,7 +15,7 @@ import {
   History,
   Trash2,
   Loader2,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   useGetAssetsQuery,
@@ -28,10 +28,10 @@ import {
   type AssetKind,
   type AssetStatus,
   type SystemRecord,
-} from "../services/api/asset.api";
+} from '../services/api/asset.api';
 
-import { Input } from "@/components/ui/input";
-import { Badge } from "../components/ui/badge";
+import { Input } from '@/components/ui/input';
+import { Badge } from '../components/ui/badge';
 
 import {
   Select,
@@ -39,9 +39,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select';
 
-import { Button } from "../components/ui/button";
+import { Button } from '../components/ui/button';
 
 import {
   DropdownMenu,
@@ -49,33 +49,33 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
+} from '../components/ui/dropdown-menu';
 
-import { EmptyState, SkeletonCard } from "../components/ui/EmptyState";
-import { QuickAddAsset } from "../components/quick/QuickAddAsset";
+import { EmptyState, SkeletonCard } from '../components/ui/EmptyState';
+import { QuickAddAsset } from '../components/quick/QuickAddAsset';
 
-import { AssetDetailDrawer } from "../components/asset-manager/AssetDetailDrawer";
-import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
-import { AssetHistoryModal } from "../components/asset-manager/AssetHistoryModal";
-import { UpdateInventoryModal } from "../components/asset-manager/UpdateInventoryModal";
-import { InventoryHistoryModal } from "../components/asset-manager/InventoryHistoryModal";
+import { AssetDetailDrawer } from '../components/asset-manager/AssetDetailDrawer';
+import { CreateAssetModal } from '../components/asset-manager/CreateAssetModal';
+import { AssetHistoryModal } from '../components/asset-manager/AssetHistoryModal';
+import { UpdateInventoryModal } from '../components/asset-manager/UpdateInventoryModal';
+import { InventoryHistoryModal } from '../components/asset-manager/InventoryHistoryModal';
 
-import { toast } from "../components/ui/toast";
-import { useConfirm } from "../components/ui/confirm-dialog";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { toast } from '../components/ui/toast';
+import { useConfirm } from '../components/ui/confirm-dialog';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // ============================================================
 // CONSTANTS
 // ============================================================
 
 const STATUS_OPTIONS = [
-  "AVAILABLE",
-  "ASSIGNED",
-  "REPAIR",
-  "LOST",
-  "DAMAGED",
-  "RETIRED",
-  "DISPOSED",
+  'AVAILABLE',
+  'ASSIGNED',
+  'REPAIR',
+  'LOST',
+  'DAMAGED',
+  'RETIRED',
+  'DISPOSED',
 ] as const;
 
 const COLUMNS: {
@@ -84,35 +84,35 @@ const COLUMNS: {
   sortable?: boolean;
 }[] = [
   {
-    key: "image",
-    label: "",
+    key: 'image',
+    label: '',
   },
   {
-    key: "name",
-    label: "Item",
+    key: 'name',
+    label: 'Item',
     sortable: true,
   },
   {
-    key: "category",
-    label: "Category",
+    key: 'category',
+    label: 'Category',
   },
   {
-    key: "quantity",
-    label: "In stock",
+    key: 'quantity',
+    label: 'In stock',
     sortable: true,
   },
   {
-    key: "assignedTo",
-    label: "Held by",
+    key: 'assignedTo',
+    label: 'Held by',
   },
   {
-    key: "status",
-    label: "Status",
+    key: 'status',
+    label: 'Status',
     sortable: true,
   },
   {
-    key: "condition",
-    label: "Condition",
+    key: 'condition',
+    label: 'Condition',
   },
 ];
 
@@ -122,52 +122,50 @@ const COLUMNS: {
 
 // Plain words people use day to day, instead of database values.
 const PLAIN_STATUS: Record<string, string> = {
-  AVAILABLE: "In stock",
-  ASSIGNED: "With someone",
-  REPAIR: "In repair",
-  LOST: "Lost",
-  DAMAGED: "Damaged",
-  RETIRED: "Retired",
-  DISPOSED: "Disposed",
+  AVAILABLE: 'In stock',
+  ASSIGNED: 'With someone',
+  REPAIR: 'In repair',
+  LOST: 'Lost',
+  DAMAGED: 'Damaged',
+  RETIRED: 'Retired',
+  DISPOSED: 'Disposed',
 };
 
 function formatStatus(status: string) {
-  return (
-    PLAIN_STATUS[status] ?? status.charAt(0) + status.slice(1).toLowerCase()
-  );
+  return PLAIN_STATUS[status] ?? status.charAt(0) + status.slice(1).toLowerCase();
 }
 
 // The most common views sit as one-tap chips. Rare statuses go in a dropdown.
 const STATUS_CHIPS: { value: string; label: string }[] = [
-  { value: "", label: "All" },
-  { value: "AVAILABLE", label: "In stock" },
-  { value: "ASSIGNED", label: "With someone" },
-  { value: "REPAIR", label: "In repair" },
+  { value: '', label: 'All' },
+  { value: 'AVAILABLE', label: 'In stock' },
+  { value: 'ASSIGNED', label: 'With someone' },
+  { value: 'REPAIR', label: 'In repair' },
 ];
 
-const OTHER_STATUSES = ["LOST", "DAMAGED", "RETIRED", "DISPOSED"] as const;
+const OTHER_STATUSES = ['LOST', 'DAMAGED', 'RETIRED', 'DISPOSED'] as const;
 
 function getStatusBadgeVariant(
   status: AssetStatus,
-): "default" | "secondary" | "destructive" | "outline" | "ghost" | "link" {
+): 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link' {
   switch (status) {
-    case "AVAILABLE":
-      return "default";
+    case 'AVAILABLE':
+      return 'default';
 
-    case "ASSIGNED":
-      return "secondary";
+    case 'ASSIGNED':
+      return 'secondary';
 
-    case "REPAIR":
-    case "LOST":
-    case "DAMAGED":
-      return "destructive";
+    case 'REPAIR':
+    case 'LOST':
+    case 'DAMAGED':
+      return 'destructive';
 
-    case "RETIRED":
-    case "DISPOSED":
-      return "outline";
+    case 'RETIRED':
+    case 'DISPOSED':
+      return 'outline';
 
     default:
-      return "secondary";
+      return 'secondary';
   }
 }
 
@@ -177,52 +175,53 @@ function getStatusBadgeVariant(
 
 export default function Inventory() {
   const confirm = useConfirm();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   // Dashboard links open this list already filtered, e.g.
   // /inventory?status=REPAIR. Unknown values are ignored.
-  const [status, setStatus] = useState<AssetStatus | "">(() => {
-    const value = new URLSearchParams(window.location.search).get("status");
+  const [status, setStatus] = useState<AssetStatus | ''>(() => {
+    const value = new URLSearchParams(window.location.search).get('status');
 
-    return STATUS_OPTIONS.includes(value as AssetStatus)
-      ? (value as AssetStatus)
-      : "";
+    return STATUS_OPTIONS.includes(value as AssetStatus) ? (value as AssetStatus) : '';
   });
 
-  const [kind, setKind] = useState<AssetKind | "">(() => {
-    const value = new URLSearchParams(window.location.search).get("kind");
+  const [kind, setKind] = useState<AssetKind | ''>(() => {
+    const value = new URLSearchParams(window.location.search).get('kind');
 
-    return value === "HARDWARE" || value === "SOFTWARE" ? value : "";
+    return value === 'HARDWARE' || value === 'SOFTWARE' ? value : '';
   });
 
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
 
-  const [sortBy, setSortBy] = useState("assetTag");
+  const [sortBy, setSortBy] = useState('assetTag');
 
-  const [sortDir, setSortDir] = useState<"ASC" | "DESC">("ASC");
+  const [sortDir, setSortDir] = useState<'ASC' | 'DESC'>('ASC');
 
   const [params, setParams] = useSearchParams();
-  const pageParam = params.get("page");
+  const pageParam = params.get('page');
   const requestedPage = Number(pageParam);
-  const page = pageParam && /^\d+$/.test(pageParam) &&
-    Number.isSafeInteger(requestedPage) && requestedPage > 0
-    ? requestedPage
-    : 1;
+  const page =
+    pageParam && /^\d+$/.test(pageParam) && Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
 
   useEffect(() => {
     if (pageParam === String(page)) return;
-    setParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("page", String(page));
-      return next;
-    }, { replace: true });
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set('page', String(page));
+        return next;
+      },
+      { replace: true },
+    );
   }, [pageParam, page, setParams]);
 
   function setPage(nextPage: number) {
     setParams((current) => {
       const next = new URLSearchParams(current);
-      next.set("page", String(nextPage));
+      next.set('page', String(nextPage));
       return next;
     });
   }
@@ -234,8 +233,8 @@ export default function Inventory() {
   // once, so search results can jump straight to the record.
   // ============================================================
 
-  const deepLinkAssetId = params.get("assetId");
-  const { data: deepLinkAssetResponse } = useGetAssetQuery(deepLinkAssetId ?? "", {
+  const deepLinkAssetId = params.get('assetId');
+  const { data: deepLinkAssetResponse } = useGetAssetQuery(deepLinkAssetId ?? '', {
     skip: !deepLinkAssetId,
   });
   const handledDeepLinkRef = useRef<string | null>(null);
@@ -259,7 +258,7 @@ export default function Inventory() {
 
   const [assignToSystemModal, setAssignToSystemModal] = useState(false);
 
-  const [selectedSystemId, setSelectedSystemId] = useState("");
+  const [selectedSystemId, setSelectedSystemId] = useState('');
 
   // ============================================================
   // ASSET MODAL
@@ -317,16 +316,16 @@ export default function Inventory() {
 
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
-  const { data: systemsData, isLoading: isSystemsLoading } =
-    useGetSystemsQuery();
+  const { data: systemsData, isLoading: isSystemsLoading } = useGetSystemsQuery();
 
   const systems: SystemRecord[] = systemsData ?? [];
   // ============================================================
   // CATEGORIES
   // ============================================================
 
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useGetAssetCategoriesQuery({ isActive: true });
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAssetCategoriesQuery({
+    isActive: true,
+  });
 
   const categories = categoriesData ?? [];
   // ============================================================
@@ -403,8 +402,7 @@ export default function Inventory() {
   function toggleSelectAllOnPage() {
     const assignableOnPage = items.filter(isAssignable);
     const allSelected =
-      assignableOnPage.length > 0 &&
-      assignableOnPage.every((a) => selectedIds.has(a.id));
+      assignableOnPage.length > 0 && assignableOnPage.every((a) => selectedIds.has(a.id));
 
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -435,23 +433,23 @@ export default function Inventory() {
 
     if (success > 0) {
       toast.add({
-        type: "success",
-        title: "Assets assigned",
+        type: 'success',
+        title: 'Assets assigned',
         description: `${success} asset(s) assigned to system successfully.`,
       });
     }
 
     if (failed > 0) {
       toast.add({
-        type: "error",
-        title: "Some assignments failed",
+        type: 'error',
+        title: 'Some assignments failed',
         description: `${failed} asset(s) could not be assigned.`,
       });
     }
 
     clearSelection();
     setAssignToSystemModal(false);
-    setSelectedSystemId("");
+    setSelectedSystemId('');
   }
 
   // ============================================================
@@ -460,10 +458,10 @@ export default function Inventory() {
 
   function toggleSort(key: string) {
     if (sortBy === key) {
-      setSortDir((current) => (current === "ASC" ? "DESC" : "ASC"));
+      setSortDir((current) => (current === 'ASC' ? 'DESC' : 'ASC'));
     } else {
       setSortBy(key);
-      setSortDir("ASC");
+      setSortDir('ASC');
     }
 
     setPage(1);
@@ -481,19 +479,19 @@ export default function Inventory() {
   }
 
   function handleKindChange(value: string) {
-    setKind(value === "all" ? "" : (value as AssetKind));
+    setKind(value === 'all' ? '' : (value as AssetKind));
     setPage(1);
     clearSelection();
   }
 
   function handleStatusChange(value: string) {
-    setStatus(value === "all" ? "" : (value as AssetStatus));
+    setStatus(value === 'all' ? '' : (value as AssetStatus));
     setPage(1);
     clearSelection();
   }
 
   function handleCategoryChange(value: string) {
-    setCategoryId(value === "all" ? "" : value);
+    setCategoryId(value === 'all' ? '' : value);
     setPage(1);
     clearSelection();
   }
@@ -661,10 +659,10 @@ export default function Inventory() {
     const confirmed = await confirm({
       title: `Delete ${asset.name}?`,
       description: `${asset.name}${
-        asset.assetTag ? ` (${asset.assetTag})` : ""
+        asset.assetTag ? ` (${asset.assetTag})` : ''
       } will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete asset",
-      tone: "danger",
+      confirmLabel: 'Delete asset',
+      tone: 'danger',
     });
 
     if (!confirmed) {
@@ -713,17 +711,17 @@ export default function Inventory() {
       });
 
       toast.add({
-        type: "success",
-        title: "Asset deleted",
+        type: 'success',
+        title: 'Asset deleted',
         description: `${asset.name} was deleted successfully.`,
       });
     } catch (error) {
-      console.error("Failed to delete asset:", error);
+      console.error('Failed to delete asset:', error);
 
       toast.add({
-        type: "error",
-        title: "Unable to delete asset",
-        description: "The asset could not be deleted. Please try again.",
+        type: 'error',
+        title: 'Unable to delete asset',
+        description: 'The asset could not be deleted. Please try again.',
       });
     }
   }
@@ -734,10 +732,9 @@ export default function Inventory() {
 
   function handleTransferFromDrawer() {
     toast.add({
-      type: "info",
-      title: "Transfer from Asset Manager",
-      description:
-        "Transfers happen from Asset Manager — open the employee's card there.",
+      type: 'info',
+      title: 'Transfer from Asset Manager',
+      description: "Transfers happen from Asset Manager — open the employee's card there.",
     });
   }
 
@@ -747,8 +744,7 @@ export default function Inventory() {
 
   const assignableOnPage = items.filter(isAssignable);
   const allAssignableSelected =
-    assignableOnPage.length > 0 &&
-    assignableOnPage.every((a) => selectedIds.has(a.id));
+    assignableOnPage.length > 0 && assignableOnPage.every((a) => selectedIds.has(a.id));
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
@@ -801,7 +797,7 @@ export default function Inventory() {
           </div>
 
           <div className="flex gap-2">
-            <Select value={kind || "all"} onValueChange={handleKindChange}>
+            <Select value={kind || 'all'} onValueChange={handleKindChange}>
               <SelectTrigger className="w-full sm:w-36" aria-label="Filter by type">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
@@ -813,14 +809,12 @@ export default function Inventory() {
             </Select>
 
             <Select
-              value={categoryId || "all"}
+              value={categoryId || 'all'}
               onValueChange={handleCategoryChange}
               disabled={isCategoriesLoading}
             >
               <SelectTrigger className="w-full sm:w-44" aria-label="Filter by category">
-                <SelectValue
-                  placeholder={isCategoriesLoading ? "Loading…" : "All categories"}
-                />
+                <SelectValue placeholder={isCategoriesLoading ? 'Loading…' : 'All categories'} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
@@ -834,7 +828,11 @@ export default function Inventory() {
           </div>
         </div>
 
-        <div role="group" aria-label="Filter by status" className="flex flex-wrap items-center gap-2">
+        <div
+          role="group"
+          aria-label="Filter by status"
+          className="flex flex-wrap items-center gap-2"
+        >
           {STATUS_CHIPS.map((chip) => {
             const active = status === chip.value;
             return (
@@ -842,12 +840,12 @@ export default function Inventory() {
                 key={chip.label}
                 type="button"
                 aria-pressed={active}
-                onClick={() => handleStatusChange(chip.value || "all")}
+                onClick={() => handleStatusChange(chip.value || 'all')}
                 className={
-                  "rounded-full px-3.5 py-1.5 text-sm font-medium outline-none transition-[box-shadow,background-color,color] focus-visible:ring-2 focus-visible:ring-ring " +
+                  'rounded-full px-3.5 py-1.5 text-sm font-medium outline-none transition-[box-shadow,background-color,color] focus-visible:ring-2 focus-visible:ring-ring ' +
                   (active
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-foreground shadow-card hover:shadow-card")
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card text-foreground shadow-card hover:shadow-card')
                 }
               >
                 {chip.label}
@@ -857,8 +855,8 @@ export default function Inventory() {
 
           <select
             aria-label="Other statuses"
-            value={(OTHER_STATUSES as readonly string[]).includes(status) ? status : ""}
-            onChange={(event) => handleStatusChange(event.target.value || "all")}
+            value={(OTHER_STATUSES as readonly string[]).includes(status) ? status : ''}
+            onChange={(event) => handleStatusChange(event.target.value || 'all')}
             className="h-9 rounded-full border border-input bg-card px-3 text-sm text-foreground shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">More statuses…</option>
@@ -889,15 +887,11 @@ export default function Inventory() {
       ) : items.length === 0 ? (
         <div className="space-y-4">
           <EmptyState
-            title={
-              search || status || kind || categoryId
-                ? "No matches"
-                : "No equipment yet"
-            }
+            title={search || status || kind || categoryId ? 'No matches' : 'No equipment yet'}
             description={
               search || status || kind || categoryId
-                ? "Nothing matches these filters. Clear a filter or try another word."
-                : "Add your first laptop, phone or licence to start tracking it."
+                ? 'Nothing matches these filters. Clear a filter or try another word.'
+                : 'Add your first laptop, phone or licence to start tracking it.'
             }
           />
           {!(search || status || kind || categoryId) && (
@@ -919,19 +913,15 @@ export default function Inventory() {
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
               <span className="text-sm text-foreground">
                 {selectedIds.size} asset
-                {selectedIds.size === 1 ? "" : "s"} selected
+                {selectedIds.size === 1 ? '' : 's'} selected
                 <span className="text-muted-foreground">
-                  {" "}
+                  {' '}
                   (only items in stock can be given out)
                 </span>
               </span>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setAssignToSystemModal(true)}
-                >
+                <Button variant="secondary" size="sm" onClick={() => setAssignToSystemModal(true)}>
                   Add to a computer
                 </Button>
 
@@ -968,10 +958,7 @@ export default function Inventory() {
                   </th>
 
                   {COLUMNS.map((column) => (
-                    <th
-                      key={column.key}
-                      className="whitespace-nowrap px-4 py-2.5 font-medium"
-                    >
+                    <th key={column.key} className="whitespace-nowrap px-4 py-2.5 font-medium">
                       {column.sortable ? (
                         <button
                           type="button"
@@ -988,9 +975,7 @@ export default function Inventory() {
                     </th>
                   ))}
 
-                  <th className="w-[56px] px-4 py-2.5 text-right font-medium">
-                    Actions
-                  </th>
+                  <th className="w-[56px] px-4 py-2.5 text-right font-medium">Actions</th>
                 </tr>
               </thead>
 
@@ -1014,10 +999,7 @@ export default function Inventory() {
                     >
                       {/* Checkbox */}
 
-                      <td
-                        className="px-3 py-2.5"
-                        onClick={(event) => event.stopPropagation()}
-                      >
+                      <td className="px-3 py-2.5" onClick={(event) => event.stopPropagation()}>
                         <input
                           type="checkbox"
                           className="h-4 w-4 rounded border-border disabled:cursor-not-allowed disabled:opacity-40"
@@ -1053,7 +1035,7 @@ export default function Inventory() {
                       {/* Category */}
 
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
-                        {asset.category?.name ?? "—"}
+                        {asset.category?.name ?? '—'}
                       </td>
 
                       {/* Quantity */}
@@ -1062,15 +1044,11 @@ export default function Inventory() {
                         {quantity > 1 ? (
                           <span
                             className={
-                              "inline-flex items-center gap-1 tabular-nums " +
-                              (lowStock
-                                ? "font-medium text-warning-strong"
-                                : "")
+                              'inline-flex items-center gap-1 tabular-nums ' +
+                              (lowStock ? 'font-medium text-warning-strong' : '')
                             }
                           >
-                            {lowStock && (
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                            )}
+                            {lowStock && <AlertTriangle className="h-3.5 w-3.5" />}
                             {available} of {quantity} in stock
                           </span>
                         ) : (
@@ -1084,8 +1062,8 @@ export default function Inventory() {
 
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
                         {asset.assignments?.[0]?.system
-                          ? `System: ${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? "Unassigned"}`
-                          : (assignee?.name ?? (asset.status === "AVAILABLE" ? "In stock" : "—"))}
+                          ? `System: ${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? 'Unassigned'}`
+                          : (assignee?.name ?? (asset.status === 'AVAILABLE' ? 'In stock' : '—'))}
                       </td>
 
                       {/* Status */}
@@ -1128,39 +1106,29 @@ export default function Inventory() {
                           </DropdownMenuTrigger>
 
                           <DropdownMenuContent align="end" className="w-52">
-                            <DropdownMenuItem
-                              onClick={() => openViewAsset(asset)}
-                            >
+                            <DropdownMenuItem onClick={() => openViewAsset(asset)}>
                               <Eye className="mr-2 h-4 w-4" />
                               View
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                              onClick={() => openEditAsset(asset)}
-                            >
+                            <DropdownMenuItem onClick={() => openEditAsset(asset)}>
                               <Pencil className="mr-2 h-4 w-4" />
                               Update
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                              onClick={() => openHistory(asset)}
-                            >
+                            <DropdownMenuItem onClick={() => openHistory(asset)}>
                               <History className="mr-2 h-4 w-4" />
                               View History
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem
-                              onClick={() => openUpdateInventory(asset)}
-                            >
+                            <DropdownMenuItem onClick={() => openUpdateInventory(asset)}>
                               <PackagePlus className="mr-2 h-4 w-4" />
                               Adjust inventory
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                              onClick={() => openInventoryHistory(asset)}
-                            >
+                            <DropdownMenuItem onClick={() => openInventoryHistory(asset)}>
                               <Boxes className="mr-2 h-4 w-4" />
                               Inventory history
                             </DropdownMenuItem>
@@ -1191,7 +1159,7 @@ export default function Inventory() {
 
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              Showing {total === 0 ? 0 : (page - 1) * pageSize + 1} -{" "}
+              Showing {total === 0 ? 0 : (page - 1) * pageSize + 1} -{' '}
               {Math.min(page * pageSize, total)} of {total} assets
             </span>
 
@@ -1280,14 +1248,15 @@ export default function Inventory() {
       ====================================================== */}
 
       {assignToSystemModal && (
-        <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
-      onClose={() => setAssignToSystemModal(false)}
-      label="Assign assets to a system"
-    >
+        <OverlayRoot
+          className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
+          onClose={() => setAssignToSystemModal(false)}
+          label="Assign assets to a system"
+        >
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-lg">
             <h2 className="text-base font-semibold text-foreground">
               Assign {selectedIds.size} asset
-              {selectedIds.size === 1 ? "" : "s"} to a system
+              {selectedIds.size === 1 ? '' : 's'} to a system
             </h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
@@ -1302,9 +1271,7 @@ export default function Inventory() {
               >
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={
-                      isSystemsLoading ? "Loading systems..." : "Select system"
-                    }
+                    placeholder={isSystemsLoading ? 'Loading systems...' : 'Select system'}
                   />
                 </SelectTrigger>
 
@@ -1317,9 +1284,9 @@ export default function Inventory() {
                     systems.map((sys) => (
                       <SelectItem key={sys.id} value={sys.id}>
                         {sys.systemTag}
-                        {sys.name ? ` · ${sys.name}` : ""}
-                        {sys.category?.name ? ` · ${sys.category.name}` : ""}
-                        {sys.employee?.name ? ` · ${sys.employee.name}` : ""}
+                        {sys.name ? ` · ${sys.name}` : ''}
+                        {sys.category?.name ? ` · ${sys.category.name}` : ''}
+                        {sys.employee?.name ? ` · ${sys.employee.name}` : ''}
                       </SelectItem>
                     ))
                   )}
@@ -1332,7 +1299,7 @@ export default function Inventory() {
                 variant="secondary"
                 onClick={() => {
                   setAssignToSystemModal(false);
-                  setSelectedSystemId("");
+                  setSelectedSystemId('');
                 }}
                 disabled={isAssigning}
               >
@@ -1349,7 +1316,7 @@ export default function Inventory() {
                     Assigning…
                   </>
                 ) : (
-                  "Assign"
+                  'Assign'
                 )}
               </Button>
             </div>

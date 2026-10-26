@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { Package, Search } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Package, Search } from 'lucide-react';
 
 import {
   useGetAssetPoolQuery,
   useGetAssetCategoriesQuery,
   useAssignAssetMutation,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { toast } from "../ui/toast";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { EmptyState, SkeletonCard } from "../ui/EmptyState";
+import { toast } from '../ui/toast';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { EmptyState, SkeletonCard } from '../ui/EmptyState';
 
 import {
   Dialog,
@@ -18,10 +18,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
-import type { Employee } from "../../services/api/employees.api";
-import type { AssetPoolItem, SystemRecord } from "../../services/api/asset.api";
+import type { Employee } from '../../services/api/employees.api';
+import type { AssetPoolItem, SystemRecord } from '../../services/api/asset.api';
 
 // ============================================================
 // TYPES
@@ -47,12 +47,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 
   const apiError = error as TransferError;
 
-  return (
-    apiError.data?.message ||
-    apiError.data?.error ||
-    apiError.message ||
-    fallback
-  );
+  return apiError.data?.message || apiError.data?.error || apiError.message || fallback;
 }
 
 // ============================================================
@@ -60,14 +55,19 @@ function getErrorMessage(error: unknown, fallback: string): string {
 // ============================================================
 
 export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState('');
   const { data: categories = [] } = useGetAssetCategoriesQuery({ isActive: true }, { skip: !open });
   useEffect(() => {
-    if (open) { setCategoryId(system?.categoryId ?? ""); setKind(system?.categoryId ? "HARDWARE" : ""); setPage(1); setPicked(null); }
+    if (open) {
+      setCategoryId(system?.categoryId ?? '');
+      setKind(system?.categoryId ? 'HARDWARE' : '');
+      setPage(1);
+      setPicked(null);
+    }
   }, [open, system?.id, system?.categoryId]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [kind, setKind] = useState<"" | "HARDWARE" | "SOFTWARE">("");
+  const [kind, setKind] = useState<'' | 'HARDWARE' | 'SOFTWARE'>('');
   // The item chosen in step 1, waiting for confirmation in step 2.
   const [picked, setPicked] = useState<AssetPoolItem | null>(null);
 
@@ -76,24 +76,23 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
     if (!open) setPicked(null);
   }, [open]);
 
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetAssetPoolQuery(
-      {
-        search: search || undefined,
-        categoryId: categoryId || undefined,
-        kind: kind || undefined,
-        pageSize: 20,
-        page,
-      },
-      {
-        skip: !open,
-      },
-    );
+  const { data, isLoading, isFetching, isError, refetch } = useGetAssetPoolQuery(
+    {
+      search: search || undefined,
+      categoryId: categoryId || undefined,
+      kind: kind || undefined,
+      pageSize: 20,
+      page,
+    },
+    {
+      skip: !open,
+    },
+  );
 
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
   const items = data?.items ?? [];
-  const recipient = system?.name ?? employee?.name ?? "this person";
+  const recipient = system?.name ?? employee?.name ?? 'this person';
 
   // ============================================================
   // ASSIGN
@@ -109,20 +108,17 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
       }).unwrap();
 
       toast.add({
-        title: "Equipment given",
+        title: 'Equipment given',
         description: `${asset.name} is now with ${recipient}.`,
-        type: "success",
+        type: 'success',
       });
 
       onClose();
     } catch (error) {
       toast.add({
         title: "Couldn't give this item",
-        description: getErrorMessage(
-          error,
-          "Nothing was changed. Please try again.",
-        ),
-        type: "error",
+        description: getErrorMessage(error, 'Nothing was changed. Please try again.'),
+        type: 'error',
       });
     }
   }
@@ -168,15 +164,15 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
               ? `Add to ${system.name}`
               : employee
                 ? `Give equipment to ${employee.name}`
-                : "Give equipment"}
+                : 'Give equipment'}
           </DialogTitle>
 
           <DialogDescription className="text-sm text-muted-foreground">
             {system
               ? `Pick an item from stock to add to ${system.name}.`
               : employee
-                ? "These items are in stock. Choose one, then confirm."
-                : "Choose an item from stock."}
+                ? 'These items are in stock. Choose one, then confirm.'
+                : 'Choose an item from stock.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,7 +206,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             value={kind}
             onChange={(event) => (
               setPage(1),
-              setCategoryId(""),
+              setCategoryId(''),
               setKind(event.target.value as typeof kind)
             )}
             className="
@@ -234,9 +230,23 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             <option value="HARDWARE">Hardware</option>
             <option value="SOFTWARE">Software</option>
           </select>
-          <select aria-label="Asset category" value={categoryId} onChange={event => { setCategoryId(event.target.value); setPage(1); }} className="h-10 rounded-md border bg-background px-3 text-sm">
+          <select
+            aria-label="Asset category"
+            value={categoryId}
+            onChange={(event) => {
+              setCategoryId(event.target.value);
+              setPage(1);
+            }}
+            className="h-10 rounded-md border bg-background px-3 text-sm"
+          >
             <option value="">All asset categories</option>
-            {categories.filter(category => !kind || category.type === kind).map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+            {categories
+              .filter((category) => !kind || category.type === kind)
+              .map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -260,10 +270,10 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
           ) : (
             <ul
               className={[
-                "divide-y",
-                "divide-border",
-                isFetching ? "opacity-70 transition-opacity" : "",
-              ].join(" ")}
+                'divide-y',
+                'divide-border',
+                isFetching ? 'opacity-70 transition-opacity' : '',
+              ].join(' ')}
             >
               {items.map((asset) => (
                 <li
@@ -317,18 +327,16 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
                     )}
 
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {asset.name}
-                      </p>
+                      <p className="truncate text-sm font-medium text-foreground">{asset.name}</p>
 
                       <p className="truncate text-xs text-muted-foreground">
-                        {asset.assetTag || "No tag"}
+                        {asset.assetTag || 'No tag'}
 
-                        {asset.serialNumber ? ` · ${asset.serialNumber}` : ""}
+                        {asset.serialNumber ? ` · ${asset.serialNumber}` : ''}
 
                         {asset.quantityAvailable > 1
                           ? ` · ${asset.quantityAvailable} available`
-                          : ""}
+                          : ''}
                       </p>
                     </div>
                   </div>
@@ -353,7 +361,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
         </div>
         {isError && (
           <div role="alert" className="p-4 text-sm">
-            Could not load assets.{" "}
+            Could not load assets.{' '}
             <Button variant="outline" onClick={refetch}>
               Retry
             </Button>
@@ -371,11 +379,10 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             className="flex flex-col gap-3 border-t border-primary-border bg-primary-muted px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <p className="text-sm text-foreground">
-              {system ? "Add" : "Give"}{" "}
-              <span className="font-semibold">{picked.name}</span>{" "}
-              to <span className="font-semibold">{recipient}</span>?
+              {system ? 'Add' : 'Give'} <span className="font-semibold">{picked.name}</span> to{' '}
+              <span className="font-semibold">{recipient}</span>?
               <span className="mt-0.5 block text-xs text-muted-foreground">
-                It will appear under {system ? "this computer" : "their equipment"} straight away.
+                It will appear under {system ? 'this computer' : 'their equipment'} straight away.
               </span>
             </p>
 
@@ -396,7 +403,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
                 disabled={isAssigning}
                 onClick={() => handleAssign(picked)}
               >
-                {isAssigning ? "Giving…" : "Yes, give it"}
+                {isAssigning ? 'Giving…' : 'Yes, give it'}
               </Button>
             </div>
           </div>

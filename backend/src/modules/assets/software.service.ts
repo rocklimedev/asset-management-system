@@ -450,7 +450,7 @@ export class SoftwareService {
     const software = await this.softwareDetailsModel.create({
       assetId: dto.assetId,
       parentSoftwareId: dto.parentSoftwareId ?? null,
-      usage: dto.usage ?? SoftwareUsage.UNKNOWN,
+      usage: asset.status === "ASSIGNED" ? SoftwareUsage.IN_USE : (dto.usage ?? SoftwareUsage.UNKNOWN),
       subscriptionType:
         dto.subscriptionType ?? SoftwareSubscriptionType.UNKNOWN,
       warrantyApplicable: dto.warrantyApplicable ?? false,
@@ -1103,6 +1103,8 @@ export class SoftwareService {
       { transaction: t },
     );
 
+    await details.update({ usage: SoftwareUsage.IN_USE }, { transaction: t });
+
     if (license) {
       await this.syncLicenseSeats(license.id, t);
     }
@@ -1419,6 +1421,10 @@ export class SoftwareService {
           notes: notes ?? null,
         },
         { transaction: t },
+      );
+      await this.softwareDetailsModel.update(
+        { usage: SoftwareUsage.IN_USE },
+        { where: { assetId: legacy.softwareAssetId, usage: { [Op.ne]: SoftwareUsage.BLOCKED } }, transaction: t },
       );
     });
 

@@ -1,13 +1,13 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
-import type { AssetAssignment, SystemRecord } from "../../types";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { RootState } from '../store';
+import type { AssetAssignment, SystemRecord } from '../../types';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // ENUMS
 // ============================================================
 
-export type EmployeeStatus = "ACTIVE" | "ON_LEAVE" | "INACTIVE" | "EXITED";
+export type EmployeeStatus = 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE' | 'EXITED';
 
 // ============================================================
 // TYPES
@@ -244,7 +244,7 @@ export type OrganisationsApiResponse =
 // ============================================================
 
 export const employeesApi = createApi({
-  reducerPath: "employeesApi",
+  reducerPath: 'employeesApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -253,37 +253,29 @@ export const employeesApi = createApi({
       const state = getState() as RootState;
 
       // Keep this if your app stores the token in localStorage.
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
 
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
       return headers;
     },
   }),
 
-  tagTypes: ["Employee", "Organisation"],
+  tagTypes: ['Employee', 'Organisation'],
   endpoints: (builder) => ({
     // ============================================================
     // GET ALL EMPLOYEES
     // GET /employees
     // ============================================================
 
-    getEmployees: builder.query<
-      EmployeesApiResponse,
-      GetEmployeesParams | undefined
-    >({
-      query: ({
-        search,
-        organisationId,
-        status,
-        page,
-      }: GetEmployeesParams = {}) => ({
-        url: "/employees",
-        method: "GET",
+    getEmployees: builder.query<EmployeesApiResponse, GetEmployeesParams | undefined>({
+      query: ({ search, organisationId, status, page }: GetEmployeesParams = {}) => ({
+        url: '/employees',
+        method: 'GET',
 
         params: {
           search: search || undefined,
@@ -294,19 +286,17 @@ export const employeesApi = createApi({
       }),
 
       providesTags: (result) => {
-        const employees: Employee[] = Array.isArray(result)
-          ? result
-          : result?.items || [];
+        const employees: Employee[] = Array.isArray(result) ? result : result?.items || [];
 
         return [
           ...employees.map(({ id }) => ({
-            type: "Employee" as const,
+            type: 'Employee' as const,
             id,
           })),
 
           {
-            type: "Employee" as const,
-            id: "LIST",
+            type: 'Employee' as const,
+            id: 'LIST',
           },
         ];
       },
@@ -320,12 +310,12 @@ export const employeesApi = createApi({
     getEmployee: builder.query<EmployeeResponse | Employee, string>({
       query: (id) => ({
         url: `/employees/${id}`,
-        method: "GET",
+        method: 'GET',
       }),
 
       providesTags: (result, error, id) => [
         {
-          type: "Employee" as const,
+          type: 'Employee' as const,
           id,
         },
       ],
@@ -338,15 +328,15 @@ export const employeesApi = createApi({
 
     createEmployee: builder.mutation<EmployeeResponse, CreateEmployeeRequest>({
       query: (body) => ({
-        url: "/employees",
-        method: "POST",
+        url: '/employees',
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: [
         {
-          type: "Employee",
-          id: "LIST",
+          type: 'Employee',
+          id: 'LIST',
         },
       ],
     }),
@@ -359,19 +349,19 @@ export const employeesApi = createApi({
     updateEmployee: builder.mutation<EmployeeResponse, UpdateEmployeeRequest>({
       query: ({ id, ...body }) => ({
         url: `/employees/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Employee" as const,
+          type: 'Employee' as const,
           id,
         },
 
         {
-          type: "Employee" as const,
-          id: "LIST",
+          type: 'Employee' as const,
+          id: 'LIST',
         },
       ],
     }),
@@ -382,25 +372,31 @@ export const employeesApi = createApi({
     // ============================================================
 
     deleteEmployee: builder.mutation<{ success: boolean }, string>({
-      query: id => ({ url: `/employees/${id}/record`, method: "DELETE" }),
-      invalidatesTags: (result, error, id) => error ? [] : [{ type: "Employee", id }, { type: "Employee", id: "LIST" }],
+      query: (id) => ({ url: `/employees/${id}/record`, method: 'DELETE' }),
+      invalidatesTags: (result, error, id) =>
+        error
+          ? []
+          : [
+              { type: 'Employee', id },
+              { type: 'Employee', id: 'LIST' },
+            ],
     }),
 
     removeEmployee: builder.mutation<unknown, string>({
       query: (id) => ({
         url: `/employees/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
         {
-          type: "Employee" as const,
+          type: 'Employee' as const,
           id,
         },
 
         {
-          type: "Employee" as const,
-          id: "LIST",
+          type: 'Employee' as const,
+          id: 'LIST',
         },
       ],
     }),
@@ -411,24 +407,22 @@ export const employeesApi = createApi({
 
     getOrganisations: builder.query<OrganisationsApiResponse, void>({
       query: () => ({
-        url: "/organisations",
-        method: "GET",
+        url: '/organisations',
+        method: 'GET',
       }),
 
       providesTags: (result) => {
-        const organisations: Organisation[] = Array.isArray(result)
-          ? result
-          : result?.items || [];
+        const organisations: Organisation[] = Array.isArray(result) ? result : result?.items || [];
 
         return [
           ...organisations.map(({ id }) => ({
-            type: "Organisation" as const,
+            type: 'Organisation' as const,
             id,
           })),
 
           {
-            type: "Organisation" as const,
-            id: "LIST",
+            type: 'Organisation' as const,
+            id: 'LIST',
           },
         ];
       },
@@ -439,41 +433,36 @@ export const employeesApi = createApi({
     // GET /organisations/:id
     // ============================================================
 
-    getOrganisation: builder.query<OrganisationResponse | Organisation, string>(
-      {
-        query: (id) => ({
-          url: `/organisations/${id}`,
-          method: "GET",
-        }),
+    getOrganisation: builder.query<OrganisationResponse | Organisation, string>({
+      query: (id) => ({
+        url: `/organisations/${id}`,
+        method: 'GET',
+      }),
 
-        providesTags: (result, error, id) => [
-          {
-            type: "Organisation" as const,
-            id,
-          },
-        ],
-      },
-    ),
+      providesTags: (result, error, id) => [
+        {
+          type: 'Organisation' as const,
+          id,
+        },
+      ],
+    }),
 
     // ============================================================
     // CREATE ORGANISATION
     // POST /organisations
     // ============================================================
 
-    createOrganisation: builder.mutation<
-      OrganisationResponse,
-      CreateOrganisationRequest
-    >({
+    createOrganisation: builder.mutation<OrganisationResponse, CreateOrganisationRequest>({
       query: (body) => ({
-        url: "/organisations",
-        method: "POST",
+        url: '/organisations',
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: [
         {
-          type: "Organisation",
-          id: "LIST",
+          type: 'Organisation',
+          id: 'LIST',
         },
       ],
     }),
@@ -483,25 +472,22 @@ export const employeesApi = createApi({
     // PATCH /organisations/:id
     // ============================================================
 
-    updateOrganisation: builder.mutation<
-      OrganisationResponse,
-      UpdateOrganisationRequest
-    >({
+    updateOrganisation: builder.mutation<OrganisationResponse, UpdateOrganisationRequest>({
       query: ({ id, ...body }) => ({
         url: `/organisations/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: "Organisation",
+          type: 'Organisation',
           id,
         },
 
         {
-          type: "Organisation",
-          id: "LIST",
+          type: 'Organisation',
+          id: 'LIST',
         },
       ],
     }),
@@ -514,18 +500,18 @@ export const employeesApi = createApi({
     removeOrganisation: builder.mutation<unknown, string>({
       query: (id) => ({
         url: `/organisations/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
         {
-          type: "Organisation",
+          type: 'Organisation',
           id,
         },
 
         {
-          type: "Organisation",
-          id: "LIST",
+          type: 'Organisation',
+          id: 'LIST',
         },
       ],
     }),

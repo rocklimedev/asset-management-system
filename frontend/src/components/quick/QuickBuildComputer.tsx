@@ -1,7 +1,7 @@
-import { ComputerCategorySelect } from "../systems/ComputerCategorySelect";
-import { LaptopAssetPicker, type LaptopSelection } from "../systems/LaptopAssetPicker";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Cpu, HardDrive, MemoryStick, Monitor } from "lucide-react";
+import { ComputerCategorySelect } from '../systems/ComputerCategorySelect';
+import { LaptopAssetPicker, type LaptopSelection } from '../systems/LaptopAssetPicker';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Check, Cpu, HardDrive, MemoryStick, Monitor } from 'lucide-react';
 
 import {
   useAssignSystemMutation,
@@ -9,8 +9,8 @@ import {
   useUpdateSystemMutation,
   useAssignAssetMutation,
   useUpsertSystemSpecsMutation,
-} from "../../services/api/asset.api";
-import { useGetEmployeesQuery, type Employee } from "../../services/api/employees.api";
+} from '../../services/api/asset.api';
+import { useGetEmployeesQuery, type Employee } from '../../services/api/employees.api';
 
 import {
   Dialog,
@@ -18,11 +18,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { toast } from "../ui/toast";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { toast } from '../ui/toast';
+import { cn } from '@/lib/utils';
 
 // ============================================================
 // QUICK BUILD COMPUTER
@@ -45,7 +45,7 @@ type Step = 1 | 2 | 3;
 
 function errorText(error: unknown) {
   const e = error as { data?: { message?: string }; message?: string };
-  return e?.data?.message || e?.message || "Nothing was saved. Please try again.";
+  return e?.data?.message || e?.message || 'Nothing was saved. Please try again.';
 }
 
 function newComputerCode() {
@@ -64,14 +64,14 @@ export function QuickBuildComputer({
   const [finishing, setFinishing] = useState(false);
   const [updateSystem] = useUpdateSystemMutation();
   const [assignAsset] = useAssignAssetMutation();
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState('');
   const [step, setStep] = useState<Step>(1);
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [processor, setProcessor] = useState("");
-  const [memory, setMemory] = useState("");
-  const [storage, setStorage] = useState("");
-  const [giveTo, setGiveTo] = useState<string>("");
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
+  const [processor, setProcessor] = useState('');
+  const [memory, setMemory] = useState('');
+  const [storage, setStorage] = useState('');
+  const [giveTo, setGiveTo] = useState<string>('');
 
   const [createSystem, { isLoading: creating }] = useCreateSystemMutation();
   const [upsertSpecs, { isLoading: savingSpecs }] = useUpsertSystemSpecsMutation();
@@ -82,24 +82,22 @@ export function QuickBuildComputer({
   const { data: employeesData } = useGetEmployeesQuery({});
 
   const people = useMemo<Employee[]>(() => {
-    const list = Array.isArray(employeesData)
-      ? employeesData
-      : (employeesData?.items ?? []);
-    return list.filter((person) => person.status !== "EXITED");
+    const list = Array.isArray(employeesData) ? employeesData : (employeesData?.items ?? []);
+    return list.filter((person) => person.status !== 'EXITED');
   }, [employeesData]);
 
   useEffect(() => {
     if (!open) return;
     progress.current = {};
     setLaptop(null);
-    setCategoryId("");
+    setCategoryId('');
     setStep(1);
-    setName("");
+    setName('');
     setCode(newComputerCode());
-    setProcessor("");
-    setMemory("");
-    setStorage("");
-    setGiveTo(presetEmployeeId ?? "");
+    setProcessor('');
+    setMemory('');
+    setStorage('');
+    setGiveTo(presetEmployeeId ?? '');
   }, [open, presetEmployeeId]);
 
   const hasParts = Boolean(processor.trim() || memory.trim() || storage.trim());
@@ -146,7 +144,11 @@ export function QuickBuildComputer({
       }
 
       if (laptop && !progress.current.laptopUnitId) {
-        await assignAsset({ id: laptop.assetId, assetUnitId: laptop.assetUnitId, systemId }).unwrap();
+        await assignAsset({
+          id: laptop.assetId,
+          assetUnitId: laptop.assetUnitId,
+          systemId,
+        }).unwrap();
         progress.current.laptopUnitId = laptop.assetUnitId;
       }
       if (giveTo) {
@@ -154,8 +156,8 @@ export function QuickBuildComputer({
       }
 
       toast.add({
-        type: "success",
-        title: "Computer built",
+        type: 'success',
+        title: 'Computer built',
         description: selectedPerson
           ? `${name.trim()} is now with ${selectedPerson.name}.`
           : `${name.trim()} is ready to give to someone.`,
@@ -163,9 +165,9 @@ export function QuickBuildComputer({
       onClose();
     } catch (error) {
       toast.add({
-        type: "error",
+        type: 'error',
         title: "Couldn't build this computer",
-        description: `${errorText(error)}${progress.current.id ? " Computer details were saved. Retry to finish the remaining steps." : ""}`,
+        description: `${errorText(error)}${progress.current.id ? ' Computer details were saved. Retry to finish the remaining steps.' : ''}`,
       });
     } finally {
       setFinishing(false);
@@ -180,8 +182,8 @@ export function QuickBuildComputer({
             Build a computer
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Step {step} of 3 ·{" "}
-            {step === 1 ? "Name it" : step === 2 ? "Main parts" : "Review and save"}
+            Step {step} of 3 ·{' '}
+            {step === 1 ? 'Name it' : step === 2 ? 'Main parts' : 'Review and save'}
           </DialogDescription>
 
           <div className="mt-3 grid grid-cols-3 gap-1.5" aria-hidden="true">
@@ -189,8 +191,8 @@ export function QuickBuildComputer({
               <span
                 key={s}
                 className={cn(
-                  "h-1.5 rounded-full transition-colors",
-                  s <= step ? "bg-primary" : "bg-muted",
+                  'h-1.5 rounded-full transition-colors',
+                  s <= step ? 'bg-primary' : 'bg-muted',
                 )}
               />
             ))}
@@ -217,7 +219,14 @@ export function QuickBuildComputer({
                   onChange={(event) => setName(event.target.value)}
                 />
               </div>
-              <ComputerCategorySelect value={categoryId} onChange={value => { setCategoryId(value); setLaptop(null); }} disabled={saving || Boolean(progress.current.laptopUnitId)} />
+              <ComputerCategorySelect
+                value={categoryId}
+                onChange={(value) => {
+                  setCategoryId(value);
+                  setLaptop(null);
+                }}
+                disabled={saving || Boolean(progress.current.laptopUnitId)}
+              />
 
               <div>
                 <label htmlFor="qc-code" className="text-sm font-medium text-foreground">
@@ -239,14 +248,41 @@ export function QuickBuildComputer({
 
           {step === 2 && (
             <>
-              <LaptopAssetPicker key={categoryId} categoryId={categoryId} value={laptop} onChange={setLaptop} disabled={saving || Boolean(progress.current.laptopUnitId)} />
+              <LaptopAssetPicker
+                key={categoryId}
+                categoryId={categoryId}
+                value={laptop}
+                onChange={setLaptop}
+                disabled={saving || Boolean(progress.current.laptopUnitId)}
+              />
               <p className="text-sm text-muted-foreground">
                 The main parts. Skip any you don’t know yet; you can add them later.
               </p>
 
-              <PartField id="qc-processor" icon={Cpu} label="Processor" hint="e.g. Intel Core i7-1365U" value={processor} onChange={setProcessor} />
-              <PartField id="qc-memory" icon={MemoryStick} label="Memory (RAM)" hint="e.g. 16 GB" value={memory} onChange={setMemory} />
-              <PartField id="qc-storage" icon={HardDrive} label="Storage" hint="e.g. 512 GB SSD" value={storage} onChange={setStorage} />
+              <PartField
+                id="qc-processor"
+                icon={Cpu}
+                label="Processor"
+                hint="e.g. Intel Core i7-1365U"
+                value={processor}
+                onChange={setProcessor}
+              />
+              <PartField
+                id="qc-memory"
+                icon={MemoryStick}
+                label="Memory (RAM)"
+                hint="e.g. 16 GB"
+                value={memory}
+                onChange={setMemory}
+              />
+              <PartField
+                id="qc-storage"
+                icon={HardDrive}
+                label="Storage"
+                hint="e.g. 512 GB SSD"
+                value={storage}
+                onChange={setStorage}
+              />
 
               <button
                 type="button"
@@ -264,14 +300,27 @@ export function QuickBuildComputer({
               <dl className="divide-y divide-border rounded-lg border border-border bg-card text-sm">
                 <SummaryRow label="Name" value={name.trim()} />
                 <SummaryRow label="Code" value={code.trim()} />
-                <SummaryRow label="Processor" value={processor.trim() || "Not added"} muted={!processor.trim()} />
-                <SummaryRow label="Memory" value={memory.trim() || "Not added"} muted={!memory.trim()} />
-                <SummaryRow label="Storage" value={storage.trim() || "Not added"} muted={!storage.trim()} />
+                <SummaryRow
+                  label="Processor"
+                  value={processor.trim() || 'Not added'}
+                  muted={!processor.trim()}
+                />
+                <SummaryRow
+                  label="Memory"
+                  value={memory.trim() || 'Not added'}
+                  muted={!memory.trim()}
+                />
+                <SummaryRow
+                  label="Storage"
+                  value={storage.trim() || 'Not added'}
+                  muted={!storage.trim()}
+                />
               </dl>
 
               <div>
                 <label htmlFor="qc-give" className="text-sm font-medium text-foreground">
-                  Give it to someone now? <span className="font-normal text-muted-foreground">(optional)</span>
+                  Give it to someone now?{' '}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
                 </label>
                 <select
                   id="qc-give"
@@ -298,7 +347,9 @@ export function QuickBuildComputer({
             disabled={saving}
             onClick={() => (step === 1 ? onClose() : setStep((s) => (s - 1) as Step))}
           >
-            {step === 1 ? "Cancel" : (
+            {step === 1 ? (
+              'Cancel'
+            ) : (
               <>
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 Back
@@ -309,16 +360,26 @@ export function QuickBuildComputer({
           {step < 3 ? (
             <Button
               type="button"
-              disabled={saving || (step === 1 && (!name.trim() || !categoryId)) || (step === 2 && Boolean(laptop && !laptop.assetUnitId))}
+              disabled={
+                saving ||
+                (step === 1 && (!name.trim() || !categoryId)) ||
+                (step === 2 && Boolean(laptop && !laptop.assetUnitId))
+              }
               onClick={() => setStep((s) => (s + 1) as Step)}
             >
               Continue
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (
-            <Button type="button" disabled={saving || !name.trim() || !categoryId || Boolean(laptop && !laptop.assetUnitId)} onClick={save}>
+            <Button
+              type="button"
+              disabled={
+                saving || !name.trim() || !categoryId || Boolean(laptop && !laptop.assetUnitId)
+              }
+              onClick={save}
+            >
               <Check className="h-4 w-4" aria-hidden="true" />
-              {saving ? "Building…" : "Build computer"}
+              {saving ? 'Building…' : 'Build computer'}
             </Button>
           )}
         </div>
@@ -348,16 +409,34 @@ function PartField({
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         {label}
       </label>
-      <Input id={id} value={value} placeholder={hint} className="mt-1.5" onChange={(event) => onChange(event.target.value)} />
+      <Input
+        id={id}
+        value={value}
+        placeholder={hint}
+        className="mt-1.5"
+        onChange={(event) => onChange(event.target.value)}
+      />
     </div>
   );
 }
 
-function SummaryRow({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  muted = false,
+}: {
+  label: string;
+  value: string;
+  muted?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-2.5">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={cn("truncate font-medium", muted ? "text-muted-foreground" : "text-foreground")}>{value}</dd>
+      <dd
+        className={cn('truncate font-medium', muted ? 'text-muted-foreground' : 'text-foreground')}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

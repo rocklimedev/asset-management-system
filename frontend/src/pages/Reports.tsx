@@ -1,5 +1,5 @@
-import { Fragment, useState } from "react";
-import * as Tabs from "@radix-ui/react-tabs";
+import { Fragment, useState } from 'react';
+import * as Tabs from '@radix-ui/react-tabs';
 import {
   Boxes,
   ClipboardList,
@@ -15,7 +15,7 @@ import {
   ShieldAlert,
   Users,
   Wrench,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   downloadReport,
@@ -27,13 +27,13 @@ import {
   useGetSystemsReportQuery,
   type ReportFilters,
   type ReportType,
-} from "../services/api/reports.api";
+} from '../services/api/reports.api';
 
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { useGetOrganisationsQuery } from "../services/api/employees.api";
-import { useGetAssetCategoriesQuery } from "../services/api/asset.api";
-import { Label } from "../components/ui/label";
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { useGetOrganisationsQuery } from '../services/api/employees.api';
+import { useGetAssetCategoriesQuery } from '../services/api/asset.api';
+import { Label } from '../components/ui/label';
 
 import {
   Table,
@@ -42,22 +42,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from '../components/ui/table';
 
-import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // ============================================================
 // TYPES
 // ============================================================
 
-type ReportTab =
-  | "assets"
-  | "inventory"
-  | "assigned"
-  | "damaged"
-  | "status"
-  | "systems";
+type ReportTab = 'assets' | 'inventory' | 'assigned' | 'damaged' | 'status' | 'systems';
 
 interface FilterState {
   organisationId: string;
@@ -109,7 +103,7 @@ interface SystemItemData {
   nameLabel: string;
   name: string;
   holder: string;
-  assignmentStatus: "Assigned" | "Unassigned (Inventory)";
+  assignmentStatus: 'Assigned' | 'Unassigned (Inventory)';
   fields: SystemFieldData[];
   assignedItems: SystemAssignedItemData[];
 }
@@ -126,47 +120,47 @@ interface SystemsReportData {
 // ============================================================
 
 const EMPTY_FILTERS: FilterState = {
-  organisationId: "",
-  kind: "",
-  categoryId: "",
+  organisationId: '',
+  kind: '',
+  categoryId: '',
 };
 
 const TABS = [
   {
-    value: "assets" as const,
-    label: "Assets",
+    value: 'assets' as const,
+    label: 'Assets',
     icon: Boxes,
-    reportType: "assets" as ReportType,
+    reportType: 'assets' as ReportType,
   },
   {
-    value: "inventory" as const,
-    label: "Inventory",
+    value: 'inventory' as const,
+    label: 'Inventory',
     icon: PackageCheck,
-    reportType: "inventory" as ReportType,
+    reportType: 'inventory' as ReportType,
   },
   {
-    value: "assigned" as const,
-    label: "Assigned",
+    value: 'assigned' as const,
+    label: 'Assigned',
     icon: Users,
-    reportType: "assigned" as ReportType,
+    reportType: 'assigned' as ReportType,
   },
   {
-    value: "damaged" as const,
-    label: "Damaged & Repair",
+    value: 'damaged' as const,
+    label: 'Damaged & Repair',
     icon: Wrench,
-    reportType: "damaged" as ReportType,
+    reportType: 'damaged' as ReportType,
   },
   {
-    value: "status" as const,
-    label: "By Status",
+    value: 'status' as const,
+    label: 'By Status',
     icon: ClipboardList,
-    reportType: "by-status" as ReportType,
+    reportType: 'by-status' as ReportType,
   },
   {
-    value: "systems" as const,
-    label: "Systems",
+    value: 'systems' as const,
+    label: 'Systems',
     icon: Monitor,
-    reportType: "systems" as ReportType,
+    reportType: 'systems' as ReportType,
   },
 ];
 
@@ -175,11 +169,11 @@ const TABS = [
 // ============================================================
 
 function formatNumber(value: number | string | null | undefined) {
-  return new Intl.NumberFormat("en-IN").format(Number(value ?? 0));
+  return new Intl.NumberFormat('en-IN').format(Number(value ?? 0));
 }
 
 function formatDate(value: string | null | undefined) {
-  if (!value) return "—";
+  if (!value) return '—';
 
   const date = new Date(value);
 
@@ -187,51 +181,49 @@ function formatDate(value: string | null | undefined) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
   }).format(date);
 }
 
-function statusTone(
-  status: string,
-): "brand" | "ok" | "warn" | "danger" | "neutral" | "info" {
+function statusTone(status: string): 'brand' | 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   const normalized = status.toUpperCase();
 
   if (
-    normalized.includes("ACTIVE") ||
-    normalized.includes("AVAILABLE") ||
-    normalized.includes("GOOD") ||
-    normalized.includes("HEALTHY")
+    normalized.includes('ACTIVE') ||
+    normalized.includes('AVAILABLE') ||
+    normalized.includes('GOOD') ||
+    normalized.includes('HEALTHY')
   ) {
-    return "ok";
+    return 'ok';
   }
 
-  if (normalized.includes("ASSIGNED") || normalized.includes("ISSUED")) {
-    return "brand";
+  if (normalized.includes('ASSIGNED') || normalized.includes('ISSUED')) {
+    return 'brand';
   }
 
   if (
-    normalized.includes("REPAIR") ||
-    normalized.includes("PENDING") ||
-    normalized.includes("MAINTENANCE") ||
-    normalized.includes("LOW")
+    normalized.includes('REPAIR') ||
+    normalized.includes('PENDING') ||
+    normalized.includes('MAINTENANCE') ||
+    normalized.includes('LOW')
   ) {
-    return "warn";
+    return 'warn';
   }
 
   if (
-    normalized.includes("DAMAGED") ||
-    normalized.includes("RETIRED") ||
-    normalized.includes("LOST") ||
-    normalized.includes("DISPOSED") ||
-    normalized.includes("REJECTED")
+    normalized.includes('DAMAGED') ||
+    normalized.includes('RETIRED') ||
+    normalized.includes('LOST') ||
+    normalized.includes('DISPOSED') ||
+    normalized.includes('REJECTED')
   ) {
-    return "danger";
+    return 'danger';
   }
 
-  return "neutral";
+  return 'neutral';
 }
 
 // ============================================================
@@ -242,40 +234,30 @@ interface SummaryCardProps {
   label: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-  tone?: "brand" | "ok" | "warn" | "danger" | "info";
+  tone?: 'brand' | 'ok' | 'warn' | 'danger' | 'info';
   description?: string;
 }
 
-function SummaryCard({
-  label,
-  value,
-  icon: Icon,
-  tone = "brand",
-  description,
-}: SummaryCardProps) {
+function SummaryCard({ label, value, icon: Icon, tone = 'brand', description }: SummaryCardProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-card">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>
 
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-            {value}
-          </p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
 
-          {description && (
-            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
         </div>
 
         <div
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-            tone === "brand" && "bg-primary/10 text-primary",
-            tone === "ok" && "bg-success-muted text-success-strong",
-            tone === "warn" && "bg-warning-muted text-warning-strong",
-            tone === "danger" && "bg-destructive-muted text-destructive-strong",
-            tone === "info" && "bg-info-muted text-info-strong",
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+            tone === 'brand' && 'bg-primary/10 text-primary',
+            tone === 'ok' && 'bg-success-muted text-success-strong',
+            tone === 'warn' && 'bg-warning-muted text-warning-strong',
+            tone === 'danger' && 'bg-destructive-muted text-destructive-strong',
+            tone === 'info' && 'bg-info-muted text-info-strong',
           )}
         >
           <Icon className="h-5 w-5" />
@@ -301,9 +283,7 @@ function ErrorState({ onRetry }: { onRetry?: () => void }) {
     <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-destructive/20 bg-card p-6 text-center">
       <ShieldAlert className="h-8 w-8 text-destructive" />
 
-      <h3 className="mt-3 text-sm font-semibold text-foreground">
-        Failed to load report
-      </h3>
+      <h3 className="mt-3 text-sm font-semibold text-foreground">Failed to load report</h3>
 
       <p className="mt-1 max-w-md text-sm text-muted-foreground">
         Something went wrong while loading the report. Please try again.
@@ -320,8 +300,8 @@ function ErrorState({ onRetry }: { onRetry?: () => void }) {
 }
 
 function EmptyState({
-  title = "No records found",
-  description = "No records match the selected filters.",
+  title = 'No records found',
+  description = 'No records match the selected filters.',
 }: {
   title?: string;
   description?: string;
@@ -349,13 +329,7 @@ interface ReportFiltersProps {
   isLoading: boolean;
 }
 
-function ReportFiltersBar({
-  filters,
-  onChange,
-  onApply,
-  onReset,
-  isLoading,
-}: ReportFiltersProps) {
+function ReportFiltersBar({ filters, onChange, onApply, onReset, isLoading }: ReportFiltersProps) {
   const {
     data: organisationsData,
     isLoading: loadingOrganisations,
@@ -374,8 +348,7 @@ function ReportFiltersBar({
   const categoryOptions = categories.filter(
     (category) => !filters.kind || category.type === filters.kind,
   );
-  const selectClassName =
-    "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
+  const selectClassName = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm';
 
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-card">
@@ -384,9 +357,7 @@ function ReportFiltersBar({
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-primary" />
 
-            <h2 className="text-[15px] font-semibold text-foreground">
-              Report Filters
-            </h2>
+            <h2 className="text-[15px] font-semibold text-foreground">Report Filters</h2>
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
@@ -394,12 +365,7 @@ function ReportFiltersBar({
           </p>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onReset}
-          disabled={isLoading}
-        >
+        <Button variant="ghost" size="sm" onClick={onReset} disabled={isLoading}>
           <RotateCcw />
           Reset
         </Button>
@@ -413,12 +379,10 @@ function ReportFiltersBar({
             className={selectClassName}
             value={filters.organisationId}
             disabled={loadingOrganisations || organisationsError}
-            onChange={(event) => onChange("organisationId", event.target.value)}
+            onChange={(event) => onChange('organisationId', event.target.value)}
           >
             <option value="">
-              {loadingOrganisations
-                ? "Loading organisations…"
-                : "All organisations"}
+              {loadingOrganisations ? 'Loading organisations…' : 'All organisations'}
             </option>
             {[...organisations]
               .sort((a, b) => a.name.localeCompare(b.name))
@@ -430,12 +394,8 @@ function ReportFiltersBar({
           </select>
           {organisationsError && (
             <p role="alert" className="text-sm text-destructive">
-              Could not load organisations.{" "}
-              <button
-                type="button"
-                className="underline"
-                onClick={() => reloadOrganisations()}
-              >
+              Could not load organisations.{' '}
+              <button type="button" className="underline" onClick={() => reloadOrganisations()}>
                 Retry
               </button>
             </p>
@@ -449,17 +409,16 @@ function ReportFiltersBar({
             className={selectClassName}
             value={filters.kind}
             onChange={(event) => {
-              onChange("kind", event.target.value);
+              onChange('kind', event.target.value);
               if (
                 filters.categoryId &&
                 !categories.some(
                   (category) =>
                     category.id === filters.categoryId &&
-                    (!event.target.value ||
-                      category.type === event.target.value),
+                    (!event.target.value || category.type === event.target.value),
                 )
               ) {
-                onChange("categoryId", "");
+                onChange('categoryId', '');
               }
             }}
           >
@@ -490,13 +449,13 @@ interface ReportActionsProps {
 }
 
 function ReportActions({ reportType, filters }: ReportActionsProps) {
-  const [downloading, setDownloading] = useState<"pdf" | "excel" | null>(null);
+  const [downloading, setDownloading] = useState<'pdf' | 'excel' | null>(null);
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const handleDownload = async (format: "pdf" | "excel") => {
+  const handleDownload = async (format: 'pdf' | 'excel') => {
     try {
-      setError("");
+      setError('');
       setDownloading(format);
 
       await downloadReport(reportType, format, filters);
@@ -504,9 +463,7 @@ function ReportActions({ reportType, filters }: ReportActionsProps) {
       console.error(downloadError);
 
       setError(
-        downloadError instanceof Error
-          ? downloadError.message
-          : "Failed to download report.",
+        downloadError instanceof Error ? downloadError.message : 'Failed to download report.',
       );
     } finally {
       setDownloading(null);
@@ -521,13 +478,9 @@ function ReportActions({ reportType, filters }: ReportActionsProps) {
         variant="outline"
         size="sm"
         disabled={downloading !== null}
-        onClick={() => handleDownload("pdf")}
+        onClick={() => handleDownload('pdf')}
       >
-        {downloading === "pdf" ? (
-          <RefreshCw className="animate-spin" />
-        ) : (
-          <FileText />
-        )}
+        {downloading === 'pdf' ? <RefreshCw className="animate-spin" /> : <FileText />}
         PDF
       </Button>
 
@@ -535,13 +488,9 @@ function ReportActions({ reportType, filters }: ReportActionsProps) {
         variant="outline"
         size="sm"
         disabled={downloading !== null}
-        onClick={() => handleDownload("excel")}
+        onClick={() => handleDownload('excel')}
       >
-        {downloading === "excel" ? (
-          <RefreshCw className="animate-spin" />
-        ) : (
-          <FileSpreadsheet />
-        )}
+        {downloading === 'excel' ? <RefreshCw className="animate-spin" /> : <FileSpreadsheet />}
         Excel
       </Button>
     </div>
@@ -553,8 +502,7 @@ function ReportActions({ reportType, filters }: ReportActionsProps) {
 // ============================================================
 
 function AssetReportView({ filters }: { filters: ReportFilters }) {
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetAssetReportQuery(filters);
+  const { data, isLoading, isFetching, isError, refetch } = useGetAssetReportQuery(filters);
 
   if (isLoading) {
     return <LoadingState />;
@@ -606,27 +554,21 @@ function AssetReportView({ filters }: { filters: ReportFilters }) {
         <TableBody>
           {items.map((asset) => (
             <TableRow key={asset.id}>
-              <TableCell>{asset.name ?? "—"}</TableCell>
+              <TableCell>{asset.name ?? '—'}</TableCell>
 
-              <TableCell>{asset.kind ?? "—"}</TableCell>
+              <TableCell>{asset.kind ?? '—'}</TableCell>
 
-              <TableCell>{asset.category?.name ?? "—"}</TableCell>
+              <TableCell>{asset.category?.name ?? '—'}</TableCell>
 
               <TableCell>
-                {asset.status ? (
-                  <Badge tone={statusTone(asset.status)}>{asset.status}</Badge>
-                ) : (
-                  "—"
-                )}
+                {asset.status ? <Badge tone={statusTone(asset.status)}>{asset.status}</Badge> : '—'}
               </TableCell>
 
               <TableCell>
                 {asset.condition ? (
-                  <Badge tone={statusTone(asset.condition)}>
-                    {asset.condition}
-                  </Badge>
+                  <Badge tone={statusTone(asset.condition)}>{asset.condition}</Badge>
                 ) : (
-                  "—"
+                  '—'
                 )}
               </TableCell>
             </TableRow>
@@ -732,10 +674,7 @@ function InventoryReportView({ filters }: { filters: ReportFilters }) {
           {categories.map((category) => (
             <Fragment key={category.name}>
               <TableRow className="bg-muted/60 hover:bg-muted/60">
-                <TableCell
-                  colSpan={3}
-                  className="font-semibold text-foreground"
-                >
+                <TableCell colSpan={3} className="font-semibold text-foreground">
                   {category.name}
                 </TableCell>
 
@@ -746,19 +685,13 @@ function InventoryReportView({ filters }: { filters: ReportFilters }) {
 
               {category.rows.map((row, index) => (
                 <TableRow key={`${category.name}-${index}`}>
-                  <TableCell>{row.asset || "—"}</TableCell>
+                  <TableCell>{row.asset || '—'}</TableCell>
 
-                  <TableCell className="text-muted-foreground">
-                    {row.unitCode || "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{row.unitCode || '—'}</TableCell>
 
-                  <TableCell className="text-muted-foreground">
-                    {row.serialNumber || "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{row.serialNumber || '—'}</TableCell>
 
-                  <TableCell className="text-right">
-                    {formatNumber(row.quantity)}
-                  </TableCell>
+                  <TableCell className="text-right">{formatNumber(row.quantity)}</TableCell>
                 </TableRow>
               ))}
             </Fragment>
@@ -774,8 +707,7 @@ function InventoryReportView({ filters }: { filters: ReportFilters }) {
 // ============================================================
 
 function AssignedReportView({ filters }: { filters: ReportFilters }) {
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetAssignedReportQuery(filters);
+  const { data, isLoading, isFetching, isError, refetch } = useGetAssignedReportQuery(filters);
 
   if (isLoading) {
     return <LoadingState />;
@@ -823,15 +755,13 @@ function AssignedReportView({ filters }: { filters: ReportFilters }) {
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id}>
-              <TableCell>{item.name ?? "—"}</TableCell>
+              <TableCell>{item.name ?? '—'}</TableCell>
 
-              <TableCell>{item.category ?? "—"}</TableCell>
+              <TableCell>{item.category ?? '—'}</TableCell>
 
-              <TableCell>{item.assignedTo ?? "—"}</TableCell>
+              <TableCell>{item.assignedTo ?? '—'}</TableCell>
 
-              <TableCell className="text-muted-foreground">
-                {formatDate(item.assignedAt)}
-              </TableCell>
+              <TableCell className="text-muted-foreground">{formatDate(item.assignedAt)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -845,8 +775,7 @@ function AssignedReportView({ filters }: { filters: ReportFilters }) {
 // ============================================================
 
 function DamagedReportView({ filters }: { filters: ReportFilters }) {
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetDamagedReportQuery(filters);
+  const { data, isLoading, isFetching, isError, refetch } = useGetDamagedReportQuery(filters);
 
   if (isLoading) {
     return <LoadingState />;
@@ -895,30 +824,24 @@ function DamagedReportView({ filters }: { filters: ReportFilters }) {
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id}>
-              <TableCell>{item.name ?? "—"}</TableCell>
+              <TableCell>{item.name ?? '—'}</TableCell>
 
               <TableCell>
-                {item.status ? (
-                  <Badge tone={statusTone(item.status)}>{item.status}</Badge>
-                ) : (
-                  "—"
-                )}
+                {item.status ? <Badge tone={statusTone(item.status)}>{item.status}</Badge> : '—'}
               </TableCell>
 
               <TableCell>
                 {item.condition ? (
-                  <Badge tone={statusTone(item.condition)}>
-                    {item.condition}
-                  </Badge>
+                  <Badge tone={statusTone(item.condition)}>{item.condition}</Badge>
                 ) : (
-                  "—"
+                  '—'
                 )}
               </TableCell>
 
-              <TableCell>{item.location ?? "—"}</TableCell>
+              <TableCell>{item.location ?? '—'}</TableCell>
 
               <TableCell className="max-w-[300px] truncate text-muted-foreground">
-                {item.notes ?? "—"}
+                {item.notes ?? '—'}
               </TableCell>
             </TableRow>
           ))}
@@ -933,8 +856,7 @@ function DamagedReportView({ filters }: { filters: ReportFilters }) {
 // ============================================================
 
 function StatusReportView({ filters }: { filters: ReportFilters }) {
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetReportByStatusQuery(filters);
+  const { data, isLoading, isFetching, isError, refetch } = useGetReportByStatusQuery(filters);
 
   if (isLoading) {
     return <LoadingState />;
@@ -975,10 +897,7 @@ function StatusReportView({ filters }: { filters: ReportFilters }) {
 
         <TableBody>
           {breakdown.map((item) => {
-            const percentage =
-              data?.total && data.total > 0
-                ? (item.count / data.total) * 100
-                : 0;
+            const percentage = data?.total && data.total > 0 ? (item.count / data.total) * 100 : 0;
 
             return (
               <TableRow key={item.status}>
@@ -986,9 +905,7 @@ function StatusReportView({ filters }: { filters: ReportFilters }) {
                   <Badge tone={statusTone(item.status)}>{item.status}</Badge>
                 </TableCell>
 
-                <TableCell className="text-right font-medium">
-                  {formatNumber(item.count)}
-                </TableCell>
+                <TableCell className="text-right font-medium">{formatNumber(item.count)}</TableCell>
 
                 <TableCell className="text-right text-muted-foreground">
                   {percentage.toFixed(1)}%
@@ -1063,16 +980,16 @@ function SystemsReportView({ filters }: { filters: ReportFilters }) {
 
       <div
         className={cn(
-          "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3",
-          isFetching && "opacity-70",
+          'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
+          isFetching && 'opacity-70',
         )}
       >
         {items.map((item) => {
           const specRows = [
             { label: item.nameLabel, value: item.name, bold: true },
-            { label: "HOLDER NAME", value: item.holder, bold: true },
+            { label: 'HOLDER NAME', value: item.holder, bold: true },
             {
-              label: "ASSIGNMENT STATUS",
+              label: 'ASSIGNMENT STATUS',
               value: item.assignmentStatus,
               bold: true,
             },
@@ -1096,19 +1013,14 @@ function SystemsReportView({ filters }: { filters: ReportFilters }) {
                   >
                     <dt
                       className={cn(
-                        "text-muted-foreground",
-                        row.bold && "font-semibold text-foreground",
+                        'text-muted-foreground',
+                        row.bold && 'font-semibold text-foreground',
                       )}
                     >
                       {row.label}
                     </dt>
 
-                    <dd
-                      className={cn(
-                        "break-words text-foreground",
-                        row.bold && "font-semibold",
-                      )}
-                    >
+                    <dd className={cn('break-words text-foreground', row.bold && 'font-semibold')}>
                       {row.value}
                     </dd>
                   </div>
@@ -1127,13 +1039,9 @@ function SystemsReportView({ filters }: { filters: ReportFilters }) {
                         key={`${entry.category}-${index}`}
                         className="grid grid-cols-[2fr_3fr] items-center gap-3 px-4 py-2"
                       >
-                        <dt className="text-muted-foreground">
-                          {entry.category}
-                        </dt>
+                        <dt className="text-muted-foreground">{entry.category}</dt>
 
-                        <dd className="break-words text-foreground">
-                          {entry.name}
-                        </dd>
+                        <dd className="break-words text-foreground">{entry.name}</dd>
                       </div>
                     ))}
                   </dl>
@@ -1171,9 +1079,7 @@ function ReportTable({
       )}
 
       <header className="border-b border-border px-5 py-4">
-        <h2 className="text-[15px] font-semibold tracking-tight text-foreground">
-          {title}
-        </h2>
+        <h2 className="text-[15px] font-semibold tracking-tight text-foreground">{title}</h2>
 
         <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
       </header>
@@ -1190,7 +1096,7 @@ function ReportTable({
 // ============================================================
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState<ReportTab>("assets");
+  const [activeTab, setActiveTab] = useState<ReportTab>('assets');
 
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
 
@@ -1234,15 +1140,12 @@ export default function Reports() {
 
   const activeTabConfig = TABS.find((tab) => tab.value === activeTab);
 
-  const activeLabel = activeTabConfig?.label ?? "Reports";
+  const activeLabel = activeTabConfig?.label ?? 'Reports';
 
-  const activeReportType = activeTabConfig?.reportType ?? "assets";
+  const activeReportType = activeTabConfig?.reportType ?? 'assets';
 
   return (
-    <div
-      key={refreshKey}
-      className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8"
-    >
+    <div key={refreshKey} className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       {/* ======================================================
           HEADER
       ====================================================== */}
@@ -1286,10 +1189,10 @@ export default function Reports() {
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  "flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
-                  "outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  'flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
+                  'outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -1366,9 +1269,7 @@ export default function Reports() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              downloadReport(activeReportType, "pdf", appliedFilters)
-            }
+            onClick={() => downloadReport(activeReportType, 'pdf', appliedFilters)}
           >
             <Download />
             Export

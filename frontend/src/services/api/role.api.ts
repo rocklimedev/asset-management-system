@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { RootState } from '../store';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // TYPES
@@ -76,7 +76,7 @@ export interface SetRolePermissionsRequest {
 // ============================================================
 
 export const rolesApi = createApi({
-  reducerPath: "rolesApi",
+  reducerPath: 'rolesApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -84,26 +84,29 @@ export const rolesApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
       return headers;
     },
   }),
 
-  tagTypes: ["Role", "Permission"],
+  tagTypes: ['Role', 'Permission'],
 
   endpoints: (builder) => ({
     getRoleAccess: builder.query<{ roleId: string; permissions: string[] }, void>({
       query: () => '/roles/access',
       providesTags: ['Role'],
     }),
-    createRole: builder.mutation<Role, { name: string; description: string; permissionIds: string[] }>({
-      query: body => ({ url: '/roles', method: 'POST', body }),
+    createRole: builder.mutation<
+      Role,
+      { name: string; description: string; permissionIds: string[] }
+    >({
+      query: (body) => ({ url: '/roles', method: 'POST', body }),
       invalidatesTags: ['Role'],
     }),
     // ============================================================
@@ -114,30 +117,31 @@ export const rolesApi = createApi({
     getRoles: builder.query<Role[] | RolesResponse, void>({
       transformResponse: (response: Role[] | RolesResponse) => {
         const rows = Array.isArray(response) ? response : response.data || [];
-        return rows.map(role => ({ ...role, permissions: (role.permissions || []).map(value => {
-          const nested = value as unknown as { permission?: Permission };
-          return nested.permission || value;
-        }) }));
+        return rows.map((role) => ({
+          ...role,
+          permissions: (role.permissions || []).map((value) => {
+            const nested = value as unknown as { permission?: Permission };
+            return nested.permission || value;
+          }),
+        }));
       },
       query: () => ({
-        url: "/roles",
-        method: "GET",
+        url: '/roles',
+        method: 'GET',
       }),
 
       providesTags: (result) => {
-        const roles: Role[] = Array.isArray(result)
-          ? result
-          : result?.data || [];
+        const roles: Role[] = Array.isArray(result) ? result : result?.data || [];
 
         return [
           ...roles.map(({ id }) => ({
-            type: "Role" as const,
+            type: 'Role' as const,
             id,
           })),
 
           {
-            type: "Role" as const,
-            id: "LIST",
+            type: 'Role' as const,
+            id: 'LIST',
           },
         ];
       },
@@ -150,24 +154,22 @@ export const rolesApi = createApi({
 
     getPermissions: builder.query<Permission[] | PermissionsResponse, void>({
       query: () => ({
-        url: "/roles/permissions",
-        method: "GET",
+        url: '/roles/permissions',
+        method: 'GET',
       }),
 
       providesTags: (result) => {
-        const permissions: Permission[] = Array.isArray(result)
-          ? result
-          : result?.data || [];
+        const permissions: Permission[] = Array.isArray(result) ? result : result?.data || [];
 
         return [
           ...permissions.map(({ id }) => ({
-            type: "Permission" as const,
+            type: 'Permission' as const,
             id,
           })),
 
           {
-            type: "Permission" as const,
-            id: "LIST",
+            type: 'Permission' as const,
+            id: 'LIST',
           },
         ];
       },
@@ -178,13 +180,10 @@ export const rolesApi = createApi({
     // PATCH /roles/:id/permissions
     // ============================================================
 
-    setRolePermissions: builder.mutation<
-      SetRolePermissionsResponse,
-      SetRolePermissionsRequest
-    >({
+    setRolePermissions: builder.mutation<SetRolePermissionsResponse, SetRolePermissionsRequest>({
       query: ({ id, permissionIds }) => ({
         url: `/roles/${id}/permissions`,
-        method: "PATCH",
+        method: 'PATCH',
 
         body: {
           permissionIds,

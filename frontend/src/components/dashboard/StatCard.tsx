@@ -1,25 +1,25 @@
-import type { LucideIcon } from "lucide-react";
-import { Link } from "react-router-dom";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-type Tone = "default" | "brand" | "ok" | "warn" | "danger" | "info";
+type Tone = 'default' | 'brand' | 'ok' | 'warn' | 'danger' | 'info';
 
 const TONE_CLASSES: Record<Tone, string> = {
-  default: "bg-accent text-accent-foreground",
-  brand: "bg-primary-muted text-primary",
-  ok: "bg-success-muted text-success-strong",
-  warn: "bg-warning-muted text-warning-strong",
-  danger: "bg-destructive-muted text-destructive-strong",
-  info: "bg-info-muted text-info-strong",
+  default: 'bg-accent text-accent-foreground',
+  brand: 'bg-primary-muted text-primary',
+  ok: 'bg-success-muted text-success-strong',
+  warn: 'bg-warning-muted text-warning-strong',
+  danger: 'bg-destructive-muted text-destructive-strong',
+  info: 'bg-info-muted text-info-strong',
 };
 
 export function StatCard({
   label,
   value,
   icon: Icon,
-  tone = "default",
+  tone = 'default',
   hint,
   delta,
   to,
@@ -28,7 +28,7 @@ export function StatCard({
   label: string;
   value: number | string;
   icon: LucideIcon;
-  tone?: Tone | "warn" | "danger";
+  tone?: Tone | 'warn' | 'danger';
   hint?: string;
   /** Percentage change vs. the previous period. */
   delta?: number;
@@ -36,26 +36,24 @@ export function StatCard({
   to?: string;
   className?: string;
 }) {
-  const resolvedTone = (TONE_CLASSES[tone as Tone] ? tone : "default") as Tone;
+  const resolvedTone = (TONE_CLASSES[tone as Tone] ? tone : 'default') as Tone;
 
-  const deltaUp = typeof delta === "number" && delta >= 0;
+  const deltaUp = typeof delta === 'number' && delta >= 0;
 
   const card = (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card p-4 shadow-card",
-        to && "transition-colors group-hover:border-primary-border",
+        'rounded-xl border border-border bg-card p-4 shadow-card',
+        to && 'transition-colors group-hover:border-primary-border',
         className,
       )}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">
-          {label}
-        </span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
 
         <div
           className={cn(
-            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+            'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
             TONE_CLASSES[resolvedTone],
           )}
         >
@@ -68,26 +66,20 @@ export function StatCard({
           {value}
         </p>
 
-        {typeof delta === "number" && (
+        {typeof delta === 'number' && (
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums",
-              deltaUp ? "text-success-strong" : "text-destructive-strong",
+              'inline-flex items-center gap-0.5 text-xs font-medium tabular-nums',
+              deltaUp ? 'text-success-strong' : 'text-destructive-strong',
             )}
           >
-            {deltaUp ? (
-              <TrendingUp className="h-3 w-3" />
-            ) : (
-              <TrendingDown className="h-3 w-3" />
-            )}
+            {deltaUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
             {Math.abs(delta)}%
           </span>
         )}
       </div>
 
-      {hint && (
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-      )}
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 

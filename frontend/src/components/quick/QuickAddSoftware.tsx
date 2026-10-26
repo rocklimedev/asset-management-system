@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import {
   useCreateAssetCategoryMutation,
@@ -8,13 +8,13 @@ import {
   type AssetCategoryInput,
   type AssetKind,
   type CreateAssetRequest,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 import {
   LICENSED_SUBSCRIPTION_TYPES,
   useCreateSoftwareLicenseMutation,
   useCreateSoftwareMutation,
   type SoftwareSubscriptionType,
-} from "../../services/api/software.api";
+} from '../../services/api/software.api';
 
 import {
   Dialog,
@@ -22,12 +22,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { toast } from "../ui/toast";
-import { cn } from "@/lib/utils";
-import { licensingLabel } from "../software/software-ui";
+} from '@/components/ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { toast } from '../ui/toast';
+import { cn } from '@/lib/utils';
+import { licensingLabel } from '../software/software-ui';
 
 // ============================================================
 // QUICK ADD SOFTWARE
@@ -46,9 +46,9 @@ interface Props {
 type Step = 1 | 2 | 3;
 
 const STEP_TITLES: Record<Step, string> = {
-  1: "Name it",
-  2: "How is it paid for?",
-  3: "Add details (optional)",
+  1: 'Name it',
+  2: 'How is it paid for?',
+  3: 'Add details (optional)',
 };
 
 const CHOICES: {
@@ -56,12 +56,12 @@ const CHOICES: {
   label: string;
   hint: string;
 }[] = [
-  { value: "SUBSCRIPTION", label: "Subscription", hint: "Renews monthly or yearly" },
-  { value: "PERPETUAL", label: "One-time purchase", hint: "Paid once, kept for good" },
-  { value: "COMPANY_LICENSE", label: "Company license", hint: "One agreement covers the team" },
-  { value: "FREE", label: "Free", hint: "No cost to use" },
-  { value: "OPEN_SOURCE", label: "Open source", hint: "Community maintained" },
-  { value: "TRIAL", label: "Trial", hint: "Temporary evaluation" },
+  { value: 'SUBSCRIPTION', label: 'Subscription', hint: 'Renews monthly or yearly' },
+  { value: 'PERPETUAL', label: 'One-time purchase', hint: 'Paid once, kept for good' },
+  { value: 'COMPANY_LICENSE', label: 'Company license', hint: 'One agreement covers the team' },
+  { value: 'FREE', label: 'Free', hint: 'No cost to use' },
+  { value: 'OPEN_SOURCE', label: 'Open source', hint: 'Community maintained' },
+  { value: 'TRIAL', label: 'Trial', hint: 'Temporary evaluation' },
 ];
 
 interface CategoryOption {
@@ -73,25 +73,25 @@ interface CategoryOption {
 function errorText(error: unknown) {
   const e = error as { data?: { message?: string | string[] }; message?: string };
   const message = e?.data?.message;
-  if (Array.isArray(message)) return message.join(". ");
-  return message || e?.message || "Nothing was saved. Please try again.";
+  if (Array.isArray(message)) return message.join('. ');
+  return message || e?.message || 'Nothing was saved. Please try again.';
 }
 
 export function QuickAddSoftware({ open, onClose }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
 
-  const [name, setName] = useState("");
-  const [publisher, setPublisher] = useState("");
-  const [licensing, setLicensing] = useState<SoftwareSubscriptionType | "">("");
+  const [name, setName] = useState('');
+  const [publisher, setPublisher] = useState('');
+  const [licensing, setLicensing] = useState<SoftwareSubscriptionType | ''>('');
   const [seats, setSeats] = useState(1);
-  const [expiryDate, setExpiryDate] = useState("");
-  const [licenseKey, setLicenseKey] = useState("");
-  const [cost, setCost] = useState("");
-  const [version, setVersion] = useState("");
-  const [edition, setEdition] = useState("");
-  const [notes, setNotes] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [expiryDate, setExpiryDate] = useState('');
+  const [licenseKey, setLicenseKey] = useState('');
+  const [cost, setCost] = useState('');
+  const [version, setVersion] = useState('');
+  const [edition, setEdition] = useState('');
+  const [notes, setNotes] = useState('');
+  const [categoryId, setCategoryId] = useState('');
 
   /*
    * Saving is three requests (asset, catalog entry, licence). If one fails
@@ -109,42 +109,36 @@ export function QuickAddSoftware({ open, onClose }: Props) {
   const [createSoftware] = useCreateSoftwareMutation();
   const [createLicense] = useCreateSoftwareLicenseMutation();
 
-  const { data: categoriesData } = useGetAssetCategoriesQuery(
-    { isActive: true },
-    { skip: !open },
-  );
+  const { data: categoriesData } = useGetAssetCategoriesQuery({ isActive: true }, { skip: !open });
 
   const softwareCategories = useMemo<CategoryOption[]>(() => {
     const list = Array.isArray(categoriesData)
       ? (categoriesData as CategoryOption[])
-      : ((categoriesData as { items?: CategoryOption[] } | undefined)?.items ??
-        []);
-    return list.filter((c) => c.type === "SOFTWARE");
+      : ((categoriesData as { items?: CategoryOption[] } | undefined)?.items ?? []);
+    return list.filter((c) => c.type === 'SOFTWARE');
   }, [categoriesData]);
 
   useEffect(() => {
     if (!open) return;
     setStep(1);
     setSaving(false);
-    setName("");
-    setPublisher("");
-    setLicensing("");
+    setName('');
+    setPublisher('');
+    setLicensing('');
     setSeats(1);
-    setExpiryDate("");
-    setLicenseKey("");
-    setCost("");
-    setVersion("");
-    setEdition("");
-    setNotes("");
-    setCategoryId("");
+    setExpiryDate('');
+    setLicenseKey('');
+    setCost('');
+    setVersion('');
+    setEdition('');
+    setNotes('');
+    setCategoryId('');
     progress.current = {};
   }, [open]);
 
-  const isLicensed = licensing !== "" && LICENSED_SUBSCRIPTION_TYPES.includes(licensing);
+  const isLicensed = licensing !== '' && LICENSED_SUBSCRIPTION_TYPES.includes(licensing);
   const asksExpiry =
-    licensing === "SUBSCRIPTION" ||
-    licensing === "COMPANY_LICENSE" ||
-    licensing === "TRIAL";
+    licensing === 'SUBSCRIPTION' || licensing === 'COMPANY_LICENSE' || licensing === 'TRIAL';
 
   const seatsValid = Number.isInteger(seats) && seats >= 1;
 
@@ -152,7 +146,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
     step === 1
       ? name.trim().length > 0
       : step === 2
-        ? licensing !== "" && (!isLicensed || seatsValid)
+        ? licensing !== '' && (!isLicensed || seatsValid)
         : true;
 
   function next() {
@@ -168,15 +162,12 @@ export function QuickAddSoftware({ open, onClose }: Props) {
 
     try {
       // 1. A category to file it under (created automatically if none exist).
-      let chosenCategory =
-        progress.current.categoryId ||
-        categoryId ||
-        softwareCategories[0]?.id;
+      let chosenCategory = progress.current.categoryId || categoryId || softwareCategories[0]?.id;
 
       if (!chosenCategory) {
         const created = await createCategory({
-          name: "Software",
-          type: "SOFTWARE",
+          name: 'Software',
+          type: 'SOFTWARE',
         } as AssetCategoryInput).unwrap();
         chosenCategory = created.id;
       }
@@ -186,10 +177,10 @@ export function QuickAddSoftware({ open, onClose }: Props) {
       if (!progress.current.assetId) {
         const response = (await createAsset({
           name: title,
-          kind: "SOFTWARE",
+          kind: 'SOFTWARE',
           categoryId: chosenCategory,
           quantity: 1,
-          status: "AVAILABLE",
+          status: 'AVAILABLE',
           manufacturer: publisher.trim() || undefined,
         } as unknown as CreateAssetRequest).unwrap()) as {
           id?: string;
@@ -198,7 +189,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
 
         const assetId = response?.data?.id ?? response?.id;
         if (!assetId) {
-          throw new Error("The server did not return an ID for the new software.");
+          throw new Error('The server did not return an ID for the new software.');
         }
         progress.current.assetId = assetId;
       }
@@ -232,19 +223,19 @@ export function QuickAddSoftware({ open, onClose }: Props) {
       }
 
       toast.add({
-        type: "success",
-        title: "Software added",
+        type: 'success',
+        title: 'Software added',
         description: isLicensed
-          ? `${title} is in the catalog with ${seats} seat${seats === 1 ? "" : "s"}.`
+          ? `${title} is in the catalog with ${seats} seat${seats === 1 ? '' : 's'}.`
           : `${title} is in the catalog.`,
       });
       onClose();
     } catch (error) {
       const partial = progress.current.assetId
-        ? " What was already saved is kept, so pressing Add software again will continue from there."
-        : "";
+        ? ' What was already saved is kept, so pressing Add software again will continue from there.'
+        : '';
       toast.add({
-        type: "error",
+        type: 'error',
         title: "Couldn't finish adding this software",
         description: errorText(error) + partial,
       });
@@ -269,8 +260,8 @@ export function QuickAddSoftware({ open, onClose }: Props) {
               <span
                 key={s}
                 className={cn(
-                  "h-1.5 rounded-full transition-colors",
-                  s <= step ? "bg-primary" : "bg-muted",
+                  'h-1.5 rounded-full transition-colors',
+                  s <= step ? 'bg-primary' : 'bg-muted',
                 )}
               />
             ))}
@@ -296,14 +287,15 @@ export function QuickAddSoftware({ open, onClose }: Props) {
                   className="mt-2"
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") next();
+                    if (e.key === 'Enter') next();
                   }}
                 />
               </div>
 
               <div>
                 <label htmlFor="qs-publisher" className="text-sm font-medium text-foreground">
-                  Who makes it? <span className="font-normal text-muted-foreground">(optional)</span>
+                  Who makes it?{' '}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
                 </label>
                 <Input
                   id="qs-publisher"
@@ -312,7 +304,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
                   className="mt-2"
                   onChange={(e) => setPublisher(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") next();
+                    if (e.key === 'Enter') next();
                   }}
                 />
               </div>
@@ -335,18 +327,16 @@ export function QuickAddSoftware({ open, onClose }: Props) {
                         aria-pressed={selected}
                         onClick={() => setLicensing(choice.value)}
                         className={cn(
-                          "flex flex-col items-start gap-1 rounded-xl border p-3 text-left shadow-card transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          'flex flex-col items-start gap-1 rounded-xl border p-3 text-left shadow-card transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           selected
-                            ? "border-primary bg-primary-muted"
-                            : "border-border bg-card hover:border-primary-border",
+                            ? 'border-primary bg-primary-muted'
+                            : 'border-border bg-card hover:border-primary-border',
                         )}
                       >
                         <span className="text-sm font-semibold text-foreground">
                           {choice.label}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          {choice.hint}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{choice.hint}</span>
                       </button>
                     );
                   })}
@@ -354,7 +344,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    setLicensing("UNKNOWN");
+                    setLicensing('UNKNOWN');
                     setStep(3);
                   }}
                   className="mt-3 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -408,16 +398,40 @@ export function QuickAddSoftware({ open, onClose }: Props) {
           {step === 3 && (
             <>
               <p className="text-sm text-muted-foreground">
-                Nothing here is required. Skip any field and add it later from the software&apos;s page.
+                Nothing here is required. Skip any field and add it later from the software&apos;s
+                page.
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field id="qs-version" label="Version" hint="e.g. 2024" value={version} onChange={setVersion} />
-                <Field id="qs-edition" label="Edition" hint="e.g. Business Premium" value={edition} onChange={setEdition} />
+                <Field
+                  id="qs-version"
+                  label="Version"
+                  hint="e.g. 2024"
+                  value={version}
+                  onChange={setVersion}
+                />
+                <Field
+                  id="qs-edition"
+                  label="Edition"
+                  hint="e.g. Business Premium"
+                  value={edition}
+                  onChange={setEdition}
+                />
                 {isLicensed && (
                   <>
-                    <Field id="qs-key" label="License key or reference" value={licenseKey} onChange={setLicenseKey} />
-                    <Field id="qs-cost" label="Cost" type="number" value={cost} onChange={setCost} />
+                    <Field
+                      id="qs-key"
+                      label="License key or reference"
+                      value={licenseKey}
+                      onChange={setLicenseKey}
+                    />
+                    <Field
+                      id="qs-cost"
+                      label="Cost"
+                      type="number"
+                      value={cost}
+                      onChange={setCost}
+                    />
                   </>
                 )}
               </div>
@@ -458,7 +472,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
               <dl className="rounded-lg bg-muted px-4 py-3 text-sm">
                 <Row label="Software" value={name.trim()} />
                 {publisher.trim() && <Row label="Made by" value={publisher.trim()} />}
-                <Row label="Paid for" value={licensing ? licensingLabel(licensing) : "—"} />
+                <Row label="Paid for" value={licensing ? licensingLabel(licensing) : '—'} />
                 {isLicensed && <Row label="Seats" value={String(seats)} />}
               </dl>
             </>
@@ -473,7 +487,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
             onClick={() => (step === 1 ? onClose() : setStep((s) => (s - 1) as Step))}
           >
             {step === 1 ? (
-              "Cancel"
+              'Cancel'
             ) : (
               <>
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -489,7 +503,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
             </Button>
           ) : (
             <Button type="button" disabled={saving} onClick={save}>
-              {saving ? "Saving…" : "Add software"}
+              {saving ? 'Saving…' : 'Add software'}
             </Button>
           )}
         </div>
@@ -521,8 +535,8 @@ function Field({
       <Input
         id={id}
         type={type}
-        min={type === "number" ? 0 : undefined}
-        step={type === "number" ? "0.01" : undefined}
+        min={type === 'number' ? 0 : undefined}
+        step={type === 'number' ? '0.01' : undefined}
         value={value}
         placeholder={hint}
         className="mt-1.5"

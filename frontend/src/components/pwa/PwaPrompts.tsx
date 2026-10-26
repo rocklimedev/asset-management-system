@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { useRegisterSW } from "virtual:pwa-register/react";
-import { RefreshCw, WifiOff, X } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw, WifiOff, X } from 'lucide-react';
 
-import { Button } from "../ui/button";
+import { Button } from '../ui/button';
 
 // ============================================================
 // PWA PROMPTS
@@ -20,12 +20,12 @@ function useOnlineStatus() {
     const goOnline = () => setOnline(true);
     const goOffline = () => setOnline(false);
 
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
 
     return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
     };
   }, []);
 
@@ -39,7 +39,7 @@ export function PwaPrompts() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegisterError(error) {
-      console.error("Service worker registration failed:", error);
+      console.error('Service worker registration failed:', error);
     },
   });
 
@@ -67,13 +67,10 @@ export function PwaPrompts() {
           className="fixed bottom-4 right-4 z-[70] flex w-[min(360px,calc(100vw-2rem))] items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-overlay"
         >
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">
-              Update available
-            </p>
+            <p className="text-sm font-semibold text-foreground">Update available</p>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              A newer version of ITAM is ready. Update now to get the latest
-              changes.
+              A newer version of ITAM is ready. Update now to get the latest changes.
             </p>
 
             <div className="mt-3 flex gap-2">
@@ -105,13 +102,10 @@ export function PwaPrompts() {
           className="fixed bottom-4 right-4 z-[70] flex w-[min(360px,calc(100vw-2rem))] items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-overlay"
         >
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">
-              Ready to work offline
-            </p>
+            <p className="text-sm font-semibold text-foreground">Ready to work offline</p>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              ITAM has been saved to this device. Reports and records still
-              need a connection.
+              ITAM has been saved to this device. Reports and records still need a connection.
             </p>
           </div>
 

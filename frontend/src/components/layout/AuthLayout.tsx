@@ -1,23 +1,23 @@
-import { Outlet } from "react-router-dom";
-import { ShieldCheck, Boxes, LineChart } from "lucide-react";
+import { Outlet } from 'react-router-dom';
+import { ShieldCheck, Boxes, LineChart } from 'lucide-react';
 
-import { AppMark } from "./AppMark";
+import { AppMark } from './AppMark';
 
 const HIGHLIGHTS = [
   {
     icon: Boxes,
-    title: "One register for every asset",
-    body: "Hardware and software tracked from procurement through to retirement.",
+    title: 'One register for every asset',
+    body: 'Hardware and software tracked from procurement through to retirement.',
   },
   {
     icon: ShieldCheck,
-    title: "Accountable by default",
-    body: "Every assignment, transfer and return is attributed and timestamped.",
+    title: 'Accountable by default',
+    body: 'Every assignment, transfer and return is attributed and timestamped.',
   },
   {
     icon: LineChart,
-    title: "Reporting that holds up",
-    body: "Utilisation, ageing and depreciation ready for audit and budget cycles.",
+    title: 'Reporting that holds up',
+    body: 'Utilisation, ageing and depreciation ready for audit and budget cycles.',
   },
 ];
 
@@ -44,8 +44,8 @@ export default function AuthLayout() {
           </h1>
 
           <p className="mt-4 text-sm leading-6 text-brand-200">
-            Users, inventory, assignments, requests and reporting — governed by
-            a single source of truth.
+            Users, inventory, assignments, requests and reporting — governed by a single source of
+            truth.
           </p>
 
           <ul className="mt-10 space-y-5">
@@ -57,9 +57,7 @@ export default function AuthLayout() {
 
                 <div>
                   <p className="text-sm font-medium">{item.title}</p>
-                  <p className="mt-0.5 text-xs leading-5 text-brand-300">
-                    {item.body}
-                  </p>
+                  <p className="mt-0.5 text-xs leading-5 text-brand-300">{item.body}</p>
                 </div>
               </li>
             ))}
@@ -81,12 +79,8 @@ export default function AuthLayout() {
             <AppMark />
 
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                IT Asset Management
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Administration Portal
-              </p>
+              <p className="text-sm font-semibold text-foreground">IT Asset Management</p>
+              <p className="text-xs text-muted-foreground">Administration Portal</p>
             </div>
           </div>
 

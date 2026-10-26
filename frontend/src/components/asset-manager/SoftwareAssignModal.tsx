@@ -1,6 +1,6 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 
 import {
   LICENSED_SUBSCRIPTION_TYPES,
@@ -8,15 +8,15 @@ import {
   useAssignSoftwareWithChildrenMutation,
   useGetSoftwareLicensesQuery,
   useGetSoftwareListQuery,
-} from "../../services/api/software.api";
-import { apiErrorMessage } from "../../types/systems";
+} from '../../services/api/software.api';
+import { apiErrorMessage } from '../../types/systems';
 
-import { Button } from "../ui/button";
-import { toast } from "../ui/toast";
+import { Button } from '../ui/button';
+import { toast } from '../ui/toast';
 
 const SELECT_CLASSES =
-  "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted";
-const LABEL_CLASSES = "mb-1 block text-xs font-medium text-muted-foreground";
+  'h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted';
+const LABEL_CLASSES = 'mb-1 block text-xs font-medium text-muted-foreground';
 
 interface Props {
   open: boolean;
@@ -31,20 +31,15 @@ interface Props {
   installedAssetIds?: string[];
 }
 
-export function SoftwareAssignModal({
-  open,
-  onClose,
-  system,
-  installedAssetIds = [],
-}: Props) {
-  const [assetId, setAssetId] = useState("");
-  const [licenseChoice, setLicenseChoice] = useState<string>("none"); // none | auto | <licenseId>
+export function SoftwareAssignModal({ open, onClose, system, installedAssetIds = [] }: Props) {
+  const [assetId, setAssetId] = useState('');
+  const [licenseChoice, setLicenseChoice] = useState<string>('none'); // none | auto | <licenseId>
   const [withChildren, setWithChildren] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const { data: catalog, isLoading } = useGetSoftwareListQuery(
-    { limit: 200, sortBy: "name", sortDir: "ASC" },
+    { limit: 200, sortBy: 'name', sortDir: 'ASC' },
     { skip: !open },
   );
 
@@ -54,17 +49,16 @@ export function SoftwareAssignModal({
   );
 
   const [assign, assignState] = useAssignSoftwareMutation();
-  const [assignWithChildren, childrenState] =
-    useAssignSoftwareWithChildrenMutation();
+  const [assignWithChildren, childrenState] = useAssignSoftwareWithChildrenMutation();
 
   const busy = assignState.isLoading || childrenState.isLoading;
 
   useEffect(() => {
     if (!open) return;
-    setAssetId("");
-    setLicenseChoice("none");
+    setAssetId('');
+    setLicenseChoice('none');
     setWithChildren(false);
-    setNotes("");
+    setNotes('');
     setError(null);
   }, [open]);
 
@@ -84,9 +78,7 @@ export function SoftwareAssignModal({
 
     const next = options.find((s) => s.assetId === nextAssetId);
     setLicenseChoice(
-      next && LICENSED_SUBSCRIPTION_TYPES.includes(next.subscriptionType)
-        ? "auto"
-        : "none",
+      next && LICENSED_SUBSCRIPTION_TYPES.includes(next.subscriptionType) ? 'auto' : 'none',
     );
   }
 
@@ -98,7 +90,7 @@ export function SoftwareAssignModal({
     if (!system) return;
 
     if (!assetId) {
-      setError("Please select a software.");
+      setError('Please select a software.');
       return;
     }
 
@@ -108,10 +100,8 @@ export function SoftwareAssignModal({
       softwareAssetId: assetId,
       systemId: system.id,
       softwareLicenseId:
-        licenseChoice !== "none" && licenseChoice !== "auto"
-          ? licenseChoice
-          : undefined,
-      autoAllocateLicense: licenseChoice === "auto" ? true : undefined,
+        licenseChoice !== 'none' && licenseChoice !== 'auto' ? licenseChoice : undefined,
+      autoAllocateLicense: licenseChoice === 'auto' ? true : undefined,
       notes: notes.trim() || undefined,
     };
 
@@ -123,9 +113,9 @@ export function SoftwareAssignModal({
       }
 
       toast.add({
-        title: "Software installed",
-        description: `${selected?.asset?.name ?? "Software"} assigned to ${system.name}.`,
-        type: "success",
+        title: 'Software installed',
+        description: `${selected?.asset?.name ?? 'Software'} assigned to ${system.name}.`,
+        type: 'success',
       });
 
       onClose();
@@ -137,7 +127,8 @@ export function SoftwareAssignModal({
   if (!open || !system) return null;
 
   return (
-    <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+    <OverlayRoot
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
       onClose={onClose}
       label="Install software"
       disableClose={busy}
@@ -145,12 +136,10 @@ export function SoftwareAssignModal({
       <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">
-              Install software
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground">Install software</h2>
             <p className="text-xs text-muted-foreground">
               {system.name}
-              {system.systemTag ? ` · ${system.systemTag}` : ""}
+              {system.systemTag ? ` · ${system.systemTag}` : ''}
             </p>
           </div>
 
@@ -168,8 +157,8 @@ export function SoftwareAssignModal({
           <div className="space-y-4 px-5 py-5">
             {noEmployee ? (
               <div className="rounded-md bg-destructive-muted px-3 py-2 text-xs text-destructive-strong">
-                This system is not assigned to an employee. Assign it first;
-                software can only be installed on assigned systems.
+                This system is not assigned to an employee. Assign it first; software can only be
+                installed on assigned systems.
               </div>
             ) : null}
 
@@ -181,18 +170,12 @@ export function SoftwareAssignModal({
                 disabled={busy || isLoading}
                 className={SELECT_CLASSES}
               >
-                <option value="">
-                  {isLoading ? "Loading software..." : "Select software"}
-                </option>
+                <option value="">{isLoading ? 'Loading software...' : 'Select software'}</option>
                 {options.map((s) => (
-                  <option
-                    key={s.assetId}
-                    value={s.assetId}
-                    disabled={s.usage === "BLOCKED"}
-                  >
+                  <option key={s.assetId} value={s.assetId} disabled={s.usage === 'BLOCKED'}>
                     {s.asset?.name ?? s.assetId}
-                    {s.version ? ` ${s.version}` : ""}
-                    {s.usage === "BLOCKED" ? " (blocked)" : ""}
+                    {s.version ? ` ${s.version}` : ''}
+                    {s.usage === 'BLOCKED' ? ' (blocked)' : ''}
                   </option>
                 ))}
               </select>
@@ -210,8 +193,8 @@ export function SoftwareAssignModal({
                 <option value="auto">Auto-allocate best available seat</option>
                 {usableLicenses.map((l) => (
                   <option key={l.id} value={l.id}>
-                    {l.vendor} · {l.licenseType} (
-                    {l.totalSeats - l.assignedSeats} of {l.totalSeats} free)
+                    {l.vendor} · {l.licenseType} ({l.totalSeats - l.assignedSeats} of {l.totalSeats}{' '}
+                    free)
                   </option>
                 ))}
               </select>
@@ -249,16 +232,11 @@ export function SoftwareAssignModal({
           </div>
 
           <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={busy}
-            >
+            <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
               Cancel
             </Button>
             <Button type="submit" disabled={busy || noEmployee}>
-              {busy ? "Installing..." : "Install"}
+              {busy ? 'Installing...' : 'Install'}
             </Button>
           </div>
         </form>
