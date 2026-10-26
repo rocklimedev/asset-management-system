@@ -53,6 +53,7 @@ import {
 import { AssetTransfer, TransferStatus } from "./models/asset-transfer.model";
 
 import { Vendor } from "./models/vendor.model";
+import { SoftwareDetails, SoftwareUsage } from "./models/software-details.model";
 import { SoftwareLicense } from "./models/software-license.model";
 
 import { Organisation } from "../organisation/models/organisation.model";
@@ -343,6 +344,13 @@ export class AssetsService {
       },
       transaction,
     });
+
+    if (asset.kind === "SOFTWARE" && assignedCount > 0) {
+      await SoftwareDetails.update(
+        { usage: SoftwareUsage.IN_USE },
+        { where: { assetId, usage: { [Op.ne]: SoftwareUsage.BLOCKED } }, transaction },
+      );
+    }
 
     const availableCount = await this.assetUnitModel.count({
       where: {

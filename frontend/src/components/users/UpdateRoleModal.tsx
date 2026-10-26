@@ -1,14 +1,14 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import React, { useEffect, useState } from "react";
-import { ShieldCheck, X } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import React, { useEffect, useState } from 'react';
+import { ShieldCheck, X } from 'lucide-react';
 
-import { useChangeUserRoleMutation, type User } from "@/services/api/users.api";
+import { useChangeUserRoleMutation, type User } from '@/services/api/users.api';
 
-import { useGetRolesQuery } from "@/services/api/role.api";
+import { useGetRolesQuery } from '@/services/api/role.api';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface UpdateRoleModalProps {
   open: boolean;
@@ -21,16 +21,12 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  roleId: "",
+  roleId: '',
 };
 
-export default function UpdateRoleModal({
-  open,
-  user,
-  onClose,
-}: UpdateRoleModalProps) {
+export default function UpdateRoleModal({ open, user, onClose }: UpdateRoleModalProps) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const { data: rolesData, isLoading: rolesLoading } = useGetRolesQuery();
 
@@ -45,15 +41,15 @@ export default function UpdateRoleModal({
   useEffect(() => {
     if (!open) {
       setForm(EMPTY_FORM);
-      setError("");
+      setError('');
       return;
     }
 
     if (user) {
       setForm({
-        roleId: user.roleId ?? user.role?.id ?? "",
+        roleId: user.roleId ?? user.role?.id ?? '',
       });
-      setError("");
+      setError('');
     }
   }, [open, user]);
 
@@ -68,7 +64,7 @@ export default function UpdateRoleModal({
     }));
 
     if (error) {
-      setError("");
+      setError('');
     }
   };
 
@@ -76,7 +72,7 @@ export default function UpdateRoleModal({
     event.preventDefault();
 
     if (!form.roleId) {
-      setError("Please select a role.");
+      setError('Please select a role.');
       return;
     }
 
@@ -85,7 +81,7 @@ export default function UpdateRoleModal({
       return;
     }
 
-    setError("");
+    setError('');
 
     try {
       await changeUserRole({
@@ -95,9 +91,7 @@ export default function UpdateRoleModal({
 
       onClose();
     } catch (err: any) {
-      setError(
-        err?.data?.message || err?.message || "Failed to update user role.",
-      );
+      setError(err?.data?.message || err?.message || 'Failed to update user role.');
     }
   };
 
@@ -122,13 +116,9 @@ export default function UpdateRoleModal({
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Update Role
-              </h2>
+              <h2 className="text-lg font-semibold text-foreground">Update Role</h2>
 
-              <p className="text-sm text-muted-foreground">
-                Change the role assigned to this user
-              </p>
+              <p className="text-sm text-muted-foreground">Change the role assigned to this user</p>
             </div>
           </div>
 
@@ -151,24 +141,16 @@ export default function UpdateRoleModal({
                 User
               </p>
 
-              <p className="mt-1 font-medium text-foreground">
-                {user.name || "Unnamed User"}
-              </p>
+              <p className="mt-1 font-medium text-foreground">{user.name || 'Unnamed User'}</p>
 
-              {user.email && (
-                <p className="mt-0.5 text-sm text-muted-foreground">{user.email}</p>
-              )}
+              {user.email && <p className="mt-0.5 text-sm text-muted-foreground">{user.email}</p>}
             </div>
 
             {/* Current Role */}
             <div>
               <Label>Current Role</Label>
 
-              <Input
-                value={user.role?.name || "No Role"}
-                disabled
-                className="mt-2 bg-muted"
-              />
+              <Input value={user.role?.name || 'No Role'} disabled className="mt-2 bg-muted" />
             </div>
 
             {/* New Role */}
@@ -184,9 +166,7 @@ export default function UpdateRoleModal({
                 disabled={rolesLoading || isSaving}
                 className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="">
-                  {rolesLoading ? "Loading roles..." : "Select a role"}
-                </option>
+                <option value="">{rolesLoading ? 'Loading roles...' : 'Select a role'}</option>
 
                 {roles.map((role: any) => (
                   <option key={role.id} value={role.id}>
@@ -204,17 +184,12 @@ export default function UpdateRoleModal({
                 </p>
 
                 <p className="mt-1 font-medium text-primary">
-                  {roles.find((role: any) => role.id === form.roleId)?.name ||
-                    "Selected Role"}
+                  {roles.find((role: any) => role.id === form.roleId)?.name || 'Selected Role'}
                 </p>
 
-                {roles.find((role: any) => role.id === form.roleId)
-                  ?.description && (
+                {roles.find((role: any) => role.id === form.roleId)?.description && (
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {
-                      roles.find((role: any) => role.id === form.roleId)
-                        ?.description
-                    }
+                    {roles.find((role: any) => role.id === form.roleId)?.description}
                   </p>
                 )}
               </div>
@@ -230,21 +205,12 @@ export default function UpdateRoleModal({
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 border-t bg-muted px-6 py-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSaving}
-            >
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
 
-            <Button
-              type="submit"
-              disabled={isSaving || rolesLoading || !form.roleId}
-
-            >
-              {isSaving ? "Updating..." : "Update Role"}
+            <Button type="submit" disabled={isSaving || rolesLoading || !form.roleId}>
+              {isSaving ? 'Updating...' : 'Update Role'}
             </Button>
           </div>
         </form>

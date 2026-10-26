@@ -1,7 +1,7 @@
-import { useGetRoleAccessQuery } from "../services/api/role.api";
-import React, { useEffect, useRef, useState } from "react";
-import dayjs from "dayjs";
-import { useSearchParams } from "react-router-dom";
+import { useGetRoleAccessQuery } from '../services/api/role.api';
+import React, { useEffect, useRef, useState } from 'react';
+import dayjs from 'dayjs';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   Search,
@@ -15,44 +15,39 @@ import {
   Mail,
   Phone,
   Users,
-  Calendar,
   X,
   ChevronLeft,
   ChevronRight,
   Package,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   useGetEmployeesQuery,
+  useGetOrganisationsQuery,
   useGetEmployeeQuery,
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useRemoveEmployeeMutation,
   useDeleteEmployeeMutation,
-} from "../services/api/employees.api";
+} from '../services/api/employees.api';
 
 import type {
   Employee,
   EmployeeStatus,
   CreateEmployeeRequest,
   UpdateEmployeeRequest,
-} from "../services/api/employees.api";
+} from '../services/api/employees.api';
 
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -60,24 +55,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "../components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/table';
+import { Badge } from '../components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import EmployeeDetailDrawer from "../components/asset-manager/EmployeeDetailDrawer";
-import EmployeeAssetModal from "../components/asset-manager/EmployeeAssetModal";
+import EmployeeDetailDrawer from '../components/asset-manager/EmployeeDetailDrawer';
+import EmployeeAssetModal from '../components/asset-manager/EmployeeAssetModal';
 
 import EmployeeFormModal, {
   type EmployeeFormValues,
   STATUS_OPTIONS,
   getEmptyEmployeeForm,
-} from "../components/asset-manager/EmployeeFormModal";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { toast } from "@/components/ui/toast";
-import { RowActions } from "@/components/ui/row-actions";
-import { useConfirm } from "@/components/ui/confirm-dialog";
-import { apiErrorMessage } from "../types";
+} from '../components/asset-manager/EmployeeFormModal';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { toast } from '@/components/ui/toast';
+import { RowActions } from '@/components/ui/row-actions';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { apiErrorMessage } from '../types';
 
 // ============================================================
 // HELPERS
@@ -85,53 +80,53 @@ import { apiErrorMessage } from "../types";
 
 const getStatusLabel = (status?: EmployeeStatus) => {
   switch (status) {
-    case "ACTIVE":
-      return "Active";
+    case 'ACTIVE':
+      return 'Active';
 
-    case "ON_LEAVE":
-      return "On Leave";
+    case 'ON_LEAVE':
+      return 'On Leave';
 
-    case "INACTIVE":
-      return "Inactive";
+    case 'INACTIVE':
+      return 'Inactive';
 
-    case "EXITED":
-      return "Exited";
+    case 'EXITED':
+      return 'Exited';
 
     default:
-      return "Unknown";
+      return 'Unknown';
   }
 };
 
 const getStatusClass = (status?: EmployeeStatus) => {
   switch (status) {
-    case "ACTIVE":
-      return "border-success-border bg-success-muted text-success-strong";
+    case 'ACTIVE':
+      return 'border-success-border bg-success-muted text-success-strong';
 
-    case "ON_LEAVE":
-      return "border-warning-border bg-warning-muted text-warning-strong";
+    case 'ON_LEAVE':
+      return 'border-warning-border bg-warning-muted text-warning-strong';
 
-    case "INACTIVE":
-      return "border-border bg-muted text-muted-foreground";
+    case 'INACTIVE':
+      return 'border-border bg-muted text-muted-foreground';
 
-    case "EXITED":
-      return "border-destructive-border bg-destructive-muted text-destructive-strong";
+    case 'EXITED':
+      return 'border-destructive-border bg-destructive-muted text-destructive-strong';
 
     default:
-      return "border-border bg-muted text-muted-foreground";
+      return 'border-border bg-muted text-muted-foreground';
   }
 };
 
 const getInitials = (employee?: Employee | null) => {
   if (!employee?.name) {
-    return "?";
+    return '?';
   }
 
   return employee.name
-    .split(" ")
+    .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+    .join('');
 };
 
 const normalizeEmployees = (
@@ -223,11 +218,11 @@ const SummaryCard = ({
 
 const EmployeeList: React.FC = () => {
   const confirm = useConfirm();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const [status, setStatus] = useState<EmployeeStatus | undefined>();
 
-  const [departmentId, setDepartmentId] = useState<string | undefined>();
+  const [organisationId, setOrganisationId] = useState<string | undefined>();
 
   const [page, setPage] = useState(1);
 
@@ -237,9 +232,7 @@ const EmployeeList: React.FC = () => {
 
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null,
-  );
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -249,11 +242,10 @@ const EmployeeList: React.FC = () => {
   // ============================================================
 
   const [searchParams] = useSearchParams();
-  const deepLinkEmployeeId = searchParams.get("employee");
-  const { data: deepLinkEmployeeResponse } = useGetEmployeeQuery(
-    deepLinkEmployeeId ?? "",
-    { skip: !deepLinkEmployeeId },
-  );
+  const deepLinkEmployeeId = searchParams.get('employee');
+  const { data: deepLinkEmployeeResponse } = useGetEmployeeQuery(deepLinkEmployeeId ?? '', {
+    skip: !deepLinkEmployeeId,
+  });
   const handledDeepLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -270,30 +262,24 @@ const EmployeeList: React.FC = () => {
   }, [deepLinkEmployeeId, deepLinkEmployeeResponse]);
 
   // Employee whose assets are being managed via EmployeeAssetModal.
-  const [assetModalEmployee, setAssetModalEmployee] = useState<Employee | null>(
-    null,
-  );
+  const [assetModalEmployee, setAssetModalEmployee] = useState<Employee | null>(null);
 
   // ============================================================
   // API
   // ============================================================
 
-  const { data, isLoading, isFetching, isError, refetch } =
-    useGetEmployeesQuery({
-      search: search || undefined,
-      departmentId,
-      status,
-      page,
-    });
+  const { data, isLoading, isFetching, isError, refetch } = useGetEmployeesQuery({
+    search: search || undefined,
+    organisationId,
+    status,
+    page,
+  });
 
-  const [createEmployee, { isLoading: isCreating }] =
-    useCreateEmployeeMutation();
+  const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
 
-  const [updateEmployee, { isLoading: isUpdating }] =
-    useUpdateEmployeeMutation();
+  const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  const [removeEmployee, { isLoading: isDeleting }] =
-    useRemoveEmployeeMutation();
+  const [removeEmployee, { isLoading: isDeleting }] = useRemoveEmployeeMutation();
 
   const {
     items: employees,
@@ -307,28 +293,16 @@ const EmployeeList: React.FC = () => {
   // DERIVED DATA
   // ============================================================
 
-  const activeCount = employees.filter(
-    (employee) => employee.status === "ACTIVE",
-  ).length;
+  const activeCount = employees.filter((employee) => employee.status === 'ACTIVE').length;
 
-  const leaveCount = employees.filter(
-    (employee) => employee.status === "ON_LEAVE",
-  ).length;
-
-  const departmentOptions = React.useMemo(() => {
-    const map = new Map<string, string>();
-
-    employees.forEach((employee) => {
-      if (employee.department?.id) {
-        map.set(
-          employee.department.id,
-          employee.department.name || employee.department.id,
-        );
-      }
-    });
-
-    return Array.from(map.entries());
-  }, [employees]);
+  const {
+    data: organisationsData,
+    isLoading: loadingOrganisations,
+    isError: organisationsError,
+  } = useGetOrganisationsQuery();
+  const organisationOptions = Array.isArray(organisationsData)
+    ? organisationsData
+    : (organisationsData?.items ?? []);
 
   // ============================================================
   // FORM
@@ -351,16 +325,13 @@ const EmployeeList: React.FC = () => {
     setEditingEmployee(employee);
 
     setForm({
-      employeeCode: employee.employeeCode || "",
-      name: employee.name || "",
-      email: employee.email || "",
-      phone: employee.phone || "",
-      departmentId: employee.departmentId || "",
-      status: employee.status || "ACTIVE",
-      joiningDate: employee.joiningDate
-        ? dayjs(employee.joiningDate).format("YYYY-MM-DD")
-        : "",
-      organisationId: employee.organisationId || "",
+      employeeCode: employee.employeeCode || '',
+      name: employee.name || '',
+      email: employee.email || '',
+      phone: employee.phone || '',
+      status: employee.status || 'ACTIVE',
+      joiningDate: employee.joiningDate ? dayjs(employee.joiningDate).format('YYYY-MM-DD') : '',
+      organisationId: employee.organisationId || '',
     });
 
     setDrawerOpen(false);
@@ -395,7 +366,6 @@ const EmployeeList: React.FC = () => {
       name: form.name.trim(),
       email: form.email.trim() || undefined,
       phone: form.phone.trim() || undefined,
-      departmentId: form.departmentId || undefined,
       status: form.status,
       joiningDate: form.joiningDate || undefined,
       organisationId: form.organisationId || undefined,
@@ -416,21 +386,19 @@ const EmployeeList: React.FC = () => {
       closeModal();
 
       toast.add({
-        title: editingEmployee ? "Changes saved" : "Employee added",
+        title: editingEmployee ? 'Changes saved' : 'Employee added',
         description: editingEmployee
           ? `${payload.name} has been updated.`
           : `${payload.name} can now be assigned assets.`,
-        type: "success",
+        type: 'success',
       });
 
       await refetch();
     } catch (error) {
       toast.add({
-        title: editingEmployee
-          ? "Could not save changes"
-          : "Could not add employee",
+        title: editingEmployee ? 'Could not save changes' : 'Could not add employee',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   };
@@ -440,15 +408,16 @@ const EmployeeList: React.FC = () => {
   // ============================================================
 
   const { data: deleteAccess } = useGetRoleAccessQuery(undefined);
-  const canDeleteEmployees = deleteAccess?.permissions.includes("assets:write") ?? false;
+  const canDeleteEmployees = deleteAccess?.permissions.includes('assets:write') ?? false;
   const [deleteEmployee, { isLoading: isDeletingRecord }] = useDeleteEmployeeMutation();
 
   const handleDeleteRecord = async (employee: Employee) => {
     const confirmed = await confirm({
       title: `Delete ${employee.name}?`,
-      description: "This employee will be removed from employee lists. Their history will be retained. All assigned assets and computers must be returned first.",
-      confirmLabel: "Delete employee",
-      tone: "danger",
+      description:
+        'This employee will be removed from employee lists. Their history will be retained. All assigned assets and computers must be returned first.',
+      confirmLabel: 'Delete employee',
+      tone: 'danger',
     });
     if (!confirmed) return;
     try {
@@ -457,10 +426,18 @@ const EmployeeList: React.FC = () => {
         setSelectedEmployee(null);
         setDrawerOpen(false);
       }
-      setPage(current => employees.length === 1 ? Math.max(1, current - 1) : current);
-      toast.add({ title: "Employee deleted", description: `${employee.name} has been removed from employee lists.`, type: "success" });
+      setPage((current) => (employees.length === 1 ? Math.max(1, current - 1) : current));
+      toast.add({
+        title: 'Employee deleted',
+        description: `${employee.name} has been removed from employee lists.`,
+        type: 'success',
+      });
     } catch (error) {
-      toast.add({ title: "Could not delete employee", description: apiErrorMessage(error), type: "error" });
+      toast.add({
+        title: 'Could not delete employee',
+        description: apiErrorMessage(error),
+        type: 'error',
+      });
     }
   };
 
@@ -470,13 +447,13 @@ const EmployeeList: React.FC = () => {
     );
 
     const assetsHeld = (employee.assignments ?? [])
-      .filter((assignment) => assignment.status === "ACTIVE" && !assignment.systemId)
+      .filter((assignment) => assignment.status === 'ACTIVE' && !assignment.systemId)
       .map((assignment) =>
         assignment.asset
           ? `${assignment.asset.name}${
-              assignment.asset.assetTag ? ` (${assignment.asset.assetTag})` : ""
+              assignment.asset.assetTag ? ` (${assignment.asset.assetTag})` : ''
             }`
-          : "Unnamed asset",
+          : 'Unnamed asset',
       );
 
     const returned = [...computers, ...assetsHeld];
@@ -487,16 +464,16 @@ const EmployeeList: React.FC = () => {
       returned.length === 0
         ? `${employee.name} has nothing assigned right now.`
         : `These ${returned.length} item${
-            returned.length === 1 ? "" : "s"
-          } will be returned to stock:\n${shown.join("\n")}${
-            more > 0 ? `\n…and ${more} more` : ""
+            returned.length === 1 ? '' : 's'
+          } will be returned to stock:\n${shown.join('\n')}${
+            more > 0 ? `\n…and ${more} more` : ''
           }`;
 
     const confirmed = await confirm({
       title: `Mark ${employee.name} as exited?`,
       description: `${employee.name} will be marked as Exited.\n\n${preview}\n\nThe return is recorded in each item's history.`,
-      confirmLabel: "Mark as exited",
-      tone: "danger",
+      confirmLabel: 'Mark as exited',
+      tone: 'danger',
     });
 
     if (!confirmed) {
@@ -512,17 +489,17 @@ const EmployeeList: React.FC = () => {
       }
 
       toast.add({
-        title: "Employee marked as exited",
+        title: 'Employee marked as exited',
         description: `${employee.name}'s assets have been returned to stock.`,
-        type: "success",
+        type: 'success',
       });
 
       await refetch();
     } catch (error) {
       toast.add({
-        title: "Could not mark employee as exited",
+        title: 'Could not mark employee as exited',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   };
@@ -532,14 +509,13 @@ const EmployeeList: React.FC = () => {
   // ============================================================
 
   const clearFilters = () => {
-    setSearch("");
+    setSearch('');
     setStatus(undefined);
-    setDepartmentId(undefined);
+    setOrganisationId(undefined);
     setPage(1);
   };
 
-  const hasFilters =
-    Boolean(search) || Boolean(status) || Boolean(departmentId);
+  const hasFilters = Boolean(search) || Boolean(status) || Boolean(organisationId);
 
   // ============================================================
   // DETAILS
@@ -583,14 +559,8 @@ const EmployeeList: React.FC = () => {
         />
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => refetch()}
-            disabled={isFetching}
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
-            />
+          <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
 
@@ -603,12 +573,10 @@ const EmployeeList: React.FC = () => {
 
       {/* SUMMARY */}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <SummaryCard icon={Users} label="Total Employees" value={total} />
 
         <SummaryCard icon={User} label="Active Employees" value={activeCount} />
-
-        <SummaryCard icon={Calendar} label="On Leave" value={leaveCount} />
       </div>
 
       {/* TABLE */}
@@ -657,23 +625,32 @@ const EmployeeList: React.FC = () => {
                 </SelectContent>
               </Select>
 
-              {/* DEPARTMENT */}
+              {/* ORGANISATION */}
 
               <Select
-                value={departmentId}
+                value={organisationId}
+                disabled={loadingOrganisations || organisationsError}
                 onValueChange={(value) => {
-                  setDepartmentId(value);
+                  setOrganisationId(value);
                   setPage(1);
                 }}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Department" />
+                  <SelectValue
+                    placeholder={
+                      loadingOrganisations
+                        ? 'Loading organisations�'
+                        : organisationsError
+                          ? 'Organisations unavailable'
+                          : 'Organisation'
+                    }
+                  />
                 </SelectTrigger>
 
                 <SelectContent>
-                  {departmentOptions.map(([id, name]) => (
-                    <SelectItem key={id} value={id}>
-                      {name}
+                  {organisationOptions.map((organisation) => (
+                    <SelectItem key={organisation.id} value={organisation.id}>
+                      {organisation.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -716,9 +693,7 @@ const EmployeeList: React.FC = () => {
 
                       <TableHead>Status</TableHead>
 
-                      <TableHead className="w-[170px] text-right">
-                        Actions
-                      </TableHead>
+                      <TableHead className="w-[170px] text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -753,13 +728,9 @@ const EmployeeList: React.FC = () => {
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar className="h-9 w-9">
-                                <AvatarImage
-                                  src={employee.avatarUrl || undefined}
-                                />
+                                <AvatarImage src={employee.avatarUrl || undefined} />
 
-                                <AvatarFallback>
-                                  {getInitials(employee)}
-                                </AvatarFallback>
+                                <AvatarFallback>{getInitials(employee)}</AvatarFallback>
                               </Avatar>
 
                               <div className="min-w-0">
@@ -776,9 +747,7 @@ const EmployeeList: React.FC = () => {
 
                           <TableCell>
                             <div className="space-y-1">
-                              {employee.organisation?.name ||
-                                employee.organisationId ||
-                                "-"}
+                              {employee.organisation?.name || employee.organisationId || '-'}
                             </div>
                           </TableCell>
 
@@ -790,9 +759,7 @@ const EmployeeList: React.FC = () => {
                                 <div className="flex items-center gap-2 text-sm">
                                   <Mail className="h-3.5 w-3.5 text-muted-foreground" />
 
-                                  <span className="max-w-[180px] truncate">
-                                    {employee.email}
-                                  </span>
+                                  <span className="max-w-[180px] truncate">{employee.email}</span>
                                 </div>
                               )}
 
@@ -805,9 +772,7 @@ const EmployeeList: React.FC = () => {
                               )}
 
                               {!employee.email && !employee.phone && (
-                                <span className="text-sm text-muted-foreground">
-                                  -
-                                </span>
+                                <span className="text-sm text-muted-foreground">-</span>
                               )}
                             </div>
                           </TableCell>
@@ -824,31 +789,36 @@ const EmployeeList: React.FC = () => {
                             <RowActions
                               recordName={employee.name}
                               primary={{
-                                label: "Manage assets",
+                                label: 'Manage assets',
                                 icon: Package,
                                 onClick: () => openAssetManager(employee),
                               }}
                               items={[
                                 {
-                                  label: "View details",
+                                  label: 'View details',
                                   icon: Eye,
                                   onSelect: () => openDetails(employee),
                                 },
                                 {
-                                  label: "Edit employee",
+                                  label: 'Edit employee',
                                   icon: Pencil,
                                   onSelect: () => openEdit(employee),
                                 },
                                 {
-                                  label: "Mark as exited",
+                                  label: 'Mark as exited',
                                   icon: UserMinus,
                                   destructive: true,
                                   separatorBefore: true,
-                                  disabled:
-                                    isDeleting || employee.status === "EXITED",
+                                  disabled: isDeleting || employee.status === 'EXITED',
                                   onSelect: () => handleDelete(employee),
                                 },
-                                { label: "Delete employee", icon: Trash2, destructive: true, disabled: !canDeleteEmployees || isDeleting || isDeletingRecord, onSelect: () => handleDeleteRecord(employee) },
+                                {
+                                  label: 'Delete employee',
+                                  icon: Trash2,
+                                  destructive: true,
+                                  disabled: !canDeleteEmployees || isDeleting || isDeletingRecord,
+                                  onSelect: () => handleDeleteRecord(employee),
+                                },
                               ]}
                             />
                           </TableCell>
@@ -868,7 +838,7 @@ const EmployeeList: React.FC = () => {
                         currentPage * pageSize,
                         total,
                       )} of ${total}`
-                    : "0 employees"}
+                    : '0 employees'}
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -876,9 +846,7 @@ const EmployeeList: React.FC = () => {
                     variant="outline"
                     size="sm"
                     disabled={!canPrevious}
-                    onClick={() =>
-                      setPage((current) => Math.max(1, current - 1))
-                    }
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
                   >
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous

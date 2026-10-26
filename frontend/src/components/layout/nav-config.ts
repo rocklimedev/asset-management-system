@@ -1,5 +1,6 @@
 import {
   Archive,
+  Tags,
   Boxes,
   BarChart3,
   ComputerIcon,
@@ -7,7 +8,7 @@ import {
   UserSquare2,
   Users,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 // ============================================================
 // NAVIGATION CONFIG
@@ -31,64 +32,70 @@ export interface NavGroup {
 
 export const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Overview",
+    label: 'Overview',
     items: [
       {
-        to: "/",
-        label: "Dashboard",
-        description: "What needs attention today",
+        to: '/',
+        label: 'Dashboard',
+        description: 'What needs attention today',
         icon: LayoutGrid,
         end: true,
       },
       {
-        to: "/reports",
-        label: "Reports",
-        description: "Export asset and usage reports",
+        to: '/reports',
+        label: 'Reports',
+        description: 'Export asset and usage reports',
         icon: BarChart3,
       },
     ],
   },
   {
-    label: "Assets",
+    label: 'Assets',
     items: [
       {
-        to: "/inventory",
-        label: "All Assets",
-        description: "Every hardware and software asset",
+        to: '/inventory',
+        label: 'All Assets',
+        description: 'Every hardware and software asset',
         icon: Archive,
       },
       {
-        to: "/asset-manager",
-        label: "Assign Assets",
-        description: "People, computers and the equipment they hold",
+        to: '/asset-manager',
+        label: 'Assign Assets',
+        description: 'People, computers and the equipment they hold',
         icon: Boxes,
       },
       {
-        to: "/software",
-        label: "Software & Licenses",
-        description: "Installed software and license seats",
+        to: '/software',
+        label: 'Software & Licenses',
+        description: 'Installed software and license seats',
         icon: ComputerIcon,
       },
     ],
   },
   {
-    label: "People",
+    label: 'People',
     items: [
       {
-        to: "/employees",
-        label: "Employees",
-        description: "People who can receive assets",
+        to: '/employees',
+        label: 'Employees',
+        description: 'People who can receive assets',
         icon: UserSquare2,
       },
     ],
   },
   {
-    label: "Administration",
+    label: 'Administration',
     items: [
       {
-        to: "/users-roles",
-        label: "Users & Roles",
-        description: "Who can sign in and what they can do",
+        to: '/asset-categories',
+        label: 'Asset Categories',
+        description: 'Manage hardware and software categories',
+        icon: Tags,
+      },
+      {
+        to: '/users-roles',
+        label: 'Users & Roles',
+        description: 'Who can sign in and what they can do',
         icon: Users,
       },
     ],
@@ -100,9 +107,7 @@ export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
 /** Breadcrumb labels for every first-level route segment. */
 export const ROUTE_LABELS: Record<string, string> = {
-  "": "Dashboard",
-  ...Object.fromEntries(
-    NAV_ITEMS.map((item) => [item.to.replace(/^\//, ""), item.label]),
-  ),
-  settings: "Settings",
+  '': 'Dashboard',
+  ...Object.fromEntries(NAV_ITEMS.map((item) => [item.to.replace(/^\//, ''), item.label])),
+  settings: 'Settings',
 };

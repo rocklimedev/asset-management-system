@@ -10,7 +10,7 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { toast } from "../ui/toast";
 
-export type SystemTransferTarget = { id: string; name: string; kind: "component" | "software" };
+export type SystemTransferTarget = { id: string; name: string; kind: "component" | "asset" | "software" };
 
 export function TransferSystemAssetModal({ target, systemId, employeeId: currentEmployeeId, onClose }: {
   target: SystemTransferTarget;
@@ -32,10 +32,11 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
   const { data: systems = [], isFetching: loadingSystems, isError: systemsError } = useGetSystemsQuery(
     { employeeId }, { skip: !employeeId },
   );
-  const destinations = systems.filter(s => s.id !== systemId && s.employeeId === employeeId);
+  const destinations = systems.filter(s => (target.kind === "asset" || s.id !== systemId) && s.employeeId === employeeId);
   const requiresSystem = target.kind === "software";
   const detachToEmployee = target.kind === "component" && employeeId === currentEmployeeId && !toSystemId;
-  const validDestination = !loadingSystems && !systemsError && (toSystemId ? destinations.some(s => s.id === toSystemId) : !requiresSystem);
+  const unchangedDirectOwner = target.kind === "asset" && employeeId === currentEmployeeId && !toSystemId;
+  const validDestination = !unchangedDirectOwner && !loadingSystems && !systemsError && (toSystemId ? destinations.some(s => s.id === toSystemId) : !requiresSystem);
 
   async function confirm() {
     if (!employeeId || busy || !validDestination) return;
@@ -43,7 +44,7 @@ export function TransferSystemAssetModal({ target, systemId, employeeId: current
       if (target.kind === "software") {
         await transferSoftware({ id: target.id, toSystemId, notes: notes || undefined }).unwrap();
       } else {
-        await transferAsset({ id: target.id, fromSystemId: systemId, toSystemId: toSystemId || undefined, toEmployeeId: employeeId, reason: toSystemId ? "System reassignment" : detachToEmployee ? "Detached from system to same employee" : "Employee transfer", notes: notes || undefined }).unwrap();
+        await transferAsset({ id: target.id, fromSystemId: target.kind === "component" ? systemId : undefined, toSystemId: toSystemId || undefined, toEmployeeId: employeeId, reason: toSystemId ? "System reassignment" : detachToEmployee ? "Detached from system to same employee" : "Employee transfer", notes: notes || undefined }).unwrap();
       }
       toast.add({ title: detachToEmployee ? "Asset assigned directly to employee" : "Asset transferred", type: "success" });
       onClose();

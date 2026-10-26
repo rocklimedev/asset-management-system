@@ -1,17 +1,17 @@
-import type { AssetUnit } from "../services/api/asset.api";
-export type AssetKind = "HARDWARE" | "SOFTWARE";
-export type AssetTrackingMode = "INDIVIDUAL" | "QUANTITY";
+import type { AssetUnit } from '../services/api/asset.api';
+export type AssetKind = 'HARDWARE' | 'SOFTWARE';
+export type AssetTrackingMode = 'INDIVIDUAL' | 'QUANTITY';
 export type AssetStatus =
-  | "AVAILABLE"
-  | "ASSIGNED"
-  | "REPAIR"
-  | "LOST"
-  | "DAMAGED"
-  | "RETIRED"
-  | "DISPOSED";
-export type AssetCondition = "NEW" | "GOOD" | "FAIR" | "POOR";
-export type EmployeeStatus = "ACTIVE" | "ON_LEAVE" | "INACTIVE" | "EXITED";
-export type AssignmentStatus = "ACTIVE" | "RETURNED";
+  | 'AVAILABLE'
+  | 'ASSIGNED'
+  | 'REPAIR'
+  | 'LOST'
+  | 'DAMAGED'
+  | 'RETIRED'
+  | 'DISPOSED';
+export type AssetCondition = 'NEW' | 'GOOD' | 'FAIR' | 'POOR';
+export type EmployeeStatus = 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE' | 'EXITED';
+export type AssignmentStatus = 'ACTIVE' | 'RETURNED';
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -213,13 +213,13 @@ export interface DashboardSummary {
     licenseExpirations: {
       assetName: string;
       expiryDate: string;
-      urgency: "red" | "yellow";
+      urgency: 'red' | 'yellow';
     }[];
     warrantyExpirations: {
       assetName: string;
       assetTag: string;
       warrantyExpiry: string;
-      urgency: "red" | "yellow";
+      urgency: 'red' | 'yellow';
     }[];
   };
 }
@@ -270,44 +270,44 @@ export type SpecsForm = {
 };
 
 export const emptySpecs: SpecsForm = {
-  processor: "",
-  ram: "",
-  localStorage: "",
-  graphicsCard: "",
-  motherboard: "",
-  powerSupply: "",
-  monitor: "",
-  monitorSize: "",
-  operatingSystem: "",
-  osVersion: "",
-  cloudStorage: "",
-  cloudStorageEmail: "",
-  cloudStoragePassword: "",
-  macAddress: "",
-  ipAddress: "",
-  notes: "",
+  processor: '',
+  ram: '',
+  localStorage: '',
+  graphicsCard: '',
+  motherboard: '',
+  powerSupply: '',
+  monitor: '',
+  monitorSize: '',
+  operatingSystem: '',
+  osVersion: '',
+  cloudStorage: '',
+  cloudStorageEmail: '',
+  cloudStoragePassword: '',
+  macAddress: '',
+  ipAddress: '',
+  notes: '',
 };
 
 export function specsToForm(specs?: SystemSpecs | null): SpecsForm {
   if (!specs) return { ...emptySpecs };
 
   return {
-    processor: specs.processor ?? "",
-    ram: specs.ram ?? "",
-    localStorage: specs.localStorage ?? "",
-    graphicsCard: specs.graphicsCard ?? "",
-    motherboard: specs.motherboard ?? "",
-    powerSupply: specs.powerSupply ?? "",
-    monitor: specs.monitor ?? "",
-    monitorSize: specs.monitorSize ?? "",
-    operatingSystem: specs.operatingSystem ?? "",
-    osVersion: specs.osVersion ?? "",
-    cloudStorage: specs.cloudStorage ?? "",
-    cloudStorageEmail: specs.cloudStorageEmail ?? "",
-    cloudStoragePassword: "",
-    macAddress: specs.macAddress ?? "",
-    ipAddress: specs.ipAddress ?? "",
-    notes: specs.notes ?? "",
+    processor: specs.processor ?? '',
+    ram: specs.ram ?? '',
+    localStorage: specs.localStorage ?? '',
+    graphicsCard: specs.graphicsCard ?? '',
+    motherboard: specs.motherboard ?? '',
+    powerSupply: specs.powerSupply ?? '',
+    monitor: specs.monitor ?? '',
+    monitorSize: specs.monitorSize ?? '',
+    operatingSystem: specs.operatingSystem ?? '',
+    osVersion: specs.osVersion ?? '',
+    cloudStorage: specs.cloudStorage ?? '',
+    cloudStorageEmail: specs.cloudStorageEmail ?? '',
+    cloudStoragePassword: '',
+    macAddress: specs.macAddress ?? '',
+    ipAddress: specs.ipAddress ?? '',
+    notes: specs.notes ?? '',
   };
 }
 
@@ -316,10 +316,7 @@ export function specsToForm(specs?: SystemSpecs | null): SpecsForm {
 // ============================================================
 
 export function apiErrorMessage(error: unknown) {
-  const value = (error as { data?: { message?: string | string[] } })?.data
-    ?.message;
+  const value = (error as { data?: { message?: string | string[] } })?.data?.message;
 
-  return Array.isArray(value)
-    ? value.join(". ")
-    : (value ?? "Please try again.");
+  return Array.isArray(value) ? value.join('. ') : (value ?? 'Please try again.');
 }

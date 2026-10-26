@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { AppWindow, ArrowLeft, ArrowRight, Laptop } from "lucide-react";
+import { useEffect, useMemo, useState } from 'react';
+import { AppWindow, ArrowLeft, ArrowRight, Laptop } from 'lucide-react';
 
 import {
   useCreateAssetMutation,
   useGetAssetCategoriesQuery,
   type AssetKind,
   type CreateAssetRequest,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
 import {
   Dialog,
@@ -14,11 +14,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { toast } from "../ui/toast";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { toast } from '../ui/toast';
+import { cn } from '@/lib/utils';
 
 // ============================================================
 // QUICK ADD ASSET
@@ -45,34 +45,31 @@ interface CategoryOption {
 type Step = 1 | 2 | 3;
 
 const STEP_TITLES: Record<Step, string> = {
-  1: "Name it",
-  2: "Choose a category",
-  3: "Add details (optional)",
+  1: 'Name it',
+  2: 'Choose a category',
+  3: 'Add details (optional)',
 };
 
 function errorText(error: unknown) {
   const e = error as { data?: { message?: string }; message?: string };
-  return e?.data?.message || e?.message || "Nothing was saved. Please try again.";
+  return e?.data?.message || e?.message || 'Nothing was saved. Please try again.';
 }
 
 export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetProps) {
   const [step, setStep] = useState<Step>(1);
-  const [name, setName] = useState("");
-  const [kind, setKind] = useState<AssetKind>("HARDWARE");
-  const [categoryId, setCategoryId] = useState("");
+  const [name, setName] = useState('');
+  const [kind, setKind] = useState<AssetKind>('HARDWARE');
+  const [categoryId, setCategoryId] = useState('');
   const [several, setSeveral] = useState(false);
   const [quantity, setQuantity] = useState(2);
-  const [assetTag, setAssetTag] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
-  const [manufacturer, setManufacturer] = useState("");
-  const [model, setModel] = useState("");
+  const [assetTag, setAssetTag] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
+  const [manufacturer, setManufacturer] = useState('');
+  const [model, setModel] = useState('');
 
   const [createAsset, { isLoading: saving }] = useCreateAssetMutation();
 
-  const { data: categoriesData } = useGetAssetCategoriesQuery(
-    { isActive: true },
-    { skip: !open },
-  );
+  const { data: categoriesData } = useGetAssetCategoriesQuery({ isActive: true }, { skip: !open });
 
   const categories = useMemo<CategoryOption[]>(() => {
     const list = Array.isArray(categoriesData)
@@ -86,21 +83,21 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
   useEffect(() => {
     if (!open) return;
     setStep(1);
-    setName("");
-    setKind("HARDWARE");
-    setCategoryId("");
+    setName('');
+    setKind('HARDWARE');
+    setCategoryId('');
     setSeveral(false);
     setQuantity(2);
-    setAssetTag("");
-    setSerialNumber("");
-    setManufacturer("");
-    setModel("");
+    setAssetTag('');
+    setSerialNumber('');
+    setManufacturer('');
+    setModel('');
   }, [open]);
 
   // A category from the other type can't be kept after switching type.
   useEffect(() => {
     if (categoryId && !categories.some((c) => c.id === categoryId)) {
-      setCategoryId("");
+      setCategoryId('');
     }
   }, [categories, categoryId]);
 
@@ -119,26 +116,26 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
     const stamp = Date.now().toString(36).slice(-4).toUpperCase();
     const prefix =
       (assetTag.trim() || name.trim())
-        .replace(/[^A-Za-z0-9]/g, "")
+        .replace(/[^A-Za-z0-9]/g, '')
         .slice(0, 8)
-        .toUpperCase() || "ITEM";
+        .toUpperCase() || 'ITEM';
 
     const initialUnits = Array.from({ length: finalQuantity }, (_, index) => ({
-      unitCode: `${prefix}-${stamp}-${String(index + 1).padStart(2, "0")}`,
+      unitCode: `${prefix}-${stamp}-${String(index + 1).padStart(2, '0')}`,
       serialNumber: finalQuantity === 1 ? serialNumber.trim() || undefined : undefined,
       cellularIdentities: [],
-      status: "AVAILABLE",
-      condition: "GOOD",
+      status: 'AVAILABLE',
+      condition: 'GOOD',
     }));
 
     const payload = {
       name: name.trim(),
       kind,
       categoryId,
-      trackingMode: finalQuantity > 1 ? "QUANTITY" : "INDIVIDUAL",
+      trackingMode: finalQuantity > 1 ? 'QUANTITY' : 'INDIVIDUAL',
       quantity: finalQuantity,
-      status: "AVAILABLE",
-      condition: "GOOD",
+      status: 'AVAILABLE',
+      condition: 'GOOD',
       assetTag: assetTag.trim() || undefined,
       manufacturer: manufacturer.trim() || undefined,
       model: model.trim() || undefined,
@@ -148,14 +145,14 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
     try {
       await createAsset(payload).unwrap();
       toast.add({
-        type: "success",
-        title: "Added to All Assets",
+        type: 'success',
+        title: 'Added to All Assets',
         description: `${name.trim()} is now in stock.`,
       });
       onClose();
     } catch (error) {
       toast.add({
-        type: "error",
+        type: 'error',
         title: "Couldn't add this item",
         description: errorText(error),
       });
@@ -179,8 +176,8 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
               <span
                 key={s}
                 className={cn(
-                  "h-1.5 rounded-full transition-colors",
-                  s <= step ? "bg-primary" : "bg-muted",
+                  'h-1.5 rounded-full transition-colors',
+                  s <= step ? 'bg-primary' : 'bg-muted',
                 )}
               />
             ))}
@@ -206,7 +203,7 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
                   className="mt-2"
                   onChange={(event) => setName(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && canContinue) setStep(2);
+                    if (event.key === 'Enter' && canContinue) setStep(2);
                   }}
                 />
               </div>
@@ -216,8 +213,18 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
                 <div className="mt-2 grid grid-cols-2 gap-3">
                   {(
                     [
-                      { value: "HARDWARE", label: "A physical item", hint: "Laptop, phone, monitor, keyboard", icon: Laptop },
-                      { value: "SOFTWARE", label: "A software licence", hint: "Office, design tools, antivirus", icon: AppWindow },
+                      {
+                        value: 'HARDWARE',
+                        label: 'A physical item',
+                        hint: 'Laptop, phone, monitor, keyboard',
+                        icon: Laptop,
+                      },
+                      {
+                        value: 'SOFTWARE',
+                        label: 'A software licence',
+                        hint: 'Office, design tools, antivirus',
+                        icon: AppWindow,
+                      },
                     ] as const
                   ).map((option) => {
                     const selected = kind === option.value;
@@ -229,14 +236,22 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
                         aria-pressed={selected}
                         onClick={() => setKind(option.value)}
                         className={cn(
-                          "flex flex-col items-start gap-2 rounded-xl border p-4 text-left shadow-card transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          'flex flex-col items-start gap-2 rounded-xl border p-4 text-left shadow-card transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           selected
-                            ? "border-primary bg-primary-muted"
-                            : "border-border bg-card hover:border-primary-border",
+                            ? 'border-primary bg-primary-muted'
+                            : 'border-border bg-card hover:border-primary-border',
                         )}
                       >
-                        <Icon className={cn("h-5 w-5", selected ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
-                        <span className="text-sm font-semibold text-foreground">{option.label}</span>
+                        <Icon
+                          className={cn(
+                            'h-5 w-5',
+                            selected ? 'text-primary' : 'text-muted-foreground',
+                          )}
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm font-semibold text-foreground">
+                          {option.label}
+                        </span>
                         <span className="text-xs text-muted-foreground">{option.hint}</span>
                       </button>
                     );
@@ -269,8 +284,12 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
                   </select>
                 ) : (
                   <div className="mt-2 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-                    There are no {kind === "SOFTWARE" ? "software" : "hardware"} categories yet.{" "}
-                    <button type="button" onClick={onOpenFullForm} className="font-medium text-primary underline-offset-4 hover:underline">
+                    There are no {kind === 'SOFTWARE' ? 'software' : 'hardware'} categories yet.{' '}
+                    <button
+                      type="button"
+                      onClick={onOpenFullForm}
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
                       Create one in the full form
                     </button>
                     .
@@ -279,19 +298,23 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
               </div>
 
               <fieldset>
-                <legend className="text-sm font-medium text-foreground">How many do you have?</legend>
+                <legend className="text-sm font-medium text-foreground">
+                  How many do you have?
+                </legend>
                 <div className="mt-2 grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     aria-pressed={!several}
                     onClick={() => setSeveral(false)}
                     className={cn(
-                      "rounded-xl border p-4 text-left shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      !several ? "border-primary bg-primary-muted" : "border-border bg-card",
+                      'rounded-xl border p-4 text-left shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      !several ? 'border-primary bg-primary-muted' : 'border-border bg-card',
                     )}
                   >
                     <span className="block text-sm font-semibold text-foreground">Just one</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">Tracked on its own</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      Tracked on its own
+                    </span>
                   </button>
 
                   <button
@@ -299,12 +322,16 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
                     aria-pressed={several}
                     onClick={() => setSeveral(true)}
                     className={cn(
-                      "rounded-xl border p-4 text-left shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      several ? "border-primary bg-primary-muted" : "border-border bg-card",
+                      'rounded-xl border p-4 text-left shadow-card outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      several ? 'border-primary bg-primary-muted' : 'border-border bg-card',
                     )}
                   >
-                    <span className="block text-sm font-semibold text-foreground">Several identical</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">Such as 10 mice or 25 licences</span>
+                    <span className="block text-sm font-semibold text-foreground">
+                      Several identical
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      Such as 10 mice or 25 licences
+                    </span>
                   </button>
                 </div>
 
@@ -330,15 +357,26 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
           {step === 3 && (
             <>
               <p className="text-sm text-muted-foreground">
-                Nothing here is required. You can leave any field empty and add it later from the item’s page.
+                Nothing here is required. You can leave any field empty and add it later from the
+                item’s page.
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {finalQuantity === 1 && (
                   <Field label="Serial number" value={serialNumber} onChange={setSerialNumber} />
                 )}
-                <Field label="Asset tag" hint="Your own label, e.g. LT-0101" value={assetTag} onChange={setAssetTag} />
-                <Field label="Manufacturer" hint="e.g. Dell" value={manufacturer} onChange={setManufacturer} />
+                <Field
+                  label="Asset tag"
+                  hint="Your own label, e.g. LT-0101"
+                  value={assetTag}
+                  onChange={setAssetTag}
+                />
+                <Field
+                  label="Manufacturer"
+                  hint="e.g. Dell"
+                  value={manufacturer}
+                  onChange={setManufacturer}
+                />
                 <Field label="Model" value={model} onChange={setModel} />
               </div>
 
@@ -363,7 +401,9 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
             onClick={() => (step === 1 ? onClose() : setStep((s) => (s - 1) as Step))}
             disabled={saving}
           >
-            {step === 1 ? "Cancel" : (
+            {step === 1 ? (
+              'Cancel'
+            ) : (
               <>
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 Back
@@ -372,13 +412,17 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
           </Button>
 
           {step < 3 ? (
-            <Button type="button" disabled={!canContinue} onClick={() => setStep((s) => (s + 1) as Step)}>
+            <Button
+              type="button"
+              disabled={!canContinue}
+              onClick={() => setStep((s) => (s + 1) as Step)}
+            >
               Continue
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (
             <Button type="button" disabled={saving} onClick={save}>
-              {saving ? "Saving…" : "Add to All Assets"}
+              {saving ? 'Saving…' : 'Add to All Assets'}
             </Button>
           )}
         </div>
@@ -408,13 +452,19 @@ function Field({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const id = `qa-${label.toLowerCase().replace(/\s+/g, "-")}`;
+  const id = `qa-${label.toLowerCase().replace(/\s+/g, '-')}`;
   return (
     <div>
       <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
       </label>
-      <Input id={id} value={value} placeholder={hint} className="mt-1.5" onChange={(event) => onChange(event.target.value)} />
+      <Input
+        id={id}
+        value={value}
+        placeholder={hint}
+        className="mt-1.5"
+        onChange={(event) => onChange(event.target.value)}
+      />
     </div>
   );
 }

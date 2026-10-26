@@ -1,5 +1,5 @@
-import { useDraggable } from "@dnd-kit/core";
-import { clsx } from "clsx";
+import { useDraggable } from '@dnd-kit/core';
+import { clsx } from 'clsx';
 import {
   AppWindow,
   ArrowRightLeft,
@@ -14,10 +14,10 @@ import {
   Smartphone,
   Tablet,
   Undo2,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Button } from "../ui/button";
-import type { Asset } from "../../services/api/asset.api";
+import { Button } from '../ui/button';
+import type { Asset } from '../../services/api/asset.api';
 
 // ============================================================
 // ICONS
@@ -36,8 +36,8 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 function iconFor(asset: Asset) {
-  if (asset.kind === "SOFTWARE") return AppWindow;
-  return ICONS[asset.category?.name ?? ""] ?? Laptop;
+  if (asset.kind === 'SOFTWARE') return AppWindow;
+  return ICONS[asset.category?.name ?? ''] ?? Laptop;
 }
 
 // ============================================================
@@ -69,15 +69,12 @@ export function AssignmentRow({
   });
 
   const Icon = iconFor(asset);
-  const canReturn = asset.status === "ASSIGNED" && Boolean(onReturn);
+  const canReturn = asset.status === 'ASSIGNED' && Boolean(onReturn);
 
   return (
     <li
       ref={setNodeRef}
-      className={clsx(
-        "flex items-center gap-3 py-3",
-        isDragging && "opacity-40",
-      )}
+      className={clsx('flex items-center gap-3 py-3', isDragging && 'opacity-40')}
     >
       {draggable && (
         <button
@@ -101,22 +98,15 @@ export function AssignmentRow({
         onClick={() => onOpenDetails(asset)}
         className="min-w-0 flex-1 rounded-md text-left hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="block truncate text-sm font-medium text-foreground">
-          {asset.name}
-        </span>
+        <span className="block truncate text-sm font-medium text-foreground">{asset.name}</span>
         <span className="block truncate text-xs tabular-nums text-muted-foreground">
-          {asset.assetTag || "No asset tag"}
+          {asset.assetTag || 'No asset tag'}
         </span>
       </button>
 
       <div className="flex shrink-0 items-center gap-1">
         {draggable && onMove && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onMove(asset)}
-            className="shadow-none"
-          >
+          <Button variant="outline" size="sm" onClick={() => onMove(asset)} className="shadow-none">
             <ArrowRightLeft className="h-3.5 w-3.5" />
             Move
           </Button>

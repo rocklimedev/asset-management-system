@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,7 +8,7 @@ import {
   Search,
   SlidersHorizontal,
   Trash2,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   SOFTWARE_SUBSCRIPTION_OPTIONS,
@@ -20,24 +20,21 @@ import {
   type SoftwareRecord,
   type SoftwareSubscriptionType,
   type SoftwareUsage,
-} from "../services/api/software.api";
+} from '../services/api/software.api';
 
-import { apiErrorMessage } from "@/types/systems";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Input } from "@/components/ui/input";
-import { RowActions } from "@/components/ui/row-actions";
-import { toast } from "@/components/ui/toast";
-import { useConfirm } from "@/components/ui/confirm-dialog";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { apiErrorMessage } from '@/types/systems';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/input';
+import { RowActions } from '@/components/ui/row-actions';
+import { toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { PageHeader } from '@/components/layout/PageHeader';
 
-import { QuickAddSoftware } from "../components/quick/QuickAddSoftware";
-import { SoftwareFormModal } from "../components/asset-manager/SoftwareFormModal";
-import { SoftwareDetailDrawer } from "../components/software/SoftwareDetailDrawer";
-import {
-  UsageBadge,
-  licensingLabel,
-} from "../components/software/software-ui";
+import { QuickAddSoftware } from '../components/quick/QuickAddSoftware';
+import { SoftwareFormModal } from '../components/asset-manager/SoftwareFormModal';
+import { SoftwareDetailDrawer } from '../components/software/SoftwareDetailDrawer';
+import { UsageBadge, licensingLabel } from '../components/software/software-ui';
 
 // ============================================================
 // SOFTWARE & LICENSES
@@ -50,7 +47,7 @@ import {
 const PAGE_SIZE = 20;
 
 const SELECT_CLASSES =
-  "h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-inset outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  'h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-inset outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function useDebounced<T>(value: T, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -62,17 +59,14 @@ function useDebounced<T>(value: T, delay = 300) {
 }
 
 export function SoftwareList() {
-  const [search, setSearch] = useState("");
-  const [usage, setUsage] = useState<SoftwareUsage | "">("");
+  const [search, setSearch] = useState('');
+  const [usage, setUsage] = useState<SoftwareUsage | ''>('');
 
   // Rarely needed, so they stay tucked away until asked for.
   const [showMore, setShowMore] = useState(false);
-  const [subscriptionType, setSubscriptionType] = useState<
-    SoftwareSubscriptionType | ""
-  >("");
+  const [subscriptionType, setSubscriptionType] = useState<SoftwareSubscriptionType | ''>('');
   const [rootOnly, setRootOnly] = useState(false);
-  const [sortBy, setSortBy] =
-    useState<NonNullable<SoftwareListParams["sortBy"]>>("createdAt");
+  const [sortBy, setSortBy] = useState<NonNullable<SoftwareListParams['sortBy']>>('createdAt');
 
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -92,7 +86,7 @@ export function SoftwareList() {
     subscriptionType: subscriptionType || undefined,
     rootOnly: rootOnly || undefined,
     sortBy,
-    sortDir: sortBy === "createdAt" ? "DESC" : "ASC",
+    sortDir: sortBy === 'createdAt' ? 'DESC' : 'ASC',
     page,
     limit: PAGE_SIZE,
   };
@@ -108,49 +102,43 @@ export function SoftwareList() {
   const { data: summary } = useGetSoftwareSummaryQuery();
   const [deleteSoftware, deleteState] = useDeleteSoftwareMutation();
 
-  const rows: SoftwareRecord[] = Array.isArray(response)
-    ? response
-    : (response?.data ?? []);
+  const rows: SoftwareRecord[] = Array.isArray(response) ? response : (response?.data ?? []);
   const pagination = Array.isArray(response) ? undefined : response?.pagination;
   const selected = rows.find((row) => row.id === selectedId) ?? null;
 
-  const extraFilters = [subscriptionType, rootOnly, sortBy !== "createdAt"].filter(
-    Boolean,
-  ).length;
+  const extraFilters = [subscriptionType, rootOnly, sortBy !== 'createdAt'].filter(Boolean).length;
   const hasFilters = Boolean(search || usage || extraFilters);
 
-  const attention =
-    (summary?.licenses?.expired ?? 0) + (summary?.licenses?.expiringSoon ?? 0);
+  const attention = (summary?.licenses?.expired ?? 0) + (summary?.licenses?.expiringSoon ?? 0);
   const unused = summary?.software.withoutActiveInstallations ?? 0;
 
   function clearFilters() {
-    setSearch("");
-    setUsage("");
-    setSubscriptionType("");
+    setSearch('');
+    setUsage('');
+    setSubscriptionType('');
     setRootOnly(false);
-    setSortBy("createdAt");
+    setSortBy('createdAt');
   }
 
   async function handleDelete(software: SoftwareRecord) {
-    const name = software.asset?.name ?? "this software";
+    const name = software.asset?.name ?? 'this software';
     const confirmed = await confirm({
       title: `Delete ${name}?`,
-      description:
-        "Its catalog details will be removed. The asset itself is kept.",
-      confirmLabel: "Delete software",
-      tone: "danger",
+      description: 'Its catalog details will be removed. The asset itself is kept.',
+      confirmLabel: 'Delete software',
+      tone: 'danger',
     });
     if (!confirmed) return;
 
     try {
       await deleteSoftware(software.id).unwrap();
       if (selectedId === software.id) setSelectedId(null);
-      toast.add({ title: "Software deleted", type: "success" });
+      toast.add({ title: 'Software deleted', type: 'success' });
     } catch (error) {
       toast.add({
-        title: "Could not delete software",
+        title: 'Could not delete software',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   }
@@ -163,7 +151,7 @@ export function SoftwareList() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto w-full max-w-[1400px] space-y-5 px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
         title="Software & Licenses"
         description="The software your team uses, what you paid for, and where it is installed."
@@ -173,25 +161,19 @@ export function SoftwareList() {
       {/* One quiet line instead of four stat cards */}
       {summary ? (
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {summary.software.total}
-          </span>{" "}
-          titles ·{" "}
-          <span className="font-medium text-foreground">
-            {summary.installations.active}
-          </span>{" "}
-          installs ·{" "}
+          <span className="font-medium text-foreground">{summary.software.total}</span> titles ·{' '}
+          <span className="font-medium text-foreground">{summary.installations.active}</span>{' '}
+          installs ·{' '}
           <span className="font-medium text-foreground">
             {summary.licenses.assignedSeats} of {summary.licenses.totalSeats}
-          </span>{" "}
+          </span>{' '}
           seats used
           {attention > 0 ? (
             <>
-              {" "}
-              ·{" "}
+              {' '}
+              ·{' '}
               <span className="font-medium text-warning-strong">
-                {attention} license{attention === 1 ? "" : "s"} expired or
-                expiring soon
+                {attention} license{attention === 1 ? '' : 's'} expired or expiring soon
               </span>
             </>
           ) : null}
@@ -219,7 +201,7 @@ export function SoftwareList() {
           <select
             aria-label="Filter by status"
             value={usage}
-            onChange={(e) => setUsage(e.target.value as SoftwareUsage | "")}
+            onChange={(e) => setUsage(e.target.value as SoftwareUsage | '')}
             className={SELECT_CLASSES}
           >
             <option value="">Any status</option>
@@ -230,13 +212,9 @@ export function SoftwareList() {
             ))}
           </select>
 
-          <Button
-            variant="ghost"
-            aria-expanded={showMore}
-            onClick={() => setShowMore((v) => !v)}
-          >
+          <Button variant="ghost" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
             <SlidersHorizontal aria-hidden="true" />
-            More filters{extraFilters ? ` (${extraFilters})` : ""}
+            More filters{extraFilters ? ` (${extraFilters})` : ''}
           </Button>
 
           {hasFilters ? (
@@ -251,11 +229,7 @@ export function SoftwareList() {
             <select
               aria-label="Filter by how it is paid for"
               value={subscriptionType}
-              onChange={(e) =>
-                setSubscriptionType(
-                  e.target.value as SoftwareSubscriptionType | "",
-                )
-              }
+              onChange={(e) => setSubscriptionType(e.target.value as SoftwareSubscriptionType | '')}
               className={SELECT_CLASSES}
             >
               <option value="">Any payment type</option>
@@ -270,9 +244,7 @@ export function SoftwareList() {
               aria-label="Sort by"
               value={sortBy}
               onChange={(e) =>
-                setSortBy(
-                  e.target.value as NonNullable<SoftwareListParams["sortBy"]>,
-                )
+                setSortBy(e.target.value as NonNullable<SoftwareListParams['sortBy']>)
               }
               className={SELECT_CLASSES}
             >
@@ -312,24 +284,19 @@ export function SoftwareList() {
           ))}
         </div>
       ) : isError ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-border bg-card p-6"
-        >
-          <p className="text-sm text-foreground">
-            Couldn&apos;t load your software.
-          </p>
+        <div role="alert" className="rounded-xl border border-border bg-card p-6">
+          <p className="text-sm text-foreground">Couldn&apos;t load your software.</p>
           <Button variant="outline" className="mt-3" onClick={() => refetch()}>
             Try again
           </Button>
         </div>
       ) : rows.length === 0 ? (
         <EmptyState
-          title={hasFilters ? "No software matches" : "No software yet"}
+          title={hasFilters ? 'No software matches' : 'No software yet'}
           description={
             hasFilters
-              ? "Try a different search or clear the filters."
-              : "Add the first one. It takes three short steps."
+              ? 'Try a different search or clear the filters.'
+              : 'Add the first one. It takes three short steps.'
           }
           action={
             hasFilters ? (
@@ -344,20 +311,16 @@ export function SoftwareList() {
       ) : (
         <div
           className={`overflow-x-auto rounded-xl border border-border bg-card shadow-card ${
-            isFetching ? "opacity-70" : ""
+            isFetching ? 'opacity-70' : ''
           }`}
         >
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Software</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">
-                  Paid for
-                </th>
+                <th className="hidden px-4 py-3 font-medium md:table-cell">Paid for</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
-                  Installed
-                </th>
+                <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Installed</th>
                 <th className="w-12 px-4 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -366,20 +329,20 @@ export function SoftwareList() {
 
             <tbody>
               {rows.map((row) => {
-                const name = row.asset?.name ?? "Unnamed software";
+                const name = row.asset?.name ?? 'Unnamed software';
                 const sub = [
                   row.publisher ?? row.asset?.manufacturer,
                   row.version ? `v${row.version}` : null,
                 ]
                   .filter(Boolean)
-                  .join(" · ");
+                  .join(' · ');
 
                 return (
                   <tr
                     key={row.id}
                     onClick={() => setSelectedId(row.id)}
                     className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted/40 ${
-                      selectedId === row.id ? "bg-primary/5" : ""
+                      selectedId === row.id ? 'bg-primary/5' : ''
                     }`}
                   >
                     <td className="px-4 py-3">
@@ -393,9 +356,7 @@ export function SoftwareList() {
                       >
                         {name}
                       </button>
-                      {sub ? (
-                        <p className="text-xs text-muted-foreground">{sub}</p>
-                      ) : null}
+                      {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
                     </td>
 
                     <td className="hidden px-4 py-3 text-foreground md:table-cell">
@@ -403,32 +364,29 @@ export function SoftwareList() {
                     </td>
 
                     <td className="px-4 py-3">
-                      <UsageBadge usage={row.usage ?? "UNKNOWN"} />
+                      <UsageBadge usage={row.usage ?? 'UNKNOWN'} />
                     </td>
 
                     <td className="hidden px-4 py-3 text-right tabular-nums text-foreground sm:table-cell">
                       {row.activeInstallations ?? 0}
                     </td>
 
-                    <td
-                      className="px-4 py-3"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <RowActions
                         recordName={name}
                         items={[
                           {
-                            label: "View licenses & installs",
+                            label: 'View licenses & installs',
                             icon: Eye,
                             onSelect: () => setSelectedId(row.id),
                           },
                           {
-                            label: "Edit details",
+                            label: 'Edit details',
                             icon: Pencil,
                             onSelect: () => setEditing(row),
                           },
                           {
-                            label: "Delete",
+                            label: 'Delete',
                             icon: Trash2,
                             destructive: true,
                             separatorBefore: true,
@@ -450,8 +408,7 @@ export function SoftwareList() {
       {pagination && pagination.totalPages > 1 ? (
         <div className="flex items-center justify-between text-sm">
           <p className="text-muted-foreground">
-            Page {pagination.page} of {pagination.totalPages} ·{" "}
-            {pagination.total} titles
+            Page {pagination.page} of {pagination.totalPages} · {pagination.total} titles
           </p>
           <div className="flex gap-2">
             <Button

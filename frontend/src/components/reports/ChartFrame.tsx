@@ -1,6 +1,6 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Shared chrome for every chart on the Reports page: title, optional
@@ -23,22 +23,13 @@ export function ChartFrame({
 }) {
   return (
     <section
-      className={cn(
-        "flex flex-col rounded-xl border border-border bg-card shadow-card",
-        className,
-      )}
+      className={cn('flex flex-col rounded-xl border border-border bg-card shadow-card', className)}
     >
       <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div className="min-w-0">
-          <h2 className="text-[15px] font-semibold tracking-tight text-foreground">
-            {title}
-          </h2>
+          <h2 className="text-[15px] font-semibold tracking-tight text-foreground">{title}</h2>
 
-          {description && (
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {description}
-            </p>
-          )}
+          {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
         </div>
 
         {actions && <div className="shrink-0">{actions}</div>}
@@ -75,10 +66,7 @@ export function ChartTooltip({
 
       <ul className="space-y-1">
         {payload.map((entry, index) => (
-          <li
-            key={index}
-            className="flex items-center justify-between gap-4 text-xs"
-          >
+          <li key={index} className="flex items-center justify-between gap-4 text-xs">
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <span
                 aria-hidden="true"
@@ -100,18 +88,11 @@ export function ChartTooltip({
   );
 }
 
-export function ChartLegend({
-  items,
-}: {
-  items: Array<{ label: string; color: string }>;
-}) {
+export function ChartLegend({ items }: { items: Array<{ label: string; color: string }> }) {
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
       {items.map((item) => (
-        <li
-          key={item.label}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground"
-        >
+        <li key={item.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span
             aria-hidden="true"
             className="h-2 w-2 rounded-[2px]"

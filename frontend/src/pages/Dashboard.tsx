@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import type { LucideIcon } from "lucide-react";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import {
   AppWindow,
   Boxes,
@@ -14,25 +14,25 @@ import {
   Wrench,
   ChevronRight,
   Search,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { useGetAssetsQuery } from "../services/api/asset.api";
-import { useGetEmployeesQuery } from "../services/api/employees.api";
+import { useGetAssetsQuery } from '../services/api/asset.api';
+import { useGetEmployeesQuery } from '../services/api/employees.api';
 
-import { StatCard } from "../components/dashboard/StatCard";
-import { Card } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { PageHeader } from "../components/layout/PageHeader";
-import { CreateAssetModal } from "../components/asset-manager/CreateAssetModal";
-import { QuickAddAsset } from "../components/quick/QuickAddAsset";
+import { StatCard } from '../components/dashboard/StatCard';
+import { Card } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { PageHeader } from '../components/layout/PageHeader';
+import { CreateAssetModal } from '../components/asset-manager/CreateAssetModal';
+import { QuickAddAsset } from '../components/quick/QuickAddAsset';
 
 // ============================================================
 // TYPES
 // ============================================================
 
-import type { Asset, AssetStatus } from "../services/api/asset.api";
-import type { Employee } from "../services/api/employees.api";
+import type { Asset, AssetStatus } from '../services/api/asset.api';
+import type { Employee } from '../services/api/employees.api';
 
 // ============================================================
 // TASKS
@@ -50,27 +50,27 @@ interface HomeTask {
 
 const HOME_TASKS: HomeTask[] = [
   {
-    title: "Give equipment to someone",
-    body: "Pick a person, then choose a laptop, phone or licence from stock.",
+    title: 'Give equipment to someone',
+    body: 'Pick a person, then choose a laptop, phone or licence from stock.',
     icon: PackageOpen,
-    to: "/asset-manager",
+    to: '/asset-manager',
   },
   {
-    title: "Build a computer",
-    body: "Combine parts into one computer, then give the whole machine to someone.",
+    title: 'Build a computer',
+    body: 'Combine parts into one computer, then give the whole machine to someone.',
     icon: Wrench,
-    to: "/asset-manager?view=computers",
+    to: '/asset-manager?view=computers',
   },
   {
-    title: "Add new equipment",
-    body: "Record something you have just bought so it can be given out.",
+    title: 'Add new equipment',
+    body: 'Record something you have just bought so it can be given out.',
     icon: Plus,
   },
   {
-    title: "Find an item",
-    body: "Search every asset and see who has it, or whether it is in stock.",
+    title: 'Find an item',
+    body: 'Search every asset and see who has it, or whether it is in stock.',
     icon: Search,
-    to: "/inventory",
+    to: '/inventory',
   },
 ];
 
@@ -98,9 +98,7 @@ function HomeTasks({ onAddAsset }: { onAddAsset: () => void }) {
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-foreground">
-                  {task.title}
-                </span>
+                <span className="block text-sm font-semibold text-foreground">{task.title}</span>
                 <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                   {task.body}
                 </span>
@@ -114,7 +112,7 @@ function HomeTasks({ onAddAsset }: { onAddAsset: () => void }) {
           );
 
           const className =
-            "group flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-raised transition-colors hover:border-primary-border focus-visible:ring-2 focus-visible:ring-ring outline-none";
+            'group flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-raised transition-colors hover:border-primary-border focus-visible:ring-2 focus-visible:ring-ring outline-none';
 
           return task.to ? (
             <Link key={task.title} to={task.to} className={className}>
@@ -136,13 +134,13 @@ function HomeTasks({ onAddAsset }: { onAddAsset: () => void }) {
 // ============================================================
 
 const STATUS_COLORS: Record<string, string> = {
-  ASSIGNED: "bg-brand-500",
-  AVAILABLE: "bg-success",
-  REPAIR: "bg-warning",
-  RETIRED: "bg-muted-foreground",
-  LOST: "bg-destructive",
-  DAMAGED: "bg-destructive",
-  DISPOSED: "bg-border",
+  ASSIGNED: 'bg-brand-500',
+  AVAILABLE: 'bg-success',
+  REPAIR: 'bg-warning',
+  RETIRED: 'bg-muted-foreground',
+  LOST: 'bg-destructive',
+  DAMAGED: 'bg-destructive',
+  DISPOSED: 'bg-border',
 };
 
 // ============================================================
@@ -152,23 +150,18 @@ const STATUS_COLORS: Record<string, string> = {
 function formatStatus(status: string): string {
   return status
     .toLowerCase()
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function formatAction(action: string): string {
-  return action.toLowerCase().replace(/_/g, " ");
+  return action.toLowerCase().replace(/_/g, ' ');
 }
 
 function getEmployeeName(employee?: Employee | null): string {
-  if (!employee) return "Unknown employee";
+  if (!employee) return 'Unknown employee';
 
-  return (
-    employee.name ||
-    employee.employeeCode ||
-    employee.email ||
-    "Unknown employee"
-  );
+  return employee.name || employee.employeeCode || employee.email || 'Unknown employee';
 }
 
 function getDaysUntil(dateValue: string | Date, from: Date): number {
@@ -181,22 +174,12 @@ function getDaysUntil(dateValue: string | Date, from: Date): number {
 // BAR ROW
 // ============================================================
 
-function BarRow({
-  label,
-  count,
-  max,
-}: {
-  label: string;
-  count: number;
-  max: number;
-}) {
+function BarRow({ label, count, max }: { label: string; count: number; max: number }) {
   const percentage = max ? Math.min((count / max) * 100, 100) : 0;
 
   return (
     <div className="flex items-center gap-3">
-      <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
-        {label}
-      </span>
+      <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">{label}</span>
 
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
         <div
@@ -224,9 +207,7 @@ function PercentageBar({ value, label }: { value: number; label: string }) {
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{label}</span>
 
-        <span className="font-medium tabular-nums text-foreground">
-          {value.toFixed(0)}%
-        </span>
+        <span className="font-medium tabular-nums text-foreground">{value.toFixed(0)}%</span>
       </div>
 
       <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -302,19 +283,13 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-24 animate-pulse rounded-xl bg-muted"
-            />
+            <div key={index} className="h-24 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-56 animate-pulse rounded-xl bg-muted"
-            />
+            <div key={index} className="h-56 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
       </div>
@@ -329,7 +304,7 @@ export default function Dashboard() {
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="rounded-lg border border-destructive-border bg-destructive-muted px-4 py-3 text-sm text-destructive-strong">
-          Couldn&apos;t load report data.{" "}
+          Couldn&apos;t load report data.{' '}
           <button
             onClick={() => {
               refetchAssets();
@@ -362,52 +337,39 @@ export default function Dashboard() {
 
   const totalAssets = assets.length;
 
-  const assignedAssets = assets.filter(
-    (asset) => asset.status === "ASSIGNED",
-  ).length;
+  const assignedAssets = assets.filter((asset) => asset.status === 'ASSIGNED').length;
 
-  const availableAssets = assets.filter(
-    (asset) => asset.status === "AVAILABLE",
-  ).length;
+  const availableAssets = assets.filter((asset) => asset.status === 'AVAILABLE').length;
 
-  const hardwareAssets = assets.filter((asset) => asset.kind === "HARDWARE");
+  const hardwareAssets = assets.filter((asset) => asset.kind === 'HARDWARE');
 
-  const softwareAssets = assets.filter((asset) => asset.kind === "SOFTWARE");
+  const softwareAssets = assets.filter((asset) => asset.kind === 'SOFTWARE');
 
-  const underRepair = assets.filter(
-    (asset) => asset.status === "REPAIR",
-  ).length;
+  const underRepair = assets.filter((asset) => asset.status === 'REPAIR').length;
 
-  const damagedAssets = assets.filter(
-    (asset) => asset.status === "DAMAGED",
-  ).length;
+  const damagedAssets = assets.filter((asset) => asset.status === 'DAMAGED').length;
 
-  const lostAssets = assets.filter((asset) => asset.status === "LOST").length;
+  const lostAssets = assets.filter((asset) => asset.status === 'LOST').length;
 
-  const retiredAssets = assets.filter(
-    (asset) => asset.status === "RETIRED",
-  ).length;
+  const retiredAssets = assets.filter((asset) => asset.status === 'RETIRED').length;
 
   // ==========================================================
   // ASSIGNMENT ANALYTICS
   // ==========================================================
 
-  const assignmentRate =
-    totalAssets > 0 ? (assignedAssets / totalAssets) * 100 : 0;
+  const assignmentRate = totalAssets > 0 ? (assignedAssets / totalAssets) * 100 : 0;
 
-  const availabilityRate =
-    totalAssets > 0 ? (availableAssets / totalAssets) * 100 : 0;
+  const availabilityRate = totalAssets > 0 ? (availableAssets / totalAssets) * 100 : 0;
 
   // ==========================================================
   // MAINTENANCE ANALYTICS
   // ==========================================================
 
   const maintenanceAssets = assets.filter(
-    (asset) => asset.status === "REPAIR" || asset.status === "DAMAGED",
+    (asset) => asset.status === 'REPAIR' || asset.status === 'DAMAGED',
   ).length;
 
-  const maintenanceRate =
-    totalAssets > 0 ? (maintenanceAssets / totalAssets) * 100 : 0;
+  const maintenanceRate = totalAssets > 0 ? (maintenanceAssets / totalAssets) * 100 : 0;
 
   // ==========================================================
   // LICENSE EXPIRATIONS
@@ -424,8 +386,8 @@ export default function Dashboard() {
       return expiry >= today && expiry <= ninetyDaysFromNow;
     })
     .sort((a, b) => {
-      const aDate = new Date(a.license?.expiryDate || "").getTime();
-      const bDate = new Date(b.license?.expiryDate || "").getTime();
+      const aDate = new Date(a.license?.expiryDate || '').getTime();
+      const bDate = new Date(b.license?.expiryDate || '').getTime();
 
       return aDate - bDate;
     });
@@ -443,8 +405,8 @@ export default function Dashboard() {
       return expiry >= today && expiry <= ninetyDaysFromNow;
     })
     .sort((a, b) => {
-      const aDate = new Date(a.warrantyExpiry || "").getTime();
-      const bDate = new Date(b.warrantyExpiry || "").getTime();
+      const aDate = new Date(a.warrantyExpiry || '').getTime();
+      const bDate = new Date(b.warrantyExpiry || '').getTime();
 
       return aDate - bDate;
     });
@@ -476,13 +438,13 @@ export default function Dashboard() {
   // ==========================================================
 
   const statusOrder: AssetStatus[] = [
-    "ASSIGNED",
-    "AVAILABLE",
-    "REPAIR",
-    "RETIRED",
-    "LOST",
-    "DAMAGED",
-    "DISPOSED",
+    'ASSIGNED',
+    'AVAILABLE',
+    'REPAIR',
+    'RETIRED',
+    'LOST',
+    'DAMAGED',
+    'DISPOSED',
   ];
 
   const assetDistribution = statusOrder
@@ -492,8 +454,7 @@ export default function Dashboard() {
     }))
     .filter((item) => item.count > 0);
 
-  const totalForDistribution =
-    assetDistribution.reduce((sum, item) => sum + item.count, 0) || 1;
+  const totalForDistribution = assetDistribution.reduce((sum, item) => sum + item.count, 0) || 1;
 
   // ==========================================================
   // HARDWARE BREAKDOWN
@@ -502,7 +463,7 @@ export default function Dashboard() {
   const hardwareMap = new Map<string, number>();
 
   hardwareAssets.forEach((asset) => {
-    const category = asset.category?.name || "Uncategorized";
+    const category = asset.category?.name || 'Uncategorized';
 
     hardwareMap.set(category, (hardwareMap.get(category) || 0) + 1);
   });
@@ -514,10 +475,7 @@ export default function Dashboard() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const maxHardware = Math.max(
-    ...hardwareBreakdown.map((item) => item.count),
-    1,
-  );
+  const maxHardware = Math.max(...hardwareBreakdown.map((item) => item.count), 1);
 
   // ==========================================================
   // SOFTWARE BREAKDOWN
@@ -526,7 +484,7 @@ export default function Dashboard() {
   const softwareMap = new Map<string, number>();
 
   softwareAssets.forEach((asset) => {
-    const category = asset.category?.name || "Uncategorized";
+    const category = asset.category?.name || 'Uncategorized';
 
     softwareMap.set(category, (softwareMap.get(category) || 0) + 1);
   });
@@ -538,10 +496,7 @@ export default function Dashboard() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const maxSoftware = Math.max(
-    ...softwareBreakdown.map((item) => item.count),
-    1,
-  );
+  const maxSoftware = Math.max(...softwareBreakdown.map((item) => item.count), 1);
 
   // ==========================================================
   // EMPLOYEE ASSIGNMENT ANALYTICS
@@ -550,21 +505,15 @@ export default function Dashboard() {
   const employeeAssignmentMap = new Map<string, number>();
 
   assets
-    .filter((asset) => asset.status === "ASSIGNED")
+    .filter((asset) => asset.status === 'ASSIGNED')
     .forEach((asset) => {
       const employee = asset.assignments?.find(
-        (assignment) => assignment.status === "ACTIVE",
+        (assignment) => assignment.status === 'ACTIVE',
       )?.employee;
 
-      const employeeName =
-        employee
-          ? getEmployeeName(employee as Employee)
-          : "Unknown employee";
+      const employeeName = employee ? getEmployeeName(employee as Employee) : 'Unknown employee';
 
-      employeeAssignmentMap.set(
-        employeeName,
-        (employeeAssignmentMap.get(employeeName) || 0) + 1,
-      );
+      employeeAssignmentMap.set(employeeName, (employeeAssignmentMap.get(employeeName) || 0) + 1);
     });
 
   const employeeAssignments = Array.from(employeeAssignmentMap.entries())
@@ -575,10 +524,7 @@ export default function Dashboard() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
-  const maxEmployeeAssignments = Math.max(
-    ...employeeAssignments.map((item) => item.count),
-    1,
-  );
+  const maxEmployeeAssignments = Math.max(...employeeAssignments.map((item) => item.count), 1);
 
   // ==========================================================
   // RECENT ACTIVITY
@@ -592,10 +538,7 @@ export default function Dashboard() {
         assetTag: asset.assetTag,
       })),
     )
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
 
   // ==========================================================
@@ -607,9 +550,7 @@ export default function Dashboard() {
     0,
   );
 
-  const assetsWithHistory = assets.filter(
-    (asset) => (asset.history?.length || 0) > 0,
-  ).length;
+  const assetsWithHistory = assets.filter((asset) => (asset.history?.length || 0) > 0).length;
 
   // ==========================================================
   // OPERATIONAL ALERTS
@@ -617,34 +558,34 @@ export default function Dashboard() {
 
   const operationalAlerts = [
     {
-      label: "Licenses expiring within 30 days",
-      to: "/software",
+      label: 'Licenses expiring within 30 days',
+      to: '/software',
       count: licensesExpiring30Days,
-      tone: licensesExpiring30Days > 0 ? "danger" : "neutral",
+      tone: licensesExpiring30Days > 0 ? 'danger' : 'neutral',
     },
     {
-      label: "Warranties expiring within 30 days",
-      to: "/inventory",
+      label: 'Warranties expiring within 30 days',
+      to: '/inventory',
       count: warrantiesExpiring30Days,
-      tone: warrantiesExpiring30Days > 0 ? "warn" : "neutral",
+      tone: warrantiesExpiring30Days > 0 ? 'warn' : 'neutral',
     },
     {
-      label: "Assets under repair",
-      to: "/inventory?status=REPAIR",
+      label: 'Assets under repair',
+      to: '/inventory?status=REPAIR',
       count: underRepair,
-      tone: underRepair > 0 ? "warn" : "neutral",
+      tone: underRepair > 0 ? 'warn' : 'neutral',
     },
     {
-      label: "Damaged assets",
-      to: "/inventory?status=DAMAGED",
+      label: 'Damaged assets',
+      to: '/inventory?status=DAMAGED',
       count: damagedAssets,
-      tone: damagedAssets > 0 ? "danger" : "neutral",
+      tone: damagedAssets > 0 ? 'danger' : 'neutral',
     },
     {
-      label: "Lost assets",
-      to: "/inventory?status=LOST",
+      label: 'Lost assets',
+      to: '/inventory?status=LOST',
       count: lostAssets,
-      tone: lostAssets > 0 ? "danger" : "neutral",
+      tone: lostAssets > 0 ? 'danger' : 'neutral',
     },
   ] as const;
 
@@ -671,7 +612,6 @@ export default function Dashboard() {
         }
       />
 
-
       <HomeTasks onAddAsset={() => setIsAddAssetOpen(true)} />
 
       {/* ======================================================
@@ -682,9 +622,7 @@ export default function Dashboard() {
 
       <Card className="p-5">
         <div className="mb-3">
-          <h2 className="text-sm font-semibold text-foreground">
-            Needs attention
-          </h2>
+          <h2 className="text-sm font-semibold text-foreground">Needs attention</h2>
 
           <p className="mt-1 text-xs text-muted-foreground">
             Select an item to see the assets or licenses involved.
@@ -704,17 +642,12 @@ export default function Dashboard() {
                   to={item.to}
                   className="flex items-center justify-between gap-3 px-3 py-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 >
-                  <span className="min-w-0 truncate text-foreground">
-                    {item.label}
-                  </span>
+                  <span className="min-w-0 truncate text-foreground">{item.label}</span>
 
                   <span className="flex shrink-0 items-center gap-2">
                     <Badge tone={item.tone}>{item.count}</Badge>
 
-                    <ChevronRight
-                      className="h-4 w-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   </span>
                 </Link>
               </li>
@@ -728,12 +661,7 @@ export default function Dashboard() {
       ====================================================== */}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard
-          label="Total Assets"
-          value={totalAssets}
-          icon={Boxes}
-          to="/inventory"
-        />
+        <StatCard label="Total Assets" value={totalAssets} icon={Boxes} to="/inventory" />
 
         <StatCard
           label="Assigned"
@@ -749,12 +677,7 @@ export default function Dashboard() {
           to="/inventory?status=AVAILABLE"
         />
 
-        <StatCard
-          label="Employees"
-          value={employees.length}
-          icon={Users}
-          to="/employees"
-        />
+        <StatCard label="Employees" value={employees.length} icon={Users} to="/employees" />
 
         <StatCard
           label="Hardware"
@@ -763,12 +686,7 @@ export default function Dashboard() {
           to="/inventory?kind=HARDWARE"
         />
 
-        <StatCard
-          label="Software"
-          value={softwareAssets.length}
-          icon={AppWindow}
-          to="/software"
-        />
+        <StatCard label="Software" value={softwareAssets.length} icon={AppWindow} to="/software" />
 
         <StatCard
           label="Under Repair"
@@ -797,9 +715,7 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Asset Distribution
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Asset Distribution</h2>
 
               <p className="mt-1 text-xs text-muted-foreground">
                 Current status across all tracked assets.
@@ -813,7 +729,7 @@ export default function Dashboard() {
             {assetDistribution.map((item) => (
               <div
                 key={item.status}
-                className={STATUS_COLORS[item.status] || "bg-border"}
+                className={STATUS_COLORS[item.status] || 'bg-border'}
                 style={{
                   width: `${(item.count / totalForDistribution) * 100}%`,
                 }}
@@ -824,23 +740,16 @@ export default function Dashboard() {
 
           <div className="space-y-2.5">
             {assetDistribution.map((item) => (
-              <div
-                key={item.status}
-                className="flex items-center justify-between text-xs"
-              >
+              <div key={item.status} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2 text-muted-foreground">
                   <span
-                    className={`h-2 w-2 rounded-full ${
-                      STATUS_COLORS[item.status] || "bg-border"
-                    }`}
+                    className={`h-2 w-2 rounded-full ${STATUS_COLORS[item.status] || 'bg-border'}`}
                   />
 
                   {formatStatus(item.status)}
                 </span>
 
-                <span className="font-medium tabular-nums text-foreground">
-                  {item.count}
-                </span>
+                <span className="font-medium tabular-nums text-foreground">{item.count}</span>
               </div>
             ))}
 
@@ -855,9 +764,7 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Assignment Overview
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Assignment Overview</h2>
 
               <p className="mt-1 text-xs text-muted-foreground">
                 Coverage of assigned and available assets.
@@ -873,9 +780,7 @@ export default function Dashboard() {
                 {assignmentRate.toFixed(0)}%
               </span>
 
-              <span className="text-xs text-muted-foreground">
-                assignment rate
-              </span>
+              <span className="text-xs text-muted-foreground">assignment rate</span>
             </div>
 
             <PercentageBar
@@ -885,33 +790,24 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
-            <PercentageBar
-              value={availabilityRate}
-              label={`${availableAssets} available assets`}
-            />
+            <PercentageBar value={availabilityRate} label={`${availableAssets} available assets`} />
 
             <div className="flex items-center justify-between border-t border-border pt-4 text-sm">
               <span className="text-muted-foreground">Available assets</span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {availableAssets}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{availableAssets}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Assigned assets</span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {assignedAssets}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{assignedAssets}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total employees</span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {employees.length}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{employees.length}</span>
             </div>
           </div>
         </Card>
@@ -921,9 +817,7 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Maintenance
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Maintenance</h2>
 
               <p className="mt-1 text-xs text-muted-foreground">
                 Assets requiring operational attention.
@@ -935,13 +829,9 @@ export default function Dashboard() {
 
           <div className="mb-6">
             <div className="mb-2 flex items-end justify-between">
-              <span className="text-2xl font-semibold text-foreground">
-                {maintenanceAssets}
-              </span>
+              <span className="text-2xl font-semibold text-foreground">{maintenanceAssets}</span>
 
-              <span className="text-xs text-muted-foreground">
-                affected assets
-              </span>
+              <span className="text-xs text-muted-foreground">affected assets</span>
             </div>
 
             <PercentageBar
@@ -957,9 +847,7 @@ export default function Dashboard() {
                 Under repair
               </span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {underRepair}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{underRepair}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -968,9 +856,7 @@ export default function Dashboard() {
                 Damaged
               </span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {damagedAssets}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{damagedAssets}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
@@ -979,17 +865,13 @@ export default function Dashboard() {
                 Lost
               </span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {lostAssets}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{lostAssets}</span>
             </div>
 
             <div className="flex items-center justify-between border-t border-border pt-3 text-sm">
               <span className="text-muted-foreground">Retired</span>
 
-              <span className="font-medium tabular-nums text-foreground">
-                {retiredAssets}
-              </span>
+              <span className="font-medium tabular-nums text-foreground">{retiredAssets}</span>
             </div>
           </div>
         </Card>
@@ -1005,13 +887,9 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Hardware by Category
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Hardware by Category</h2>
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                Distribution of hardware assets.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Distribution of hardware assets.</p>
             </div>
 
             <Laptop className="h-4 w-4 text-muted-foreground" />
@@ -1028,9 +906,7 @@ export default function Dashboard() {
             ))}
 
             {hardwareBreakdown.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No hardware assets yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No hardware assets yet.</p>
             )}
           </div>
         </Card>
@@ -1040,13 +916,9 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Software by Category
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Software by Category</h2>
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                Distribution of software assets.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Distribution of software assets.</p>
             </div>
 
             <AppWindow className="h-4 w-4 text-muted-foreground" />
@@ -1063,9 +935,7 @@ export default function Dashboard() {
             ))}
 
             {softwareBreakdown.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No software assets yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No software assets yet.</p>
             )}
           </div>
         </Card>
@@ -1081,13 +951,9 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Asset Assignments
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Asset Assignments</h2>
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                Employees with assigned assets.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Employees with assigned assets.</p>
             </div>
 
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -1104,9 +970,7 @@ export default function Dashboard() {
             ))}
 
             {employeeAssignments.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No assigned assets yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No assigned assets yet.</p>
             )}
           </div>
         </Card>
@@ -1122,9 +986,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs text-muted-foreground">Activity Records</p>
 
-              <p className="mt-1 text-2xl font-semibold text-foreground">
-                {totalHistoryEntries}
-              </p>
+              <p className="mt-1 text-2xl font-semibold text-foreground">{totalHistoryEntries}</p>
             </div>
 
             <Clock3 className="h-5 w-5 text-muted-foreground" />
@@ -1138,13 +1000,9 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">
-                Assets With Activity
-              </p>
+              <p className="text-xs text-muted-foreground">Assets With Activity</p>
 
-              <p className="mt-1 text-2xl font-semibold text-foreground">
-                {assetsWithHistory}
-              </p>
+              <p className="mt-1 text-2xl font-semibold text-foreground">{assetsWithHistory}</p>
             </div>
 
             <Boxes className="h-5 w-5 text-muted-foreground" />
@@ -1161,10 +1019,7 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">Activity Coverage</p>
 
               <p className="mt-1 text-2xl font-semibold text-foreground">
-                {totalAssets > 0
-                  ? ((assetsWithHistory / totalAssets) * 100).toFixed(0)
-                  : 0}
-                %
+                {totalAssets > 0 ? ((assetsWithHistory / totalAssets) * 100).toFixed(0) : 0}%
               </p>
             </div>
 
@@ -1187,9 +1042,7 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Recent Activity
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
 
               <p className="mt-1 text-xs text-muted-foreground">
                 Latest changes recorded against assets.
@@ -1206,47 +1059,42 @@ export default function Dashboard() {
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-foreground">
-                    {activity.action === "TRANSFERRED" ? (
+                    {activity.action === 'TRANSFERRED' ? (
                       <>
-                        <b className="font-medium">{activity.assetName}</b>{" "}
-                        transferred from {activity.fromValue} to{" "}
+                        <b className="font-medium">{activity.assetName}</b> transferred from{' '}
+                        {activity.fromValue} to {activity.toValue}
+                      </>
+                    ) : activity.action === 'ASSIGNED' ? (
+                      <>
+                        <b className="font-medium">{activity.assetName}</b> assigned to{' '}
                         {activity.toValue}
                       </>
-                    ) : activity.action === "ASSIGNED" ? (
+                    ) : activity.action === 'CREATED' ? (
                       <>
-                        <b className="font-medium">{activity.assetName}</b>{" "}
-                        assigned to {activity.toValue}
+                        New asset added: <b className="font-medium">{activity.assetName}</b>
                       </>
-                    ) : activity.action === "CREATED" ? (
+                    ) : activity.action === 'STATUS_CHANGED' ? (
                       <>
-                        New asset added:{" "}
-                        <b className="font-medium">{activity.assetName}</b>
-                      </>
-                    ) : activity.action === "STATUS_CHANGED" ? (
-                      <>
-                        <b className="font-medium">{activity.assetName}</b>{" "}
-                        status changed to {activity.toValue}
+                        <b className="font-medium">{activity.assetName}</b> status changed to{' '}
+                        {activity.toValue}
                       </>
                     ) : (
                       <>
-                        <b className="font-medium">{activity.assetName}</b>{" "}
+                        <b className="font-medium">{activity.assetName}</b>{' '}
                         {formatAction(activity.action)}
                       </>
                     )}
                   </p>
 
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(activity.createdAt).toLocaleString()} ·{" "}
-                    {activity.performedBy}
+                    {new Date(activity.createdAt).toLocaleString()} · {activity.performedBy}
                   </p>
                 </div>
               </li>
             ))}
 
             {recentActivity.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No recent activity yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No recent activity yet.</p>
             )}
           </ul>
         </Card>
@@ -1256,9 +1104,7 @@ export default function Dashboard() {
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
-                Upcoming
-              </h2>
+              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
 
               <p className="mt-1 text-xs text-muted-foreground">
                 Licenses and warranties expiring in the next 90 days.
@@ -1290,31 +1136,24 @@ export default function Dashboard() {
                 const daysLeft = getDaysUntil(expiryDate, today);
 
                 return (
-                  <div
-                    key={asset.id}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
+                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
                     <div className="min-w-0">
                       <p className="truncate text-foreground">{asset.name}</p>
 
                       {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">
-                          {asset.assetTag}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
                       )}
                     </div>
 
-                    <Badge tone={daysLeft <= 30 ? "danger" : "warn"}>
-                      {daysLeft <= 0 ? "Today" : `${daysLeft}d`}
+                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
                     </Badge>
                   </div>
                 );
               })}
 
               {licenseExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Nothing expiring soon.
-                </p>
+                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
               )}
             </div>
           </div>
@@ -1341,31 +1180,24 @@ export default function Dashboard() {
                 const daysLeft = getDaysUntil(expiryDate, today);
 
                 return (
-                  <div
-                    key={asset.id}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
+                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
                     <div className="min-w-0">
                       <p className="truncate text-foreground">{asset.name}</p>
 
                       {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">
-                          {asset.assetTag}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
                       )}
                     </div>
 
-                    <Badge tone={daysLeft <= 30 ? "danger" : "warn"}>
-                      {daysLeft <= 0 ? "Today" : `${daysLeft}d`}
+                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
                     </Badge>
                   </div>
                 );
               })}
 
               {warrantyExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Nothing expiring soon.
-                </p>
+                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
               )}
             </div>
           </div>

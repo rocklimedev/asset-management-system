@@ -50,3 +50,20 @@ test('a failed asset creation keeps employee data cached', async () => {
   assert.equal(Object.keys(store.getState().employeesApi.queries).length, 1);
   store.dispatch(employeesApi.util.resetApiState());
 });
+
+const { assetApi } = require('../src/services/api/asset.api.ts');
+for (const endpointName of ['assignAsset', 'returnAsset', 'transferAsset']) {
+  test(`${endpointName} refreshes workstation components and an empty employee Assets tab`, async () => {
+    store.dispatch(assetApi.util.resetApiState());
+    await store.dispatch(assetApi.util.upsertQueryData('getSystems', undefined, [{ id: 'system', assignments: [] }]));
+    await store.dispatch(assetApi.util.upsertQueryData('getActiveAssetAssignmentsByEmployee', 'employee', []));
+    assert.equal(Object.keys(store.getState().assetApi.queries).length, 2);
+    store.dispatch({
+      type: 'assetApi/executeMutation/fulfilled', payload: { id: 'asset' },
+      meta: { requestStatus: 'fulfilled', requestId: `workstation-${endpointName}`,
+        arg: { type: 'mutation', endpointName, originalArgs: { id: 'asset', toEmployeeId: 'employee', toSystemId: 'system' } } },
+    });
+    assert.equal(Object.keys(store.getState().assetApi.queries).length, 0);
+    store.dispatch(assetApi.util.resetApiState());
+  });
+}

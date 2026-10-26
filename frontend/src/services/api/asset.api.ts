@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BACKEND } from "../../lib/api";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { BACKEND } from '../../lib/api';
 import type {
   Asset,
   AssetAssignment,
@@ -13,10 +13,21 @@ import type {
   SystemInput,
   SystemRecord,
   SystemSpecs,
-} from "../../types";
+} from '../../types';
 
 // Re-exported so existing imports (e.g. src/types/systems.ts) keep working.
-export type { Asset, AssetAssignment, AssetCategory, AssetHistory, AssetKind, AssetStatus, AssetCondition, AssetTrackingMode, SystemRecord, SystemSpecs } from "../../types";
+export type {
+  Asset,
+  AssetAssignment,
+  AssetCategory,
+  AssetHistory,
+  AssetKind,
+  AssetStatus,
+  AssetCondition,
+  AssetTrackingMode,
+  SystemRecord,
+  SystemSpecs,
+} from '../../types';
 
 // ============================================================
 // ENDPOINT-LEVEL TYPES
@@ -24,18 +35,8 @@ export type { Asset, AssetAssignment, AssetCategory, AssetHistory, AssetKind, As
 
 export type AssetUnitStatus = AssetStatus;
 export type AssetUnitCondition = AssetCondition;
-export type TransferStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED"
-  | "COMPLETED"
-  | "CANCELLED";
-export type InventoryChangeType =
-  | "RESTOCK"
-  | "CONSUMED"
-  | "RETURNED"
-  | "ADJUSTMENT"
-  | "WRITE_OFF";
+export type TransferStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+export type InventoryChangeType = 'RESTOCK' | 'CONSUMED' | 'RETURNED' | 'ADJUSTMENT' | 'WRITE_OFF';
 
 export interface AssetUnit {
   deviceId?: string | null;
@@ -88,7 +89,7 @@ export interface GetAssetsParams {
   categoryId?: string;
   status?: AssetStatus;
   sortBy?: string;
-  sortDir?: "ASC" | "DESC";
+  sortDir?: 'ASC' | 'DESC';
   page?: number;
   pageSize?: number;
 }
@@ -116,24 +117,24 @@ export interface GetAssetUnitsParams {
 export type AssetInput = Partial<
   Pick<
     Asset,
-    | "name"
-    | "kind"
-    | "assetTag"
-    | "manufacturer"
-    | "model"
-    | "serialNumber"
-    | "purchaseDate"
-    | "purchasePrice"
-    | "warrantyExpiry"
-    | "status"
-    | "condition"
-    | "notes"
-    | "trackingMode"
-    | "quantity"
-    | "organisationId"
-    | "vendorId"
-    | "invoiceNumber"
-    | "warrantyStart"
+    | 'name'
+    | 'kind'
+    | 'assetTag'
+    | 'manufacturer'
+    | 'model'
+    | 'serialNumber'
+    | 'purchaseDate'
+    | 'purchasePrice'
+    | 'warrantyExpiry'
+    | 'status'
+    | 'condition'
+    | 'notes'
+    | 'trackingMode'
+    | 'quantity'
+    | 'organisationId'
+    | 'vendorId'
+    | 'invoiceNumber'
+    | 'warrantyStart'
   > & { categoryId: string; locationId: string | null }
 >;
 
@@ -141,7 +142,7 @@ export type CreateAssetRequest = AssetInput & {
   name: string;
   kind: AssetKind;
   categoryId: string;
-  initialUnits?: Omit<CreateAssetUnitRequest, "assetId">[];
+  initialUnits?: Omit<CreateAssetUnitRequest, 'assetId'>[];
 };
 export type UpdateAssetRequest = AssetInput & { id: string };
 
@@ -206,7 +207,7 @@ export interface AdjustInventoryRequest {
   id: string;
   changeType: InventoryChangeType;
   quantity: number;
-  direction?: "increase" | "decrease";
+  direction?: 'increase' | 'decrease';
   reason?: string;
 }
 
@@ -224,15 +225,14 @@ const LONG_CACHE_CONFIG = { keepUnusedDataFor: 10 * 60 };
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
-const toPageSize = (size?: number) =>
-  Math.min(size || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+const toPageSize = (size?: number) => Math.min(size || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
 
 // ============================================================
 // ASSET API
 // ============================================================
 
 export const assetApi = createApi({
-  reducerPath: "assetApi",
+  reducerPath: 'assetApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -241,23 +241,25 @@ export const assetApi = createApi({
     // Do not set Content-Type here. fetchBaseQuery sets it for JSON
     // bodies, and FormData uploads need the browser to set the boundary.
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;
     },
   }),
 
   tagTypes: [
-    "Asset",
-    "AssetHistory",
-    "AssetUnit",
-    "AssetAssignment",
-    "AssetTransfer",
-    "AssetCategory",
-    "System",
-    "SoftwareAsset",
+    'Asset',
+    'AssetHistory',
+    'AssetUnit',
+    'AssetAssignment',
+    'Software',
+    'SoftwareReport',
+    'AssetTransfer',
+    'AssetCategory',
+    'System',
+    'SoftwareAsset',
   ],
 
   endpoints: (builder) => ({
@@ -267,8 +269,8 @@ export const assetApi = createApi({
 
     getAssets: builder.query<AssetsResponse, GetAssetsParams | undefined>({
       query: (params = {}) => ({
-        url: "/assets",
-        method: "GET",
+        url: '/assets',
+        method: 'GET',
         params: {
           search: params.search || undefined,
           organisationId: params.organisationId || undefined,
@@ -286,12 +288,12 @@ export const assetApi = createApi({
         result
           ? [
               ...result.items.map(({ id }) => ({
-                type: "Asset" as const,
+                type: 'Asset' as const,
                 id,
               })),
-              { type: "Asset" as const, id: "LIST" },
+              { type: 'Asset' as const, id: 'LIST' },
             ]
-          : [{ type: "Asset" as const, id: "LIST" }],
+          : [{ type: 'Asset' as const, id: 'LIST' }],
 
       ...LIST_CACHE_CONFIG,
     }),
@@ -299,12 +301,12 @@ export const assetApi = createApi({
     getAsset: builder.query<AssetResponse, string>({
       query: (id) => ({
         url: `/assets/${id}`,
-        method: "GET",
+        method: 'GET',
       }),
 
       providesTags: (result, error, id) => [
-        { type: "Asset" as const, id },
-        { type: "AssetHistory" as const, id },
+        { type: 'Asset' as const, id },
+        { type: 'AssetHistory' as const, id },
       ],
 
       ...CACHE_CONFIG,
@@ -312,82 +314,79 @@ export const assetApi = createApi({
 
     createAsset: builder.mutation<AssetResponse, AssetInput>({
       query: (body) => ({
-        url: "/assets",
-        method: "POST",
+        url: '/assets',
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: [
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
-    updateAsset: builder.mutation<
-      AssetResponse,
-      { id: string; body: AssetInput }
-    >({
+    updateAsset: builder.mutation<AssetResponse, { id: string; body: AssetInput }>({
       query: ({ id, body }) => ({
         url: `/assets/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     deleteAsset: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/assets/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     setAssetImage: builder.mutation<AssetResponse, { id: string; file: File }>({
       query: ({ id, file }) => {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append('file', file);
 
         return {
           url: `/assets/${id}/image`,
-          method: "POST",
+          method: 'POST',
           body: formData,
         };
       },
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset", id },
-        { type: "Asset", id: "POOL" },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     removeAssetImage: builder.mutation<AssetResponse, string>({
       query: (id) => ({
         url: `/assets/${id}/image/remove`,
-        method: "POST",
+        method: 'POST',
       }),
 
       invalidatesTags: (result, error, id) => [
-        { type: "Asset", id },
-        { type: "Asset", id: "POOL" },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     getSoftwareAssets: builder.query<Asset[], void>({
       query: () => ({
-        url: "/assets",
-        method: "GET",
-        params: { kind: "SOFTWARE", pageSize: MAX_PAGE_SIZE },
+        url: '/assets',
+        method: 'GET',
+        params: { kind: 'SOFTWARE', pageSize: MAX_PAGE_SIZE },
       }),
       transformResponse: (response: AssetsResponse) => response.items,
 
@@ -395,12 +394,12 @@ export const assetApi = createApi({
         result
           ? [
               ...result.map(({ id }) => ({
-                type: "SoftwareAsset" as const,
+                type: 'SoftwareAsset' as const,
                 id,
               })),
-              { type: "SoftwareAsset" as const, id: "LIST" },
+              { type: 'SoftwareAsset' as const, id: 'LIST' },
             ]
-          : [{ type: "SoftwareAsset" as const, id: "LIST" }],
+          : [{ type: 'SoftwareAsset' as const, id: 'LIST' }],
 
       ...CACHE_CONFIG,
     }),
@@ -408,7 +407,7 @@ export const assetApi = createApi({
     getAssetHistory: builder.query<AssetHistoryEntry[], string>({
       query: (id) => `/assets/${id}/history`,
 
-      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
+      providesTags: (result, error, id) => [{ type: 'AssetHistory', id }],
 
       ...SHORT_CACHE_CONFIG,
     }),
@@ -417,27 +416,25 @@ export const assetApi = createApi({
     // POOL
     // ============================================================
 
-    getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>(
-      {
-        query: (params = {}) => ({
-          url: "/assets/pool",
-          method: "GET",
-          params: {
-            search: params.search || undefined,
-            organisationId: params.organisationId || undefined,
-            kind: params.kind || undefined,
-            categoryId: params.categoryId || undefined,
-            locationId: params.locationId || undefined,
-            page: params.page || 1,
-            pageSize: toPageSize(params.pageSize),
-          },
-        }),
+    getAssetPool: builder.query<AssetPoolResponse, AssetPoolParams | undefined>({
+      query: (params = {}) => ({
+        url: '/assets/pool',
+        method: 'GET',
+        params: {
+          search: params.search || undefined,
+          organisationId: params.organisationId || undefined,
+          kind: params.kind || undefined,
+          categoryId: params.categoryId || undefined,
+          locationId: params.locationId || undefined,
+          page: params.page || 1,
+          pageSize: toPageSize(params.pageSize),
+        },
+      }),
 
-        providesTags: [{ type: "Asset", id: "POOL" }],
+      providesTags: [{ type: 'Asset', id: 'POOL' }],
 
-        ...LIST_CACHE_CONFIG,
-      },
-    ),
+      ...LIST_CACHE_CONFIG,
+    }),
 
     // ============================================================
     // ASSIGNMENT / TRANSFER / RETURN
@@ -446,55 +443,59 @@ export const assetApi = createApi({
     assignAsset: builder.mutation<AssetResponse, AssignAssetRequest>({
       query: ({ id, ...body }) => ({
         url: `/assets/${id}/assign`,
-        method: "POST",
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetAssignment", id },
+        { type: 'Software' },
+        { type: 'SoftwareReport' },
+        { type: 'System', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'AssetHistory', id },
+        { type: 'AssetAssignment' },
       ],
     }),
 
     transferAsset: builder.mutation<Asset, TransferAssetRequest>({
       query: ({ id, ...body }) => ({
         url: `/assets/${id}/transfer`,
-        method: "POST",
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: (result, error, { id, fromSystemId, toSystemId }) => [
-        { type: "System", id: "LIST" },
-        ...(fromSystemId ? [{ type: "System" as const, id: fromSystemId }] : []),
-        ...(toSystemId ? [{ type: "System" as const, id: toSystemId }] : []),
-        { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetTransfer", id },
-        { type: "AssetAssignment", id },
+        { type: 'Software' },
+        { type: 'SoftwareReport' },
+        { type: 'System', id: 'LIST' },
+        ...(fromSystemId ? [{ type: 'System' as const, id: fromSystemId }] : []),
+        ...(toSystemId ? [{ type: 'System' as const, id: toSystemId }] : []),
+        { type: 'Asset', id: 'POOL' },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'AssetHistory', id },
+        { type: 'AssetTransfer', id },
+        { type: 'AssetAssignment' },
       ],
     }),
 
     returnAsset: builder.mutation<AssetResponse, ReturnAssetRequest>({
       query: ({ id, assetUnitId, notes }) => ({
         url: `/assets/${id}/return`,
-        method: "POST",
+        method: 'POST',
         body: { assetUnitId, notes },
       }),
 
       invalidatesTags: (result, error, { id, assetUnitId }) => [
-        { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
-        { type: "AssetAssignment", id },
-        ...(assetUnitId
-          ? [{ type: "AssetUnit" as const, id: assetUnitId }]
-          : []),
+        { type: 'System', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'AssetHistory', id },
+        { type: 'AssetAssignment' },
+        ...(assetUnitId ? [{ type: 'AssetUnit' as const, id: assetUnitId }] : []),
       ],
     }),
 
@@ -504,14 +505,14 @@ export const assetApi = createApi({
     >({
       query: (employeeId) => ({
         url: `/assets/release-for-employee/${employeeId}`,
-        method: "POST",
+        method: 'POST',
       }),
 
       invalidatesTags: [
-        { type: "Asset", id: "LIST" },
-        { type: "Asset", id: "POOL" },
-        { type: "AssetUnit", id: "LIST" },
-        { type: "AssetAssignment" },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
+        { type: 'AssetUnit', id: 'LIST' },
+        { type: 'AssetAssignment' },
       ],
     }),
 
@@ -520,18 +521,18 @@ export const assetApi = createApi({
     // ============================================================
 
     getAssetAssignments: builder.query<AssetAssignment[], void>({
-      query: () => "/asset-assignments",
+      query: () => '/asset-assignments',
 
       providesTags: (result) =>
         result
           ? [
               ...result.map(({ id }) => ({
-                type: "AssetAssignment" as const,
+                type: 'AssetAssignment' as const,
                 id,
               })),
-              { type: "AssetAssignment" as const, id: "LIST" },
+              { type: 'AssetAssignment' as const, id: 'LIST' },
             ]
-          : [{ type: "AssetAssignment" as const, id: "LIST" }],
+          : [{ type: 'AssetAssignment' as const, id: 'LIST' }],
 
       ...LIST_CACHE_CONFIG,
     }),
@@ -539,7 +540,7 @@ export const assetApi = createApi({
     getAssetAssignment: builder.query<AssetAssignment, string>({
       query: (id) => `/asset-assignments/${id}`,
 
-      providesTags: (result, error, id) => [{ type: "AssetAssignment", id }],
+      providesTags: (result, error, id) => [{ type: 'AssetAssignment', id }],
 
       ...CACHE_CONFIG,
     }),
@@ -548,20 +549,17 @@ export const assetApi = createApi({
       query: (employeeId) => `/asset-assignments/employees/${employeeId}`,
 
       providesTags: (result, error, employeeId) => [
-        { type: "AssetAssignment", id: `employee-${employeeId}` },
+        { type: 'AssetAssignment', id: `employee-${employeeId}` },
       ],
 
       ...LIST_CACHE_CONFIG,
     }),
 
-    getActiveAssetAssignmentsByEmployee: builder.query<
-      AssetAssignment[],
-      string
-    >({
+    getActiveAssetAssignmentsByEmployee: builder.query<AssetAssignment[], string>({
       query: (employeeId) => `/asset-assignments/employees/${employeeId}/active`,
 
       providesTags: (result, error, employeeId) => [
-        { type: "AssetAssignment", id: `employee-${employeeId}-active` },
+        { type: 'AssetAssignment', id: `employee-${employeeId}-active` },
       ],
 
       ...SHORT_CACHE_CONFIG,
@@ -573,8 +571,8 @@ export const assetApi = createApi({
         response.assignments,
 
       providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: `asset-${assetId}` },
-        { type: "AssetAssignment", id: assetId },
+        { type: 'AssetAssignment', id: `asset-${assetId}` },
+        { type: 'AssetAssignment', id: assetId },
       ],
 
       ...LIST_CACHE_CONFIG,
@@ -584,8 +582,8 @@ export const assetApi = createApi({
       query: (assetId) => `/asset-assignments/assets/${assetId}/active`,
 
       providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: `asset-${assetId}-active` },
-        { type: "AssetAssignment", id: assetId },
+        { type: 'AssetAssignment', id: `asset-${assetId}-active` },
+        { type: 'AssetAssignment', id: assetId },
       ],
 
       ...SHORT_CACHE_CONFIG,
@@ -595,8 +593,8 @@ export const assetApi = createApi({
       query: (assetId) => `/asset-assignments/assets/${assetId}/summary`,
 
       providesTags: (result, error, assetId) => [
-        { type: "AssetAssignment", id: `asset-${assetId}-summary` },
-        { type: "AssetAssignment", id: assetId },
+        { type: 'AssetAssignment', id: `asset-${assetId}-summary` },
+        { type: 'AssetAssignment', id: assetId },
       ],
 
       ...SHORT_CACHE_CONFIG,
@@ -608,20 +606,17 @@ export const assetApi = createApi({
         response.assignments,
 
       providesTags: (result, error, assetUnitId) => [
-        { type: "AssetAssignment", id: `unit-${assetUnitId}` },
+        { type: 'AssetAssignment', id: `unit-${assetUnitId}` },
       ],
 
       ...LIST_CACHE_CONFIG,
     }),
 
-    getActiveAssetAssignmentByAssetUnit: builder.query<
-      AssetAssignment | null,
-      string
-    >({
+    getActiveAssetAssignmentByAssetUnit: builder.query<AssetAssignment | null, string>({
       query: (assetUnitId) => `/asset-assignments/units/${assetUnitId}/active`,
 
       providesTags: (result, error, assetUnitId) => [
-        { type: "AssetAssignment", id: `unit-${assetUnitId}-active` },
+        { type: 'AssetAssignment', id: `unit-${assetUnitId}-active` },
       ],
 
       ...SHORT_CACHE_CONFIG,
@@ -631,19 +626,13 @@ export const assetApi = createApi({
     // CATEGORIES
     // ============================================================
 
-    getAssetCategories: builder.query<
-      AssetCategory[],
-      { isActive?: boolean } | void
-    >({
+    getAssetCategories: builder.query<AssetCategory[], { isActive?: boolean } | void>({
       query: (arg) => {
         const params = arg || undefined;
         return {
-          url: "/asset-categories",
-          method: "GET",
-          params:
-            params?.isActive === undefined
-              ? undefined
-              : { isActive: params.isActive },
+          url: '/asset-categories',
+          method: 'GET',
+          params: params?.isActive === undefined ? undefined : { isActive: params.isActive },
         };
       },
 
@@ -651,12 +640,12 @@ export const assetApi = createApi({
         result
           ? [
               ...result.map(({ id }) => ({
-                type: "AssetCategory" as const,
+                type: 'AssetCategory' as const,
                 id,
               })),
-              { type: "AssetCategory" as const, id: "LIST" },
+              { type: 'AssetCategory' as const, id: 'LIST' },
             ]
-          : [{ type: "AssetCategory" as const, id: "LIST" }],
+          : [{ type: 'AssetCategory' as const, id: 'LIST' }],
 
       ...LONG_CACHE_CONFIG,
     }),
@@ -664,19 +653,19 @@ export const assetApi = createApi({
     getAssetCategory: builder.query<AssetCategory, string>({
       query: (id) => `/asset-categories/${id}`,
 
-      providesTags: (result, error, id) => [{ type: "AssetCategory", id }],
+      providesTags: (result, error, id) => [{ type: 'AssetCategory', id }],
 
       ...CACHE_CONFIG,
     }),
 
     createAssetCategory: builder.mutation<AssetCategory, AssetCategoryInput>({
       query: (body) => ({
-        url: "/asset-categories",
-        method: "POST",
+        url: '/asset-categories',
+        method: 'POST',
         body,
       }),
 
-      invalidatesTags: [{ type: "AssetCategory", id: "LIST" }],
+      invalidatesTags: [{ type: 'AssetCategory', id: 'LIST' }],
     }),
 
     updateAssetCategory: builder.mutation<
@@ -685,48 +674,45 @@ export const assetApi = createApi({
     >({
       query: ({ id, body }) => ({
         url: `/asset-categories/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "AssetCategory", id },
-        { type: "AssetCategory", id: "LIST" },
+        { type: 'AssetCategory', id },
+        { type: 'AssetCategory', id: 'LIST' },
       ],
     }),
 
     toggleAssetCategory: builder.mutation<AssetCategory, string>({
       query: (id) => ({
         url: `/asset-categories/${id}/toggle-active`,
-        method: "PATCH",
+        method: 'PATCH',
       }),
 
       invalidatesTags: (result, error, id) => [
-        { type: "AssetCategory", id },
-        { type: "AssetCategory", id: "LIST" },
+        { type: 'AssetCategory', id },
+        { type: 'AssetCategory', id: 'LIST' },
       ],
     }),
 
     deleteAssetCategory: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/asset-categories/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
-      invalidatesTags: [{ type: "AssetCategory", id: "LIST" }],
+      invalidatesTags: [{ type: 'AssetCategory', id: 'LIST' }],
     }),
 
     // ============================================================
     // ASSET UNITS
     // ============================================================
 
-    getAssetUnits: builder.query<
-      AssetUnitsResponse,
-      GetAssetUnitsParams | undefined
-    >({
+    getAssetUnits: builder.query<AssetUnitsResponse, GetAssetUnitsParams | undefined>({
       query: (params = {}) => ({
-        url: "/assets/units",
-        method: "GET",
+        url: '/assets/units',
+        method: 'GET',
         params: {
           assetId: params.assetId || undefined,
           search: params.search || undefined,
@@ -742,12 +728,12 @@ export const assetApi = createApi({
         result
           ? [
               ...result.items.map(({ id }) => ({
-                type: "AssetUnit" as const,
+                type: 'AssetUnit' as const,
                 id,
               })),
-              { type: "AssetUnit" as const, id: "LIST" },
+              { type: 'AssetUnit' as const, id: 'LIST' },
             ]
-          : [{ type: "AssetUnit" as const, id: "LIST" }],
+          : [{ type: 'AssetUnit' as const, id: 'LIST' }],
 
       ...LIST_CACHE_CONFIG,
     }),
@@ -755,7 +741,7 @@ export const assetApi = createApi({
     getAssetUnit: builder.query<AssetUnit, string>({
       query: (id) => `/assets/units/${id}`,
 
-      providesTags: (result, error, id) => [{ type: "AssetUnit", id }],
+      providesTags: (result, error, id) => [{ type: 'AssetUnit', id }],
 
       ...CACHE_CONFIG,
     }),
@@ -763,41 +749,39 @@ export const assetApi = createApi({
     getAssetUnitsByAsset: builder.query<AssetUnit[], string>({
       query: (assetId) => `/assets/${assetId}/units`,
 
-      providesTags: (result, error, assetId) => [
-        { type: "AssetUnit", id: `asset-${assetId}` },
-      ],
+      providesTags: (result, error, assetId) => [{ type: 'AssetUnit', id: `asset-${assetId}` }],
 
       ...LIST_CACHE_CONFIG,
     }),
 
     createAssetUnit: builder.mutation<AssetUnit, CreateAssetUnitRequest>({
       query: (body) => ({
-        url: "/assets/units",
-        method: "POST",
+        url: '/assets/units',
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: (result, error, { assetId }) => [
-        { type: "AssetUnit", id: "LIST" },
-        { type: "AssetUnit", id: `asset-${assetId}` },
-        { type: "Asset", id: assetId },
-        { type: "Asset", id: "POOL" },
+        { type: 'AssetUnit', id: 'LIST' },
+        { type: 'AssetUnit', id: `asset-${assetId}` },
+        { type: 'Asset', id: assetId },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     updateAssetUnit: builder.mutation<AssetUnit, UpdateAssetUnitRequest>({
       query: ({ id, ...body }) => ({
         url: `/assets/units/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "AssetUnit", id },
-        { type: "AssetUnit", id: "LIST" },
-        { type: "AssetUnit", id: `asset-${result?.assetId}` },
-        { type: "Asset", id: result?.assetId },
-        { type: "Asset", id: "LIST" },
+        { type: 'AssetUnit', id },
+        { type: 'AssetUnit', id: 'LIST' },
+        { type: 'AssetUnit', id: `asset-${result?.assetId}` },
+        { type: 'Asset', id: result?.assetId },
+        { type: 'Asset', id: 'LIST' },
       ],
     }),
 
@@ -807,13 +791,13 @@ export const assetApi = createApi({
     >({
       query: ({ id, ...body }) => ({
         url: `/assets/units/${id}/status`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "AssetUnit", id },
-        { type: "Asset", id: "POOL" },
+        { type: 'AssetUnit', id },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
@@ -823,11 +807,11 @@ export const assetApi = createApi({
     >({
       query: ({ id, ...body }) => ({
         url: `/assets/units/${id}/condition`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
-      invalidatesTags: (result, error, { id }) => [{ type: "AssetUnit", id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'AssetUnit', id }],
     }),
 
     updateAssetUnitLocation: builder.mutation<
@@ -836,32 +820,30 @@ export const assetApi = createApi({
     >({
       query: ({ id, ...body }) => ({
         url: `/assets/units/${id}/location`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
-      invalidatesTags: (result, error, { id }) => [{ type: "AssetUnit", id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'AssetUnit', id }],
     }),
 
     deleteAssetUnit: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/assets/units/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
-        { type: "AssetUnit", id },
-        { type: "AssetUnit", id: "LIST" },
-        { type: "Asset", id: "POOL" },
+        { type: 'AssetUnit', id },
+        { type: 'AssetUnit', id: 'LIST' },
+        { type: 'Asset', id: 'POOL' },
       ],
     }),
 
     getAssetUnitHistory: builder.query<AssetHistoryEntry[], string>({
       query: (id) => `/assets/units/${id}/history`,
 
-      providesTags: (result, error, id) => [
-        { type: "AssetHistory", id: `unit-${id}` },
-      ],
+      providesTags: (result, error, id) => [{ type: 'AssetHistory', id: `unit-${id}` }],
 
       ...CACHE_CONFIG,
     }),
@@ -873,22 +855,22 @@ export const assetApi = createApi({
     adjustInventory: builder.mutation<AssetResponse, AdjustInventoryRequest>({
       query: ({ id, ...body }) => ({
         url: `/assets/${id}/inventory/adjust`,
-        method: "POST",
+        method: 'POST',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "Asset", id: "POOL" },
-        { type: "Asset", id },
-        { type: "Asset", id: "LIST" },
-        { type: "AssetHistory", id },
+        { type: 'Asset', id: 'POOL' },
+        { type: 'Asset', id },
+        { type: 'Asset', id: 'LIST' },
+        { type: 'AssetHistory', id },
       ],
     }),
 
     getInventoryHistory: builder.query<InventoryHistoryEntry[], string>({
       query: (id) => `/assets/${id}/inventory/history`,
 
-      providesTags: (result, error, id) => [{ type: "AssetHistory", id }],
+      providesTags: (result, error, id) => [{ type: 'AssetHistory', id }],
 
       ...LONG_CACHE_CONFIG,
     }),
@@ -897,111 +879,109 @@ export const assetApi = createApi({
     // SYSTEMS
     // ============================================================
 
-    getSystems: builder.query<SystemRecord[], { search?: string; employeeId?: string; organisationId?: string } | void>({
-      query: (params) => ({ url: "/systems", params: params || undefined }),
+    getSystems: builder.query<
+      SystemRecord[],
+      { search?: string; employeeId?: string; organisationId?: string } | void
+    >({
+      query: (params) => ({ url: '/systems', params: params || undefined }),
 
       providesTags: (result) =>
         result
           ? [
               ...result.map(({ id }) => ({
-                type: "System" as const,
+                type: 'System' as const,
                 id,
               })),
-              { type: "System" as const, id: "LIST" },
+              { type: 'System' as const, id: 'LIST' },
             ]
-          : [{ type: "System" as const, id: "LIST" }],
+          : [{ type: 'System' as const, id: 'LIST' }],
 
       ...LIST_CACHE_CONFIG,
     }),
 
     createSystem: builder.mutation<SystemRecord, SystemInput>({
       query: (body) => ({
-        url: "/systems",
-        method: "POST",
+        url: '/systems',
+        method: 'POST',
         body,
       }),
 
-      invalidatesTags: [{ type: "System", id: "LIST" }],
+      invalidatesTags: [{ type: 'System', id: 'LIST' }],
     }),
 
-    updateSystem: builder.mutation<
-      SystemRecord,
-      { id: string; body: Partial<SystemInput> }
-    >({
+    updateSystem: builder.mutation<SystemRecord, { id: string; body: Partial<SystemInput> }>({
       query: ({ id, body }) => ({
         url: `/systems/${id}`,
-        method: "PATCH",
+        method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
+        { type: 'System', id },
+        { type: 'System', id: 'LIST' },
       ],
     }),
 
-    assignSystem: builder.mutation<
-      SystemRecord,
-      { id: string; employeeId: string }
-    >({
+    assignSystem: builder.mutation<SystemRecord, { id: string; employeeId: string }>({
       query: ({ id, employeeId }) => ({
         url: `/systems/${id}/assign`,
-        method: "POST",
+        method: 'POST',
         body: { employeeId },
       }),
 
       invalidatesTags: (result, error, { id }) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
+        { type: 'System', id },
+        { type: 'System', id: 'LIST' },
       ],
     }),
 
     returnSystem: builder.mutation<SystemRecord, string>({
       query: (id) => ({
         url: `/systems/${id}/return`,
-        method: "POST",
+        method: 'POST',
       }),
       invalidatesTags: (result, error, id) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
+        { type: 'System', id },
+        { type: 'System', id: 'LIST' },
       ],
     }),
 
     deleteSystem: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/systems/${id}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
 
       invalidatesTags: (result, error, id) => [
-        { type: "System", id },
-        { type: "System", id: "LIST" },
+        { type: 'System', id },
+        { type: 'System', id: 'LIST' },
       ],
     }),
 
     getSystemSpecs: builder.query<SystemSpecs, string>({
       query: (systemId) => `/systems/${systemId}/specs`,
 
-      providesTags: (result, error, systemId) => [
-        { type: "System", id: `specs-${systemId}` },
-      ],
+      providesTags: (result, error, systemId) => [{ type: 'System', id: `specs-${systemId}` }],
 
       ...CACHE_CONFIG,
     }),
 
     upsertSystemSpecs: builder.mutation<
       SystemSpecs,
-      { systemId: string; body: Partial<Omit<SystemSpecs, "systemId">> & { cloudStoragePassword?: string } }
+      {
+        systemId: string;
+        body: Partial<Omit<SystemSpecs, 'systemId'>> & { cloudStoragePassword?: string };
+      }
     >({
       query: ({ systemId, body }) => ({
         url: `/systems/${systemId}/specs`,
-        method: "PUT",
+        method: 'PUT',
         body,
       }),
 
       invalidatesTags: (result, error, { systemId }) => [
-        { type: "System", id: `specs-${systemId}` },
-        { type: "System", id: systemId },
+        { type: 'System', id: `specs-${systemId}` },
+        { type: 'System', id: systemId },
       ],
     }),
   }),

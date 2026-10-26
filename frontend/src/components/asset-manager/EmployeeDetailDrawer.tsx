@@ -1,25 +1,13 @@
-import { Link } from "react-router-dom";
-import React from "react";
+import { Link } from 'react-router-dom';
+import React from 'react';
 import EmployeeCredentials from './EmployeeCredentials';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
-import {
-  Calendar,
-  IdCard,
-  Laptop,
-  Mail,
-  Pencil,
-  Phone,
-  User,
-  Users,
-} from "lucide-react";
+import { Calendar, IdCard, Laptop, Mail, Pencil, Phone, User, Users } from 'lucide-react';
 
-import type {
-  Employee,
-  EmployeeStatus,
-} from "../../services/api/employees.api";
+import type { Employee, EmployeeStatus } from '../../services/api/employees.api';
 
-import { Button } from "../ui/button";
+import { Button } from '../ui/button';
 import {
   Drawer,
   DrawerClose,
@@ -28,18 +16,11 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "../ui/drawer";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import { Badge } from "../ui/badge";
-import { Card, CardContent } from "../ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+} from '../ui/drawer';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Badge } from '../ui/badge';
+import { Card, CardContent } from '../ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface EmployeeDetailDrawerProps {
   employee: Employee | null;
@@ -50,45 +31,45 @@ interface EmployeeDetailDrawerProps {
 
 const getStatusLabel = (status?: EmployeeStatus) => {
   switch (status) {
-    case "ACTIVE":
-      return "Active";
-    case "ON_LEAVE":
-      return "On Leave";
-    case "INACTIVE":
-      return "Inactive";
-    case "EXITED":
-      return "Exited";
+    case 'ACTIVE':
+      return 'Active';
+    case 'ON_LEAVE':
+      return 'On Leave';
+    case 'INACTIVE':
+      return 'Inactive';
+    case 'EXITED':
+      return 'Exited';
     default:
-      return "Unknown";
+      return 'Unknown';
   }
 };
 
 const getStatusClass = (status?: EmployeeStatus) => {
   switch (status) {
-    case "ACTIVE":
-      return "border-success-border bg-success-muted text-success-strong";
-    case "ON_LEAVE":
-      return "border-warning-border bg-warning-muted text-warning-strong";
-    case "INACTIVE":
-      return "border-border bg-muted text-muted-foreground";
-    case "EXITED":
-      return "border-destructive-border bg-destructive-muted text-destructive-strong";
+    case 'ACTIVE':
+      return 'border-success-border bg-success-muted text-success-strong';
+    case 'ON_LEAVE':
+      return 'border-warning-border bg-warning-muted text-warning-strong';
+    case 'INACTIVE':
+      return 'border-border bg-muted text-muted-foreground';
+    case 'EXITED':
+      return 'border-destructive-border bg-destructive-muted text-destructive-strong';
     default:
-      return "border-border bg-muted text-muted-foreground";
+      return 'border-border bg-muted text-muted-foreground';
   }
 };
 
 const getInitials = (employee?: Employee | null) => {
   if (!employee?.name) {
-    return "?";
+    return '?';
   }
 
   return employee.name
-    .split(" ")
+    .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+    .join('');
 };
 
 const StatusBadge = ({ status }: { status?: EmployeeStatus }) => {
@@ -99,13 +80,7 @@ const StatusBadge = ({ status }: { status?: EmployeeStatus }) => {
   );
 };
 
-const DetailSection = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => {
+const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => {
   return (
     <section>
       <h3 className="mb-3 text-sm font-semibold">{title}</h3>
@@ -116,9 +91,7 @@ const DetailSection = ({
 
 const DetailGrid = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-lg border p-4 sm:grid-cols-2">
-      {children}
-    </div>
+    <div className="grid grid-cols-1 gap-3 rounded-lg border p-4 sm:grid-cols-2">{children}</div>
   );
 };
 
@@ -137,7 +110,7 @@ const DetailItem = ({
 
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="truncate text-sm font-medium">{value || "-"}</p>
+        <p className="truncate text-sm font-medium">{value || '-'}</p>
       </div>
     </div>
   );
@@ -168,12 +141,7 @@ const SummaryCard = ({
   );
 };
 
-const EmployeeDetailDrawer = ({
-  employee,
-  open,
-  onClose,
-  onEdit,
-}: EmployeeDetailDrawerProps) => {
+const EmployeeDetailDrawer = ({ employee, open, onClose, onEdit }: EmployeeDetailDrawerProps) => {
   if (!employee) {
     return null;
   }
@@ -198,9 +166,7 @@ const EmployeeDetailDrawer = ({
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={employee.avatarUrl || undefined} />
 
-                  <AvatarFallback className="text-lg">
-                    {getInitials(employee)}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-lg">{getInitials(employee)}</AvatarFallback>
                 </Avatar>
 
                 <div>
@@ -214,11 +180,7 @@ const EmployeeDetailDrawer = ({
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(employee)}
-              >
+              <Button variant="outline" size="sm" onClick={() => onEdit(employee)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Button>
@@ -228,36 +190,22 @@ const EmployeeDetailDrawer = ({
           <div className="space-y-6 px-6 pb-6">
             {open && <EmployeeCredentials key={employee.id} employeeId={employee.id} />}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <SummaryCard
-                icon={Users}
-                label="Reports"
-                value={reports.length}
-              />
+              <SummaryCard icon={Users} label="Reports" value={reports.length} />
 
-              <SummaryCard
-                icon={Laptop}
-                label="Assets"
-                value={assignments.length}
-              />
+              <SummaryCard icon={Laptop} label="Assets" value={assignments.length} />
 
               <SummaryCard
                 icon={Calendar}
                 label="Joined"
                 value={
-                  employee.joiningDate
-                    ? dayjs(employee.joiningDate).format("DD MMM YYYY")
-                    : "-"
+                  employee.joiningDate ? dayjs(employee.joiningDate).format('DD MMM YYYY') : '-'
                 }
               />
             </div>
 
             <DetailSection title="Basic Information">
               <DetailGrid>
-                <DetailItem
-                  icon={IdCard}
-                  label="Employee Code"
-                  value={employee.employeeCode}
-                />
+                <DetailItem icon={IdCard} label="Employee Code" value={employee.employeeCode} />
 
                 <DetailItem icon={User} label="Name" value={employee.name} />
 
@@ -269,9 +217,7 @@ const EmployeeDetailDrawer = ({
                   icon={Calendar}
                   label="Joining Date"
                   value={
-                    employee.joiningDate
-                      ? dayjs(employee.joiningDate).format("DD MMM YYYY")
-                      : null
+                    employee.joiningDate ? dayjs(employee.joiningDate).format('DD MMM YYYY') : null
                   }
                 />
               </DetailGrid>
@@ -283,33 +229,18 @@ const EmployeeDetailDrawer = ({
                   icon={Users}
                   label="Organisation"
                   value={
-                    (employee.organisation as { name?: string } | undefined)
-                      ?.name || employee.organisationId
+                    (employee.organisation as { name?: string } | undefined)?.name ||
+                    employee.organisationId
                   }
                 />
               </DetailGrid>
             </DetailSection>
 
-            {employee.department && (
-              <DetailSection title="Department">
-                <DetailGrid>
-                  <DetailItem
-                    icon={Users}
-                    label="Department"
-                    value={employee.department.name}
-                  />
-                </DetailGrid>
-              </DetailSection>
-            )}
-
             {reports.length > 0 && (
               <DetailSection title="Reporting Employees">
                 <div className="space-y-2">
                   {reports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
+                    <div key={report.id} className="flex items-center gap-3 rounded-lg border p-3">
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={report.avatarUrl || undefined} />
 
@@ -319,9 +250,7 @@ const EmployeeDetailDrawer = ({
                       <div className="min-w-0">
                         <p className="font-medium">{report.name}</p>
 
-                        <p className="text-sm text-muted-foreground">
-                          {report.employeeCode}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{report.employeeCode}</p>
                       </div>
                     </div>
                   ))}
@@ -338,13 +267,14 @@ const EmployeeDetailDrawer = ({
                     className="mb-2 block rounded-lg border p-3 text-sm"
                   >
                     <p className="font-medium">
-                      {system.name} · {system.systemTag} · {system.category?.name ?? "Category not set"}
+                      {system.name} · {system.systemTag} ·{' '}
+                      {system.category?.name ?? 'Category not set'}
                     </p>
                     <p className="text-muted-foreground">
                       {system.assignments
                         ?.map((a) => a.asset?.name)
                         .filter(Boolean)
-                        .join(", ") || "No components yet"}
+                        .join(', ') || 'No components yet'}
                     </p>
                   </Link>
                 ))}
@@ -369,21 +299,17 @@ const EmployeeDetailDrawer = ({
                             {assignment.asset?.name ||
                               assignment.asset?.assetTag ||
                               assignment.assetId ||
-                              "-"}
+                              '-'}
                           </TableCell>
 
                           <TableCell>
-                            {assignment.asset?.assetTag ||
-                              assignment.assetTag ||
-                              "-"}
+                            {assignment.asset?.assetTag || assignment.assetTag || '-'}
                           </TableCell>
 
                           <TableCell>
                             {assignment.assignedAt
-                              ? dayjs(assignment.assignedAt).format(
-                                  "DD MMM YYYY",
-                                )
-                              : "-"}
+                              ? dayjs(assignment.assignedAt).format('DD MMM YYYY')
+                              : '-'}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -400,7 +326,7 @@ const EmployeeDetailDrawer = ({
                   label="Created"
                   value={
                     employee.createdAt
-                      ? dayjs(employee.createdAt).format("DD MMM YYYY, hh:mm A")
+                      ? dayjs(employee.createdAt).format('DD MMM YYYY, hh:mm A')
                       : null
                   }
                 />
@@ -410,16 +336,12 @@ const EmployeeDetailDrawer = ({
                   label="Updated"
                   value={
                     employee.updatedAt
-                      ? dayjs(employee.updatedAt).format("DD MMM YYYY, hh:mm A")
+                      ? dayjs(employee.updatedAt).format('DD MMM YYYY, hh:mm A')
                       : null
                   }
                 />
 
-                <DetailItem
-                  icon={IdCard}
-                  label="Employee ID"
-                  value={employee.id}
-                />
+                <DetailItem icon={IdCard} label="Employee ID" value={employee.id} />
               </DetailGrid>
             </DetailSection>
           </div>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 import {
   Dialog,
@@ -8,26 +8,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Textarea } from "../ui/textarea";
-import type { Asset } from "../../services/api/asset.api";
-import type { Employee } from "../../services/api/employees.api";
+} from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Textarea } from '../ui/textarea';
+import type { Asset } from '../../services/api/asset.api';
+import type { Employee } from '../../services/api/employees.api';
 
 const REASONS = [
-  "Employee transfer",
-  "Team reassignment",
-  "Manager request",
-  "Equipment upgrade",
-  "Other",
+  'Employee transfer',
+  'Team reassignment',
+  'Manager request',
+  'Equipment upgrade',
+  'Other',
 ];
 
 interface TransferModalProps {
@@ -54,13 +48,12 @@ export function TransferModal({
   loading,
 }: TransferModalProps) {
   const [reason, setReason] = useState(REASONS[0]);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState('');
 
   if (!asset) return null;
 
   const availableEmployees =
-    employeeOptions?.filter((employee) => employee.id !== fromEmployee?.id) ??
-    [];
+    employeeOptions?.filter((employee) => employee.id !== fromEmployee?.id) ?? [];
 
   return (
     <Dialog
@@ -76,7 +69,7 @@ export function TransferModal({
           <DialogDescription>
             {toEmployee
               ? `You are about to transfer this asset to ${toEmployee.name}.`
-              : "Choose who this asset should be transferred to."}
+              : 'Choose who this asset should be transferred to.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,9 +80,7 @@ export function TransferModal({
         <div className="rounded-lg border border-border bg-muted p-3">
           <p className="text-sm font-medium text-foreground">{asset.name}</p>
 
-          <p className="text-xs tabular-nums text-muted-foreground">
-            Asset ID: {asset.assetTag}
-          </p>
+          <p className="text-xs tabular-nums text-muted-foreground">Asset ID: {asset.assetTag}</p>
         </div>
 
         {/* ==================================================
@@ -103,7 +94,7 @@ export function TransferModal({
             </p>
 
             <p className="mt-0.5 truncate font-medium text-foreground">
-              {fromEmployee?.name ?? "Unassigned"}
+              {fromEmployee?.name ?? 'Unassigned'}
             </p>
           </div>
 
@@ -143,7 +134,7 @@ export function TransferModal({
               </Select>
             ) : (
               <p className="mt-0.5 truncate font-medium text-primary-strong">
-                {toEmployee?.name ?? "No employee selected"}
+                {toEmployee?.name ?? 'No employee selected'}
               </p>
             )}
           </div>
@@ -193,11 +184,7 @@ export function TransferModal({
             Cancel
           </Button>
 
-          <Button
-            onClick={() => onConfirm(reason, notes)}
-            loading={loading}
-            disabled={!toEmployee}
-          >
+          <Button onClick={() => onConfirm(reason, notes)} loading={loading} disabled={!toEmployee}>
             Confirm transfer
           </Button>
         </DialogFooter>

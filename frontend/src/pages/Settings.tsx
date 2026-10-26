@@ -1,16 +1,10 @@
-import { Link } from "react-router-dom";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { Link } from 'react-router-dom';
+import { LogOut, ShieldCheck } from 'lucide-react';
 
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useAuth } from "../services/context/AuthContext";
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '../services/context/AuthContext';
 
 // ============================================================
 // SETTINGS
@@ -22,10 +16,10 @@ import { useAuth } from "../services/context/AuthContext";
 // ============================================================
 
 function formatRole(role?: string) {
-  if (!role) return "No role assigned";
+  if (!role) return 'No role assigned';
 
   return role
-    .replace(/[_-]+/g, " ")
+    .replace(/[_-]+/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
@@ -34,9 +28,9 @@ export default function Settings() {
   const { user, logout } = useAuth();
 
   const details = [
-    { label: "Name", value: user?.name || "—" },
-    { label: "Email", value: user?.email || "—" },
-    { label: "Role", value: formatRole(user?.role) },
+    { label: 'Name', value: user?.name || '—' },
+    { label: 'Email', value: user?.email || '—' },
+    { label: 'Role', value: formatRole(user?.role) },
   ];
 
   return (
@@ -50,8 +44,8 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>Your account</CardTitle>
           <CardDescription>
-            The account you are signed in with. To change your name, email or
-            role, ask an administrator.
+            The account you are signed in with. To change your name, email or role, ask an
+            administrator.
           </CardDescription>
         </CardHeader>
 
@@ -81,16 +75,13 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>Who can use ITAM</CardTitle>
           <CardDescription>
-            Add people, change what they are allowed to do, or turn off their
-            access from Users &amp; Roles.
+            Add people, change what they are allowed to do, or turn off their access from Users
+            &amp; Roles.
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Link
-            to="/users-roles"
-            className={buttonVariants({ variant: "outline" })}
-          >
+          <Link to="/users-roles" className={buttonVariants({ variant: 'outline' })}>
             <ShieldCheck aria-hidden="true" />
             Open Users &amp; Roles
           </Link>
@@ -98,8 +89,8 @@ export default function Settings() {
       </Card>
 
       <p className="text-sm text-muted-foreground">
-        Organisation-wide preferences, such as notification rules and transfer
-        approvals, are not configurable in this version of ITAM.
+        Organisation-wide preferences, such as notification rules and transfer approvals, are not
+        configurable in this version of ITAM.
       </p>
     </div>
   );

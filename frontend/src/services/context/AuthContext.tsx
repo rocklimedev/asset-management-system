@@ -1,14 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import { flushSync } from "react-dom";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 
-import { useLoginMutation } from "../api/auth.api";
+import { useLoginMutation } from '../api/auth.api';
 
 // ============================================================
 // TYPES
@@ -60,7 +53,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function isTokenExpired(token: string): boolean {
   try {
-    const parts = token.split(".");
+    const parts = token.split('.');
 
     if (parts.length !== 3) {
       // Not a JWT.
@@ -68,9 +61,7 @@ function isTokenExpired(token: string): boolean {
       return false;
     }
 
-    const payload = JSON.parse(
-      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
-    ) as {
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))) as {
       exp?: number;
     };
 
@@ -92,8 +83,8 @@ function isTokenExpired(token: string): boolean {
 // ============================================================
 
 function clearStoredAuth() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("user");
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('user');
 }
 
 // ============================================================
@@ -119,8 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadAuth = useCallback(() => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem('accessToken');
+      const storedUser = localStorage.getItem('user');
 
       // ------------------------------------------------------
       // NO TOKEN
@@ -161,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           setUser(parsedUser);
         } catch {
-          localStorage.removeItem("user");
+          localStorage.removeItem('user');
           setUser(null);
         }
       } else {
@@ -206,10 +197,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    window.addEventListener("auth:expired", handleAuthExpired);
+    window.addEventListener('auth:expired', handleAuthExpired);
 
     return () => {
-      window.removeEventListener("auth:expired", handleAuthExpired);
+      window.removeEventListener('auth:expired', handleAuthExpired);
     };
   }, []);
 
@@ -222,22 +213,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === "accessToken" && event.newValue === null) {
+      if (event.key === 'accessToken' && event.newValue === null) {
         flushSync(() => {
           setAccessToken(null);
           setUser(null);
         });
       }
 
-      if (event.key === "user" && event.newValue === null) {
+      if (event.key === 'user' && event.newValue === null) {
         setUser(null);
       }
     };
 
-    window.addEventListener("storage", handleStorage);
+    window.addEventListener('storage', handleStorage);
 
     return () => {
-      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
@@ -257,11 +248,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // SUPPORT MULTIPLE TOKEN FORMATS
         // ----------------------------------------------------
 
-        const token =
-          response.accessToken || response.access_token || response.token;
+        const token = response.accessToken || response.access_token || response.token;
 
         if (!token) {
-          throw new Error("Authentication token was not returned.");
+          throw new Error('Authentication token was not returned.');
         }
 
         const loggedInUser = response.user;
@@ -270,16 +260,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // STORE TOKEN
         // ----------------------------------------------------
 
-        localStorage.setItem("accessToken", token);
+        localStorage.setItem('accessToken', token);
 
         // ----------------------------------------------------
         // STORE USER
         // ----------------------------------------------------
 
         if (loggedInUser) {
-          localStorage.setItem("user", JSON.stringify(loggedInUser));
+          localStorage.setItem('user', JSON.stringify(loggedInUser));
         } else {
-          localStorage.removeItem("user");
+          localStorage.removeItem('user');
         }
 
         // ----------------------------------------------------
@@ -300,7 +290,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // NORMALIZE RTK QUERY ERROR
         // ----------------------------------------------------
 
-        if (typeof error === "object" && error !== null && "data" in error) {
+        if (typeof error === 'object' && error !== null && 'data' in error) {
           const rtkError = error as {
             data?: {
               message?: string;
@@ -316,7 +306,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw error;
         }
 
-        throw new Error("Login failed. Please try again.");
+        throw new Error('Login failed. Please try again.');
       }
     },
     [loginMutation],
@@ -335,7 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Notify other auth listeners/tabs.
-    window.dispatchEvent(new CustomEvent("auth:logout"));
+    window.dispatchEvent(new CustomEvent('auth:logout'));
   }, []);
 
   // ==========================================================
@@ -378,7 +368,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth must be used inside an AuthProvider");
+    throw new Error('useAuth must be used inside an AuthProvider');
   }
 
   return context;

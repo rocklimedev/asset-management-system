@@ -1,9 +1,9 @@
-import { Search, User, Package, Monitor } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Search, User, Package, Monitor } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { useGetEmployeesQuery } from "../../services/api/employees.api";
-import { useGetAssetsQuery, useGetSystemsQuery } from "../../services/api/asset.api";
+import { useGetEmployeesQuery } from '../../services/api/employees.api';
+import { useGetAssetsQuery, useGetSystemsQuery } from '../../services/api/asset.api';
 
 // ============================================================
 // TYPES
@@ -19,7 +19,7 @@ interface CommandPaletteProps {
 // ============================================================
 
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const navigate = useNavigate();
 
@@ -27,17 +27,16 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   // EMPLOYEES
   // ==========================================================
 
-  const { data: employeesResponse, isFetching: employeesLoading } =
-    useGetEmployeesQuery(
-      query
-        ? {
-            search: query,
-          }
-        : undefined,
-      {
-        skip: !open,
-      },
-    );
+  const { data: employeesResponse, isFetching: employeesLoading } = useGetEmployeesQuery(
+    query
+      ? {
+          search: query,
+        }
+      : undefined,
+    {
+      skip: !open,
+    },
+  );
 
   // ==========================================================
   // ASSETS
@@ -69,7 +68,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   // ==========================================================
 
   const assets = assetsResponse?.items ?? [];
-  const { data: systems = [], isFetching: systemsLoading } = useGetSystemsQuery({ search: query }, { skip: !open || !query });
+  const { data: systems = [], isFetching: systemsLoading } = useGetSystemsQuery(
+    { search: query },
+    { skip: !open || !query },
+  );
 
   // ==========================================================
   // RESET SEARCH WHEN CLOSED
@@ -77,7 +79,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   useEffect(() => {
     if (!open) {
-      setQuery("");
+      setQuery('');
     }
   }, [open]);
 
@@ -89,15 +91,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     if (!open) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [open, onClose]);
 
@@ -160,12 +162,31 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </p>
           )}
 
-          {query.length > 0 && !systemsLoading && systems.length > 0 && <div className="mb-2"><p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Systems</p>{systems.slice(0, 10).map(system => <button key={system.id} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { navigate(`/asset-manager?view=computers&system=${system.id}`); onClose(); }}><Monitor className="h-4 w-4" /><span>{system.name} · {system.systemTag}</span></button>)}</div>}
+          {query.length > 0 && !systemsLoading && systems.length > 0 && (
+            <div className="mb-2">
+              <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Systems
+              </p>
+              {systems.slice(0, 10).map((system) => (
+                <button
+                  key={system.id}
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+                  onClick={() => {
+                    navigate(`/asset-manager?view=computers&system=${system.id}`);
+                    onClose();
+                  }}
+                >
+                  <Monitor className="h-4 w-4" />
+                  <span>
+                    {system.name} · {system.systemTag}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           {/* LOADING */}
           {query.length > 0 && isLoading && (
-            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Searching...
-            </div>
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">Searching...</div>
           )}
 
           {/* ==================================================
@@ -190,10 +211,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-foreground">
                       {employee.name ||
-                        `${employee.firstName ?? ""} ${
-                          employee.lastName ?? ""
-                        }`.trim() ||
-                        "Unnamed employee"}
+                        `${employee.firstName ?? ''} ${employee.lastName ?? ''}`.trim() ||
+                        'Unnamed employee'}
                     </div>
 
                     {employee.department?.name && (
@@ -228,7 +247,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-foreground">
-                      {asset.name || "Unnamed asset"}
+                      {asset.name || 'Unnamed asset'}
                     </div>
 
                     {asset.serialNumber && (
@@ -255,13 +274,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           {query.length > 0 &&
             !isLoading &&
             employees.length === 0 &&
-            assets.length === 0 && systems.length === 0 && (
+            assets.length === 0 &&
+            systems.length === 0 && (
               <div className="px-3 py-8 text-center">
                 <Search className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
 
-                <p className="text-sm font-medium text-foreground">
-                  No results found
-                </p>
+                <p className="text-sm font-medium text-foreground">No results found</p>
 
                 <p className="mt-1 text-xs text-muted-foreground">
                   Try searching for an employee, asset name, or asset tag.

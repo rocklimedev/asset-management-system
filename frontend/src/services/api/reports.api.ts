@@ -1,7 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import type { RootState } from "../store";
-import { BACKEND } from "../../lib/api";
+import type { RootState } from '../store';
+import { BACKEND } from '../../lib/api';
 
 // ============================================================
 // TYPES
@@ -168,22 +168,16 @@ export interface SystemsReportResponse {
 // EXPORT TYPES
 // ============================================================
 
-export type ReportType =
-  | "assets"
-  | "inventory"
-  | "assigned"
-  | "damaged"
-  | "by-status"
-  | "systems";
+export type ReportType = 'assets' | 'inventory' | 'assigned' | 'damaged' | 'by-status' | 'systems';
 
-export type ReportExportFormat = "pdf" | "excel";
+export type ReportExportFormat = 'pdf' | 'excel';
 
 // ============================================================
 // API
 // ============================================================
 
 export const reportsApi = createApi({
-  reducerPath: "reportsApi",
+  reducerPath: 'reportsApi',
 
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND,
@@ -191,19 +185,19 @@ export const reportsApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
 
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
 
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
-      headers.set("Content-Type", "application/json");
+      headers.set('Content-Type', 'application/json');
 
       return headers;
     },
   }),
 
-  tagTypes: ["Report"],
+  tagTypes: ['Report'],
 
   endpoints: (builder) => ({
     // ========================================================
@@ -212,15 +206,15 @@ export const reportsApi = createApi({
 
     getAssetReport: builder.query<AssetReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/assets",
-        method: "GET",
+        url: '/reports/assets',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "ASSETS",
+          type: 'Report',
+          id: 'ASSETS',
         },
       ],
     }),
@@ -231,15 +225,15 @@ export const reportsApi = createApi({
 
     getInventoryReport: builder.query<InventoryReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/inventory",
-        method: "GET",
+        url: '/reports/inventory',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "INVENTORY",
+          type: 'Report',
+          id: 'INVENTORY',
         },
       ],
     }),
@@ -250,15 +244,15 @@ export const reportsApi = createApi({
 
     getAssignedReport: builder.query<AssignedReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/assigned",
-        method: "GET",
+        url: '/reports/assigned',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "ASSIGNED",
+          type: 'Report',
+          id: 'ASSIGNED',
         },
       ],
     }),
@@ -269,15 +263,15 @@ export const reportsApi = createApi({
 
     getDamagedReport: builder.query<DamagedReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/damaged",
-        method: "GET",
+        url: '/reports/damaged',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "DAMAGED",
+          type: 'Report',
+          id: 'DAMAGED',
         },
       ],
     }),
@@ -288,15 +282,15 @@ export const reportsApi = createApi({
 
     getReportByStatus: builder.query<StatusReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/by-status",
-        method: "GET",
+        url: '/reports/by-status',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "BY_STATUS",
+          type: 'Report',
+          id: 'BY_STATUS',
         },
       ],
     }),
@@ -307,15 +301,15 @@ export const reportsApi = createApi({
 
     getSystemsReport: builder.query<SystemsReportResponse, ReportFilters>({
       query: (filters = {}) => ({
-        url: "/reports/systems",
-        method: "GET",
+        url: '/reports/systems',
+        method: 'GET',
         params: filters,
       }),
 
       providesTags: [
         {
-          type: "Report",
-          id: "SYSTEMS",
+          type: 'Report',
+          id: 'SYSTEMS',
         },
       ],
     }),
@@ -348,27 +342,24 @@ export async function downloadReport(
 ) {
   const params = new URLSearchParams();
 
-  params.set("format", format);
+  params.set('format', format);
 
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && String(value).trim() !== "") {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
       params.set(key, String(value));
     }
   });
 
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
 
-  const response = await fetch(
-    `${BACKEND}/reports/${type}/export?${params.toString()}`,
-    {
-      method: "GET",
-      headers: token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : undefined,
-    },
-  );
+  const response = await fetch(`${BACKEND}/reports/${type}/export?${params.toString()}`, {
+    method: 'GET',
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined,
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to download report (${response.status})`);
@@ -376,9 +367,9 @@ export async function downloadReport(
 
   const blob = await response.blob();
 
-  const disposition = response.headers.get("Content-Disposition");
+  const disposition = response.headers.get('Content-Disposition');
 
-  let filename = `${type === "systems" ? "system-it-data" : `asset-report-${type}`}.${format === "excel" ? "xlsx" : "pdf"}`;
+  let filename = `${type === 'systems' ? 'system-it-data' : `asset-report-${type}`}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
 
   const match = disposition?.match(/filename="?([^"]+)"?/i);
 
@@ -388,7 +379,7 @@ export async function downloadReport(
 
   const url = window.URL.createObjectURL(blob);
 
-  const anchor = document.createElement("a");
+  const anchor = document.createElement('a');
 
   anchor.href = url;
   anchor.download = filename;

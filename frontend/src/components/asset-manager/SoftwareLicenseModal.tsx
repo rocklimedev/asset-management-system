@@ -1,19 +1,19 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 import {
   useCreateSoftwareLicenseMutation,
   useUpdateSoftwareLicenseMutation,
   type SoftwareLicenseRecord,
-} from "../../services/api/software.api";
-import { apiErrorMessage } from "../../types/systems";
+} from '../../services/api/software.api';
+import { apiErrorMessage } from '../../types/systems';
 
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { toast } from "../ui/toast";
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { toast } from '../ui/toast';
 
-const LABEL_CLASSES = "mb-1 block text-xs font-medium text-muted-foreground";
+const LABEL_CLASSES = 'mb-1 block text-xs font-medium text-muted-foreground';
 
 interface FormValues {
   vendor: string;
@@ -27,17 +27,17 @@ interface FormValues {
 }
 
 const EMPTY: FormValues = {
-  vendor: "",
-  licenseType: "",
-  licenseReference: "",
+  vendor: '',
+  licenseType: '',
+  licenseReference: '',
   totalSeats: 1,
-  purchaseDate: "",
-  expiryDate: "",
-  renewalDate: "",
-  cost: "",
+  purchaseDate: '',
+  expiryDate: '',
+  renewalDate: '',
+  cost: '',
 };
 
-const toDateInput = (v?: string | null) => (v ? String(v).slice(0, 10) : "");
+const toDateInput = (v?: string | null) => (v ? String(v).slice(0, 10) : '');
 
 interface Props {
   open: boolean;
@@ -48,13 +48,7 @@ interface Props {
   defaultVendor?: string | null;
 }
 
-export function SoftwareLicenseModal({
-  open,
-  onClose,
-  assetId,
-  license,
-  defaultVendor,
-}: Props) {
+export function SoftwareLicenseModal({ open, onClose, assetId, license, defaultVendor }: Props) {
   const isEdit = Boolean(license?.id);
 
   const [values, setValues] = useState<FormValues>(EMPTY);
@@ -73,14 +67,14 @@ export function SoftwareLicenseModal({
         ? {
             vendor: license.vendor,
             licenseType: license.licenseType,
-            licenseReference: license.licenseReference ?? "",
+            licenseReference: license.licenseReference ?? '',
             totalSeats: license.totalSeats,
             purchaseDate: toDateInput(license.purchaseDate),
             expiryDate: toDateInput(license.expiryDate),
             renewalDate: toDateInput(license.renewalDate),
-            cost: license.cost != null ? String(license.cost) : "",
+            cost: license.cost != null ? String(license.cost) : '',
           }
-        : { ...EMPTY, vendor: defaultVendor ?? "" },
+        : { ...EMPTY, vendor: defaultVendor ?? '' },
     );
   }, [open, license, defaultVendor]);
 
@@ -92,21 +86,17 @@ export function SoftwareLicenseModal({
     event.preventDefault();
 
     if (!values.vendor.trim() || !values.licenseType.trim()) {
-      setError("Vendor and license type are required.");
+      setError('Vendor and license type are required.');
       return;
     }
 
     if (!Number.isInteger(values.totalSeats) || values.totalSeats < 1) {
-      setError("Total seats must be a whole number of at least 1.");
+      setError('Total seats must be a whole number of at least 1.');
       return;
     }
 
-    if (
-      values.purchaseDate &&
-      values.expiryDate &&
-      values.expiryDate < values.purchaseDate
-    ) {
-      setError("Expiry date cannot be before the purchase date.");
+    if (values.purchaseDate && values.expiryDate && values.expiryDate < values.purchaseDate) {
+      setError('Expiry date cannot be before the purchase date.');
       return;
     }
 
@@ -126,10 +116,10 @@ export function SoftwareLicenseModal({
     try {
       if (isEdit && license) {
         await updateLicense({ id: license.id, ...payload }).unwrap();
-        toast.add({ title: "License updated", type: "success" });
+        toast.add({ title: 'License updated', type: 'success' });
       } else {
         await createLicense({ assetId, ...payload }).unwrap();
-        toast.add({ title: "License added", type: "success" });
+        toast.add({ title: 'License added', type: 'success' });
       }
 
       onClose();
@@ -141,7 +131,8 @@ export function SoftwareLicenseModal({
   if (!open) return null;
 
   return (
-    <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+    <OverlayRoot
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
       onClose={onClose}
       label="License details"
       disableClose={busy}
@@ -149,7 +140,7 @@ export function SoftwareLicenseModal({
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-sm font-semibold text-foreground">
-            {isEdit ? "Edit license" : "Add license"}
+            {isEdit ? 'Edit license' : 'Add license'}
           </h2>
 
           <button
@@ -168,7 +159,7 @@ export function SoftwareLicenseModal({
               <label className={LABEL_CLASSES}>Vendor *</label>
               <Input
                 value={values.vendor}
-                onChange={(e) => setField("vendor", e.target.value)}
+                onChange={(e) => setField('vendor', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -177,7 +168,7 @@ export function SoftwareLicenseModal({
               <label className={LABEL_CLASSES}>License type *</label>
               <Input
                 value={values.licenseType}
-                onChange={(e) => setField("licenseType", e.target.value)}
+                onChange={(e) => setField('licenseType', e.target.value)}
                 placeholder="e.g. Volume, Per-user"
                 disabled={busy}
               />
@@ -187,7 +178,7 @@ export function SoftwareLicenseModal({
               <label className={LABEL_CLASSES}>License key / reference</label>
               <Input
                 value={values.licenseReference}
-                onChange={(e) => setField("licenseReference", e.target.value)}
+                onChange={(e) => setField('licenseReference', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -199,7 +190,7 @@ export function SoftwareLicenseModal({
                 min={1}
                 step={1}
                 value={values.totalSeats}
-                onChange={(e) => setField("totalSeats", Number(e.target.value))}
+                onChange={(e) => setField('totalSeats', Number(e.target.value))}
                 disabled={busy}
               />
               {isEdit && license ? (
@@ -214,7 +205,7 @@ export function SoftwareLicenseModal({
               <Input
                 type="date"
                 value={values.purchaseDate}
-                onChange={(e) => setField("purchaseDate", e.target.value)}
+                onChange={(e) => setField('purchaseDate', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -224,7 +215,7 @@ export function SoftwareLicenseModal({
               <Input
                 type="date"
                 value={values.expiryDate}
-                onChange={(e) => setField("expiryDate", e.target.value)}
+                onChange={(e) => setField('expiryDate', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -234,7 +225,7 @@ export function SoftwareLicenseModal({
               <Input
                 type="date"
                 value={values.renewalDate}
-                onChange={(e) => setField("renewalDate", e.target.value)}
+                onChange={(e) => setField('renewalDate', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -246,7 +237,7 @@ export function SoftwareLicenseModal({
                 min={0}
                 step="0.01"
                 value={values.cost}
-                onChange={(e) => setField("cost", e.target.value)}
+                onChange={(e) => setField('cost', e.target.value)}
                 disabled={busy}
               />
             </div>
@@ -259,16 +250,11 @@ export function SoftwareLicenseModal({
           ) : null}
 
           <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={busy}
-            >
+            <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving..." : isEdit ? "Save changes" : "Add license"}
+              {busy ? 'Saving...' : isEdit ? 'Save changes' : 'Add license'}
             </Button>
           </div>
         </form>

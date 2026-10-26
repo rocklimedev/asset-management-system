@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { BACKEND } from "../../lib/api";
-import { useAuth } from "../../services/context/AuthContext";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { useConfirm } from "../ui/confirm-dialog";
+import { useEffect, useState } from 'react';
+import { BACKEND } from '../../lib/api';
+import { useAuth } from '../../services/context/AuthContext';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { useConfirm } from '../ui/confirm-dialog';
 
 interface Credential {
   id: string;
@@ -14,27 +14,23 @@ interface Credential {
   username: string;
 }
 const empty = {
-  title: "",
-  category: "System login",
-  purpose: "",
-  systemLabel: "",
-  username: "",
-  password: "",
+  title: '',
+  category: 'System login',
+  purpose: '',
+  systemLabel: '',
+  username: '',
+  password: '',
 };
 const categories = [
-  "System login",
-  "Email",
-  "VPN / Network",
-  "Business application",
-  "Database",
-  "Other",
+  'System login',
+  'Email',
+  'VPN / Network',
+  'Business application',
+  'Database',
+  'Other',
 ];
 
-export default function EmployeeCredentials({
-  employeeId,
-}: {
-  employeeId: string;
-}) {
+export default function EmployeeCredentials({ employeeId }: { employeeId: string }) {
   const confirm = useConfirm();
   const { accessToken } = useAuth();
   const [items, setItems] = useState<Credential[]>([]);
@@ -45,37 +41,28 @@ export default function EmployeeCredentials({
     id: string;
     password: string;
   } | null>(null);
-  const [filter, setFilter] = useState("");
-  const [error, setError] = useState("");
+  const [filter, setFilter] = useState('');
+  const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-  async function request(
-    path = "",
-    method = "GET",
-    body?: unknown,
-    signal?: AbortSignal,
-  ) {
-    const response = await fetch(
-      `${BACKEND}/employees/${employeeId}/credentials${path}`,
-      {
-        method,
-        cache: "no-store",
-        signal,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        ...(body ? { body: JSON.stringify(body) } : {}),
+  async function request(path = '', method = 'GET', body?: unknown, signal?: AbortSignal) {
+    const response = await fetch(`${BACKEND}/employees/${employeeId}/credentials${path}`, {
+      method,
+      cache: 'no-store',
+      signal,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
       },
-    );
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(
         response.status === 403
-          ? "Your role does not have permission for this credential action."
-          : (Array.isArray(data.message)
-              ? data.message.join(", ")
-              : data.message) || "Credential request failed.",
+          ? 'Your role does not have permission for this credential action.'
+          : (Array.isArray(data.message) ? data.message.join(', ') : data.message) ||
+              'Credential request failed.',
       );
     }
     return response.json();
@@ -87,9 +74,9 @@ export default function EmployeeCredentials({
     setForm(empty);
     setShowForm(false);
     setEditing(null);
-    setError("");
+    setError('');
     setLoading(true);
-    request("", "GET", undefined, controller.signal)
+    request('', 'GET', undefined, controller.signal)
       .then(setItems)
       .catch((e) => {
         if (!controller.signal.aborted) setError(e.message);
@@ -105,19 +92,19 @@ export default function EmployeeCredentials({
     const hide = () => {
       if (document.hidden) setRevealed(null);
     };
-    document.addEventListener("visibilitychange", hide);
+    document.addEventListener('visibilitychange', hide);
     return () => {
       clearTimeout(timeout);
-      document.removeEventListener("visibilitychange", hide);
+      document.removeEventListener('visibilitychange', hide);
     };
   }, [revealed]);
   async function act(action: () => Promise<void>) {
     setBusy(true);
-    setError("");
+    setError('');
     try {
       await action();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed.");
+      setError(e instanceof Error ? e.message : 'Request failed.');
     } finally {
       setBusy(false);
     }
@@ -128,8 +115,7 @@ export default function EmployeeCredentials({
         <div>
           <h3 className="text-sm font-semibold">Encrypted credentials</h3>
           <p className="text-xs text-muted-foreground">
-            Employee system and application logins. Passwords hide after 30
-            seconds.
+            Employee system and application logins. Passwords hide after 30 seconds.
           </p>
         </div>
         <Button
@@ -150,9 +136,7 @@ export default function EmployeeCredentials({
           {error}
         </p>
       )}
-      {loading && (
-        <p className="text-sm text-muted-foreground">Loading credentials…</p>
-      )}
+      {loading && <p className="text-sm text-muted-foreground">Loading credentials…</p>}
       {showForm && (
         <form
           className="space-y-3 rounded-lg bg-muted p-3"
@@ -160,11 +144,10 @@ export default function EmployeeCredentials({
             e.preventDefault();
             void act(async () => {
               const { password, ...rest } = form;
-              await request(
-                editing ? `/${editing}` : "",
-                editing ? "PATCH" : "POST",
-                { ...rest, ...(!editing || password ? { password } : {}) },
-              );
+              await request(editing ? `/${editing}` : '', editing ? 'PATCH' : 'POST', {
+                ...rest,
+                ...(!editing || password ? { password } : {}),
+              });
               setForm(empty);
               setShowForm(false);
               setEditing(null);
@@ -173,21 +156,19 @@ export default function EmployeeCredentials({
             });
           }}
         >
-          <h4 className="text-sm font-medium">
-            {editing ? "Edit login" : "New login"}
-          </h4>
-          {(["title", "systemLabel", "username"] as const).map((field) => (
+          <h4 className="text-sm font-medium">{editing ? 'Edit login' : 'New login'}</h4>
+          {(['title', 'systemLabel', 'username'] as const).map((field) => (
             <label key={field} className="block text-sm">
               {
                 {
-                  title: "Login name",
-                  systemLabel: "System / application / address",
-                  username: "Username",
+                  title: 'Login name',
+                  systemLabel: 'System / application / address',
+                  username: 'Username',
                 }[field]
               }
               <Input
                 required
-                maxLength={field === "username" ? 1000 : 255}
+                maxLength={field === 'username' ? 1000 : 255}
                 autoComplete="off"
                 value={form[field]}
                 onChange={(e) => setForm({ ...form, [field]: e.target.value })}
@@ -220,7 +201,7 @@ export default function EmployeeCredentials({
             />
           </label>
           <label className="block text-sm">
-            Password {editing && "(leave blank to keep current)"}
+            Password {editing && '(leave blank to keep current)'}
             <Input
               type="password"
               autoComplete="new-password"
@@ -232,7 +213,7 @@ export default function EmployeeCredentials({
           </label>
           <div className="flex gap-2">
             <Button disabled={busy} type="submit">
-              {busy ? "Saving…" : "Save login"}
+              {busy ? 'Saving…' : 'Save login'}
             </Button>
             <Button
               type="button"
@@ -264,9 +245,7 @@ export default function EmployeeCredentials({
         </label>
       )}
       {!loading && !error && items.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No logins saved for this employee.
-        </p>
+        <p className="text-sm text-muted-foreground">No logins saved for this employee.</p>
       )}
       {items
         .filter((i) => !filter || i.category === filter)
@@ -274,18 +253,13 @@ export default function EmployeeCredentials({
           <div key={item.id} className="space-y-2 rounded-lg border p-3">
             <div className="flex justify-between gap-2">
               <h4 className="font-medium">{item.title}</h4>
-              <span className="text-xs text-muted-foreground">
-                {item.category}
-              </span>
+              <span className="text-xs text-muted-foreground">{item.category}</span>
             </div>
             <p className="break-all text-sm">System: {item.systemLabel}</p>
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {item.purpose}
-            </p>
+            <p className="whitespace-pre-wrap text-sm text-muted-foreground">{item.purpose}</p>
             <p className="break-all text-sm">Username: {item.username}</p>
             <p className="break-all font-mono text-sm">
-              Password:{" "}
-              {revealed?.id === item.id ? revealed.password : "••••••••"}
+              Password: {revealed?.id === item.id ? revealed.password : '••••••••'}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -297,15 +271,12 @@ export default function EmployeeCredentials({
                   else
                     void act(async () => {
                       setRevealed(null);
-                      const result = await request(
-                        `/${item.id}/reveal`,
-                        "POST",
-                      );
+                      const result = await request(`/${item.id}/reveal`, 'POST');
                       setRevealed({ id: item.id, password: result.password });
                     });
                 }}
               >
-                {revealed?.id === item.id ? "Hide password" : "Reveal password"}
+                {revealed?.id === item.id ? 'Hide password' : 'Reveal password'}
               </Button>
               <Button
                 size="sm"
@@ -318,7 +289,7 @@ export default function EmployeeCredentials({
                     purpose: item.purpose,
                     systemLabel: item.systemLabel,
                     username: item.username,
-                    password: "",
+                    password: '',
                   });
                   setEditing(item.id);
                   setShowForm(true);
@@ -335,15 +306,15 @@ export default function EmployeeCredentials({
                   const confirmed = await confirm({
                     title: `Delete “${item.title}”?`,
                     description:
-                      "This saved login will be permanently deleted. This cannot be undone.",
-                    confirmLabel: "Delete login",
-                    tone: "danger",
+                      'This saved login will be permanently deleted. This cannot be undone.',
+                    confirmLabel: 'Delete login',
+                    tone: 'danger',
                   });
 
                   if (!confirmed) return;
 
                   void act(async () => {
-                    await request(`/${item.id}`, "DELETE");
+                    await request(`/${item.id}`, 'DELETE');
                     setRevealed(null);
                     setItems(await request());
                   });

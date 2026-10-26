@@ -1,11 +1,11 @@
-import { NavLink } from "react-router-dom";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { NavLink } from 'react-router-dom';
+import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
-import { AppMark } from "./AppMark";
-import { NAV_GROUPS, type NavItem } from "./nav-config";
+import { cn } from '@/lib/utils';
+import { AppMark } from './AppMark';
+import { NAV_GROUPS, type NavItem } from './nav-config';
 
-export { NAV_GROUPS, NAV_ITEMS } from "./nav-config";
+export { NAV_GROUPS, NAV_ITEMS } from './nav-config';
 
 // ============================================================
 // NAV LINK
@@ -31,12 +31,12 @@ function SidebarLink({
       aria-label={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(
-          "group relative flex items-center rounded-lg text-sm font-medium transition-[box-shadow,color,background-color] duration-150",
-          "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
-          collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-2.5 py-2",
+          'group relative flex items-center rounded-lg text-sm font-medium transition-[box-shadow,color,background-color] duration-150',
+          'outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar',
+          collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-2.5 py-2',
           isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-strong",
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-strong',
         )
       }
     >
@@ -76,7 +76,7 @@ export function NavList({
   return (
     <nav aria-label="Main" className="flex-1 overflow-y-auto p-2">
       {NAV_GROUPS.map((group, index) => (
-        <div key={group.label} className={cn(index > 0 && "mt-3")}>
+        <div key={group.label} className={cn(index > 0 && 'mt-3')}>
           {collapsed ? (
             index > 0 && (
               <div aria-hidden="true" className="mx-2 mb-1 border-t border-sidebar-border" />
@@ -107,25 +107,19 @@ export function NavList({
 // DESKTOP SIDEBAR
 // ============================================================
 
-export function Sidebar({
-  collapsed,
-  onToggle,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-}) {
+export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 md:flex",
-        collapsed ? "w-sidebar-collapsed" : "w-sidebar",
+        'hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 md:flex',
+        collapsed ? 'w-sidebar-collapsed' : 'w-sidebar',
       )}
     >
       {/* BRAND */}
       <div
         className={cn(
-          "flex h-header shrink-0 items-center gap-2.5 border-b border-sidebar-border",
-          collapsed ? "justify-center px-0" : "px-4",
+          'flex h-header shrink-0 items-center gap-2.5 border-b border-sidebar-border',
+          collapsed ? 'justify-center px-0' : 'px-4',
         )}
       >
         <AppMark inverted />
@@ -135,9 +129,7 @@ export function Sidebar({
             <p className="truncate text-sm font-semibold leading-tight tracking-tight text-sidebar-strong">
               ITAM
             </p>
-            <p className="truncate text-2xs leading-tight text-sidebar-muted">
-              Asset Management
-            </p>
+            <p className="truncate text-2xs leading-tight text-sidebar-muted">Asset Management</p>
           </div>
         )}
       </div>
@@ -149,13 +141,13 @@ export function Sidebar({
       <button
         type="button"
         onClick={onToggle}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         aria-expanded={!collapsed}
         className={cn(
-          "flex h-11 shrink-0 items-center gap-2 border-t border-sidebar-border text-xs font-medium",
-          "text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-strong",
-          "outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sidebar-ring",
-          collapsed ? "justify-center px-0" : "px-4",
+          'flex h-11 shrink-0 items-center gap-2 border-t border-sidebar-border text-xs font-medium',
+          'text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-strong',
+          'outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sidebar-ring',
+          collapsed ? 'justify-center px-0' : 'px-4',
         )}
       >
         {collapsed ? (

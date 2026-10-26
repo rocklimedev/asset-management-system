@@ -1,24 +1,21 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { useAssignSystemMutation } from "../../services/api/asset.api";
-import { useGetEmployeesQuery } from "../../services/api/employees.api";
+import { useAssignSystemMutation } from '../../services/api/asset.api';
+import { useGetEmployeesQuery } from '../../services/api/employees.api';
 
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../../components/ui/dialog";
-import { toast } from "../../components/ui/toast";
+} from '../../components/ui/dialog';
+import { toast } from '../../components/ui/toast';
 
-import {
-  apiErrorMessage,
-  type SystemWithOrganisation,
-} from "../../types/systems";
+import { apiErrorMessage, type SystemWithOrganisation } from '../../types/systems';
 
 type Props = {
   open: boolean;
@@ -27,15 +24,10 @@ type Props = {
   onAssigned: () => void;
 };
 
-export function AssignSystemModal({
-  open,
-  system,
-  onClose,
-  onAssigned,
-}: Props) {
-  const [search, setSearch] = useState("");
+export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) {
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [employeeId, setEmployeeId] = useState("");
+  const [employeeId, setEmployeeId] = useState('');
 
   const [assign, assignState] = useAssignSystemMutation();
 
@@ -43,24 +35,21 @@ export function AssignSystemModal({
     data: employeeData,
     isFetching: loadingEmployees,
     isError: employeesError,
-  } = useGetEmployeesQuery(
-    { search: search || undefined, page },
-    { skip: !open },
-  );
+  } = useGetEmployeesQuery({ search: search || undefined, page }, { skip: !open });
 
   const employeeResult = Array.isArray(employeeData)
     ? { items: employeeData, total: employeeData.length, pageSize: 24 }
     : employeeData;
 
   const employees = (employeeResult?.items ?? []).filter(
-    (e) => e.status === "ACTIVE" || e.status === "ON_LEAVE",
+    (e) => e.status === 'ACTIVE' || e.status === 'ON_LEAVE',
   );
 
   function close() {
     if (assignState.isLoading) return;
-    setSearch("");
+    setSearch('');
     setPage(1);
-    setEmployeeId("");
+    setEmployeeId('');
     onClose();
   }
 
@@ -71,18 +60,18 @@ export function AssignSystemModal({
       await assign({ id: system.id, employeeId }).unwrap();
 
       toast.add({
-        title: "System assigned",
-        description: "Its components remain together.",
-        type: "success",
+        title: 'System assigned',
+        description: 'Its components remain together.',
+        type: 'success',
       });
 
-      setEmployeeId("");
+      setEmployeeId('');
       onAssigned();
     } catch (error) {
       toast.add({
-        title: "Assignment failed",
+        title: 'Assignment failed',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   }
@@ -97,7 +86,7 @@ export function AssignSystemModal({
             All components stay with this system when its employee changes.
             {system?.organisation?.name
               ? ` This system is scoped to ${system.organisation.name}.`
-              : " This system has no organisation restriction."}
+              : ' This system has no organisation restriction.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -108,7 +97,7 @@ export function AssignSystemModal({
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
-            setEmployeeId("");
+            setEmployeeId('');
           }}
         />
 
@@ -124,11 +113,7 @@ export function AssignSystemModal({
           <option value="">Choose employee</option>
 
           {employees.map((e) => (
-            <option
-              key={e.id}
-              value={e.id}
-              disabled={e.id === system?.employeeId}
-            >
+            <option key={e.id} value={e.id} disabled={e.id === system?.employeeId}>
               {e.name} · {e.employeeCode}
             </option>
           ))}
@@ -136,12 +121,9 @@ export function AssignSystemModal({
 
         {system?.organisationId && (
           <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">
-              Organisation restriction:
-            </span>{" "}
-            The backend will only allow an employee belonging to{" "}
-            {system.organisation?.name ?? "this organisation"} to receive this
-            system.
+            <span className="font-medium text-foreground">Organisation restriction:</span> The
+            backend will only allow an employee belonging to{' '}
+            {system.organisation?.name ?? 'this organisation'} to receive this system.
           </p>
         )}
 
@@ -157,7 +139,7 @@ export function AssignSystemModal({
             disabled={page <= 1 || loadingEmployees}
             onClick={() => {
               setPage((p) => p - 1);
-              setEmployeeId("");
+              setEmployeeId('');
             }}
           >
             Previous
@@ -169,12 +151,11 @@ export function AssignSystemModal({
             variant="outline"
             disabled={
               loadingEmployees ||
-              page * (employeeResult?.pageSize ?? 24) >=
-                (employeeResult?.total ?? 0)
+              page * (employeeResult?.pageSize ?? 24) >= (employeeResult?.total ?? 0)
             }
             onClick={() => {
               setPage((p) => p + 1);
-              setEmployeeId("");
+              setEmployeeId('');
             }}
           >
             Next

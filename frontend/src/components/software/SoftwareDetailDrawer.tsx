@@ -1,11 +1,11 @@
-import { KeyRound, Package, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { KeyRound, Package, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
 
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/toast";
-import { useConfirm } from "@/components/ui/confirm-dialog";
-import { apiErrorMessage } from "@/types/systems";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { apiErrorMessage } from '@/types/systems';
 
 import {
   useDeleteSoftwareLicenseMutation,
@@ -14,14 +14,9 @@ import {
   useRemoveSoftwareInstallationMutation,
   type SoftwareLicenseRecord,
   type SoftwareRecord,
-} from "../../services/api/software.api";
-import { SoftwareLicenseModal } from "../asset-manager/SoftwareLicenseModal";
-import {
-  ExpiryBadge,
-  UsageBadge,
-  fmtDate,
-  licensingLabel,
-} from "./software-ui";
+} from '../../services/api/software.api';
+import { SoftwareLicenseModal } from '../asset-manager/SoftwareLicenseModal';
+import { ExpiryBadge, UsageBadge, fmtDate, licensingLabel } from './software-ui';
 
 // ============================================================
 // SOFTWARE DETAIL DRAWER
@@ -37,87 +32,81 @@ interface Props {
 
 export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
   const [licenseModalOpen, setLicenseModalOpen] = useState(false);
-  const [editingLicense, setEditingLicense] =
-    useState<SoftwareLicenseRecord | null>(null);
+  const [editingLicense, setEditingLicense] = useState<SoftwareLicenseRecord | null>(null);
 
-  const { data: licenses = [], isFetching: loadingLicenses } =
-    useGetSoftwareLicensesQuery({ assetId: software.assetId });
+  const { data: licenses = [], isFetching: loadingLicenses } = useGetSoftwareLicensesQuery({
+    assetId: software.assetId,
+  });
 
   const { data: installations = [], isFetching: loadingInstalls } =
     useGetSoftwareInstallationsQuery({
       softwareAssetId: software.assetId,
-      status: "ACTIVE",
+      status: 'ACTIVE',
     });
 
-  const [removeInstallation, removeState] =
-    useRemoveSoftwareInstallationMutation();
-  const [deleteLicense, deleteLicenseState] =
-    useDeleteSoftwareLicenseMutation();
+  const [removeInstallation, removeState] = useRemoveSoftwareInstallationMutation();
+  const [deleteLicense, deleteLicenseState] = useDeleteSoftwareLicenseMutation();
 
   const busy = removeState.isLoading || deleteLicenseState.isLoading;
   const confirm = useConfirm();
-  const name = software.asset?.name ?? "this software";
+  const name = software.asset?.name ?? 'this software';
 
   async function handleRemoveInstallation(id: string, systemName: string) {
     const confirmed = await confirm({
       title: `Remove ${name} from ${systemName}?`,
       description: `The installation on ${systemName} will be marked as removed.`,
-      confirmLabel: "Remove installation",
-      tone: "danger",
+      confirmLabel: 'Remove installation',
+      tone: 'danger',
     });
     if (!confirmed) return;
 
     try {
       await removeInstallation({
         id,
-        notes: "Removed from software catalog",
+        notes: 'Removed from software catalog',
       }).unwrap();
-      toast.add({ title: "Installation removed", type: "success" });
+      toast.add({ title: 'Installation removed', type: 'success' });
     } catch (error) {
       toast.add({
-        title: "Could not remove installation",
+        title: 'Could not remove installation',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   }
 
   async function handleDeleteLicense(license: SoftwareLicenseRecord) {
     const confirmed = await confirm({
-      title: "Delete this license?",
+      title: 'Delete this license?',
       description: `The ${license.vendor} · ${license.licenseType} license will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete license",
-      tone: "danger",
+      confirmLabel: 'Delete license',
+      tone: 'danger',
     });
     if (!confirmed) return;
 
     try {
       await deleteLicense(license.id).unwrap();
-      toast.add({ title: "License deleted", type: "success" });
+      toast.add({ title: 'License deleted', type: 'success' });
     } catch (error) {
       toast.add({
-        title: "Could not delete license",
+        title: 'Could not delete license',
         description: apiErrorMessage(error),
-        type: "error",
+        type: 'error',
       });
     }
   }
 
   const details: [string, string | null | undefined][] = [
-    ["Publisher", software.publisher ?? software.asset?.manufacturer],
-    ["Version", software.version],
-    ["Edition", software.edition],
-    ["Part of", software.parentSoftware?.name],
-    ["Asset tag", software.asset?.assetTag],
-    ["Vendor support", software.warrantyApplicable ? "Yes" : "No"],
+    ['Publisher', software.publisher ?? software.asset?.manufacturer],
+    ['Version', software.version],
+    ['Edition', software.edition],
+    ['Part of', software.parentSoftware?.name],
+    ['Asset tag', software.asset?.assetTag],
+    ['Vendor support', software.warrantyApplicable ? 'Yes' : 'No'],
   ];
 
   return (
-    <OverlayRoot
-      className="fixed inset-0 z-50"
-      onClose={onClose}
-      label="Software details"
-    >
+    <OverlayRoot className="fixed inset-0 z-50" onClose={onClose} label="Software details">
       <button
         type="button"
         aria-label="Close software details"
@@ -130,7 +119,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-card p-5">
           <div className="min-w-0">
             <h2 className="truncate text-xl font-semibold text-foreground">
-              {software.asset?.name ?? "Unnamed software"}
+              {software.asset?.name ?? 'Unnamed software'}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <UsageBadge usage={software.usage} />
@@ -145,12 +134,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
               <Pencil aria-hidden="true" />
               Edit
             </Button>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              onClick={onClose}
-              aria-label="Close"
-            >
+            <Button size="icon-sm" variant="ghost" onClick={onClose} aria-label="Close">
               <X aria-hidden="true" />
             </Button>
           </div>
@@ -184,16 +168,10 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
             {licenses.map((license) => {
               const totalSeats = Math.max(Number(license.totalSeats ?? 0), 1);
               const assignedSeats = Number(license.assignedSeats ?? 0);
-              const percent = Math.min(
-                100,
-                Math.round((assignedSeats / totalSeats) * 100),
-              );
+              const percent = Math.min(100, Math.round((assignedSeats / totalSeats) * 100));
 
               return (
-                <div
-                  key={license.id}
-                  className="rounded-lg border border-border p-3"
-                >
+                <div key={license.id} className="rounded-lg border border-border p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
@@ -203,8 +181,8 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
                         <ExpiryBadge expiryDate={license.expiryDate} />
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {license.licenseReference || "No key or reference"} ·
-                        Expires {fmtDate(license.expiryDate)}
+                        {license.licenseReference || 'No key or reference'} · Expires{' '}
+                        {fmtDate(license.expiryDate)}
                       </p>
                     </div>
 
@@ -243,7 +221,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                       <div
                         className={`h-1.5 rounded-full ${
-                          percent >= 100 ? "bg-destructive-strong" : "bg-primary"
+                          percent >= 100 ? 'bg-destructive-strong' : 'bg-primary'
                         }`}
                         style={{ width: `${percent}%` }}
                       />
@@ -269,31 +247,24 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
           </h3>
 
           {loadingInstalls ? (
-            <p className="text-xs text-muted-foreground">
-              Loading installations…
-            </p>
+            <p className="text-xs text-muted-foreground">Loading installations…</p>
           ) : null}
 
           <div className="space-y-2">
             {installations.map((install) => {
-              const systemName =
-                install.system?.name ?? install.systemId ?? "Unknown system";
+              const systemName = install.system?.name ?? install.systemId ?? 'Unknown system';
               return (
                 <div
                   key={install.id}
                   className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
                 >
                   <div className="mr-auto min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {systemName}
-                    </p>
+                    <p className="truncate text-sm font-medium text-foreground">{systemName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {install.system?.employee?.name ?? "No employee"} ·{" "}
-                      {install.version ? `v${install.version} · ` : ""}
-                      {install.license
-                        ? `${install.license.vendor} license`
-                        : "No license"}{" "}
-                      · {fmtDate(install.installedAt)}
+                      {install.system?.employee?.name ?? 'No employee'} ·{' '}
+                      {install.version ? `v${install.version} · ` : ''}
+                      {install.license ? `${install.license.vendor} license` : 'No license'} ·{' '}
+                      {fmtDate(install.installedAt)}
                     </p>
                   </div>
 
@@ -301,9 +272,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
                     size="sm"
                     variant="outline"
                     disabled={busy}
-                    onClick={() =>
-                      handleRemoveInstallation(install.id, systemName)
-                    }
+                    onClick={() => handleRemoveInstallation(install.id, systemName)}
                   >
                     Remove
                   </Button>
@@ -313,8 +282,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
 
             {!loadingInstalls && installations.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-                Not installed anywhere yet. Install it from a computer&apos;s
-                detail page.
+                Not installed anywhere yet. Install it from a computer&apos;s detail page.
               </p>
             ) : null}
           </div>
@@ -327,17 +295,13 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
             {details.map(([label, value]) => (
               <div key={label}>
                 <dt className="text-xs text-muted-foreground">{label}</dt>
-                <dd className="mt-0.5 break-words font-medium text-foreground">
-                  {value || "—"}
-                </dd>
+                <dd className="mt-0.5 break-words font-medium text-foreground">{value || '—'}</dd>
               </div>
             ))}
             {software.notes ? (
               <div className="col-span-2">
                 <dt className="text-xs text-muted-foreground">Notes</dt>
-                <dd className="mt-0.5 whitespace-pre-wrap text-foreground">
-                  {software.notes}
-                </dd>
+                <dd className="mt-0.5 whitespace-pre-wrap text-foreground">{software.notes}</dd>
               </div>
             ) : null}
           </dl>

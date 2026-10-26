@@ -1,6 +1,6 @@
-import { OverlayRoot } from "@/components/ui/overlay-root";
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { OverlayRoot } from '@/components/ui/overlay-root';
+import { useEffect, useMemo, useState } from 'react';
+import { Plus, Trash2, X } from 'lucide-react';
 
 import {
   useCreateAssetMutation,
@@ -9,12 +9,12 @@ import {
   useGetAssetUnitsByAssetQuery,
   useGetAssetCategoriesQuery,
   useCreateAssetCategoryMutation,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
-import { toast } from "../ui/toast";
+import { toast } from '../ui/toast';
 
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
 
 import type {
   Asset,
@@ -23,7 +23,7 @@ import type {
   AssetCondition,
   CreateAssetRequest,
   UpdateAssetRequest,
-} from "../../services/api/asset.api";
+} from '../../services/api/asset.api';
 
 // ============================================================
 // TYPES
@@ -42,11 +42,15 @@ interface ApiError {
   message?: string;
 }
 
-type AssetTrackingMode = "INDIVIDUAL" | "QUANTITY";
+type AssetTrackingMode = 'INDIVIDUAL' | 'QUANTITY';
 
 function normalizeIdentities(rows: { imei?: string; simNumber?: string }[]) {
-  return rows.map(row => ({ imei: row.imei?.trim() || undefined, simNumber: row.simNumber?.trim() || undefined }))
-    .filter(row => row.imei || row.simNumber);
+  return rows
+    .map((row) => ({
+      imei: row.imei?.trim() || undefined,
+      simNumber: row.simNumber?.trim() || undefined,
+    }))
+    .filter((row) => row.imei || row.simNumber);
 }
 
 interface AssetUnitForm {
@@ -66,11 +70,11 @@ interface AssetFormValues {
   name: string;
   assetTag: string;
 
-  kind: AssetKind | "";
+  kind: AssetKind | '';
   trackingMode: AssetTrackingMode;
 
-  status: AssetStatus | "";
-  condition: AssetCondition | "";
+  status: AssetStatus | '';
+  condition: AssetCondition | '';
 
   categoryId: string;
 
@@ -108,12 +112,12 @@ const KIND_OPTIONS: {
   label: string;
 }[] = [
   {
-    value: "HARDWARE",
-    label: "Hardware",
+    value: 'HARDWARE',
+    label: 'Hardware',
   },
   {
-    value: "SOFTWARE",
-    label: "Software",
+    value: 'SOFTWARE',
+    label: 'Software',
   },
 ];
 
@@ -123,14 +127,14 @@ const TRACKING_MODE_OPTIONS: {
   description: string;
 }[] = [
   {
-    value: "INDIVIDUAL",
-    label: "Individual",
-    description: "Track each asset as a separate unit.",
+    value: 'INDIVIDUAL',
+    label: 'Individual',
+    description: 'Track each asset as a separate unit.',
   },
   {
-    value: "QUANTITY",
-    label: "Quantity",
-    description: "Track multiple units under one asset record.",
+    value: 'QUANTITY',
+    label: 'Quantity',
+    description: 'Track multiple units under one asset record.',
   },
 ];
 
@@ -139,32 +143,32 @@ const STATUS_OPTIONS: {
   label: string;
 }[] = [
   {
-    value: "AVAILABLE",
-    label: "Available",
+    value: 'AVAILABLE',
+    label: 'Available',
   },
   {
-    value: "ASSIGNED",
-    label: "Assigned",
+    value: 'ASSIGNED',
+    label: 'Assigned',
   },
   {
-    value: "REPAIR",
-    label: "Repair",
+    value: 'REPAIR',
+    label: 'Repair',
   },
   {
-    value: "LOST",
-    label: "Lost",
+    value: 'LOST',
+    label: 'Lost',
   },
   {
-    value: "DAMAGED",
-    label: "Damaged",
+    value: 'DAMAGED',
+    label: 'Damaged',
   },
   {
-    value: "RETIRED",
-    label: "Retired",
+    value: 'RETIRED',
+    label: 'Retired',
   },
   {
-    value: "DISPOSED",
-    label: "Disposed",
+    value: 'DISPOSED',
+    label: 'Disposed',
   },
 ];
 
@@ -173,53 +177,53 @@ const CONDITION_OPTIONS: {
   label: string;
 }[] = [
   {
-    value: "NEW",
-    label: "New",
+    value: 'NEW',
+    label: 'New',
   },
   {
-    value: "GOOD",
-    label: "Good",
+    value: 'GOOD',
+    label: 'Good',
   },
   {
-    value: "FAIR",
-    label: "Fair",
+    value: 'FAIR',
+    label: 'Fair',
   },
   {
-    value: "POOR",
-    label: "Poor",
+    value: 'POOR',
+    label: 'Poor',
   },
 ];
 
 const EMPTY_FORM: AssetFormValues = {
-  name: "",
-  assetTag: "",
+  name: '',
+  assetTag: '',
 
-  kind: "",
-  trackingMode: "QUANTITY",
+  kind: '',
+  trackingMode: 'QUANTITY',
 
-  status: "AVAILABLE",
-  condition: "GOOD",
+  status: 'AVAILABLE',
+  condition: 'GOOD',
 
-  categoryId: "",
+  categoryId: '',
 
-  manufacturer: "",
-  model: "",
+  manufacturer: '',
+  model: '',
 
   quantity: 1,
 
-  purchaseDate: "",
+  purchaseDate: '',
 
-  invoiceNumber: "",
+  invoiceNumber: '',
 
-  warrantyExpiry: "",
+  warrantyExpiry: '',
 
-  notes: "",
+  notes: '',
 };
 
 const SELECT_CLASSES =
-  "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground";
+  'h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground';
 
-const LABEL_CLASSES = "mb-1 block text-xs font-medium text-muted-foreground";
+const LABEL_CLASSES = 'mb-1 block text-xs font-medium text-muted-foreground';
 
 // ============================================================
 // HELPERS
@@ -232,12 +236,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 
   const apiError = error as ApiError;
 
-  return (
-    apiError.data?.message ||
-    apiError.data?.error ||
-    apiError.message ||
-    fallback
-  );
+  return apiError.data?.message || apiError.data?.error || apiError.message || fallback;
 }
 
 function createEmptyUnit(
@@ -250,15 +249,15 @@ function createEmptyUnit(
   const uniqueSuffix = crypto.randomUUID().slice(0, 8).toUpperCase();
 
   return {
-    unitCode: `UNIT-${String(index + 1).padStart(3, "0")}-${uniqueSuffix}`,
-    serialNumber: "",
-    deviceId: "",
-    pcPassword: "",
+    unitCode: `UNIT-${String(index + 1).padStart(3, '0')}-${uniqueSuffix}`,
+    serialNumber: '',
+    deviceId: '',
+    pcPassword: '',
     cellularIdentities: [],
-    status: defaults?.status ?? "AVAILABLE",
-    condition: defaults?.condition ?? "GOOD",
-    locationId: "",
-    notes: "",
+    status: defaults?.status ?? 'AVAILABLE',
+    condition: defaults?.condition ?? 'GOOD',
+    locationId: '',
+    notes: '',
   };
 }
 
@@ -278,41 +277,37 @@ function createUnits(
 }
 
 function assetToFormValues(asset: Asset): AssetFormValues {
-  const trackingMode = ((asset as Asset & { trackingMode?: AssetTrackingMode })
-    .trackingMode ?? "QUANTITY") as AssetTrackingMode;
+  const trackingMode = ((asset as Asset & { trackingMode?: AssetTrackingMode }).trackingMode ??
+    'QUANTITY') as AssetTrackingMode;
 
   return {
-    name: asset.name ?? "",
+    name: asset.name ?? '',
 
-    assetTag: asset.assetTag ?? "",
+    assetTag: asset.assetTag ?? '',
 
-    kind: asset.kind ?? "",
+    kind: asset.kind ?? '',
 
     trackingMode,
 
-    status: asset.status ?? "AVAILABLE",
+    status: asset.status ?? 'AVAILABLE',
 
-    condition: asset.condition ?? "GOOD",
+    condition: asset.condition ?? 'GOOD',
 
-    categoryId: asset.categoryId ?? "",
+    categoryId: asset.categoryId ?? '',
 
-    manufacturer: asset.manufacturer ?? "",
+    manufacturer: asset.manufacturer ?? '',
 
-    model: asset.model ?? "",
+    model: asset.model ?? '',
 
     quantity: Math.max(1, Number(asset.quantity ?? 1)),
 
-    purchaseDate: asset.purchaseDate
-      ? String(asset.purchaseDate).slice(0, 10)
-      : "",
+    purchaseDate: asset.purchaseDate ? String(asset.purchaseDate).slice(0, 10) : '',
 
-    invoiceNumber: asset.invoiceNumber ?? "",
+    invoiceNumber: asset.invoiceNumber ?? '',
 
-    warrantyExpiry: asset.warrantyExpiry
-      ? String(asset.warrantyExpiry).slice(0, 10)
-      : "",
+    warrantyExpiry: asset.warrantyExpiry ? String(asset.warrantyExpiry).slice(0, 10) : '',
 
-    notes: asset.notes ?? "",
+    notes: asset.notes ?? '',
   };
 }
 
@@ -320,12 +315,7 @@ function assetToFormValues(asset: Asset): AssetFormValues {
 // COMPONENT
 // ============================================================
 
-export function CreateAssetModal({
-  open,
-  onClose,
-  asset,
-  locations = [],
-}: CreateAssetModalProps) {
+export function CreateAssetModal({ open, onClose, asset, locations = [] }: CreateAssetModalProps) {
   const isEditMode = Boolean(asset?.id);
 
   // ==========================================================
@@ -336,7 +326,11 @@ export function CreateAssetModal({
 
   const [units, setUnits] = useState<AssetUnitForm[]>([]);
   const [saving, setSaving] = useState(false);
-  const { currentData: fetchedUnits, isFetching: loadingUnits, isError: unitsError } = useGetAssetUnitsByAssetQuery(asset?.id ?? "", { skip: !open || !asset?.id });
+  const {
+    currentData: fetchedUnits,
+    isFetching: loadingUnits,
+    isError: unitsError,
+  } = useGetAssetUnitsByAssetQuery(asset?.id ?? '', { skip: !open || !asset?.id });
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -346,11 +340,11 @@ export function CreateAssetModal({
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState('');
 
-  const [newCategoryDescription, setNewCategoryDescription] = useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
 
-  const [newCategoryType, setNewCategoryType] = useState<AssetKind>("HARDWARE");
+  const [newCategoryType, setNewCategoryType] = useState<AssetKind>('HARDWARE');
 
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
@@ -369,7 +363,8 @@ export function CreateAssetModal({
 
     setValues(nextValues);
 
-    const existingUnits = fetchedUnits ??
+    const existingUnits =
+      fetchedUnits ??
       (
         asset as
           | (Asset & {
@@ -377,30 +372,30 @@ export function CreateAssetModal({
             })
           | null
           | undefined
-      )?.units ?? [];
+      )?.units ??
+      [];
 
     if (existingUnits.length > 0) {
       setUnits(
         existingUnits.map((unit, index) => ({
           id: unit.id,
-          unitCode:
-            unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
-          serialNumber: unit.serialNumber ?? "",
-          deviceId: unit.deviceId ?? "",
-          pcPassword: "",
+          unitCode: unit.unitCode || `UNIT-${String(index + 1).padStart(3, '0')}`,
+          serialNumber: unit.serialNumber ?? '',
+          deviceId: unit.deviceId ?? '',
+          pcPassword: '',
           cellularIdentities: unit.cellularIdentities ?? [],
-          status: unit.status ?? nextValues.status ?? "AVAILABLE",
-          condition: unit.condition ?? nextValues.condition ?? "GOOD",
-          locationId: unit.locationId ?? "",
-          notes: unit.notes ?? "",
+          status: unit.status ?? nextValues.status ?? 'AVAILABLE',
+          condition: unit.condition ?? nextValues.condition ?? 'GOOD',
+          locationId: unit.locationId ?? '',
+          notes: unit.notes ?? '',
         })),
       );
     } else {
       setUnits(
         createUnits(
-          nextValues.trackingMode === "INDIVIDUAL" ? 1 : nextValues.quantity,
-          (nextValues.status || "AVAILABLE") as AssetStatus,
-          (nextValues.condition || "GOOD") as AssetCondition,
+          nextValues.trackingMode === 'INDIVIDUAL' ? 1 : nextValues.quantity,
+          (nextValues.status || 'AVAILABLE') as AssetStatus,
+          (nextValues.condition || 'GOOD') as AssetCondition,
         ),
       );
     }
@@ -420,8 +415,7 @@ export function CreateAssetModal({
 
   const categories = categoriesResponse ?? [];
 
-  const [createAssetCategory, { isLoading: isCreatingCategory }] =
-    useCreateAssetCategoryMutation();
+  const [createAssetCategory, { isLoading: isCreatingCategory }] = useCreateAssetCategoryMutation();
 
   // ==========================================================
   // ASSET API
@@ -432,16 +426,14 @@ export function CreateAssetModal({
   const [updateAsset, { isLoading: isUpdating }] = useUpdateAssetMutation();
   const [updateAssetUnit, { isLoading: isUpdatingUnit }] = useUpdateAssetUnitMutation();
 
-  const isSubmitting = saving || isCreating || isUpdating || isUpdatingUnit || (isEditMode && loadingUnits);
+  const isSubmitting =
+    saving || isCreating || isUpdating || isUpdatingUnit || (isEditMode && loadingUnits);
 
   // ==========================================================
   // FIELD HELPER
   // ==========================================================
 
-  function setField<K extends keyof AssetFormValues>(
-    key: K,
-    value: AssetFormValues[K],
-  ) {
+  function setField<K extends keyof AssetFormValues>(key: K, value: AssetFormValues[K]) {
     setValues((current) => ({
       ...current,
       [key]: value,
@@ -453,18 +445,17 @@ export function CreateAssetModal({
   // ==========================================================
 
   function handleTrackingModeChange(trackingMode: AssetTrackingMode) {
-    setField("trackingMode", trackingMode);
+    setField('trackingMode', trackingMode);
 
-    const quantity =
-      trackingMode === "INDIVIDUAL" ? 1 : Math.max(1, values.quantity || 1);
+    const quantity = trackingMode === 'INDIVIDUAL' ? 1 : Math.max(1, values.quantity || 1);
 
-    setField("quantity", quantity);
+    setField('quantity', quantity);
 
     setUnits(
       createUnits(
         quantity,
-        (values.status || "AVAILABLE") as AssetStatus,
-        (values.condition || "GOOD") as AssetCondition,
+        (values.status || 'AVAILABLE') as AssetStatus,
+        (values.condition || 'GOOD') as AssetCondition,
       ),
     );
   }
@@ -482,9 +473,9 @@ export function CreateAssetModal({
 
     const quantity = Math.max(1, Math.floor(parsed));
 
-    setField("quantity", quantity);
+    setField('quantity', quantity);
 
-    if (values.trackingMode !== "QUANTITY") {
+    if (values.trackingMode !== 'QUANTITY') {
       return;
     }
 
@@ -503,8 +494,8 @@ export function CreateAssetModal({
         },
         (_, index) =>
           createEmptyUnit(current.length + index, {
-            status: (values.status || "AVAILABLE") as AssetStatus,
-            condition: (values.condition || "GOOD") as AssetCondition,
+            status: (values.status || 'AVAILABLE') as AssetStatus,
+            condition: (values.condition || 'GOOD') as AssetCondition,
           }),
       );
 
@@ -516,7 +507,11 @@ export function CreateAssetModal({
   // UNIT HELPERS
   // ==========================================================
 
-  function updateUnit<K extends keyof AssetUnitForm>(index: number, key: K, value: AssetUnitForm[K]) {
+  function updateUnit<K extends keyof AssetUnitForm>(
+    index: number,
+    key: K,
+    value: AssetUnitForm[K],
+  ) {
     setUnits((current) =>
       current.map((unit, unitIndex) =>
         unitIndex === index
@@ -533,7 +528,7 @@ export function CreateAssetModal({
     setUnits((current) =>
       current.map((unit, index) => ({
         ...unit,
-        unitCode: unit.unitCode || `UNIT-${String(index + 1).padStart(3, "0")}`,
+        unitCode: unit.unitCode || `UNIT-${String(index + 1).padStart(3, '0')}`,
       })),
     );
   }
@@ -544,32 +539,29 @@ export function CreateAssetModal({
 
   function buildCreatePayload(): CreateAssetRequest {
     if (!values.kind) {
-      throw new Error("Asset kind is required.");
+      throw new Error('Asset kind is required.');
     }
 
     if (!values.categoryId) {
-      throw new Error("Asset category is required.");
+      throw new Error('Asset category is required.');
     }
 
-    if (values.trackingMode === "INDIVIDUAL" && units.length !== 1) {
-      throw new Error("Individual assets must have exactly one unit record.");
+    if (values.trackingMode === 'INDIVIDUAL' && units.length !== 1) {
+      throw new Error('Individual assets must have exactly one unit record.');
     }
 
-    if (
-      values.trackingMode === "QUANTITY" &&
-      units.length !== values.quantity
-    ) {
-      throw new Error("Unit records must match the asset quantity.");
+    if (values.trackingMode === 'QUANTITY' && units.length !== values.quantity) {
+      throw new Error('Unit records must match the asset quantity.');
     }
 
     const normalizedUnits = units.map((unit, index) => ({
       unitCode: unit.unitCode.trim() || undefined,
       serialNumber: unit.serialNumber.trim() || undefined,
       deviceId: unit.deviceId.trim() || null,
-            pcPassword: unit.pcPassword || undefined,
-            cellularIdentities: normalizeIdentities(unit.cellularIdentities),
-      status: unit.status || "AVAILABLE",
-      condition: unit.condition || "GOOD",
+      pcPassword: unit.pcPassword || undefined,
+      cellularIdentities: normalizeIdentities(unit.cellularIdentities),
+      status: unit.status || 'AVAILABLE',
+      condition: unit.condition || 'GOOD',
       locationId: unit.locationId || undefined,
       notes: unit.notes.trim() || undefined,
     }));
@@ -579,7 +571,7 @@ export function CreateAssetModal({
       assetTag: values.assetTag.trim() || undefined,
       kind: values.kind,
       trackingMode: values.trackingMode,
-      quantity: values.trackingMode === "INDIVIDUAL" ? 1 : values.quantity,
+      quantity: values.trackingMode === 'INDIVIDUAL' ? 1 : values.quantity,
       status: values.status || undefined,
       condition: values.condition || undefined,
       categoryId: values.categoryId,
@@ -599,7 +591,7 @@ export function CreateAssetModal({
 
   function buildUpdatePayload(): UpdateAssetRequest {
     if (!asset?.id) {
-      throw new Error("Asset ID is required for update.");
+      throw new Error('Asset ID is required for update.');
     }
 
     return {
@@ -613,7 +605,7 @@ export function CreateAssetModal({
 
       trackingMode: values.trackingMode,
 
-      quantity: values.trackingMode === "INDIVIDUAL" ? 1 : values.quantity,
+      quantity: values.trackingMode === 'INDIVIDUAL' ? 1 : values.quantity,
 
       status: values.status || undefined,
 
@@ -641,29 +633,26 @@ export function CreateAssetModal({
 
   function validate(): string | null {
     if (!values.name.trim()) {
-      return "Asset name is required.";
+      return 'Asset name is required.';
     }
 
     if (!values.kind) {
-      return "Please select an asset kind.";
+      return 'Please select an asset kind.';
     }
 
     if (!values.categoryId) {
-      return "Please select a category.";
+      return 'Please select a category.';
     }
 
     if (!Number.isInteger(values.quantity) || values.quantity < 1) {
-      return "Quantity must be at least 1.";
+      return 'Quantity must be at least 1.';
     }
 
-    if (values.trackingMode === "INDIVIDUAL" && units.length !== 1) {
-      return "Individual assets must have one unit record.";
+    if (values.trackingMode === 'INDIVIDUAL' && units.length !== 1) {
+      return 'Individual assets must have one unit record.';
     }
 
-    if (
-      values.trackingMode === "QUANTITY" &&
-      units.length !== values.quantity
-    ) {
+    if (values.trackingMode === 'QUANTITY' && units.length !== values.quantity) {
       return `Please provide ${values.quantity} unit records.`;
     }
 
@@ -697,7 +686,7 @@ export function CreateAssetModal({
     const name = newCategoryName.trim();
 
     if (!name) {
-      setCategoryError("Category name is required.");
+      setCategoryError('Category name is required.');
       return;
     }
 
@@ -717,26 +706,24 @@ export function CreateAssetModal({
       const createdCategory = response;
 
       if (!createdCategory?.id) {
-        throw new Error(
-          "Category was created but no category ID was returned.",
-        );
+        throw new Error('Category was created but no category ID was returned.');
       }
 
-      setField("categoryId", createdCategory.id);
+      setField('categoryId', createdCategory.id);
 
-      setNewCategoryName("");
-      setNewCategoryDescription("");
-      setNewCategoryType("HARDWARE");
+      setNewCategoryName('');
+      setNewCategoryDescription('');
+      setNewCategoryType('HARDWARE');
 
       setShowCategoryModal(false);
 
       toast.add({
-        title: "Category created",
+        title: 'Category created',
         description: `${createdCategory.name} category created.`,
-        type: "success",
+        type: 'success',
       });
     } catch (error) {
-      setCategoryError(getErrorMessage(error, "Failed to create category."));
+      setCategoryError(getErrorMessage(error, 'Failed to create category.'));
     }
   }
 
@@ -748,7 +735,7 @@ export function CreateAssetModal({
     event.preventDefault();
     if (isSubmitting) return;
     if (isEditMode && unitsError) {
-      setFormError("Could not load unit details. Reopen the form and try again.");
+      setFormError('Could not load unit details. Reopen the form and try again.');
       return;
     }
 
@@ -769,18 +756,20 @@ export function CreateAssetModal({
         const { id, ...body } = payload;
         await updateAsset({ id, body }).unwrap();
         for (const unit of units) {
-          if (unit.id) await updateAssetUnit({ id: unit.id,
-            serialNumber: unit.serialNumber.trim() || null,
-            deviceId: unit.deviceId.trim() || null,
-            pcPassword: unit.pcPassword || undefined,
-            cellularIdentities: normalizeIdentities(unit.cellularIdentities),
-          }).unwrap();
+          if (unit.id)
+            await updateAssetUnit({
+              id: unit.id,
+              serialNumber: unit.serialNumber.trim() || null,
+              deviceId: unit.deviceId.trim() || null,
+              pcPassword: unit.pcPassword || undefined,
+              cellularIdentities: normalizeIdentities(unit.cellularIdentities),
+            }).unwrap();
         }
 
         toast.add({
-          title: "Asset updated",
+          title: 'Asset updated',
           description: `${values.name} updated.`,
-          type: "success",
+          type: 'success',
         });
       } else {
         const payload = buildCreatePayload();
@@ -788,23 +777,23 @@ export function CreateAssetModal({
         await createAsset(payload).unwrap();
 
         toast.add({
-          title: "Asset created",
+          title: 'Asset created',
           description: `${values.name} created with ${units.length} unit record${
-            units.length === 1 ? "" : "s"
+            units.length === 1 ? '' : 's'
           }.`,
-          type: "success",
+          type: 'success',
         });
       }
 
       onClose();
     } catch (error) {
       toast.add({
-        title: isEditMode ? "Update failed" : "Creation failed",
+        title: isEditMode ? 'Update failed' : 'Creation failed',
         description: getErrorMessage(
           error,
-          isEditMode ? "Failed to update asset." : "Failed to create asset.",
+          isEditMode ? 'Failed to update asset.' : 'Failed to create asset.',
         ),
-        type: "error",
+        type: 'error',
       });
     } finally {
       setSaving(false);
@@ -818,10 +807,10 @@ export function CreateAssetModal({
   function openCategoryModal() {
     setCategoryError(null);
 
-    setNewCategoryName("");
-    setNewCategoryDescription("");
+    setNewCategoryName('');
+    setNewCategoryDescription('');
 
-    setNewCategoryType(values.kind === "SOFTWARE" ? "SOFTWARE" : "HARDWARE");
+    setNewCategoryType(values.kind === 'SOFTWARE' ? 'SOFTWARE' : 'HARDWARE');
 
     setShowCategoryModal(true);
   }
@@ -844,13 +833,11 @@ export function CreateAssetModal({
   // ==========================================================
 
   const unitSummary = useMemo(() => {
-    const available = units.filter(
-      (unit) => unit.status === "AVAILABLE",
-    ).length;
+    const available = units.filter((unit) => unit.status === 'AVAILABLE').length;
 
-    const assigned = units.filter((unit) => unit.status === "ASSIGNED").length;
+    const assigned = units.filter((unit) => unit.status === 'ASSIGNED').length;
 
-    const repair = units.filter((unit) => unit.status === "REPAIR").length;
+    const repair = units.filter((unit) => unit.status === 'REPAIR').length;
 
     return {
       total: units.length,
@@ -869,7 +856,8 @@ export function CreateAssetModal({
   }
 
   return (
-    <OverlayRoot className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+    <OverlayRoot
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
       onClose={onClose}
       label="Asset form"
     >
@@ -885,13 +873,11 @@ export function CreateAssetModal({
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-foreground">
-              {isEditMode ? "Edit Asset" : "Add Asset"}
+              {isEditMode ? 'Edit Asset' : 'Add Asset'}
             </h2>
 
             <p className="text-xs text-muted-foreground">
-              {isEditMode
-                ? "Update the asset details."
-                : "Add a new asset and its unit records."}
+              {isEditMode ? 'Update the asset details.' : 'Add a new asset and its unit records.'}
             </p>
           </div>
 
@@ -918,7 +904,7 @@ export function CreateAssetModal({
 
               <Input
                 value={values.name}
-                onChange={(event) => setField("name", event.target.value)}
+                onChange={(event) => setField('name', event.target.value)}
                 placeholder='e.g. MacBook Pro 14"'
                 disabled={isSubmitting}
               />
@@ -931,7 +917,7 @@ export function CreateAssetModal({
 
               <Input
                 value={values.assetTag}
-                onChange={(event) => setField("assetTag", event.target.value)}
+                onChange={(event) => setField('assetTag', event.target.value)}
                 placeholder="e.g. AST-0042"
                 disabled={isSubmitting}
               />
@@ -944,9 +930,7 @@ export function CreateAssetModal({
 
               <select
                 value={values.kind}
-                onChange={(event) =>
-                  setField("kind", event.target.value as AssetKind)
-                }
+                onChange={(event) => setField('kind', event.target.value as AssetKind)}
                 disabled={isSubmitting}
                 className={SELECT_CLASSES}
               >
@@ -976,25 +960,21 @@ export function CreateAssetModal({
                       onClick={() => handleTrackingModeChange(option.value)}
                       disabled={isSubmitting}
                       className={[
-                        "rounded-md border p-3 text-left transition",
-                        selected
-                          ? "border-ring bg-muted"
-                          : "border-border hover:bg-muted/50",
-                      ].join(" ")}
+                        'rounded-md border p-3 text-left transition',
+                        selected ? 'border-ring bg-muted' : 'border-border hover:bg-muted/50',
+                      ].join(' ')}
                     >
                       <div className="flex items-center gap-2">
                         <span
                           className={[
-                            "h-3 w-3 rounded-full border",
+                            'h-3 w-3 rounded-full border',
                             selected
-                              ? "border-foreground bg-foreground"
-                              : "border-muted-foreground",
-                          ].join(" ")}
+                              ? 'border-foreground bg-foreground'
+                              : 'border-muted-foreground',
+                          ].join(' ')}
                         />
 
-                        <span className="text-sm font-medium text-foreground">
-                          {option.label}
-                        </span>
+                        <span className="text-sm font-medium text-foreground">{option.label}</span>
                       </div>
 
                       <p className="mt-1 pl-5 text-xs text-muted-foreground">
@@ -1017,17 +997,17 @@ export function CreateAssetModal({
                 step={1}
                 value={values.quantity}
                 onChange={(event) => handleQuantityChange(event.target.value)}
-                disabled={isSubmitting || values.trackingMode === "INDIVIDUAL"}
+                disabled={isSubmitting || values.trackingMode === 'INDIVIDUAL'}
               />
 
-              {values.trackingMode === "INDIVIDUAL" ? (
+              {values.trackingMode === 'INDIVIDUAL' ? (
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   Individual assets always have quantity 1.
                 </p>
               ) : (
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   {values.quantity} unit record
-                  {values.quantity === 1 ? "" : "s"} will be created.
+                  {values.quantity === 1 ? '' : 's'} will be created.
                 </p>
               )}
             </div>
@@ -1042,7 +1022,7 @@ export function CreateAssetModal({
                 onChange={(event) => {
                   const status = event.target.value as AssetStatus;
 
-                  setField("status", status);
+                  setField('status', status);
 
                   setUnits((current) =>
                     current.map((unit) => ({
@@ -1074,7 +1054,7 @@ export function CreateAssetModal({
                 onChange={(event) => {
                   const condition = event.target.value as AssetCondition;
 
-                  setField("condition", condition);
+                  setField('condition', condition);
 
                   setUnits((current) =>
                     current.map((unit) => ({
@@ -1104,16 +1084,12 @@ export function CreateAssetModal({
               <div className="flex gap-2">
                 <select
                   value={values.categoryId}
-                  onChange={(event) =>
-                    setField("categoryId", event.target.value)
-                  }
+                  onChange={(event) => setField('categoryId', event.target.value)}
                   disabled={isSubmitting || isCategoriesLoading}
                   className={`${SELECT_CLASSES} flex-1`}
                 >
                   <option value="">
-                    {isCategoriesLoading
-                      ? "Loading categories..."
-                      : "Select category"}
+                    {isCategoriesLoading ? 'Loading categories...' : 'Select category'}
                   </option>
 
                   {categories.map((category) => (
@@ -1135,9 +1111,7 @@ export function CreateAssetModal({
               </div>
 
               {isCategoriesFetching && !isCategoriesLoading ? (
-                <p className="mt-1 text-[10px] text-muted-foreground">
-                  Updating categories...
-                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">Updating categories...</p>
               ) : null}
             </div>
 
@@ -1148,9 +1122,7 @@ export function CreateAssetModal({
 
               <Input
                 value={values.manufacturer}
-                onChange={(event) =>
-                  setField("manufacturer", event.target.value)
-                }
+                onChange={(event) => setField('manufacturer', event.target.value)}
                 placeholder="e.g. Apple"
                 disabled={isSubmitting}
               />
@@ -1163,7 +1135,7 @@ export function CreateAssetModal({
 
               <Input
                 value={values.model}
-                onChange={(event) => setField("model", event.target.value)}
+                onChange={(event) => setField('model', event.target.value)}
                 placeholder="e.g. MacBook Pro"
                 disabled={isSubmitting}
               />
@@ -1177,9 +1149,7 @@ export function CreateAssetModal({
               <Input
                 type="date"
                 value={values.purchaseDate}
-                onChange={(event) =>
-                  setField("purchaseDate", event.target.value)
-                }
+                onChange={(event) => setField('purchaseDate', event.target.value)}
                 disabled={isSubmitting}
               />
             </div>
@@ -1191,9 +1161,7 @@ export function CreateAssetModal({
 
               <Input
                 value={values.invoiceNumber}
-                onChange={(event) =>
-                  setField("invoiceNumber", event.target.value)
-                }
+                onChange={(event) => setField('invoiceNumber', event.target.value)}
                 placeholder="Invoice number"
                 disabled={isSubmitting}
               />
@@ -1207,9 +1175,7 @@ export function CreateAssetModal({
               <Input
                 type="date"
                 value={values.warrantyExpiry}
-                onChange={(event) =>
-                  setField("warrantyExpiry", event.target.value)
-                }
+                onChange={(event) => setField('warrantyExpiry', event.target.value)}
                 disabled={isSubmitting}
               />
             </div>
@@ -1221,7 +1187,7 @@ export function CreateAssetModal({
 
               <textarea
                 value={values.notes}
-                onChange={(event) => setField("notes", event.target.value)}
+                onChange={(event) => setField('notes', event.target.value)}
                 disabled={isSubmitting}
                 rows={3}
                 placeholder="Additional notes about this asset..."
@@ -1237,37 +1203,26 @@ export function CreateAssetModal({
           <div className="border-t border-border px-5 py-5">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Unit Records
-                </h3>
+                <h3 className="text-sm font-semibold text-foreground">Unit Records</h3>
 
                 <p className="text-xs text-muted-foreground">
-                  {values.trackingMode === "INDIVIDUAL"
-                    ? "This asset has one individually tracked unit."
-                    : "Each quantity has its own unit record."}
+                  {values.trackingMode === 'INDIVIDUAL'
+                    ? 'This asset has one individually tracked unit.'
+                    : 'Each quantity has its own unit record.'}
                 </p>
               </div>
 
               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                 <span>
-                  Total:{" "}
-                  <strong className="text-foreground">
-                    {unitSummary.total}
-                  </strong>
+                  Total: <strong className="text-foreground">{unitSummary.total}</strong>
                 </span>
 
                 <span>
-                  Available:{" "}
-                  <strong className="text-foreground">
-                    {unitSummary.available}
-                  </strong>
+                  Available: <strong className="text-foreground">{unitSummary.available}</strong>
                 </span>
 
                 <span>
-                  Assigned:{" "}
-                  <strong className="text-foreground">
-                    {unitSummary.assigned}
-                  </strong>
+                  Assigned: <strong className="text-foreground">{unitSummary.assigned}</strong>
                 </span>
               </div>
             </div>
@@ -1280,16 +1235,14 @@ export function CreateAssetModal({
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-semibold text-foreground">
-                        Unit {index + 1}
-                      </p>
+                      <p className="text-xs font-semibold text-foreground">Unit {index + 1}</p>
 
                       <p className="text-[10px] text-muted-foreground">
                         Individual unit information
                       </p>
                     </div>
 
-                    {values.trackingMode === "QUANTITY" && units.length > 1 ? (
+                    {values.trackingMode === 'QUANTITY' && units.length > 1 ? (
                       <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
                         {index + 1} / {units.length}
                       </span>
@@ -1304,25 +1257,40 @@ export function CreateAssetModal({
 
                       <Input
                         value={unit.unitCode}
-                        onChange={(event) =>
-                          updateUnit(index, "unitCode", event.target.value)
-                        }
-                        placeholder={`UNIT-${String(index + 1).padStart(
-                          3,
-                          "0",
-                        )}`}
+                        onChange={(event) => updateUnit(index, 'unitCode', event.target.value)}
+                        placeholder={`UNIT-${String(index + 1).padStart(3, '0')}`}
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <div>
                       <label className={LABEL_CLASSES}>Device ID (PC / laptop / mobile)</label>
-                      <Input aria-label={`Unit ${index + 1} Device ID`} value={unit.deviceId} maxLength={255} onChange={event => updateUnit(index, "deviceId", event.target.value)} disabled={isSubmitting} placeholder="Device ID" />
+                      <Input
+                        aria-label={`Unit ${index + 1} Device ID`}
+                        value={unit.deviceId}
+                        maxLength={255}
+                        onChange={(event) => updateUnit(index, 'deviceId', event.target.value)}
+                        disabled={isSubmitting}
+                        placeholder="Device ID"
+                      />
                     </div>
                     <div>
                       <label className={LABEL_CLASSES}>PC / laptop password</label>
-                      <Input aria-label={`Unit ${index + 1} PC password`} type="password" autoComplete="new-password" value={unit.pcPassword} maxLength={4000} onChange={event => updateUnit(index, "pcPassword", event.target.value)} disabled={isSubmitting} placeholder={isEditMode ? "Leave blank to keep saved password" : "PC login password"} />
-                      <p className="mt-1 text-xs text-muted-foreground">Stored encrypted. Enter a new value to replace the saved password.</p>
+                      <Input
+                        aria-label={`Unit ${index + 1} PC password`}
+                        type="password"
+                        autoComplete="new-password"
+                        value={unit.pcPassword}
+                        maxLength={4000}
+                        onChange={(event) => updateUnit(index, 'pcPassword', event.target.value)}
+                        disabled={isSubmitting}
+                        placeholder={
+                          isEditMode ? 'Leave blank to keep saved password' : 'PC login password'
+                        }
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Stored encrypted. Enter a new value to replace the saved password.
+                      </p>
                     </div>
                     {/* SERIAL */}
 
@@ -1331,9 +1299,7 @@ export function CreateAssetModal({
 
                       <Input
                         value={unit.serialNumber}
-                        onChange={(event) =>
-                          updateUnit(index, "serialNumber", event.target.value)
-                        }
+                        onChange={(event) => updateUnit(index, 'serialNumber', event.target.value)}
                         placeholder="Serial number"
                         disabled={isSubmitting}
                       />
@@ -1346,14 +1312,68 @@ export function CreateAssetModal({
                       {unit.cellularIdentities.map((identity, slot) => (
                         <div key={slot} className="flex flex-wrap items-center gap-2">
                           <span className="text-xs text-muted-foreground">SIM {slot + 1}</span>
-                          <Input className="min-w-40 flex-1" aria-label={`Unit ${index + 1} IMEI ${slot + 1}`} placeholder="IMEI (15 digits)" inputMode="numeric" maxLength={15} value={identity.imei ?? ""} disabled={isSubmitting}
-                            onChange={e => updateUnit(index, "cellularIdentities", unit.cellularIdentities.map((item, i) => i === slot ? { ...item, imei: e.target.value } : item))} />
-                          <Input className="min-w-40 flex-1" aria-label={`Unit ${index + 1} SIM number ${slot + 1}`} placeholder="SIM number" maxLength={64} value={identity.simNumber ?? ""} disabled={isSubmitting}
-                            onChange={e => updateUnit(index, "cellularIdentities", unit.cellularIdentities.map((item, i) => i === slot ? { ...item, simNumber: e.target.value } : item))} />
-                          <Button type="button" variant="ghost" disabled={isSubmitting} aria-label={`Remove SIM ${slot + 1}`} onClick={() => updateUnit(index, "cellularIdentities", unit.cellularIdentities.filter((_, i) => i !== slot))}><Trash2 className="h-4 w-4" /></Button>
+                          <Input
+                            className="min-w-40 flex-1"
+                            aria-label={`Unit ${index + 1} IMEI ${slot + 1}`}
+                            placeholder="IMEI (15 digits)"
+                            inputMode="numeric"
+                            maxLength={15}
+                            value={identity.imei ?? ''}
+                            disabled={isSubmitting}
+                            onChange={(e) =>
+                              updateUnit(
+                                index,
+                                'cellularIdentities',
+                                unit.cellularIdentities.map((item, i) =>
+                                  i === slot ? { ...item, imei: e.target.value } : item,
+                                ),
+                              )
+                            }
+                          />
+                          <Input
+                            className="min-w-40 flex-1"
+                            aria-label={`Unit ${index + 1} SIM number ${slot + 1}`}
+                            placeholder="SIM number"
+                            maxLength={64}
+                            value={identity.simNumber ?? ''}
+                            disabled={isSubmitting}
+                            onChange={(e) =>
+                              updateUnit(
+                                index,
+                                'cellularIdentities',
+                                unit.cellularIdentities.map((item, i) =>
+                                  i === slot ? { ...item, simNumber: e.target.value } : item,
+                                ),
+                              )
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={isSubmitting}
+                            aria-label={`Remove SIM ${slot + 1}`}
+                            onClick={() =>
+                              updateUnit(
+                                index,
+                                'cellularIdentities',
+                                unit.cellularIdentities.filter((_, i) => i !== slot),
+                              )
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
-                      <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => updateUnit(index, "cellularIdentities", [...unit.cellularIdentities, {}])}><Plus className="h-4 w-4" /> Add IMEI / SIM</Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSubmitting}
+                        onClick={() =>
+                          updateUnit(index, 'cellularIdentities', [...unit.cellularIdentities, {}])
+                        }
+                      >
+                        <Plus className="h-4 w-4" /> Add IMEI / SIM
+                      </Button>
                     </div>
 
                     <div>
@@ -1362,7 +1382,7 @@ export function CreateAssetModal({
                       <select
                         value={unit.status}
                         onChange={(event) =>
-                          updateUnit(index, "status", event.target.value as AssetStatus)
+                          updateUnit(index, 'status', event.target.value as AssetStatus)
                         }
                         disabled={isSubmitting}
                         className={SELECT_CLASSES}
@@ -1383,7 +1403,7 @@ export function CreateAssetModal({
                       <select
                         value={unit.condition}
                         onChange={(event) =>
-                          updateUnit(index, "condition", event.target.value as AssetCondition)
+                          updateUnit(index, 'condition', event.target.value as AssetCondition)
                         }
                         disabled={isSubmitting}
                         className={SELECT_CLASSES}
@@ -1403,16 +1423,12 @@ export function CreateAssetModal({
 
                       <select
                         value={unit.locationId}
-                        onChange={(event) =>
-                          updateUnit(index, "locationId", event.target.value)
-                        }
+                        onChange={(event) => updateUnit(index, 'locationId', event.target.value)}
                         disabled={isSubmitting || locations.length === 0}
                         className={SELECT_CLASSES}
                       >
                         <option value="">
-                          {locations.length
-                            ? "Select location"
-                            : "No locations available"}
+                          {locations.length ? 'Select location' : 'No locations available'}
                         </option>
 
                         {locations.map((location) => (
@@ -1430,9 +1446,7 @@ export function CreateAssetModal({
 
                       <Input
                         value={unit.notes}
-                        onChange={(event) =>
-                          updateUnit(index, "notes", event.target.value)
-                        }
+                        onChange={(event) => updateUnit(index, 'notes', event.target.value)}
                         placeholder="Unit notes"
                         disabled={isSubmitting}
                       />
@@ -1442,7 +1456,7 @@ export function CreateAssetModal({
               ))}
             </div>
 
-            {values.trackingMode === "QUANTITY" ? (
+            {values.trackingMode === 'QUANTITY' ? (
               <div className="mt-3 flex items-center justify-between rounded-md bg-muted px-3 py-2">
                 <p className="text-[10px] text-muted-foreground">
                   Unit records automatically match the quantity.
@@ -1475,23 +1489,18 @@ export function CreateAssetModal({
           ==================================================== */}
 
           <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
 
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? isEditMode
-                  ? "Saving..."
-                  : "Creating..."
+                  ? 'Saving...'
+                  : 'Creating...'
                 : isEditMode
-                  ? "Save changes"
-                  : "Create asset"}
+                  ? 'Save changes'
+                  : 'Create asset'}
             </Button>
           </div>
         </form>
@@ -1502,22 +1511,19 @@ export function CreateAssetModal({
       ====================================================== */}
 
       {showCategoryModal ? (
-        <OverlayRoot className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
-      onClose={() => setShowCategoryModal(false)}
-      label="Create asset category"
-    >
+        <OverlayRoot
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim px-4"
+          onClose={() => setShowCategoryModal(false)}
+          label="Create asset category"
+        >
           <div className="w-full max-w-md rounded-lg bg-card shadow-xl">
             {/* CATEGORY HEADER */}
 
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Create Asset Category
-                </h3>
+                <h3 className="text-sm font-semibold text-foreground">Create Asset Category</h3>
 
-                <p className="text-xs text-muted-foreground">
-                  Add a new category for your assets.
-                </p>
+                <p className="text-xs text-muted-foreground">Add a new category for your assets.</p>
               </div>
 
               <button
@@ -1555,9 +1561,7 @@ export function CreateAssetModal({
 
                   <select
                     value={newCategoryType}
-                    onChange={(event) =>
-                      setNewCategoryType(event.target.value as AssetKind)
-                    }
+                    onChange={(event) => setNewCategoryType(event.target.value as AssetKind)}
                     disabled={isCreatingCategory}
                     className={SELECT_CLASSES}
                   >
@@ -1576,9 +1580,7 @@ export function CreateAssetModal({
 
                   <textarea
                     value={newCategoryDescription}
-                    onChange={(event) =>
-                      setNewCategoryDescription(event.target.value)
-                    }
+                    onChange={(event) => setNewCategoryDescription(event.target.value)}
                     disabled={isCreatingCategory}
                     rows={3}
                     placeholder="Optional description"
@@ -1608,7 +1610,7 @@ export function CreateAssetModal({
                 </Button>
 
                 <Button type="submit" disabled={isCreatingCategory}>
-                  {isCreatingCategory ? "Creating..." : "Create category"}
+                  {isCreatingCategory ? 'Creating...' : 'Create category'}
                 </Button>
               </div>
             </form>
