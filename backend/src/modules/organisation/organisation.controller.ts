@@ -1,19 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 
-import { OrganisationsService } from "./organisation.service";
+import { OrganisationsService } from './organisation.service';
 
-import { CreateOrganisationDto } from "./dto/create-organisation.dto";
-import { UpdateOrganisationDto } from "./dto/update-organisation.dto";
+import { CreateOrganisationDto } from './dto/create-organisation.dto';
+import { UpdateOrganisationDto } from './dto/update-organisation.dto';
 
-@Controller("organisations")
+@Controller('organisations')
 export class OrganisationsController {
   constructor(private readonly organisationsService: OrganisationsService) {}
 
@@ -27,18 +19,18 @@ export class OrganisationsController {
     return this.organisationsService.findAll();
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.organisationsService.findOne(id);
   }
 
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdateOrganisationDto) {
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateOrganisationDto) {
     return this.organisationsService.update(id, dto);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.organisationsService.remove(id);
   }
 }

@@ -8,14 +8,14 @@ import {
   HasMany,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Organisation } from "./organisation.model";
-import { Employee } from "./employees.model";
-import { Asset } from "@/modules/assets/models/asset.model";
+import { Organisation } from './organisation.model';
+import { Employee } from './employees.model';
+import { Asset } from '@/modules/assets/models/asset.model';
 
 @Table({
-  tableName: "locations",
+  tableName: 'locations',
   timestamps: true,
   updatedAt: false,
 })
@@ -52,12 +52,12 @@ export class Location extends Model<Location> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "organisation_id",
+    field: 'organisation_id',
   })
   organisationId?: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   organisation?: Organisation;
 
@@ -66,7 +66,7 @@ export class Location extends Model<Location> {
   // ============================================================
 
   @HasMany(() => Employee, {
-    foreignKey: "location_id",
+    foreignKey: 'location_id',
   })
   employees!: Employee[];
 
@@ -75,7 +75,7 @@ export class Location extends Model<Location> {
   // ============================================================
 
   @HasMany(() => Asset, {
-    foreignKey: "location_id",
+    foreignKey: 'location_id',
   })
   assets!: Asset[];
 }

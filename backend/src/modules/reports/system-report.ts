@@ -1,5 +1,5 @@
-import PDFDocument from "pdfkit";
-import ExcelJS from "exceljs";
+import PDFDocument from 'pdfkit';
+import ExcelJS from 'exceljs';
 
 // ============================================================
 // SYSTEM IT DATA REPORT
@@ -24,16 +24,16 @@ import ExcelJS from "exceljs";
 // ============================================================
 
 /** Shown as the holder when a system has no employee. */
-export const UNASSIGNED_HOLDER_LABEL = "UNASSIGNED";
+export const UNASSIGNED_HOLDER_LABEL = 'UNASSIGNED';
 
 /** Shown in the company marker when a system has no organisation. */
-export const NO_COMPANY_LABEL = "NO COMPANY";
+export const NO_COMPANY_LABEL = 'NO COMPANY';
 
 /** Heading of the section listing items assigned to the system. */
-export const ASSIGNED_ITEMS_LABEL = "ASSIGNED ITEMS";
+export const ASSIGNED_ITEMS_LABEL = 'ASSIGNED ITEMS';
 
-const GREEN = "#084D1B";
-const SECTION_FILL = "#D9EADF";
+const GREEN = '#084D1B';
+const SECTION_FILL = '#D9EADF';
 const SECTION_HEIGHT = 22;
 
 export type SystemReportField = { label: string; value: string };
@@ -50,7 +50,7 @@ export interface SystemReportItem {
   nameLabel: string;
   name: string;
   holder: string;
-  assignmentStatus: "Assigned" | "Unassigned (Inventory)";
+  assignmentStatus: 'Assigned' | 'Unassigned (Inventory)';
   /** Specs of the system (processor, RAM, ...). */
   fields: SystemReportField[];
   /** Items assigned to the system, shown in their own section. */
@@ -71,9 +71,9 @@ type ComponentLike = { name: string; category: string };
 // ============================================================
 
 const clean = (input: unknown): string => {
-  if (input == null) return "";
+  if (input == null) return '';
   const text = String(input).trim();
-  return text === "-" ? "" : text;
+  return text === '-' ? '' : text;
 };
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
@@ -92,7 +92,7 @@ function unique(values: string[]): string[] {
 export function companyName(...names: Array<string | null | undefined>) {
   for (const name of names) {
     const text = clean(name);
-    if (text && text.toLowerCase() !== "null") return text;
+    if (text && text.toLowerCase() !== 'null') return text;
   }
   return NO_COMPANY_LABEL;
 }
@@ -101,23 +101,23 @@ function nameLabel(systemName: string, ownCategory: string): string {
   const name = systemName.toLowerCase();
   const category = ownCategory.toLowerCase();
 
-  if (/macbook/.test(name)) return "MACBOOK NAME";
-  if (/\b(mac mini|imac|mac studio|mac pro|mac)\b/.test(name)) return "MAC NAME";
+  if (/macbook/.test(name)) return 'MACBOOK NAME';
+  if (/\b(mac mini|imac|mac studio|mac pro|mac)\b/.test(name)) return 'MAC NAME';
   if (
-    category === "laptop" ||
+    category === 'laptop' ||
     /laptop|thinkpad|elitebook|latitude|galaxy book|ideapad|vivobook|inspiron|probook|aspire|\bl\d{3}\b/.test(
       name,
     )
   ) {
-    return "LAPTOP NAME";
+    return 'LAPTOP NAME';
   }
-  return "PC NAME";
+  return 'PC NAME';
 }
 
 /** "1TB" -> OneDrive Storage (as on the sheet); "Google Drive 2TB" -> Cloud Storage. */
 function cloudLabel(value: string) {
   const sizeOnly = /^[\d.]+\s*(kb|mb|gb|tb)$/i.test(value);
-  return sizeOnly || /onedrive/i.test(value) ? "OneDrive Storage" : "Cloud Storage";
+  return sizeOnly || /onedrive/i.test(value) ? 'OneDrive Storage' : 'Cloud Storage';
 }
 
 // ============================================================
@@ -138,7 +138,7 @@ export function buildSystemRecord(args: {
 
   // The system's own device (e.g. the "Desktop PC" asset called SPRP-PC1)
   // is already the name row, so it is not repeated as a component.
-  let ownCategory = "";
+  let ownCategory = '';
   const parts = args.components.filter((component) => {
     const isSelf =
       same(component.name, args.systemName) ||
@@ -155,47 +155,41 @@ export function buildSystemRecord(args: {
   // ---------- Specs ----------
   const fields: SystemReportField[] = [];
   const add = (label: string, ...values: Array<string | string[]>) => {
-    const text = unique(values.flat().map(clean)).join(", ");
+    const text = unique(values.flat().map(clean)).join(', ');
     if (text) fields.push({ label, value: text });
   };
 
-  const monitors = byCategory("monitor");
+  const monitors = byCategory('monitor');
 
-  add("Processor", specs?.processor);
-  add("RAM", specs?.ram);
-  add("Graphics Card", specs?.graphicsCard);
-  add("Local Storage", specs?.localStorage);
+  add('Processor', specs?.processor);
+  add('RAM', specs?.ram);
+  add('Graphics Card', specs?.graphicsCard);
+  add('Local Storage', specs?.localStorage);
   const cloud = clean(specs?.cloudStorage);
   if (cloud) add(cloudLabel(cloud), cloud);
 
   // The spec monitor is left out when an assigned monitor of the same model
   // is already listed (assigned names carry the unit code, e.g. "... (MON-003)").
   const specMonitor = clean(specs?.monitor);
-  if (
-    specMonitor &&
-    !monitors.some((m) => m.toLowerCase().startsWith(specMonitor.toLowerCase()))
-  ) {
-    add("Monitor", specMonitor);
+  if (specMonitor && !monitors.some((m) => m.toLowerCase().startsWith(specMonitor.toLowerCase()))) {
+    add('Monitor', specMonitor);
   }
 
   // ---------- Assigned items ----------
-  const tablets = byCategory("tablet");
-  const tabletLabel =
-    tablets.length && tablets.every((t) => /ipad/i.test(t)) ? "iPad" : "Tablet";
+  const tablets = byCategory('tablet');
+  const tabletLabel = tablets.length && tablets.every((t) => /ipad/i.test(t)) ? 'iPad' : 'Tablet';
 
   const groups: Array<[string, string[]]> = [
-    ["Monitor", monitors],
-    ["Keyboard", byCategory("keyboard")],
-    ["Mouse", byCategory("mouse")],
-    ["Laptop", byCategory("laptop")],
-    ["Mobile Phone", byCategory("mobile phone")],
+    ['Monitor', monitors],
+    ['Keyboard', byCategory('keyboard')],
+    ['Mouse', byCategory('mouse')],
+    ['Laptop', byCategory('laptop')],
+    ['Mobile Phone', byCategory('mobile phone')],
     [tabletLabel, tablets],
   ];
 
   // Any other category (speaker, camera, ...) still appears, under its own name.
-  const shown = new Set([
-    "monitor", "keyboard", "mouse", "laptop", "mobile phone", "tablet",
-  ]);
+  const shown = new Set(['monitor', 'keyboard', 'mouse', 'laptop', 'mobile phone', 'tablet']);
   const others = new Map<string, string[]>();
   for (const part of parts) {
     const key = part.category;
@@ -214,7 +208,7 @@ export function buildSystemRecord(args: {
     nameLabel: nameLabel(args.systemName, ownCategory),
     name: args.systemName,
     holder: clean(args.holder) || UNASSIGNED_HOLDER_LABEL,
-    assignmentStatus: args.employeeId ? "Assigned" : "Unassigned (Inventory)",
+    assignmentStatus: args.employeeId ? 'Assigned' : 'Unassigned (Inventory)',
     fields,
     assignedItems,
   };
@@ -224,8 +218,8 @@ export function buildSystemRecord(args: {
 export function cardRows(item: SystemReportItem): SystemReportField[] {
   return [
     { label: item.nameLabel, value: item.name },
-    { label: "HOLDER NAME", value: item.holder },
-    { label: "ASSIGNMENT STATUS", value: item.assignmentStatus },
+    { label: 'HOLDER NAME', value: item.holder },
+    { label: 'ASSIGNMENT STATUS', value: item.assignmentStatus },
     ...item.fields,
   ];
 }
@@ -249,15 +243,15 @@ export function tableFields(item: SystemReportItem): SystemReportField[] {
   }
   return [
     ...item.fields,
-    ...[...grouped].map(([label, names]) => ({ label, value: names.join(", ") })),
+    ...[...grouped].map(([label, names]) => ({ label, value: names.join(', ') })),
   ];
 }
 
 export function systemsSummary(report: SystemsReport): string {
   const companies = Object.entries(report.byCompany)
     .map(([name, count]) => `${name}: ${count}`)
-    .join("    |    ");
-  return `Total Systems: ${report.totalSystems}${companies ? `    |    ${companies}` : ""}`;
+    .join('    |    ');
+  return `Total Systems: ${report.totalSystems}${companies ? `    |    ${companies}` : ''}`;
 }
 
 // ============================================================
@@ -266,11 +260,11 @@ export function systemsSummary(report: SystemsReport): string {
 
 export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: "A4", margin: 42, bufferPages: true });
+    const doc = new PDFDocument({ size: 'A4', margin: 42, bufferPages: true });
     const chunks: Buffer[] = [];
-    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
-    doc.on("error", reject);
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
 
     const x = 42;
     const width = doc.page.width - 84;
@@ -278,22 +272,32 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
     const bottom = doc.page.height - 55;
 
     const header = () => {
-      doc.font("Helvetica-Bold").fontSize(15).fillColor(GREEN)
-        .text("SYSTEM IT DATA", x, 36, { width, align: "center" });
-      doc.font("Helvetica").fontSize(8).fillColor("#555555").text(
-        `Generated: ${new Date(report.generatedAt).toLocaleString("en-IN")}`,
-        x, 57, { width, align: "center" },
-      );
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(15)
+        .fillColor(GREEN)
+        .text('SYSTEM IT DATA', x, 36, { width, align: 'center' });
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#555555')
+        .text(`Generated: ${new Date(report.generatedAt).toLocaleString('en-IN')}`, x, 57, {
+          width,
+          align: 'center',
+        });
       return 82;
     };
 
     let y = header();
-    doc.font("Helvetica").fontSize(8).fillColor("#111111")
-      .text(systemsSummary(report), x, y, { width, align: "center" });
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor('#111111')
+      .text(systemsSummary(report), x, y, { width, align: 'center' });
     y = doc.y + 18;
 
     const rowHeight = (label: string, value: string, bold: boolean) => {
-      doc.font(bold ? "Helvetica-Bold" : "Helvetica").fontSize(10);
+      doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(10);
       return Math.max(
         23,
         doc.heightOfString(value, { width: width - split - 16 }) + 12,
@@ -306,11 +310,14 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
         doc.addPage();
         y = header();
       }
-      doc.lineWidth(0.65).rect(x, y, split, row.height).stroke("#111111");
-      doc.rect(x + split, y, width - split, row.height).stroke("#111111");
-      doc.font(row.bold ? "Helvetica-Bold" : "Helvetica").fontSize(10).fillColor("#111111");
-      doc.text(row.label, x + 8, y + 6, { width: split - 16, align: "center" });
-      doc.text(row.value, x + split + 8, y + 6, { width: width - split - 16, align: "center" });
+      doc.lineWidth(0.65).rect(x, y, split, row.height).stroke('#111111');
+      doc.rect(x + split, y, width - split, row.height).stroke('#111111');
+      doc
+        .font(row.bold ? 'Helvetica-Bold' : 'Helvetica')
+        .fontSize(10)
+        .fillColor('#111111');
+      doc.text(row.label, x + 8, y + 6, { width: split - 16, align: 'center' });
+      doc.text(row.value, x + split + 8, y + 6, { width: width - split - 16, align: 'center' });
       y += row.height;
     };
 
@@ -326,14 +333,15 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
         height: rowHeight(row.label, row.value, false),
       }));
 
-      doc.font("Helvetica-Bold").fontSize(15);
-      const markerHeight = Math.max(30, doc.heightOfString(item.company.toUpperCase(), { width: width - 20 }) + 14);
+      doc.font('Helvetica-Bold').fontSize(15);
+      const markerHeight = Math.max(
+        30,
+        doc.heightOfString(item.company.toUpperCase(), { width: width - 20 }) + 14,
+      );
       const total =
         markerHeight +
         rows.reduce((sum, row) => sum + row.height, 0) +
-        (assigned.length
-          ? SECTION_HEIGHT + assigned.reduce((sum, row) => sum + row.height, 0)
-          : 0);
+        (assigned.length ? SECTION_HEIGHT + assigned.reduce((sum, row) => sum + row.height, 0) : 0);
 
       if (y + total > bottom && y > 82) {
         doc.addPage();
@@ -341,9 +349,12 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
       }
 
       // Company marker
-      doc.rect(x, y, width, markerHeight).fillAndStroke(GREEN, "#111111");
-      doc.font("Helvetica-Bold").fontSize(15).fillColor("white")
-        .text(item.company.toUpperCase(), x + 10, y + 8, { width: width - 20, align: "center" });
+      doc.rect(x, y, width, markerHeight).fillAndStroke(GREEN, '#111111');
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(15)
+        .fillColor('white')
+        .text(item.company.toUpperCase(), x + 10, y + 8, { width: width - 20, align: 'center' });
       y += markerHeight;
 
       rows.forEach(drawRow);
@@ -354,9 +365,15 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
           doc.addPage();
           y = header();
         }
-        doc.lineWidth(0.65).rect(x, y, width, SECTION_HEIGHT).fillAndStroke(SECTION_FILL, "#111111");
-        doc.font("Helvetica-Bold").fontSize(10).fillColor(GREEN)
-          .text(ASSIGNED_ITEMS_LABEL, x, y + 6, { width, align: "center", lineBreak: false });
+        doc
+          .lineWidth(0.65)
+          .rect(x, y, width, SECTION_HEIGHT)
+          .fillAndStroke(SECTION_FILL, '#111111');
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(10)
+          .fillColor(GREEN)
+          .text(ASSIGNED_ITEMS_LABEL, x, y + 6, { width, align: 'center', lineBreak: false });
         y += SECTION_HEIGHT;
         assigned.forEach(drawRow);
       }
@@ -364,8 +381,11 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
     }
 
     if (!report.items.length) {
-      doc.font("Helvetica").fontSize(11).fillColor("#111111")
-        .text("No systems match the selected filters.", x, y, { width, align: "center" });
+      doc
+        .font('Helvetica')
+        .fontSize(11)
+        .fillColor('#111111')
+        .text('No systems match the selected filters.', x, y, { width, align: 'center' });
     }
 
     const range = doc.bufferedPageRange();
@@ -374,10 +394,16 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
       // The footer sits inside the bottom margin; without this PDFKit would
       // add a new page for it.
       doc.page.margins.bottom = 0;
-      doc.font("Helvetica").fontSize(8).fillColor("#666666").text(
-        `CM Asset Management    |    Page ${i + 1} of ${range.count}`,
-        x, doc.page.height - 35, { width, align: "center", lineBreak: false },
-      );
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor('#666666')
+        .text(
+          `CM Asset Management    |    Page ${i + 1} of ${range.count}`,
+          x,
+          doc.page.height - 35,
+          { width, align: 'center', lineBreak: false },
+        );
     }
     doc.end();
   });
@@ -391,7 +417,7 @@ export function createSystemsPdf(report: SystemsReport): Promise<Buffer> {
 
 export async function createSystemsExcel(report: SystemsReport): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "CM Asset Management";
+  workbook.creator = 'CM Asset Management';
   workbook.created = new Date();
 
   addCardsSheet(workbook, report);
@@ -401,28 +427,38 @@ export async function createSystemsExcel(report: SystemsReport): Promise<Buffer>
 }
 
 function addCardsSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
-  const sheet = workbook.addWorksheet("System IT Data", {
+  const sheet = workbook.addWorksheet('System IT Data', {
     views: [{ showGridLines: false }],
     pageSetup: {
-      paperSize: 9, orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0,
+      paperSize: 9,
+      orientation: 'portrait',
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 0,
       margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
     },
   });
   sheet.columns = [{ width: 28 }, { width: 56 }];
-  sheet.headerFooter.oddFooter = "&L CM Asset Management&R Page &P of &N";
+  sheet.headerFooter.oddFooter = '&L CM Asset Management&R Page &P of &N';
 
   const merged = (text: string, size: number, green = false) => {
     const row = sheet.addRow([text]);
     sheet.mergeCells(row.number, 1, row.number, 2);
     row.height = Math.max(green ? 30 : 22, Math.ceil(text.length / 65) * (size + 4) + 10);
-    row.font = { name: "Calibri", size, bold: green, color: { argb: green ? "FFFFFFFF" : "FF111111" } };
-    row.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-    if (green) row.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF084D1B" } };
+    row.font = {
+      name: 'Calibri',
+      size,
+      bold: green,
+      color: { argb: green ? 'FFFFFFFF' : 'FF111111' },
+    };
+    row.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    if (green)
+      row.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF084D1B' } };
     return row;
   };
 
-  merged("SYSTEM IT DATA", 16);
-  merged(`Generated: ${new Date(report.generatedAt).toLocaleString("en-IN")}`, 10);
+  merged('SYSTEM IT DATA', 16);
+  merged(`Generated: ${new Date(report.generatedAt).toLocaleString('en-IN')}`, 10);
   merged(systemsSummary(report), 10);
   sheet.addRow([]);
 
@@ -451,29 +487,29 @@ function addCardsSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
     rows.forEach((row, index) => {
       const excelRow = sheet.addRow([row.label, row.value]);
       excelRow.height = heights[index];
-      excelRow.font = { name: "Calibri", size: 11, bold: index < 2 };
-      excelRow.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+      excelRow.font = { name: 'Calibri', size: 11, bold: index < 2 };
+      excelRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     });
 
     if (assigned.length) {
-      const section = sheet.addRow([ASSIGNED_ITEMS_LABEL, ""]);
+      const section = sheet.addRow([ASSIGNED_ITEMS_LABEL, '']);
       sheet.mergeCells(section.number, 1, section.number, 2);
       section.height = SECTION_HEIGHT;
-      section.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF084D1B" } };
-      section.alignment = { horizontal: "center", vertical: "middle" };
+      section.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF084D1B' } };
+      section.alignment = { horizontal: 'center', vertical: 'middle' };
       section.eachCell((cell) => {
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9EADF" } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9EADF' } };
       });
 
       assigned.forEach((row, index) => {
         const excelRow = sheet.addRow([row.label, row.value]);
         excelRow.height = assignedHeights[index];
-        excelRow.font = { name: "Calibri", size: 11, bold: false };
-        excelRow.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        excelRow.font = { name: 'Calibri', size: 11, bold: false };
+        excelRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       });
     }
 
-    const edge: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FF111111" } };
+    const edge: Partial<ExcelJS.Border> = { style: 'thin', color: { argb: 'FF111111' } };
     for (let n = start; n <= sheet.rowCount; n++) {
       sheet.getRow(n).eachCell((cell) => {
         cell.border = { top: edge, bottom: edge, left: edge, right: edge };
@@ -483,12 +519,12 @@ function addCardsSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
     pageHeight += cardHeight;
   }
 
-  if (!report.items.length) merged("No systems match the selected filters.", 11);
+  if (!report.items.length) merged('No systems match the selected filters.', 11);
   sheet.pageSetup.printArea = `A1:B${sheet.rowCount}`;
 }
 
 function addTableSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
-  const sheet = workbook.addWorksheet("Systems Table");
+  const sheet = workbook.addWorksheet('Systems Table');
 
   // Columns = every label that appears, in first-seen order.
   const labels: string[] = [];
@@ -498,28 +534,28 @@ function addTableSheet(workbook: ExcelJS.Workbook, report: SystemsReport) {
     }
   }
 
-  sheet.addRow(["Company", "Type", "System Name", "Holder Name", "Assignment Status", ...labels]);
+  sheet.addRow(['Company', 'Type', 'System Name', 'Holder Name', 'Assignment Status', ...labels]);
   for (const item of report.items) {
     const byLabel = new Map(tableFields(item).map((field) => [field.label, field.value]));
     sheet.addRow([
       item.company,
-      item.nameLabel.replace(/ NAME$/, ""),
+      item.nameLabel.replace(/ NAME$/, ''),
       item.name,
       item.holder,
       item.assignmentStatus,
-      ...labels.map((label) => byLabel.get(label) ?? ""),
+      ...labels.map((label) => byLabel.get(label) ?? ''),
     ]);
   }
 
-  sheet.views = [{ state: "frozen", ySplit: 1 }];
+  sheet.views = [{ state: 'frozen', ySplit: 1 }];
   sheet.getRow(1).font = { bold: true };
-  sheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
+  sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
   sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: sheet.columnCount } };
 
   sheet.columns.forEach((column) => {
     let max = 12;
     column.eachCell?.({ includeEmpty: true }, (cell) => {
-      max = Math.max(max, Math.min(String(cell.value ?? "").length + 2, 45));
+      max = Math.max(max, Math.min(String(cell.value ?? '').length + 2, 45));
     });
     column.width = max;
   });

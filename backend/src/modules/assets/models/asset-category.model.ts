@@ -10,22 +10,18 @@ import {
   PrimaryKey,
   CreatedAt,
   UpdatedAt,
-} from "sequelize-typescript";
-import {
-  InferAttributes,
-  InferCreationAttributes,
-  CreationOptional,
-} from "sequelize";
-import { Organisation } from "@/modules/organisation/models/organisation.model";
-import { Asset } from "./asset.model";
+} from 'sequelize-typescript';
+import { InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
+import { Organisation } from '@/modules/organisation/models/organisation.model';
+import { Asset } from './asset.model';
 
 export enum AssetKind {
-  HARDWARE = "HARDWARE",
-  SOFTWARE = "SOFTWARE",
+  HARDWARE = 'HARDWARE',
+  SOFTWARE = 'SOFTWARE',
 }
 
 @Table({
-  tableName: "asset_categories",
+  tableName: 'asset_categories',
   timestamps: true,
 })
 export class AssetCategory extends Model<
@@ -84,12 +80,12 @@ export class AssetCategory extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "organisation_id",
+    field: 'organisation_id',
   })
   declare organisationId: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisationId",
+    foreignKey: 'organisationId',
   })
   declare organisation?: Organisation;
 
@@ -110,7 +106,7 @@ export class AssetCategory extends Model<
   // ============================================================
 
   @HasMany(() => Asset, {
-    foreignKey: "categoryId",
+    foreignKey: 'categoryId',
   })
   declare assets?: Asset[];
 

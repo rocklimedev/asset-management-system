@@ -7,12 +7,12 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { User } from "@/modules/users/models/user.model";
+import { User } from '@/modules/users/models/user.model';
 
 @Table({
-  tableName: "audit_logs",
+  tableName: 'audit_logs',
   timestamps: false,
 })
 export class AuditLog extends Model<AuditLog> {
@@ -37,12 +37,12 @@ export class AuditLog extends Model<AuditLog> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "user_id",
+    field: 'user_id',
   })
   userId?: string | null;
 
   @BelongsTo(() => User, {
-    foreignKey: "user_id",
+    foreignKey: 'user_id',
   })
   user?: User;
 

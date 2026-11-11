@@ -1,15 +1,15 @@
-import { IsOptional, IsString, IsUUID } from "class-validator";
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class TransferAssetDto {
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   fromSystemId?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   toSystemId?: string;
 
-  @IsUUID("4")
+  @IsUUID('4')
   toEmployeeId!: string;
 
   @IsOptional()

@@ -1,10 +1,10 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
-import { AssetAssignmentService } from "./asset-assignment.service";
+import { AssetAssignmentService } from './asset-assignment.service';
 
-import { AssignmentStatus } from "./models/asset-assignment.model";
+import { AssignmentStatus } from './models/asset-assignment.model';
 
-@Controller("asset-assignments")
+@Controller('asset-assignments')
 export class AssetAssignmentController {
   constructor(private readonly service: AssetAssignmentService) {}
 
@@ -23,12 +23,12 @@ export class AssetAssignmentController {
 
   @Get()
   findAll(
-    @Query("status") status?: AssignmentStatus,
-    @Query("employeeId") employeeId?: string,
-    @Query("assetId") assetId?: string,
-    @Query("assetUnitId") assetUnitId?: string,
-    @Query("systemId") systemId?: string,
-    @Query("search") search?: string,
+    @Query('status') status?: AssignmentStatus,
+    @Query('employeeId') employeeId?: string,
+    @Query('assetId') assetId?: string,
+    @Query('assetUnitId') assetUnitId?: string,
+    @Query('systemId') systemId?: string,
+    @Query('search') search?: string,
   ) {
     return this.service.findAll({
       status,
@@ -52,15 +52,15 @@ export class AssetAssignmentController {
   // ?activeOnly=true
   // ============================================================
 
-  @Get("employees/:employeeId")
+  @Get('employees/:employeeId')
   findByEmployee(
-    @Param("employeeId") employeeId: string,
-    @Query("status") status?: AssignmentStatus,
-    @Query("activeOnly") activeOnly?: string,
+    @Param('employeeId') employeeId: string,
+    @Query('status') status?: AssignmentStatus,
+    @Query('activeOnly') activeOnly?: string,
   ) {
     return this.service.findByEmployee(employeeId, {
       status,
-      activeOnly: activeOnly === "true",
+      activeOnly: activeOnly === 'true',
     });
   }
 
@@ -74,8 +74,8 @@ export class AssetAssignmentController {
   // route if your Nest routing setup can otherwise match it.
   // ============================================================
 
-  @Get("employees/:employeeId/active")
-  findActiveByEmployee(@Param("employeeId") employeeId: string) {
+  @Get('employees/:employeeId/active')
+  findActiveByEmployee(@Param('employeeId') employeeId: string) {
     return this.service.findActiveByEmployee(employeeId);
   }
 
@@ -105,19 +105,19 @@ export class AssetAssignmentController {
   // ?activeOnly=true
   // ============================================================
 
-  @Get("assets/:assetId")
+  @Get('assets/:assetId')
   findByAsset(
-    @Param("assetId") assetId: string,
-    @Query("status") status?: AssignmentStatus,
-    @Query("employeeId") employeeId?: string,
-    @Query("assetUnitId") assetUnitId?: string,
-    @Query("activeOnly") activeOnly?: string,
+    @Param('assetId') assetId: string,
+    @Query('status') status?: AssignmentStatus,
+    @Query('employeeId') employeeId?: string,
+    @Query('assetUnitId') assetUnitId?: string,
+    @Query('activeOnly') activeOnly?: string,
   ) {
     return this.service.findByAsset(assetId, {
       status,
       employeeId,
       assetUnitId,
-      activeOnly: activeOnly === "true",
+      activeOnly: activeOnly === 'true',
     });
   }
 
@@ -129,8 +129,8 @@ export class AssetAssignmentController {
   // Shows who currently has the asset / its units.
   // ============================================================
 
-  @Get("assets/:assetId/active")
-  findActiveByAsset(@Param("assetId") assetId: string) {
+  @Get('assets/:assetId/active')
+  findActiveByAsset(@Param('assetId') assetId: string) {
     return this.service.findActiveByAsset(assetId);
   }
 
@@ -148,8 +148,8 @@ export class AssetAssignmentController {
   // - assignments
   // ============================================================
 
-  @Get("assets/:assetId/summary")
-  getAssetAssignmentSummary(@Param("assetId") assetId: string) {
+  @Get('assets/:assetId/summary')
+  getAssetAssignmentSummary(@Param('assetId') assetId: string) {
     return this.service.getAssetAssignmentSummary(assetId);
   }
 
@@ -165,8 +165,8 @@ export class AssetAssignmentController {
   //   └── Amit
   // ============================================================
 
-  @Get("units/:assetUnitId")
-  findByAssetUnit(@Param("assetUnitId") assetUnitId: string) {
+  @Get('units/:assetUnitId')
+  findByAssetUnit(@Param('assetUnitId') assetUnitId: string) {
     return this.service.findByAssetUnit(assetUnitId);
   }
 
@@ -178,8 +178,8 @@ export class AssetAssignmentController {
   // Returns the employee currently holding this physical unit.
   // ============================================================
 
-  @Get("units/:assetUnitId/active")
-  findActiveByAssetUnit(@Param("assetUnitId") assetUnitId: string) {
+  @Get('units/:assetUnitId/active')
+  findActiveByAssetUnit(@Param('assetUnitId') assetUnitId: string) {
     return this.service.findActiveByAssetUnit(assetUnitId);
   }
 
@@ -192,8 +192,8 @@ export class AssetAssignmentController {
   // get interpreted as assignment IDs.
   // ============================================================
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 }

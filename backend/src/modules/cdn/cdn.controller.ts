@@ -1,17 +1,10 @@
-import {
-  Controller,
-  Delete,
-  Param,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { Controller, Delete, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-import { CdnService, CdnUploadFile } from "./cdn.service";
-import { RequirePermissions } from "@/common/decorator/roles.decorator";
+import { CdnService, CdnUploadFile } from './cdn.service';
+import { RequirePermissions } from '@/common/decorator/roles.decorator';
 
-@Controller("cdn")
+@Controller('cdn')
 export class CdnController {
   constructor(private readonly cdn: CdnService) {}
 
@@ -22,9 +15,9 @@ export class CdnController {
   // image can be looked up / deleted later, and `url` for display.
   // ============================================================
 
-  @Post("assets/image")
-  @RequirePermissions("assets:write")
-  @UseInterceptors(FileInterceptor("file"))
+  @Post('assets/image')
+  @RequirePermissions('assets:write')
+  @UseInterceptors(FileInterceptor('file'))
   async uploadAssetImage(@UploadedFile() file: CdnUploadFile) {
     return this.cdn.uploadAssetImage(file);
   }
@@ -33,13 +26,13 @@ export class CdnController {
   // DELETE ASSET IMAGE
   // ============================================================
 
-  @Delete("assets/image/:key")
-  @RequirePermissions("assets:write")
-  async deleteAssetImage(@Param("key") key: string) {
+  @Delete('assets/image/:key')
+  @RequirePermissions('assets:write')
+  async deleteAssetImage(@Param('key') key: string) {
     await this.cdn.deleteAssetImage(decodeURIComponent(key));
 
     return {
-      message: "Image deleted.",
+      message: 'Image deleted.',
     };
   }
 }

@@ -1,8 +1,8 @@
-import { Module } from "@nestjs/common";
-import { MulterModule } from "@nestjs/platform-express";
+import { Module } from '@nestjs/common';
+import { MulterModule } from '@nestjs/platform-express';
 
-import { CdnService } from "./cdn.service";
-import { CdnController } from "./cdn.controller";
+import { CdnService } from './cdn.service';
+import { CdnController } from './cdn.controller';
 
 @Module({
   imports: [

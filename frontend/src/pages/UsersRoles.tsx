@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Pencil, ShieldCheck, Trash2, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
+import { useState } from 'react';
+import { Pencil, ShieldCheck, Trash2, UserCheck, UserPlus, UserX } from 'lucide-react';
 
 import {
   useDeleteUserMutation,
@@ -8,13 +8,12 @@ import {
 } from '../services/api/users.api';
 
 import { useGetRoleAccessQuery } from '../services/api/role.api';
-import PermissionsWorkspace from '../components/users/PermissionsWorkspace';
 
 import AddUserModal from '../components/users/AddUserModal';
 import UpdateRoleModal from '../components/users/UpdateRoleModal';
 
 import { Card } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
+import { ListToolbar, StatusPill } from '../components/list';
 import { Button } from '../components/ui/button';
 import { EmptyState } from '../components/ui/EmptyState';
 
@@ -28,7 +27,6 @@ import { RowActions } from '@/components/ui/row-actions';
 // TYPES
 // ============================================================
 
-type Tab = 'users' | 'roles';
 
 // ============================================================
 // COMPONENT
@@ -36,17 +34,13 @@ type Tab = 'users' | 'roles';
 
 export default function UsersRoles() {
   const confirm = useConfirm();
-  const [activeTab, setActiveTab] = useState<Tab>('users');
+  const [userSearch, setUserSearch] = useState('');
   const {
     data: access,
     isLoading: accessLoading,
     isError: accessError,
   } = useGetRoleAccessQuery(undefined, { refetchOnMountOrArgChange: true, pollingInterval: 30000 });
   const canManageUsers = access?.permissions.includes('users.manage') ?? false;
-  const canManageRoles = access?.permissions.includes('roles.manage') ?? false;
-  useEffect(() => {
-    if (access && !canManageUsers) setActiveTab('roles');
-  }, [access, canManageUsers]);
 
   // ==========================================================
   // USER MODALS
@@ -232,6 +226,17 @@ export default function UsersRoles() {
         Unable to verify your permissions. Reload to try again.
       </p>
     );
+  if (!canManageUsers) return <p role="alert" className="p-6 text-sm text-muted-foreground">You do not have permission to manage users.</p>;
+
+  const visibleUsers = users.filter((user) => {
+    const query = userSearch.trim().toLowerCase();
+
+    if (!query) return true;
+
+    return [user.name, user.email, user.role?.name]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query));
+  });
 
   return (
     <>
@@ -242,11 +247,11 @@ export default function UsersRoles() {
 
         <div className="flex items-center justify-between">
           <PageHeader
-            title="Users & Roles"
+            title="Users"
             description="Choose who can sign in to the system and what each person is allowed to do."
           />
 
-          {activeTab === 'users' && canManageUsers && (
+          {canManageUsers && (
             <Button className="w-fit" onClick={handleCreateUser} disabled={userMutationLoading}>
               <UserPlus className="h-4 w-4" />
               Add User
@@ -263,54 +268,20 @@ export default function UsersRoles() {
               TAB NAVIGATION
           ==================================================== */}
 
-          <div className="border-b border-border bg-card px-5">
-            <div className="flex gap-6">
-              {/* USERS TAB */}
-
-              <button
-                type="button"
-                disabled={!canManageUsers}
-                onClick={() => setActiveTab('users')}
-                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  activeTab === 'users'
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Users className="h-4 w-4" />
-                Users
-              </button>
-
-              {/* ROLES TAB */}
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('roles')}
-                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  activeTab === 'roles'
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <ShieldCheck className="h-4 w-4" />
-                Roles & Permissions
-              </button>
-            </div>
-          </div>
 
           {/* ====================================================
               USERS TAB
           ==================================================== */}
 
-          {activeTab === 'users' && canManageUsers && (
+          {canManageUsers && (
             <div>
-              <div className="border-b border-border px-5 py-3">
-                <h2 className="text-sm font-semibold text-foreground">Application Users</h2>
-
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Manage users who have access to the application.
-                </p>
-              </div>
+              <ListToolbar
+                title="Application users"
+                count={users.length}
+                search={userSearch}
+                onSearchChange={setUserSearch}
+                searchPlaceholder="Search name, email or role"
+              />
 
               {/* LOADING */}
 
@@ -345,7 +316,7 @@ export default function UsersRoles() {
               {!usersLoading && !usersError && users.length > 0 && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-muted text-xs text-muted-foreground">
+                    <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
                       <tr>
                         <th className="px-5 py-2.5 font-medium">Name</th>
 
@@ -360,12 +331,26 @@ export default function UsersRoles() {
                     </thead>
 
                     <tbody className="divide-y divide-border">
-                      {users.map((user) => (
+                      {visibleUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-muted/50">
                           {/* NAME */}
 
                           <td className="px-5 py-2.5 font-medium text-foreground">
-                            {user.name || 'Unnamed User'}
+                            <span className="flex items-center gap-3">
+                              <span
+                                aria-hidden="true"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-muted text-xs font-semibold text-primary"
+                              >
+                                {(user.name || user.email || '?')
+                                  .split(/\s+/)
+                                  .filter(Boolean)
+                                  .slice(0, 2)
+                                  .map((part) => part[0]?.toUpperCase() ?? '')
+                                  .join('')}
+                              </span>
+
+                              <span className="truncate">{user.name || 'Unnamed User'}</span>
+                            </span>
                           </td>
 
                           {/* EMAIL */}
@@ -375,19 +360,19 @@ export default function UsersRoles() {
                           {/* ROLE */}
 
                           <td className="px-5 py-2.5">
-                            <Badge tone="brand">{user.role?.name || 'No Role'}</Badge>
+                            <StatusPill tone="info">{user.role?.name || 'No role'}</StatusPill>
                           </td>
 
                           {/* STATUS */}
 
                           <td className="px-5 py-2.5">
-                            <Badge tone={user.status === 'ACTIVE' ? undefined : 'danger'}>
+                            <StatusPill tone={user.status === 'ACTIVE' ? 'ok' : 'danger'}>
                               {user.status === 'ACTIVE'
                                 ? 'Active'
                                 : user.status === 'DISABLED'
                                   ? 'Disabled'
                                   : user.status || 'Disabled'}
-                            </Badge>
+                            </StatusPill>
                           </td>
 
                           {/* ACTIONS */}
@@ -427,6 +412,13 @@ export default function UsersRoles() {
                           </td>
                         </tr>
                       ))}
+                      {visibleUsers.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                            No users match &ldquo;{userSearch}&rdquo;.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -438,7 +430,6 @@ export default function UsersRoles() {
               ROLES TAB
           ==================================================== */}
 
-          {activeTab === 'roles' && <PermissionsWorkspace canManage={canManageRoles} />}
         </Card>
       </div>
 

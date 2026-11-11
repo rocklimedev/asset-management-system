@@ -1,12 +1,5 @@
-import {
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Min,
-} from "class-validator";
-import { Type } from "class-transformer";
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class AssetPoolQueryDto {
   @IsOptional()
@@ -14,8 +7,8 @@ export class AssetPoolQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(["HARDWARE", "SOFTWARE"])
-  kind?: "HARDWARE" | "SOFTWARE";
+  @IsIn(['HARDWARE', 'SOFTWARE'])
+  kind?: 'HARDWARE' | 'SOFTWARE';
 
   @IsOptional()
   @IsUUID()

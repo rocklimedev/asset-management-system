@@ -754,7 +754,7 @@ export default function Inventory() {
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
-          title="All Assets"
+          title="Inventory"
           description="Everything you own in one list. Select an item to see who has it and its history."
         />
 
@@ -1062,7 +1062,7 @@ export default function Inventory() {
 
                       <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
                         {asset.assignments?.[0]?.system
-                          ? `System: ${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? 'Unassigned'}`
+                          ? `${asset.assignments[0].system.systemTag} · ${asset.assignments[0].system.employee?.name ?? 'Unassigned'}`
                           : (assignee?.name ?? (asset.status === 'AVAILABLE' ? 'In stock' : '—'))}
                       </td>
 

@@ -7,35 +7,35 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Asset } from "./asset.model";
+import { Asset } from './asset.model';
 
 export enum SoftwareUsageStatus {
-  ACTIVE = "ACTIVE",
-  OCCASIONAL = "OCCASIONAL",
-  RARE = "RARE",
-  UNUSED = "UNUSED",
-  NOT_IN_USE = "NOT_IN_USE",
-  TRIAL = "TRIAL",
-  NOT_INSTALLED = "NOT_INSTALLED",
-  UNKNOWN = "UNKNOWN",
+  ACTIVE = 'ACTIVE',
+  OCCASIONAL = 'OCCASIONAL',
+  RARE = 'RARE',
+  UNUSED = 'UNUSED',
+  NOT_IN_USE = 'NOT_IN_USE',
+  TRIAL = 'TRIAL',
+  NOT_INSTALLED = 'NOT_INSTALLED',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum SoftwareSubscriptionType {
-  OPENSOURCE = "OPENSOURCE",
-  FREE = "FREE",
-  SUBSCRIPTION = "SUBSCRIPTION",
-  COMPANY_PAID = "COMPANY_PAID",
-  COMPANY_LICENSE = "COMPANY_LICENSE",
-  PERPETUAL_LICENSE = "PERPETUAL_LICENSE",
-  TRIAL = "TRIAL",
-  NO_LICENSE_REQUIRED = "NO_LICENSE_REQUIRED",
-  UNKNOWN = "UNKNOWN",
+  OPENSOURCE = 'OPENSOURCE',
+  FREE = 'FREE',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  COMPANY_PAID = 'COMPANY_PAID',
+  COMPANY_LICENSE = 'COMPANY_LICENSE',
+  PERPETUAL_LICENSE = 'PERPETUAL_LICENSE',
+  TRIAL = 'TRIAL',
+  NO_LICENSE_REQUIRED = 'NO_LICENSE_REQUIRED',
+  UNKNOWN = 'UNKNOWN',
 }
 
 @Table({
-  tableName: "software_assets",
+  tableName: 'software_assets',
   timestamps: true,
 })
 export class SoftwareAsset extends Model<SoftwareAsset> {
@@ -60,14 +60,14 @@ export class SoftwareAsset extends Model<SoftwareAsset> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
     unique: true,
   })
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    targetKey: "id",
+    foreignKey: 'assetId',
+    targetKey: 'id',
   })
   asset!: Asset;
 
@@ -79,7 +79,7 @@ export class SoftwareAsset extends Model<SoftwareAsset> {
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    field: "parent_software",
+    field: 'parent_software',
   })
   parentSoftware?: string | null;
 
@@ -91,7 +91,7 @@ export class SoftwareAsset extends Model<SoftwareAsset> {
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    field: "publisher",
+    field: 'publisher',
   })
   publisher?: string | null;
 
@@ -116,7 +116,7 @@ export class SoftwareAsset extends Model<SoftwareAsset> {
     type: DataType.ENUM(...Object.values(SoftwareSubscriptionType)),
     allowNull: false,
     defaultValue: SoftwareSubscriptionType.UNKNOWN,
-    field: "subscription_type",
+    field: 'subscription_type',
   })
   subscriptionType!: SoftwareSubscriptionType;
 

@@ -69,6 +69,8 @@ import EmployeeFormModal, {
   getEmptyEmployeeForm,
 } from '../components/asset-manager/EmployeeFormModal';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ListToolbar, StatusPill, TablePagination } from '../components/list';
+import type { PillTone } from '../components/list';
 import { toast } from '@/components/ui/toast';
 import { RowActions } from '@/components/ui/row-actions';
 import { useConfirm } from '@/components/ui/confirm-dialog';
@@ -174,13 +176,22 @@ const normalizeEmployees = (
 // STATUS BADGE
 // ============================================================
 
-const StatusBadge = ({ status }: { status?: EmployeeStatus }) => {
-  return (
-    <Badge variant="outline" className={getStatusClass(status)}>
-      {getStatusLabel(status)}
-    </Badge>
-  );
+const statusTone = (status?: EmployeeStatus): PillTone => {
+  switch (status) {
+    case 'ACTIVE':
+      return 'ok';
+    case 'ON_LEAVE':
+      return 'warn';
+    case 'EXITED':
+      return 'danger';
+    default:
+      return 'neutral';
+  }
 };
+
+const StatusBadge = ({ status }: { status?: EmployeeStatus }) => (
+  <StatusPill tone={statusTone(status)}>{getStatusLabel(status)}</StatusPill>
+);
 
 // ============================================================
 // SUMMARY CARD
@@ -582,12 +593,17 @@ const EmployeeList: React.FC = () => {
       {/* TABLE */}
 
       <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <CardTitle className="text-base">Employee Directory</CardTitle>
+        <div className="flex flex-col gap-3 border-b border-border p-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground">Employee directory</h2>
 
-            <div className="flex flex-wrap gap-2">
-              {/* SEARCH */}
+            <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+              {total}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+{/* SEARCH */}
 
               <div className="relative w-full sm:w-[280px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -656,15 +672,14 @@ const EmployeeList: React.FC = () => {
                 </SelectContent>
               </Select>
 
-              {hasFilters && (
-                <Button variant="ghost" onClick={clearFilters}>
-                  <X className="mr-2 h-4 w-4" />
-                  Clear
-                </Button>
-              )}
-            </div>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1.5 h-4 w-4" />
+                Clear filters
+              </Button>
+            )}
           </div>
-        </CardHeader>
+        </div>
 
         <CardContent className="p-0">
           {isError ? (
@@ -829,44 +844,14 @@ const EmployeeList: React.FC = () => {
                 </Table>
               </div>
 
-              {/* PAGINATION */}
-
-              <div className="flex items-center justify-between border-t px-4 py-3">
-                <p className="text-sm text-muted-foreground">
-                  {total > 0
-                    ? `Showing ${(currentPage - 1) * pageSize + 1}–${Math.min(
-                        currentPage * pageSize,
-                        total,
-                      )} of ${total}`
-                    : '0 employees'}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!canPrevious}
-                    onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  >
-                    <ChevronLeft className="mr-1 h-4 w-4" />
-                    Previous
-                  </Button>
-
-                  <span className="px-2 text-sm text-muted-foreground">
-                    {currentPage} / {Math.max(totalPages, 1)}
-                  </span>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!canNext}
-                    onClick={() => setPage((current) => current + 1)}
-                  >
-                    Next
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              <TablePagination
+                page={currentPage}
+                pageSize={pageSize}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                noun="employees"
+              />
             </>
           )}
         </CardContent>

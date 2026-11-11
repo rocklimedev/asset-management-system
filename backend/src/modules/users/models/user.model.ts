@@ -8,20 +8,20 @@ import {
   HasMany,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Role } from "@/modules/roles/models/role.model";
-import { Employee } from "@/modules/organisation/models/employees.model";
-import { AuditLog } from "@/modules/audit/models/audit-log.model";
-import { AssetTransfer } from "@/modules/assets/models/asset-transfer.model";
+import { Role } from '@/modules/roles/models/role.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
+import { AuditLog } from '@/modules/audit/models/audit-log.model';
+import { AssetTransfer } from '@/modules/assets/models/asset-transfer.model';
 
 export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  DISABLED = "DISABLED",
+  ACTIVE = 'ACTIVE',
+  DISABLED = 'DISABLED',
 }
 
 @Table({
-  tableName: "users",
+  tableName: 'users',
   timestamps: true,
 })
 export class User extends Model<User> {
@@ -77,12 +77,12 @@ export class User extends Model<User> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "role_id",
+    field: 'role_id',
   })
   roleId!: string;
 
   @BelongsTo(() => Role, {
-    foreignKey: "role_id",
+    foreignKey: 'role_id',
   })
   role!: Role;
 
@@ -107,12 +107,12 @@ export class User extends Model<User> {
     type: DataType.CHAR(36),
     allowNull: true,
     unique: true,
-    field: "employee_id",
+    field: 'employee_id',
   })
   employeeId?: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "employee_id",
+    foreignKey: 'employee_id',
   })
   employee?: Employee;
 
@@ -121,7 +121,7 @@ export class User extends Model<User> {
   // ============================================================
 
   @HasMany(() => AuditLog, {
-    foreignKey: "user_id",
+    foreignKey: 'user_id',
   })
   auditLogs!: AuditLog[];
 
@@ -130,7 +130,7 @@ export class User extends Model<User> {
   // ============================================================
 
   @HasMany(() => AssetTransfer, {
-    foreignKey: "approved_by_id",
+    foreignKey: 'approved_by_id',
   })
   approvals!: AssetTransfer[];
 
@@ -139,7 +139,7 @@ export class User extends Model<User> {
   // ============================================================
 
   @HasMany(() => AssetTransfer, {
-    foreignKey: "requested_by_id",
+    foreignKey: 'requested_by_id',
   })
   requested!: AssetTransfer[];
 }

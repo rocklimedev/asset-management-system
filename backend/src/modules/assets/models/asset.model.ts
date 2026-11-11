@@ -9,47 +9,47 @@ import {
   HasMany,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Organisation } from "@/modules/organisation/models/organisation.model";
-import { Location } from "@/modules/organisation/models/location.model";
-import { SoftwareDetails } from "./software-details.model";
-import { AssetKind } from "@/common/enums/assets.enums";
+import { Organisation } from '@/modules/organisation/models/organisation.model';
+import { Location } from '@/modules/organisation/models/location.model';
+import { SoftwareDetails } from './software-details.model';
+import { AssetKind } from '@/common/enums/assets.enums';
 
-import { AssetCategory } from "./asset-category.model";
-import { Vendor } from "./vendor.model";
-import { SoftwareLicense } from "./software-license.model";
-import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
-import { AssetAssignment } from "./asset-assignment.model";
-import { AssetTransfer } from "./asset-transfer.model";
-import { AssetHistory } from "./asset-history.model";
-import { InventoryHistory } from "./inventory-history.model";
-import { AssetUnit } from "./asset-unit.model";
+import { AssetCategory } from './asset-category.model';
+import { Vendor } from './vendor.model';
+import { SoftwareLicense } from './software-license.model';
+import { SoftwareLicenseAssignment } from './software-license-assignment.model';
+import { AssetAssignment } from './asset-assignment.model';
+import { AssetTransfer } from './asset-transfer.model';
+import { AssetHistory } from './asset-history.model';
+import { InventoryHistory } from './inventory-history.model';
+import { AssetUnit } from './asset-unit.model';
 
 export enum AssetStatus {
-  AVAILABLE = "AVAILABLE",
-  ASSIGNED = "ASSIGNED",
-  REPAIR = "REPAIR",
-  LOST = "LOST",
-  DAMAGED = "DAMAGED",
-  RETIRED = "RETIRED",
-  DISPOSED = "DISPOSED",
+  AVAILABLE = 'AVAILABLE',
+  ASSIGNED = 'ASSIGNED',
+  REPAIR = 'REPAIR',
+  LOST = 'LOST',
+  DAMAGED = 'DAMAGED',
+  RETIRED = 'RETIRED',
+  DISPOSED = 'DISPOSED',
 }
 
 export enum AssetTrackingMode {
-  INDIVIDUAL = "INDIVIDUAL",
-  QUANTITY = "QUANTITY",
+  INDIVIDUAL = 'INDIVIDUAL',
+  QUANTITY = 'QUANTITY',
 }
 
 export enum AssetCondition {
-  NEW = "NEW",
-  GOOD = "GOOD",
-  FAIR = "FAIR",
-  POOR = "POOR",
+  NEW = 'NEW',
+  GOOD = 'GOOD',
+  FAIR = 'FAIR',
+  POOR = 'POOR',
 }
 
 @Table({
-  tableName: "assets",
+  tableName: 'assets',
   timestamps: true,
 })
 export class Asset extends Model<Asset> {
@@ -106,12 +106,12 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "organisation_id",
+    field: 'organisation_id',
   })
   organisationId!: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisationId",
+    foreignKey: 'organisationId',
   })
   organisation?: Organisation;
 
@@ -124,12 +124,12 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "category_id",
+    field: 'category_id',
   })
   categoryId!: string;
 
   @BelongsTo(() => AssetCategory, {
-    foreignKey: "categoryId",
+    foreignKey: 'categoryId',
   })
   category?: AssetCategory;
 
@@ -193,12 +193,12 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "vendor_id",
+    field: 'vendor_id',
   })
   vendorId?: string | null;
 
   @BelongsTo(() => Vendor, {
-    foreignKey: "vendorId",
+    foreignKey: 'vendorId',
   })
   vendor?: Vendor;
 
@@ -269,12 +269,12 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "location_id",
+    field: 'location_id',
   })
   locationId?: string | null;
 
   @BelongsTo(() => Location, {
-    foreignKey: "locationId",
+    foreignKey: 'locationId',
   })
   location?: Location;
 
@@ -325,7 +325,7 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    field: "reorder_level",
+    field: 'reorder_level',
   })
   reorderLevel?: number | null;
 
@@ -336,14 +336,14 @@ export class Asset extends Model<Asset> {
   @Column({
     type: DataType.STRING(500),
     allowNull: true,
-    field: "image_key",
+    field: 'image_key',
   })
   imageKey?: string | null;
 
   @Column({
     type: DataType.STRING(1000),
     allowNull: true,
-    field: "image_url",
+    field: 'image_url',
   })
   imageUrl?: string | null;
 
@@ -356,7 +356,7 @@ export class Asset extends Model<Asset> {
     type: DataType.ENUM(...Object.values(AssetTrackingMode)),
     allowNull: false,
     defaultValue: AssetTrackingMode.QUANTITY,
-    field: "tracking_mode",
+    field: 'tracking_mode',
   })
   trackingMode!: AssetTrackingMode;
 
@@ -368,7 +368,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => AssetUnit, {
-    foreignKey: "assetId",
+    foreignKey: 'assetId',
   })
   units?: AssetUnit[];
 
@@ -377,7 +377,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "assetId",
+    foreignKey: 'assetId',
   })
   assignments?: AssetAssignment[];
 
@@ -386,7 +386,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => AssetTransfer, {
-    foreignKey: "asset_id",
+    foreignKey: 'asset_id',
   })
   transfers?: AssetTransfer[];
 
@@ -399,17 +399,17 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasOne(() => SoftwareDetails, {
-    foreignKey: "assetId",
+    foreignKey: 'assetId',
   })
   software?: SoftwareDetails;
 
   @HasMany(() => SoftwareLicense, {
-    foreignKey: "assetId",
+    foreignKey: 'assetId',
   })
   licenses?: SoftwareLicense[];
 
   @HasMany(() => SoftwareLicenseAssignment, {
-    foreignKey: "assetId",
+    foreignKey: 'assetId',
   })
   installations?: SoftwareLicenseAssignment[];
 
@@ -418,7 +418,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => AssetHistory, {
-    foreignKey: "asset_id",
+    foreignKey: 'asset_id',
   })
   history?: AssetHistory[];
 
@@ -427,7 +427,7 @@ export class Asset extends Model<Asset> {
   // ============================================================
 
   @HasMany(() => InventoryHistory, {
-    foreignKey: "asset_id",
+    foreignKey: 'asset_id',
   })
   inventoryHistory?: InventoryHistory[];
 }

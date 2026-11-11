@@ -8,33 +8,33 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
   NonAttribute,
-} from "sequelize";
+} from 'sequelize';
 
-import { SoftwareLicense } from "./software-license.model";
-import { Asset } from "./asset.model";
-import { System } from "./system.model";
+import { SoftwareLicense } from './software-license.model';
+import { Asset } from './asset.model';
+import { System } from './system.model';
 
 export enum SoftwareInstallationStatus {
-  INSTALLED = "INSTALLED",
-  NOT_INSTALLED = "NOT_INSTALLED",
-  UNINSTALLED = "UNINSTALLED",
-  BLOCKED = "BLOCKED",
-  UNKNOWN = "UNKNOWN",
+  INSTALLED = 'INSTALLED',
+  NOT_INSTALLED = 'NOT_INSTALLED',
+  UNINSTALLED = 'UNINSTALLED',
+  BLOCKED = 'BLOCKED',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum SoftwareAssignmentStatus {
-  ACTIVE = "ACTIVE",
-  REMOVED = "REMOVED",
+  ACTIVE = 'ACTIVE',
+  REMOVED = 'REMOVED',
 }
 
 @Table({
-  tableName: "software_license_assignments",
+  tableName: 'software_license_assignments',
   timestamps: true,
 })
 export class SoftwareLicenseAssignment extends Model<
@@ -50,22 +50,22 @@ export class SoftwareLicenseAssignment extends Model<
 
   @Index
   @ForeignKey(() => Asset)
-  @Column({ type: DataType.CHAR(36), allowNull: false, field: "asset_id" })
+  @Column({ type: DataType.CHAR(36), allowNull: false, field: 'asset_id' })
   declare assetId: string;
 
-  @BelongsTo(() => Asset, { foreignKey: "assetId", targetKey: "id" })
+  @BelongsTo(() => Asset, { foreignKey: 'assetId', targetKey: 'id' })
   declare asset?: NonAttribute<Asset>;
 
   // ---------------- LICENSE ----------------
 
   @Index
   @ForeignKey(() => SoftwareLicense)
-  @Column({ type: DataType.CHAR(36), allowNull: true, field: "license_id" })
+  @Column({ type: DataType.CHAR(36), allowNull: true, field: 'license_id' })
   declare licenseId: CreationOptional<string | null>;
 
   @BelongsTo(() => SoftwareLicense, {
-    foreignKey: "licenseId",
-    targetKey: "id",
+    foreignKey: 'licenseId',
+    targetKey: 'id',
   })
   declare license?: NonAttribute<SoftwareLicense>;
 
@@ -73,10 +73,10 @@ export class SoftwareLicenseAssignment extends Model<
 
   @Index
   @ForeignKey(() => System)
-  @Column({ type: DataType.CHAR(36), allowNull: false, field: "system_id" })
+  @Column({ type: DataType.CHAR(36), allowNull: false, field: 'system_id' })
   declare systemId: string;
 
-  @BelongsTo(() => System, { foreignKey: "systemId", targetKey: "id" })
+  @BelongsTo(() => System, { foreignKey: 'systemId', targetKey: 'id' })
   declare system?: NonAttribute<System>;
 
   // ---------------- STATUSES ----------------
@@ -86,7 +86,7 @@ export class SoftwareLicenseAssignment extends Model<
     type: DataType.ENUM(...Object.values(SoftwareInstallationStatus)),
     allowNull: false,
     defaultValue: SoftwareInstallationStatus.INSTALLED,
-    field: "installation_status",
+    field: 'installation_status',
   })
   declare installationStatus: CreationOptional<SoftwareInstallationStatus>;
 
@@ -95,7 +95,7 @@ export class SoftwareLicenseAssignment extends Model<
     type: DataType.ENUM(...Object.values(SoftwareAssignmentStatus)),
     allowNull: false,
     defaultValue: SoftwareAssignmentStatus.ACTIVE,
-    field: "assignment_status",
+    field: 'assignment_status',
   })
   declare assignmentStatus: CreationOptional<SoftwareAssignmentStatus>;
 
@@ -104,10 +104,10 @@ export class SoftwareLicenseAssignment extends Model<
   @Column({ type: DataType.STRING(100), allowNull: true })
   declare version: CreationOptional<string | null>;
 
-  @Column({ type: DataType.DATE, allowNull: true, field: "installed_at" })
+  @Column({ type: DataType.DATE, allowNull: true, field: 'installed_at' })
   declare installedAt: CreationOptional<Date | null>;
 
-  @Column({ type: DataType.DATE, allowNull: true, field: "removed_at" })
+  @Column({ type: DataType.DATE, allowNull: true, field: 'removed_at' })
   declare removedAt: CreationOptional<Date | null>;
 
   @Column({ type: DataType.TEXT, allowNull: true })

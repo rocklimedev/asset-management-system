@@ -7,22 +7,22 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Asset } from "./asset.model";
-import { Employee } from "@/modules/organisation/models/employees.model";
-import { User } from "@/modules/users/models/user.model";
+import { Asset } from './asset.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
+import { User } from '@/modules/users/models/user.model';
 
 export enum TransferStatus {
-  PENDING = "PENDING",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 @Table({
-  tableName: "asset_transfers",
+  tableName: 'asset_transfers',
   timestamps: true,
 })
 export class AssetTransfer extends Model<AssetTransfer> {
@@ -47,12 +47,12 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "asset_id",
+    foreignKey: 'asset_id',
   })
   asset!: Asset;
 
@@ -65,12 +65,12 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "from_employee_id",
+    field: 'from_employee_id',
   })
   fromEmployeeId?: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "from_employee_id",
+    foreignKey: 'from_employee_id',
   })
   fromEmployee?: Employee;
 
@@ -83,12 +83,12 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "to_employee_id",
+    field: 'to_employee_id',
   })
   toEmployeeId!: string;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "to_employee_id",
+    foreignKey: 'to_employee_id',
   })
   toEmployee!: Employee;
 
@@ -101,12 +101,12 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "requested_by_id",
+    field: 'requested_by_id',
   })
   requestedById!: string;
 
   @BelongsTo(() => User, {
-    foreignKey: "requested_by_id",
+    foreignKey: 'requested_by_id',
   })
   requestedBy!: User;
 
@@ -119,12 +119,12 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "approved_by_id",
+    field: 'approved_by_id',
   })
   approvedById?: string | null;
 
   @BelongsTo(() => User, {
-    foreignKey: "approved_by_id",
+    foreignKey: 'approved_by_id',
   })
   approvedBy?: User;
 
@@ -137,7 +137,7 @@ export class AssetTransfer extends Model<AssetTransfer> {
     type: DataType.ENUM(...Object.values(TransferStatus)),
     allowNull: false,
     defaultValue: TransferStatus.COMPLETED,
-    field: "status",
+    field: 'status',
   })
   status!: TransferStatus;
 
@@ -148,7 +148,7 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    field: "reason",
+    field: 'reason',
   })
   reason?: string | null;
 
@@ -159,7 +159,7 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    field: "notes",
+    field: 'notes',
   })
   notes?: string | null;
 
@@ -170,7 +170,7 @@ export class AssetTransfer extends Model<AssetTransfer> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: "approvedAt",
+    field: 'approvedAt',
   })
   approvedAt?: Date | null;
 }

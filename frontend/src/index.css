@@ -9,7 +9,7 @@
      • brand blue #0061ff (the theme colour of spsyndicate.com)
        is the one action colour; everything else stays quiet
      • crisp white cards on a cool, near-white canvas
-     • deep navy sidebar anchors the layout in both themes
+     • sidebar follows the selected light or dark theme
      • flat, border-led surfaces: depth is a hairline and a
        soft single shadow, never a dual light/dark bevel
      • 10px radius on cards and controls, pill badges
@@ -61,6 +61,8 @@
      Canvas is a cool off-white. Cards are pure white and
      separated from it by a border, not a bevel.
   ---------------------------------------------------------- */
+
+  color-scheme: light;
 
   --background: 216 33% 97%;
   --foreground: 222 40% 11%;
@@ -136,19 +138,19 @@
   --scrim-opacity: 0.5;
 
   /* ----------------------------------------------------------
-     SIDEBAR — deep navy in both themes. The active item uses
+     SIDEBAR — light surface by default. The active item uses
      the full brand blue so the current location is unmissable.
   ---------------------------------------------------------- */
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 217 30% 80%;
-  --sidebar-strong: 0 0% 100%;
-  --sidebar-muted: 218 20% 66%;
-  --sidebar-border: 222 36% 19%;
-  --sidebar-hover: 222 40% 16%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 219 15% 36%;
+  --sidebar-strong: 222 38% 12%;
+  --sidebar-muted: 219 15% 36%;
+  --sidebar-border: 217 22% 87%;
+  --sidebar-hover: 216 30% 96%;
   --sidebar-accent: var(--brand-600);
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: var(--brand-300);
+  --sidebar-ring: var(--brand-600);
   --sidebar-indicator: 0 0% 100%;
 
   /* ----------------------------------------------------------
@@ -193,7 +195,7 @@
      SHAPE
   ---------------------------------------------------------- */
 
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 }
 
 /* ============================================================
@@ -201,17 +203,22 @@
 ============================================================ */
 
 .dark {
-  --background: 222 40% 7%;
-  --foreground: 216 30% 95%;
+  /* Charcoal with a cool undertone, so it sits well beside the navy
+     sidebar and the brand blue. Cards lift off the canvas by value,
+     not by shadow. */
+  color-scheme: dark;
 
-  --card: 222 34% 10%;
-  --card-foreground: 216 30% 95%;
+  --background: 222 14% 8%;
+  --foreground: 210 20% 96%;
 
-  --popover: 222 32% 12%;
-  --popover-foreground: 216 30% 95%;
+  --card: 222 12% 11%;
+  --card-foreground: 210 20% 96%;
 
-  --muted: 222 28% 15%;
-  --muted-foreground: 218 14% 70%;
+  --popover: 222 12% 13%;
+  --popover-foreground: 210 20% 96%;
+
+  --muted: 222 10% 16%;
+  --muted-foreground: 218 10% 66%;
 
   --accent: var(--brand-900);
   --accent-foreground: var(--brand-100);
@@ -224,9 +231,9 @@
   --primary-muted: var(--brand-900);
   --primary-border: var(--brand-700);
 
-  --secondary: 222 26% 18%;
-  --secondary-foreground: 216 30% 95%;
-  --secondary-hover: 222 24% 22%;
+  --secondary: 222 10% 19%;
+  --secondary-foreground: 210 20% 96%;
+  --secondary-hover: 222 10% 23%;
 
   --success: 152 52% 50%;
   --success-foreground: var(--neutral-950);
@@ -253,8 +260,8 @@
   --info-strong: 188 80% 76%;
   --info-border: 190 40% 26%;
 
-  --border: 222 24% 19%;
-  --input: 220 14% 44%;
+  --border: 222 10% 20%;
+  --input: 220 10% 44%;
   --ring: var(--brand-400);
 
   --scrim: 222 50% 3%;
@@ -278,8 +285,8 @@
   --chart-5: 262 70% 74%;
   --chart-6: 188 72% 56%;
 
-  --chart-grid: 222 24% 19%;
-  --chart-axis: 220 10% 46%;
+  --chart-grid: 222 10% 20%;
+  --chart-axis: 220 8% 50%;
 
   --shadow-lo: 224 80% 2%;
 
@@ -294,6 +301,7 @@
     0 6px 16px -6px hsl(var(--shadow-lo) / 0.50);
 }
 
+/* ============================================================
 /* ============================================================
    BASE
 ============================================================ */

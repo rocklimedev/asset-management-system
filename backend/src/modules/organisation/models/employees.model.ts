@@ -1,4 +1,4 @@
-import { System } from "@/modules/assets/models/system.model";
+import { System } from '@/modules/assets/models/system.model';
 import {
   Table,
   Column,
@@ -10,25 +10,25 @@ import {
   HasOne,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Organisation } from "./organisation.model";
-import { Department } from "./department.model";
-import { Location } from "./location.model";
+import { Organisation } from './organisation.model';
+import { Department } from './department.model';
+import { Location } from './location.model';
 
-import { AssetAssignment } from "@/modules/assets/models/asset-assignment.model";
-import { AssetTransfer } from "@/modules/assets/models/asset-transfer.model";
-import { User } from "@/modules/users/models/user.model";
+import { AssetAssignment } from '@/modules/assets/models/asset-assignment.model';
+import { AssetTransfer } from '@/modules/assets/models/asset-transfer.model';
+import { User } from '@/modules/users/models/user.model';
 
 export enum EmployeeStatus {
-  ACTIVE = "ACTIVE",
-  ON_LEAVE = "ON_LEAVE",
-  INACTIVE = "INACTIVE",
-  EXITED = "EXITED",
+  ACTIVE = 'ACTIVE',
+  ON_LEAVE = 'ON_LEAVE',
+  INACTIVE = 'INACTIVE',
+  EXITED = 'EXITED',
 }
 
 @Table({
-  tableName: "employees",
+  tableName: 'employees',
   timestamps: true,
   paranoid: true,
 })
@@ -106,12 +106,12 @@ export class Employee extends Model<Employee> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "organisation_id",
+    field: 'organisation_id',
   })
   organisationId?: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   organisation?: Organisation;
 
@@ -123,12 +123,12 @@ export class Employee extends Model<Employee> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "department_id",
+    field: 'department_id',
   })
   departmentId?: string | null;
 
   @BelongsTo(() => Department, {
-    foreignKey: "department_id",
+    foreignKey: 'department_id',
   })
   department?: Department;
   // ============================================================
@@ -150,12 +150,12 @@ export class Employee extends Model<Employee> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "manager_id",
+    field: 'manager_id',
   })
   managerId?: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "manager_id",
+    foreignKey: 'manager_id',
   })
   manager?: Employee;
 
@@ -164,7 +164,7 @@ export class Employee extends Model<Employee> {
   // ============================================================
 
   @HasMany(() => Employee, {
-    foreignKey: "manager_id",
+    foreignKey: 'manager_id',
   })
   reports!: Employee[];
 
@@ -177,12 +177,12 @@ export class Employee extends Model<Employee> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "location_id",
+    field: 'location_id',
   })
   locationId?: string | null;
 
   @BelongsTo(() => Location, {
-    foreignKey: "location_id",
+    foreignKey: 'location_id',
   })
   location?: Location;
 
@@ -213,11 +213,11 @@ export class Employee extends Model<Employee> {
   // ============================================================
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "employeeId",
+    foreignKey: 'employeeId',
   })
   assignments!: AssetAssignment[];
 
-  @HasMany(() => System, "employeeId")
+  @HasMany(() => System, 'employeeId')
   systems?: System[];
 
   // ============================================================
@@ -225,7 +225,7 @@ export class Employee extends Model<Employee> {
   // ============================================================
 
   @HasMany(() => AssetTransfer, {
-    foreignKey: "from_employee_id",
+    foreignKey: 'from_employee_id',
   })
   transfersFrom!: AssetTransfer[];
 
@@ -234,7 +234,7 @@ export class Employee extends Model<Employee> {
   // ============================================================
 
   @HasMany(() => AssetTransfer, {
-    foreignKey: "to_employee_id",
+    foreignKey: 'to_employee_id',
   })
   transfersTo!: AssetTransfer[];
 

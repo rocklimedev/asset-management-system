@@ -1,18 +1,9 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 
-import { AssetCategoryService } from "./asset-category.service";
-import { AssetKind } from "./models/asset-category.model";
+import { AssetCategoryService } from './asset-category.service';
+import { AssetKind } from './models/asset-category.model';
 
-@Controller("asset-categories")
+@Controller('asset-categories')
 export class AssetCategoryController {
   constructor(private readonly assetCategoryService: AssetCategoryService) {}
 
@@ -42,15 +33,15 @@ export class AssetCategoryController {
 
   @Get()
   async findAll(
-    @Query("organisationId") organisationId?: string,
-    @Query("type") type?: AssetKind,
-    @Query("isActive") isActive?: string,
+    @Query('organisationId') organisationId?: string,
+    @Query('type') type?: AssetKind,
+    @Query('isActive') isActive?: string,
   ) {
     let parsedIsActive: boolean | undefined;
 
-    if (isActive === "true") {
+    if (isActive === 'true') {
       parsedIsActive = true;
-    } else if (isActive === "false") {
+    } else if (isActive === 'false') {
       parsedIsActive = false;
     }
 
@@ -66,8 +57,8 @@ export class AssetCategoryController {
   // GET /asset-categories/:id
   // ============================================================
 
-  @Get(":id")
-  async findOne(@Param("id") id: string) {
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
     return this.assetCategoryService.findOne(id);
   }
 
@@ -76,9 +67,9 @@ export class AssetCategoryController {
   // PATCH /asset-categories/:id
   // ============================================================
 
-  @Patch(":id")
+  @Patch(':id')
   async update(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @Body()
     body: {
       name?: string;
@@ -95,8 +86,8 @@ export class AssetCategoryController {
   // PATCH /asset-categories/:id/toggle-active
   // ============================================================
 
-  @Patch(":id/toggle-active")
-  async toggleActive(@Param("id") id: string) {
+  @Patch(':id/toggle-active')
+  async toggleActive(@Param('id') id: string) {
     return this.assetCategoryService.toggleActive(id);
   }
 
@@ -105,8 +96,8 @@ export class AssetCategoryController {
   // DELETE /asset-categories/:id
   // ============================================================
 
-  @Delete(":id")
-  async remove(@Param("id") id: string) {
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
     return this.assetCategoryService.remove(id);
   }
 }

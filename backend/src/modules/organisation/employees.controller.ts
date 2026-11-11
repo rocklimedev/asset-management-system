@@ -1,25 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 
-import { EmployeesService } from "./employees.service";
-import { CreateEmployeeDto } from "./dto/create-employee.dto";
-import { UpdateEmployeeDto } from "./dto/update-employee.dto";
+import { EmployeesService } from './employees.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
-import { RequirePermissions } from "@/common/decorator/roles.decorator";
-import {
-  CurrentUser,
-  AuthUser,
-} from "@/common/decorator/current-user.decorator";
+import { RequirePermissions } from '@/common/decorator/roles.decorator';
+import { CurrentUser, AuthUser } from '@/common/decorator/current-user.decorator';
 
-@Controller("employees")
+@Controller('employees')
 export class EmployeesController {
   constructor(private readonly service: EmployeesService) {}
 
@@ -29,11 +17,11 @@ export class EmployeesController {
 
   @Get()
   findAll(
-    @Query("search") search?: string,
-    @Query("organisationId") organisationId?: string,
-    @Query("departmentId") departmentId?: string,
-    @Query("status") status?: string,
-    @Query("page") page?: string,
+    @Query('search') search?: string,
+    @Query('organisationId') organisationId?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
   ) {
     return this.service.findAll({
       search,
@@ -48,8 +36,8 @@ export class EmployeesController {
   // GET SINGLE EMPLOYEE
   // ============================================================
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
@@ -66,12 +54,8 @@ export class EmployeesController {
   // UPDATE EMPLOYEE
   // ============================================================
 
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() dto: UpdateEmployeeDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateEmployeeDto, @CurrentUser() user: AuthUser) {
     return this.service.update(id, dto, user);
   }
 
@@ -79,14 +63,14 @@ export class EmployeesController {
   // REMOVE / EXIT EMPLOYEE
   // ============================================================
 
-  @Delete(":id/record")
-  @RequirePermissions("assets:write")
-  deleteRecord(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+  @Delete(':id/record')
+  @RequirePermissions('assets:write')
+  deleteRecord(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.deleteRecord(id, user);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+  @Delete(':id')
+  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user);
   }
 }

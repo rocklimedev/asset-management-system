@@ -1,13 +1,6 @@
-import {
-  IsDateString,
-  IsEmail,
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from "class-validator";
+import { IsDateString, IsEmail, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
-import { Employee, EmployeeStatus } from "../models/employees.model";
+import { Employee, EmployeeStatus } from '../models/employees.model';
 
 export class CreateEmployeeDto {
   // ----------------------------------------------------------
@@ -36,11 +29,11 @@ export class CreateEmployeeDto {
   // ----------------------------------------------------------
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   organisationId?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   departmentId?: string;
 
   @IsOptional()
@@ -48,11 +41,11 @@ export class CreateEmployeeDto {
   designation?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   managerId?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string;
 
   // ----------------------------------------------------------

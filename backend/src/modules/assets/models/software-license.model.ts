@@ -9,19 +9,19 @@ import {
   HasMany,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
   NonAttribute,
-} from "sequelize";
+} from 'sequelize';
 
-import { Asset } from "./asset.model";
-import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
+import { Asset } from './asset.model';
+import { SoftwareLicenseAssignment } from './software-license-assignment.model';
 
 @Table({
-  tableName: "software_licenses",
+  tableName: 'software_licenses',
   timestamps: false,
 })
 export class SoftwareLicense extends Model<
@@ -43,13 +43,13 @@ export class SoftwareLicense extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   declare assetId: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    targetKey: "id",
+    foreignKey: 'assetId',
+    targetKey: 'id',
   })
   declare asset?: NonAttribute<Asset>;
 
@@ -120,7 +120,7 @@ export class SoftwareLicense extends Model<
   // ---------------- ASSIGNMENTS ----------------
 
   @HasMany(() => SoftwareLicenseAssignment, {
-    foreignKey: "licenseId",
+    foreignKey: 'licenseId',
   })
   declare assignments?: NonAttribute<SoftwareLicenseAssignment[]>;
 }

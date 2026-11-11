@@ -3,38 +3,25 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
+} from '@nestjs/common';
 
-import { InjectConnection, InjectModel } from "@nestjs/sequelize";
-import { Op, Transaction, WhereOptions } from "sequelize";
-import { Sequelize } from "sequelize-typescript";
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { Op, Transaction, WhereOptions } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
-import { Asset, AssetStatus } from "./models/asset.model";
-import {
-  AssetUnit,
-  AssetUnitCondition,
-  AssetUnitStatus,
-} from "./models/asset-unit.model";
+import { Asset, AssetStatus } from './models/asset.model';
+import { AssetUnit, AssetUnitCondition, AssetUnitStatus } from './models/asset-unit.model';
 
-import {
-  AssetAssignment,
-  AssignmentStatus,
-} from "./models/asset-assignment.model";
-import { AssetHistory } from "./models/asset-history.model";
-import {
-  InventoryHistory,
-  InventoryChangeType,
-} from "./models/inventory-history.model";
+import { AssetAssignment, AssignmentStatus } from './models/asset-assignment.model';
+import { AssetHistory } from './models/asset-history.model';
+import { InventoryHistory, InventoryChangeType } from './models/inventory-history.model';
 
-import {
-  Employee,
-  EmployeeStatus,
-} from "../organisation/models/employees.model";
-import { Location } from "../organisation/models/location.model";
-import { System } from "./models/system.model";
+import { Employee, EmployeeStatus } from '../organisation/models/employees.model';
+import { Location } from '../organisation/models/location.model';
+import { System } from './models/system.model';
 
-import { AuditService } from "@/modules/audit/audit.service";
-import { AuthUser } from "@/common/decorator/current-user.decorator";
+import { AuditService } from '@/modules/audit/audit.service';
+import { AuthUser } from '@/common/decorator/current-user.decorator';
 
 @Injectable()
 export class AssetUnitsService {
@@ -74,15 +61,15 @@ export class AssetUnitsService {
     return [
       {
         model: Asset,
-        as: "asset",
+        as: 'asset',
       },
       {
         model: Location,
-        as: "location",
+        as: 'location',
       },
       {
         model: AssetAssignment,
-        as: "assignments",
+        as: 'assignments',
         required: false,
         where: {
           status: AssignmentStatus.ACTIVE,
@@ -90,7 +77,7 @@ export class AssetUnitsService {
         include: [
           {
             model: Employee,
-            as: "employee",
+            as: 'employee',
           },
           {
             model: System,
@@ -145,7 +132,7 @@ export class AssetUnitsService {
 
     if (params.organisationId) {
       andConditions.push({
-        "$asset.organisationId$": params.organisationId,
+        '$asset.organisationId$': params.organisationId,
       } as WhereOptions<AssetUnit>);
     }
 
@@ -163,10 +150,10 @@ export class AssetUnitsService {
             serialNumber: like,
           },
           {
-            "$asset.name$": like,
+            '$asset.name$': like,
           },
           {
-            "$asset.assetTag$": like,
+            '$asset.assetTag$': like,
           },
         ],
       } as WhereOptions<AssetUnit>);
@@ -184,7 +171,7 @@ export class AssetUnitsService {
 
       include: this.unitInclude,
 
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
 
       limit: pageSize,
       offset: (page - 1) * pageSize,
@@ -209,11 +196,14 @@ export class AssetUnitsService {
 
   async findByAsset(assetId: string) {
     const asset = await this.assetModel.findByPk(assetId);
-    if (!asset) throw new NotFoundException("Asset not found.");
+    if (!asset) throw new NotFoundException('Asset not found.');
     return this.assetUnitModel.findAll({
       where: { assetId },
       include: this.unitInclude,
-      order: [["createdAt", "ASC"], ["id", "ASC"]],
+      order: [
+        ['createdAt', 'ASC'],
+        ['id', 'ASC'],
+      ],
     });
   }
 
@@ -223,7 +213,7 @@ export class AssetUnitsService {
     });
 
     if (!unit) {
-      throw new NotFoundException("Asset unit not found.");
+      throw new NotFoundException('Asset unit not found.');
     }
 
     return unit;
@@ -256,7 +246,7 @@ export class AssetUnitsService {
       });
 
       if (!asset) {
-        throw new NotFoundException("Asset not found.");
+        throw new NotFoundException('Asset not found.');
       }
 
       // --------------------------------------------------------
@@ -272,9 +262,7 @@ export class AssetUnitsService {
         });
 
         if (duplicate) {
-          throw new ConflictException(
-            "An asset unit with this unit code already exists.",
-          );
+          throw new ConflictException('An asset unit with this unit code already exists.');
         }
       }
 
@@ -291,9 +279,7 @@ export class AssetUnitsService {
         });
 
         if (duplicate) {
-          throw new ConflictException(
-            "An asset unit with this serial number already exists.",
-          );
+          throw new ConflictException('An asset unit with this serial number already exists.');
         }
       }
 
@@ -307,15 +293,12 @@ export class AssetUnitsService {
         });
 
         if (!location) {
-          throw new NotFoundException("Location not found.");
+          throw new NotFoundException('Location not found.');
         }
 
-        if (
-          location.organisationId !== null &&
-          location.organisationId !== asset.organisationId
-        ) {
+        if (location.organisationId !== null && location.organisationId !== asset.organisationId) {
           throw new BadRequestException(
-            "The selected location does not belong to this asset organisation.",
+            'The selected location does not belong to this asset organisation.',
           );
         }
       }
@@ -359,7 +342,7 @@ export class AssetUnitsService {
 
           assetUnitId: unit.id,
 
-          action: "UNIT_CREATED",
+          action: 'UNIT_CREATED',
 
           performedBy: actor.name,
 
@@ -378,9 +361,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_CREATED",
+          action: 'ASSET_UNIT_CREATED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: unit.id,
 
@@ -432,7 +415,7 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       const asset = await this.assetModel.findByPk(unit.assetId, {
@@ -441,7 +424,7 @@ export class AssetUnitsService {
       });
 
       if (!asset) {
-        throw new NotFoundException("Parent asset not found.");
+        throw new NotFoundException('Parent asset not found.');
       }
 
       // --------------------------------------------------------
@@ -461,9 +444,7 @@ export class AssetUnitsService {
           });
 
           if (duplicate) {
-            throw new ConflictException(
-              "An asset unit with this unit code already exists.",
-            );
+            throw new ConflictException('An asset unit with this unit code already exists.');
           }
         }
       }
@@ -472,10 +453,7 @@ export class AssetUnitsService {
       // SERIAL
       // --------------------------------------------------------
 
-      if (
-        data.serialNumber !== undefined &&
-        data.serialNumber !== unit.serialNumber
-      ) {
+      if (data.serialNumber !== undefined && data.serialNumber !== unit.serialNumber) {
         if (data.serialNumber) {
           const duplicate = await this.assetUnitModel.findOne({
             where: {
@@ -488,9 +466,7 @@ export class AssetUnitsService {
           });
 
           if (duplicate) {
-            throw new ConflictException(
-              "An asset unit with this serial number already exists.",
-            );
+            throw new ConflictException('An asset unit with this serial number already exists.');
           }
         }
       }
@@ -505,15 +481,12 @@ export class AssetUnitsService {
         });
 
         if (!location) {
-          throw new NotFoundException("Location not found.");
+          throw new NotFoundException('Location not found.');
         }
 
-        if (
-          location.organisationId !== null &&
-          location.organisationId !== asset.organisationId
-        ) {
+        if (location.organisationId !== null && location.organisationId !== asset.organisationId) {
           throw new BadRequestException(
-            "The selected location does not belong to this asset organisation.",
+            'The selected location does not belong to this asset organisation.',
           );
         }
       }
@@ -533,14 +506,12 @@ export class AssetUnitsService {
 
         if (data.status === AssetUnitStatus.AVAILABLE && activeAssignment) {
           throw new BadRequestException(
-            "Return the active assignment before marking this unit available.",
+            'Return the active assignment before marking this unit available.',
           );
         }
 
         if (data.status === AssetUnitStatus.ASSIGNED && !activeAssignment) {
-          throw new BadRequestException(
-            "Assign the unit before marking it assigned.",
-          );
+          throw new BadRequestException('Assign the unit before marking it assigned.');
         }
       }
 
@@ -561,7 +532,9 @@ export class AssetUnitsService {
 
           ...(data.deviceId !== undefined ? { deviceId: data.deviceId } : {}),
           ...(data.pcPassword ? { pcPassword: data.pcPassword } : {}),
-          ...(data.cellularIdentities !== undefined ? { cellularIdentities: data.cellularIdentities } : {}),
+          ...(data.cellularIdentities !== undefined
+            ? { cellularIdentities: data.cellularIdentities }
+            : {}),
           ...(data.serialNumber !== undefined
             ? {
                 serialNumber: data.serialNumber,
@@ -609,7 +582,7 @@ export class AssetUnitsService {
 
             assetUnitId: unit.id,
 
-            action: "UNIT_STATUS_CHANGED",
+            action: 'UNIT_STATUS_CHANGED',
 
             performedBy: actor.name,
 
@@ -623,17 +596,14 @@ export class AssetUnitsService {
         );
       }
 
-      if (
-        data.condition !== undefined &&
-        data.condition !== previousCondition
-      ) {
+      if (data.condition !== undefined && data.condition !== previousCondition) {
         await this.assetHistoryModel.create(
           {
             assetId: unit.assetId,
 
             assetUnitId: unit.id,
 
-            action: "UNIT_CONDITION_CHANGED",
+            action: 'UNIT_CONDITION_CHANGED',
 
             performedBy: actor.name,
 
@@ -651,13 +621,15 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_UPDATED",
+          action: 'ASSET_UNIT_UPDATED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: unit.id,
 
-          metadata: Object.fromEntries(Object.entries(data).filter(([key]) => key !== "pcPassword")),
+          metadata: Object.fromEntries(
+            Object.entries(data).filter(([key]) => key !== 'pcPassword'),
+          ),
         },
         t,
       );
@@ -683,7 +655,7 @@ export class AssetUnitsService {
     actor: AuthUser,
   ) {
     if (Boolean(dto.employeeId) === Boolean(dto.systemId)) {
-      throw new BadRequestException("Choose exactly one employee or system.");
+      throw new BadRequestException('Choose exactly one employee or system.');
     }
 
     return this.sequelize.transaction(async (t) => {
@@ -693,7 +665,7 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       if (
@@ -705,13 +677,11 @@ export class AssetUnitsService {
           AssetUnitStatus.DISPOSED,
         ].includes(unit.status)
       ) {
-        throw new BadRequestException(
-          `${unit.status} units cannot be assigned.`,
-        );
+        throw new BadRequestException(`${unit.status} units cannot be assigned.`);
       }
 
       if (unit.status === AssetUnitStatus.ASSIGNED) {
-        throw new BadRequestException("This unit is already assigned.");
+        throw new BadRequestException('This unit is already assigned.');
       }
 
       const employee = dto.employeeId
@@ -722,18 +692,11 @@ export class AssetUnitsService {
         : null;
 
       if (dto.employeeId && !employee) {
-        throw new NotFoundException("Employee not found.");
+        throw new NotFoundException('Employee not found.');
       }
 
-      if (
-        employee &&
-        ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(
-          employee.status,
-        )
-      ) {
-        throw new BadRequestException(
-          "Cannot assign to an inactive or exited employee.",
-        );
+      if (employee && ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(employee.status)) {
+        throw new BadRequestException('Cannot assign to an inactive or exited employee.');
       }
 
       const system = dto.systemId
@@ -744,7 +707,7 @@ export class AssetUnitsService {
         : null;
 
       if (dto.systemId && !system) {
-        throw new NotFoundException("System not found.");
+        throw new NotFoundException('System not found.');
       }
 
       const duplicate = await this.assetAssignmentModel.findOne({
@@ -766,9 +729,7 @@ export class AssetUnitsService {
       });
 
       if (duplicate) {
-        throw new ConflictException(
-          "This unit is already assigned to this target.",
-        );
+        throw new ConflictException('This unit is already assigned to this target.');
       }
 
       const assignment = await this.assetAssignmentModel.create(
@@ -807,13 +768,11 @@ export class AssetUnitsService {
 
           assetUnitId: id,
 
-          action: "UNIT_ASSIGNED",
+          action: 'UNIT_ASSIGNED',
 
           performedBy: actor.name,
 
-          toValue: system
-            ? `System: ${system.systemTag} (${system.name})`
-            : employee!.name,
+          toValue: system ? `${system.systemTag} (${system.name})` : employee!.name,
 
           notes: dto.notes ?? null,
         } as AssetHistory,
@@ -826,9 +785,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_ASSIGNED",
+          action: 'ASSET_UNIT_ASSIGNED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: id,
 
@@ -879,7 +838,7 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       const assignment = await this.assetAssignmentModel.findOne({
@@ -891,7 +850,7 @@ export class AssetUnitsService {
         include: [
           {
             model: Employee,
-            as: "employee",
+            as: 'employee',
           },
           {
             model: System,
@@ -903,7 +862,7 @@ export class AssetUnitsService {
       });
 
       if (!assignment) {
-        throw new BadRequestException("This unit is not currently assigned.");
+        throw new BadRequestException('This unit is not currently assigned.');
       }
 
       await assignment.update(
@@ -934,15 +893,15 @@ export class AssetUnitsService {
 
           assetUnitId: id,
 
-          action: "UNIT_RETURNED",
+          action: 'UNIT_RETURNED',
 
           performedBy: actor.name,
 
           fromValue: assignment.system
-            ? `System: ${assignment.system.systemTag}`
-            : (assignment.employee?.name ?? "Assigned"),
+            ? `${assignment.system.systemTag}`
+            : (assignment.employee?.name ?? 'Assigned'),
 
-          toValue: "Available",
+          toValue: 'Available',
 
           notes: notes ?? null,
         } as AssetHistory,
@@ -955,9 +914,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_RETURNED",
+          action: 'ASSET_UNIT_RETURNED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: id,
 
@@ -1000,12 +959,7 @@ export class AssetUnitsService {
   // CHANGE STATUS
   // ============================================================
 
-  async changeStatus(
-    id: string,
-    status: AssetUnitStatus,
-    actor: AuthUser,
-    notes?: string,
-  ) {
+  async changeStatus(id: string, status: AssetUnitStatus, actor: AuthUser, notes?: string) {
     return this.sequelize.transaction(async (t) => {
       const unit = await this.assetUnitModel.findByPk(id, {
         transaction: t,
@@ -1013,7 +967,7 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       if (unit.status === status) {
@@ -1030,7 +984,7 @@ export class AssetUnitsService {
 
       if (status !== AssetUnitStatus.ASSIGNED && assignment) {
         throw new BadRequestException(
-          "Return the active assignment before changing this unit to another status.",
+          'Return the active assignment before changing this unit to another status.',
         );
       }
 
@@ -1051,7 +1005,7 @@ export class AssetUnitsService {
 
           assetUnitId: unit.id,
 
-          action: "UNIT_STATUS_CHANGED",
+          action: 'UNIT_STATUS_CHANGED',
 
           performedBy: actor.name,
 
@@ -1070,9 +1024,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_STATUS_CHANGED",
+          action: 'ASSET_UNIT_STATUS_CHANGED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: unit.id,
 
@@ -1112,7 +1066,7 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       const previousCondition = unit.condition;
@@ -1136,7 +1090,7 @@ export class AssetUnitsService {
 
           assetUnitId: unit.id,
 
-          action: "UNIT_CONDITION_CHANGED",
+          action: 'UNIT_CONDITION_CHANGED',
 
           performedBy: actor.name,
 
@@ -1155,9 +1109,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_CONDITION_CHANGED",
+          action: 'ASSET_UNIT_CONDITION_CHANGED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: unit.id,
 
@@ -1188,13 +1142,11 @@ export class AssetUnitsService {
       });
 
       if (!unit) {
-        throw new NotFoundException("Asset unit not found.");
+        throw new NotFoundException('Asset unit not found.');
       }
 
       if (unit.status === AssetUnitStatus.ASSIGNED) {
-        throw new BadRequestException(
-          "Assigned units cannot be deleted. Return the unit first.",
-        );
+        throw new BadRequestException('Assigned units cannot be deleted. Return the unit first.');
       }
 
       const activeAssignment = await this.assetAssignmentModel.count({
@@ -1206,7 +1158,7 @@ export class AssetUnitsService {
       });
 
       if (activeAssignment > 0) {
-        throw new BadRequestException("This unit has an active assignment.");
+        throw new BadRequestException('This unit has an active assignment.');
       }
 
       const assetId = unit.assetId;
@@ -1217,7 +1169,7 @@ export class AssetUnitsService {
 
           assetUnitId: id,
 
-          action: "UNIT_DELETED",
+          action: 'UNIT_DELETED',
 
           performedBy: actor.name,
 
@@ -1232,9 +1184,9 @@ export class AssetUnitsService {
         {
           userId: actor.id,
 
-          action: "ASSET_UNIT_DELETED",
+          action: 'ASSET_UNIT_DELETED',
 
-          entity: "AssetUnit",
+          entity: 'AssetUnit',
 
           entityId: id,
 
@@ -1266,14 +1218,14 @@ export class AssetUnitsService {
     const asset = await this.assetModel.findByPk(assetId);
 
     if (!asset) {
-      throw new NotFoundException("Asset not found.");
+      throw new NotFoundException('Asset not found.');
     }
 
     const units = await this.assetUnitModel.findAll({
       where: {
         assetId,
       },
-      attributes: ["status", "condition"],
+      attributes: ['status', 'condition'],
     });
 
     const summary = {
@@ -1384,7 +1336,7 @@ export class AssetUnitsService {
         assetId,
       },
 
-      attributes: ["id", "status", "condition"],
+      attributes: ['id', 'status', 'condition'],
 
       transaction,
     });
@@ -1393,33 +1345,20 @@ export class AssetUnitsService {
       return;
     }
 
-    const assigned = units.filter(
-      (unit) => unit.status === AssetUnitStatus.ASSIGNED,
-    ).length;
+    const assigned = units.filter((unit) => unit.status === AssetUnitStatus.ASSIGNED).length;
 
-    const available = units.filter(
-      (unit) => unit.status === AssetUnitStatus.AVAILABLE,
-    ).length;
+    const available = units.filter((unit) => unit.status === AssetUnitStatus.AVAILABLE).length;
 
-    const repair = units.filter(
-      (unit) => unit.status === AssetUnitStatus.REPAIR,
-    ).length;
+    const repair = units.filter((unit) => unit.status === AssetUnitStatus.REPAIR).length;
 
-    const damaged = units.filter(
-      (unit) => unit.status === AssetUnitStatus.DAMAGED,
-    ).length;
+    const damaged = units.filter((unit) => unit.status === AssetUnitStatus.DAMAGED).length;
 
-    const lost = units.filter(
-      (unit) => unit.status === AssetUnitStatus.LOST,
-    ).length;
+    const lost = units.filter((unit) => unit.status === AssetUnitStatus.LOST).length;
 
     let parentStatus: AssetStatus;
 
     if (assigned > 0) {
-      parentStatus =
-        assigned === units.length
-          ? AssetStatus.ASSIGNED
-          : AssetStatus.AVAILABLE;
+      parentStatus = assigned === units.length ? AssetStatus.ASSIGNED : AssetStatus.AVAILABLE;
     } else if (available > 0) {
       parentStatus = AssetStatus.AVAILABLE;
     } else if (repair > 0) {

@@ -34,6 +34,14 @@ import { Button } from '../components/ui/button';
 import { useGetOrganisationsQuery } from '../services/api/employees.api';
 import { useGetAssetCategoriesQuery } from '../services/api/asset.api';
 import { Label } from '../components/ui/label';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+} from '../components/ui/drawer';
 
 import {
   Table,
@@ -351,27 +359,15 @@ function ReportFiltersBar({ filters, onChange, onApply, onReset, isLoading }: Re
   const selectClassName = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm';
 
   return (
-    <section className="rounded-xl border border-border bg-card p-5 shadow-card">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-primary" />
-
-            <h2 className="text-[15px] font-semibold text-foreground">Report Filters</h2>
-          </div>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Narrow reports using organisation, asset kind and category.
-          </p>
-        </div>
-
+    <section className="min-h-0 flex-1 overflow-y-auto p-5">
+      <div className="mb-4 flex justify-end">
         <Button variant="ghost" size="sm" onClick={onReset} disabled={isLoading}>
           <RotateCcw />
           Reset
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="organisationId">Organisation</Label>
           <select
@@ -1097,6 +1093,7 @@ function ReportTable({
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState<ReportTab>('assets');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
 
@@ -1127,6 +1124,7 @@ export default function Reports() {
     }
 
     setAppliedFilters(nextFilters);
+    setFiltersOpen(false);
   };
 
   const handleResetFilters = () => {
@@ -1160,18 +1158,6 @@ export default function Reports() {
       </div>
 
       {/* ======================================================
-          FILTERS
-      ====================================================== */}
-
-      <ReportFiltersBar
-        filters={filters}
-        onChange={handleFilterChange}
-        onApply={handleApplyFilters}
-        onReset={handleResetFilters}
-        isLoading={false}
-      />
-
-      {/* ======================================================
           REPORT TABS
       ====================================================== */}
 
@@ -1201,6 +1187,37 @@ export default function Reports() {
             );
           })}
         </Tabs.List>
+
+        <div className="flex justify-start">
+          <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <DrawerTrigger asChild>
+              <Button variant="outline">
+                <Filter className="h-4 w-4" />
+                Report Filters
+                {Object.keys(appliedFilters).length > 0 && (
+                  <Badge variant="secondary">{Object.keys(appliedFilters).length}</Badge>
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Report Filters</DrawerTitle>
+                <DrawerDescription>
+                  {activeTab === 'systems'
+                    ? 'Filter systems by organisation. Only the organisation filter applies to this report.'
+                    : `Narrow the ${activeLabel.toLowerCase()} report using the filters below.`}
+                </DrawerDescription>
+              </DrawerHeader>
+              <ReportFiltersBar
+                filters={filters}
+                onChange={handleFilterChange}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
+                isLoading={false}
+              />
+            </DrawerContent>
+          </Drawer>
+        </div>
 
         {/* ====================================================
             ASSETS

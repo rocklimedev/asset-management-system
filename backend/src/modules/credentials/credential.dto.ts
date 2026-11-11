@@ -9,4 +9,6 @@ export class CreateCredentialDto {
   @IsString() @IsNotEmpty() @MaxLength(1000) username!: string;
   @IsString() @IsNotEmpty() @MaxLength(4000) password!: string;
 }
-export class UpdateCredentialDto extends PartialType(CreateCredentialDto, { skipNullProperties: false }) {}
+export class UpdateCredentialDto extends PartialType(CreateCredentialDto, {
+  skipNullProperties: false,
+}) {}

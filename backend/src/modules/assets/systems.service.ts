@@ -3,36 +3,30 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { InjectConnection } from "@nestjs/sequelize";
-import { Sequelize } from "sequelize-typescript";
-import { Op, UniqueConstraintError } from "sequelize";
+} from '@nestjs/common';
+import { InjectConnection } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { Op, UniqueConstraintError } from 'sequelize';
 
-import { System } from "./models/system.model";
-import { SystemSpecs } from "./models/system-specs.model";
+import { System } from './models/system.model';
+import { SystemSpecs } from './models/system-specs.model';
 
-import {
-  AssetAssignment,
-  AssignmentStatus,
-} from "./models/asset-assignment.model";
+import { AssetAssignment, AssignmentStatus } from './models/asset-assignment.model';
 
-import { Asset } from "./models/asset.model";
-import { AssetKind } from "./models/asset-category.model";
-import { Transaction } from "sequelize";
-import { AssetCategory } from "./models/asset-category.model";
-import { AssetHistory } from "./models/asset-history.model";
+import { Asset } from './models/asset.model';
+import { AssetKind } from './models/asset-category.model';
+import { Transaction } from 'sequelize';
+import { AssetCategory } from './models/asset-category.model';
+import { AssetHistory } from './models/asset-history.model';
 
-import {
-  Employee,
-  EmployeeStatus,
-} from "../organisation/models/employees.model";
+import { Employee, EmployeeStatus } from '../organisation/models/employees.model';
 
-import { Organisation } from "../organisation/models/organisation.model";
+import { Organisation } from '../organisation/models/organisation.model';
 
-import { AuditService } from "../audit/audit.service";
-import { AuthUser } from "@/common/decorator/current-user.decorator";
+import { AuditService } from '../audit/audit.service';
+import { AuthUser } from '@/common/decorator/current-user.decorator';
 
-import { CreateSystemDto, UpdateSystemDto } from "./dto/system.dto";
+import { CreateSystemDto, UpdateSystemDto } from './dto/system.dto';
 
 @Injectable()
 export class SystemsService {
@@ -47,7 +41,7 @@ export class SystemsService {
 
   private get include() {
     return [
-      { model: AssetCategory, as: "category", required: false },
+      { model: AssetCategory, as: 'category', required: false },
       // Organisation
       {
         model: Organisation,
@@ -63,7 +57,7 @@ export class SystemsService {
       // System specs
       {
         model: SystemSpecs,
-        as: "specs",
+        as: 'specs',
         required: false,
       },
 
@@ -114,7 +108,7 @@ export class SystemsService {
 
       include: this.include,
 
-      order: [["name", "ASC"]],
+      order: [['name', 'ASC']],
     });
   }
 
@@ -128,7 +122,7 @@ export class SystemsService {
     });
 
     if (!system) {
-      throw new NotFoundException("System not found.");
+      throw new NotFoundException('System not found.');
     }
 
     return system;
@@ -138,18 +132,26 @@ export class SystemsService {
   // CREATE SYSTEM
   // ============================================================
 
-  private async validateCategory(categoryId: string | null | undefined, organisationId: string | null | undefined, transaction: Transaction) {
-    if (!categoryId) throw new BadRequestException("Select a computer category, PC/Desktop or Laptop.");
-    const category = await AssetCategory.findByPk(categoryId, { transaction, lock: transaction.LOCK.UPDATE });
-    if (!category) throw new NotFoundException("Computer category not found.");
+  private async validateCategory(
+    categoryId: string | null | undefined,
+    organisationId: string | null | undefined,
+    transaction: Transaction,
+  ) {
+    if (!categoryId)
+      throw new BadRequestException('Select a computer category, PC/Desktop or Laptop.');
+    const category = await AssetCategory.findByPk(categoryId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!category) throw new NotFoundException('Computer category not found.');
     if (category.type !== AssetKind.HARDWARE || !category.isActive) {
-      throw new BadRequestException("Select an active hardware category for this computer.");
+      throw new BadRequestException('Select an active hardware category for this computer.');
     }
-    if (!["desktop pc", "laptop"].includes(category.name.trim().toLowerCase())) {
-      throw new BadRequestException("Computer category must be Desktop PC or Laptop.");
+    if (!['desktop pc', 'laptop'].includes(category.name.trim().toLowerCase())) {
+      throw new BadRequestException('Computer category must be Desktop PC or Laptop.');
     }
     if (category.organisationId && category.organisationId !== organisationId) {
-      throw new BadRequestException("Computer category must belong to the selected organisation.");
+      throw new BadRequestException('Computer category must belong to the selected organisation.');
     }
   }
 
@@ -167,13 +169,11 @@ export class SystemsService {
           });
 
           if (!organisation) {
-            throw new NotFoundException("Organisation not found.");
+            throw new NotFoundException('Organisation not found.');
           }
 
           if (!organisation.isActive) {
-            throw new BadRequestException(
-              "System cannot be assigned to an inactive organisation.",
-            );
+            throw new BadRequestException('System cannot be assigned to an inactive organisation.');
           }
         }
 
@@ -200,8 +200,8 @@ export class SystemsService {
         await this.audit.log(
           {
             userId: actor.id,
-            action: "SYSTEM_CREATED",
-            entity: "System",
+            action: 'SYSTEM_CREATED',
+            entity: 'System',
             entityId: system.id,
             metadata: {
               ...dto,
@@ -221,7 +221,7 @@ export class SystemsService {
       });
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
-        throw new ConflictException("System tag already exists.");
+        throw new ConflictException('System tag already exists.');
       }
 
       throw error;
@@ -234,7 +234,7 @@ export class SystemsService {
 
   async update(id: string, dto: UpdateSystemDto, actor: AuthUser) {
     if (dto.name === null || dto.systemTag === null) {
-      throw new BadRequestException("Name and system tag cannot be null.");
+      throw new BadRequestException('Name and system tag cannot be null.');
     }
 
     try {
@@ -249,37 +249,31 @@ export class SystemsService {
         });
 
         if (!system) {
-          throw new NotFoundException("System not found.");
+          throw new NotFoundException('System not found.');
         }
 
         // ======================================================
         // ORGANISATION CHANGE
         // ======================================================
 
-        if (
-          dto.organisationId !== undefined &&
-          dto.organisationId !== system.organisationId
-        ) {
+        if (dto.organisationId !== undefined && dto.organisationId !== system.organisationId) {
           // ----------------------------------------------------
           // New organisation supplied
           // ----------------------------------------------------
 
           if (dto.organisationId) {
-            const organisation = await Organisation.findByPk(
-              dto.organisationId,
-              {
-                transaction,
-                lock: transaction.LOCK.UPDATE,
-              },
-            );
+            const organisation = await Organisation.findByPk(dto.organisationId, {
+              transaction,
+              lock: transaction.LOCK.UPDATE,
+            });
 
             if (!organisation) {
-              throw new NotFoundException("Organisation not found.");
+              throw new NotFoundException('Organisation not found.');
             }
 
             if (!organisation.isActive) {
               throw new BadRequestException(
-                "System cannot be assigned to an inactive organisation.",
+                'System cannot be assigned to an inactive organisation.',
               );
             }
 
@@ -294,14 +288,12 @@ export class SystemsService {
               });
 
               if (!employee) {
-                throw new NotFoundException(
-                  "Currently assigned employee not found.",
-                );
+                throw new NotFoundException('Currently assigned employee not found.');
               }
 
               if (employee.organisationId !== dto.organisationId) {
                 throw new BadRequestException(
-                  "System cannot be moved to another organisation while it is assigned to an employee from a different organisation. Return the system first or assign it to an employee from the new organisation.",
+                  'System cannot be moved to another organisation while it is assigned to an employee from a different organisation. Return the system first or assign it to an employee from the new organisation.',
                 );
               }
             }
@@ -312,9 +304,7 @@ export class SystemsService {
           // ----------------------------------------------------
 
           if (!dto.organisationId && system.employeeId) {
-            throw new BadRequestException(
-              "Return the system before removing its organisation.",
-            );
+            throw new BadRequestException('Return the system before removing its organisation.');
           }
         }
 
@@ -322,9 +312,15 @@ export class SystemsService {
         // UPDATE
         // ======================================================
 
-        if (dto.categoryId !== undefined || (dto.organisationId !== undefined && system.categoryId)) {
-          await this.validateCategory(dto.categoryId !== undefined ? dto.categoryId : system.categoryId,
-            dto.organisationId !== undefined ? dto.organisationId : system.organisationId, transaction);
+        if (
+          dto.categoryId !== undefined ||
+          (dto.organisationId !== undefined && system.categoryId)
+        ) {
+          await this.validateCategory(
+            dto.categoryId !== undefined ? dto.categoryId : system.categoryId,
+            dto.organisationId !== undefined ? dto.organisationId : system.organisationId,
+            transaction,
+          );
         }
         await system.update(dto, {
           transaction,
@@ -337,8 +333,8 @@ export class SystemsService {
         await this.audit.log(
           {
             userId: actor.id,
-            action: "SYSTEM_UPDATED",
-            entity: "System",
+            action: 'SYSTEM_UPDATED',
+            entity: 'System',
             entityId: id,
             metadata: {
               ...dto,
@@ -358,7 +354,7 @@ export class SystemsService {
       });
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
-        throw new ConflictException("System tag already exists.");
+        throw new ConflictException('System tag already exists.');
       }
 
       throw error;
@@ -377,7 +373,7 @@ export class SystemsService {
       });
 
       if (!system) {
-        throw new NotFoundException("System not found.");
+        throw new NotFoundException('System not found.');
       }
 
       // ========================================================
@@ -395,7 +391,7 @@ export class SystemsService {
       if (activeAssignments > 0) {
         throw new BadRequestException(
           `Cannot delete system while it has ${activeAssignments} active component${
-            activeAssignments === 1 ? "" : "s"
+            activeAssignments === 1 ? '' : 's'
           }. Remove all components from the system first.`,
         );
       }
@@ -418,8 +414,8 @@ export class SystemsService {
       await this.audit.log(
         {
           userId: actor.id,
-          action: "SYSTEM_DELETED",
-          entity: "System",
+          action: 'SYSTEM_DELETED',
+          entity: 'System',
           entityId: id,
           metadata: {
             systemTag: system.systemTag,
@@ -441,7 +437,7 @@ export class SystemsService {
 
       return {
         success: true,
-        message: "System deleted successfully.",
+        message: 'System deleted successfully.',
         id,
       };
     });
@@ -463,7 +459,7 @@ export class SystemsService {
       });
 
       if (!system) {
-        throw new NotFoundException("System not found.");
+        throw new NotFoundException('System not found.');
       }
 
       // ========================================================
@@ -478,21 +474,16 @@ export class SystemsService {
         : null;
 
       if (employeeId && !employee) {
-        throw new NotFoundException("Employee not found.");
+        throw new NotFoundException('Employee not found.');
       }
 
       // ========================================================
       // EMPLOYEE STATUS
       // ========================================================
 
-      if (
-        employee &&
-        ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(
-          employee.status,
-        )
-      ) {
+      if (employee && ![EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE].includes(employee.status)) {
         throw new BadRequestException(
-          "Systems can only be assigned to active employees or employees on leave.",
+          'Systems can only be assigned to active employees or employees on leave.',
         );
       }
 
@@ -500,13 +491,9 @@ export class SystemsService {
       // ORGANISATION VALIDATION
       // ========================================================
 
-      if (
-        employee &&
-        system.organisationId &&
-        employee.organisationId !== system.organisationId
-      ) {
+      if (employee && system.organisationId && employee.organisationId !== system.organisationId) {
         throw new BadRequestException(
-          "System can only be assigned to an employee from the same organisation.",
+          'System can only be assigned to an employee from the same organisation.',
         );
       }
 
@@ -515,7 +502,7 @@ export class SystemsService {
       // ========================================================
 
       if (system.employeeId === employeeId) {
-        throw new BadRequestException("System already has this assignment.");
+        throw new BadRequestException('System already has this assignment.');
       }
 
       // ========================================================
@@ -559,11 +546,11 @@ export class SystemsService {
         await AssetHistory.create(
           {
             assetId: component.assetId,
-            action: "SYSTEM_CUSTODY_CHANGED",
+            action: 'SYSTEM_CUSTODY_CHANGED',
             performedBy: actor.name,
-            fromValue: previous?.name ?? "Unassigned system",
-            toValue: employee?.name ?? "Unassigned system",
-            notes: `System: ${system.systemTag}`,
+            fromValue: previous?.name ?? 'Unassigned system',
+            toValue: employee?.name ?? 'Unassigned system',
+            notes: `${system.systemTag}`,
           } as AssetHistory,
           {
             transaction,
@@ -578,8 +565,8 @@ export class SystemsService {
       await this.audit.log(
         {
           userId: actor.id,
-          action: employeeId ? "SYSTEM_ASSIGNED" : "SYSTEM_RETURNED",
-          entity: "System",
+          action: employeeId ? 'SYSTEM_ASSIGNED' : 'SYSTEM_RETURNED',
+          entity: 'System',
           entityId: id,
           metadata: {
             fromEmployeeId,
@@ -610,7 +597,7 @@ export class SystemsService {
     const system = await System.findByPk(id);
 
     if (!system) {
-      throw new NotFoundException("System not found.");
+      throw new NotFoundException('System not found.');
     }
 
     const specs = await SystemSpecs.findOne({
@@ -626,11 +613,7 @@ export class SystemsService {
   // CREATE / UPDATE SYSTEM SPECS
   // ============================================================
 
-  async upsertSpecs(
-    id: string,
-    specsDto: Partial<SystemSpecs>,
-    actor: AuthUser,
-  ) {
+  async upsertSpecs(id: string, specsDto: Partial<SystemSpecs>, actor: AuthUser) {
     return this.db.transaction(async (transaction) => {
       // ========================================================
       // GET SYSTEM
@@ -642,7 +625,7 @@ export class SystemsService {
       });
 
       if (!system) {
-        throw new NotFoundException("System not found.");
+        throw new NotFoundException('System not found.');
       }
 
       // ========================================================
@@ -684,8 +667,8 @@ export class SystemsService {
       await this.audit.log(
         {
           userId: actor.id,
-          action: "SYSTEM_SPECS_UPDATED",
-          entity: "SystemSpecs",
+          action: 'SYSTEM_SPECS_UPDATED',
+          entity: 'SystemSpecs',
           entityId: specs.id,
           metadata: {
             systemId: id,

@@ -8,37 +8,37 @@ import {
   Model,
   PrimaryKey,
   Table,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
   NonAttribute,
-} from "sequelize";
+} from 'sequelize';
 
-import { Asset } from "@/modules/assets/models/asset.model";
+import { Asset } from '@/modules/assets/models/asset.model';
 
 export enum SoftwareUsage {
-  IN_USE = "IN_USE",
-  NOT_IN_USE = "NOT_IN_USE",
-  OCCASIONAL = "OCCASIONAL",
-  TRIAL = "TRIAL",
-  BLOCKED = "BLOCKED",
-  UNKNOWN = "UNKNOWN",
+  IN_USE = 'IN_USE',
+  NOT_IN_USE = 'NOT_IN_USE',
+  OCCASIONAL = 'OCCASIONAL',
+  TRIAL = 'TRIAL',
+  BLOCKED = 'BLOCKED',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum SoftwareSubscriptionType {
-  OPEN_SOURCE = "OPEN_SOURCE",
-  FREE = "FREE",
-  SUBSCRIPTION = "SUBSCRIPTION",
-  PERPETUAL = "PERPETUAL",
-  TRIAL = "TRIAL",
-  COMPANY_LICENSE = "COMPANY_LICENSE",
-  UNKNOWN = "UNKNOWN",
+  OPEN_SOURCE = 'OPEN_SOURCE',
+  FREE = 'FREE',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  PERPETUAL = 'PERPETUAL',
+  TRIAL = 'TRIAL',
+  COMPANY_LICENSE = 'COMPANY_LICENSE',
+  UNKNOWN = 'UNKNOWN',
 }
 
 @Table({
-  tableName: "software_details",
+  tableName: 'software_details',
   timestamps: true,
 })
 export class SoftwareDetails extends Model<
@@ -69,13 +69,13 @@ export class SoftwareDetails extends Model<
     type: DataType.CHAR(36),
     allowNull: false,
     unique: true,
-    field: "asset_id",
+    field: 'asset_id',
   })
   declare assetId: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    as: "asset",
+    foreignKey: 'assetId',
+    as: 'asset',
   })
   declare asset?: NonAttribute<Asset>;
 
@@ -91,13 +91,13 @@ export class SoftwareDetails extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "parent_software_id",
+    field: 'parent_software_id',
   })
   declare parentSoftwareId: CreationOptional<string | null>;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "parentSoftwareId",
-    as: "parentSoftware",
+    foreignKey: 'parentSoftwareId',
+    as: 'parentSoftware',
   })
   declare parentSoftware?: NonAttribute<Asset | null>;
 
@@ -122,7 +122,7 @@ export class SoftwareDetails extends Model<
     type: DataType.ENUM(...Object.values(SoftwareSubscriptionType)),
     allowNull: false,
     defaultValue: SoftwareSubscriptionType.UNKNOWN,
-    field: "subscription_type",
+    field: 'subscription_type',
   })
   declare subscriptionType: CreationOptional<SoftwareSubscriptionType>;
 
@@ -134,7 +134,7 @@ export class SoftwareDetails extends Model<
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    field: "warranty_applicable",
+    field: 'warranty_applicable',
   })
   declare warrantyApplicable: CreationOptional<boolean>;
 

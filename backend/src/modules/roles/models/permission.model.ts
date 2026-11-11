@@ -1,17 +1,9 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
-  PrimaryKey,
-  Index,
-} from "sequelize-typescript";
+import { Table, Column, Model, DataType, HasMany, PrimaryKey, Index } from 'sequelize-typescript';
 
-import { RolePermission } from "./role-permission.model";
+import { RolePermission } from './role-permission.model';
 
 @Table({
-  tableName: "permissions",
+  tableName: 'permissions',
   timestamps: false,
 })
 export class Permission extends Model<Permission> {
@@ -54,7 +46,7 @@ export class Permission extends Model<Permission> {
   // ============================================================
 
   @HasMany(() => RolePermission, {
-    foreignKey: "permission_id",
+    foreignKey: 'permission_id',
   })
   roles!: RolePermission[];
 }

@@ -8,7 +8,7 @@ import {
   Patch,
   Post,
   Query,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   IsEnum,
   IsArray,
@@ -20,17 +20,14 @@ import {
   Max,
   MaxLength,
   Min,
-} from "class-validator";
-import { Type } from "class-transformer";
-import { CellularIdentityDto } from "./dto/cellular-identity.dto";
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { CellularIdentityDto } from './dto/cellular-identity.dto';
 
-import { AssetUnitsService } from "./asset-units.service";
-import { AssetUnitCondition, AssetUnitStatus } from "./models/asset-unit.model";
+import { AssetUnitsService } from './asset-units.service';
+import { AssetUnitCondition, AssetUnitStatus } from './models/asset-unit.model';
 
-import {
-  CurrentUser,
-  AuthUser,
-} from "@/common/decorator/current-user.decorator";
+import { CurrentUser, AuthUser } from '@/common/decorator/current-user.decorator';
 // Adjust the CurrentUser import path to match your project.
 
 // ============================================================
@@ -39,11 +36,11 @@ import {
 
 export class ListAssetUnitsQueryDto {
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   assetId?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   organisationId?: string;
 
   @IsOptional()
@@ -55,7 +52,7 @@ export class ListAssetUnitsQueryDto {
   condition?: AssetUnitCondition;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string;
 
   @IsOptional()
@@ -110,7 +107,7 @@ export class CreateAssetUnitDto {
   condition?: AssetUnitCondition;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string;
 
   @IsOptional()
@@ -152,7 +149,7 @@ export class UpdateAssetUnitDto {
   condition?: AssetUnitCondition;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string | null;
 
   @IsOptional()
@@ -162,11 +159,11 @@ export class UpdateAssetUnitDto {
 
 export class AssignAssetUnitDto {
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   employeeId?: string;
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   systemId?: string;
 
   @IsOptional()
@@ -202,7 +199,7 @@ export class ChangeUnitConditionDto {
 // CONTROLLER
 // ============================================================
 
-@Controller("asset-units")
+@Controller('asset-units')
 export class AssetUnitsController {
   constructor(private readonly assetUnitsService: AssetUnitsService) {}
 
@@ -222,8 +219,8 @@ export class AssetUnitsController {
   // (must be before :id to avoid route clash)
   // ----------------------------------------------------------
 
-  @Get("summary/:assetId")
-  summary(@Param("assetId", ParseUUIDPipe) assetId: string) {
+  @Get('summary/:assetId')
+  summary(@Param('assetId', ParseUUIDPipe) assetId: string) {
     return this.assetUnitsService.summary(assetId);
   }
 
@@ -232,8 +229,8 @@ export class AssetUnitsController {
   // GET /asset-units/:id
   // ----------------------------------------------------------
 
-  @Get(":id")
-  findOne(@Param("id", ParseUUIDPipe) id: string) {
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.assetUnitsService.findOne(id);
   }
 
@@ -242,9 +239,9 @@ export class AssetUnitsController {
   // POST /asset-units/asset/:assetId
   // ----------------------------------------------------------
 
-  @Post("asset/:assetId")
+  @Post('asset/:assetId')
   create(
-    @Param("assetId", ParseUUIDPipe) assetId: string,
+    @Param('assetId', ParseUUIDPipe) assetId: string,
     @Body() dto: CreateAssetUnitDto,
     @CurrentUser() actor: AuthUser,
   ) {
@@ -256,9 +253,9 @@ export class AssetUnitsController {
   // PATCH /asset-units/:id
   // ----------------------------------------------------------
 
-  @Patch(":id")
+  @Patch(':id')
   update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateAssetUnitDto,
     @CurrentUser() actor: AuthUser,
   ) {
@@ -270,9 +267,9 @@ export class AssetUnitsController {
   // POST /asset-units/:id/assign
   // ----------------------------------------------------------
 
-  @Post(":id/assign")
+  @Post(':id/assign')
   assign(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AssignAssetUnitDto,
     @CurrentUser() actor: AuthUser,
   ) {
@@ -284,9 +281,9 @@ export class AssetUnitsController {
   // POST /asset-units/:id/return
   // ----------------------------------------------------------
 
-  @Post(":id/return")
+  @Post(':id/return')
   returnUnit(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ReturnAssetUnitDto,
     @CurrentUser() actor: AuthUser,
   ) {
@@ -298,18 +295,13 @@ export class AssetUnitsController {
   // PATCH /asset-units/:id/status
   // ----------------------------------------------------------
 
-  @Patch(":id/status")
+  @Patch(':id/status')
   changeStatus(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ChangeUnitStatusDto,
     @CurrentUser() actor: AuthUser,
   ) {
-    return this.assetUnitsService.changeStatus(
-      id,
-      dto.status,
-      actor,
-      dto.notes,
-    );
+    return this.assetUnitsService.changeStatus(id, dto.status, actor, dto.notes);
   }
 
   // ----------------------------------------------------------
@@ -317,18 +309,13 @@ export class AssetUnitsController {
   // PATCH /asset-units/:id/condition
   // ----------------------------------------------------------
 
-  @Patch(":id/condition")
+  @Patch(':id/condition')
   changeCondition(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ChangeUnitConditionDto,
     @CurrentUser() actor: AuthUser,
   ) {
-    return this.assetUnitsService.changeCondition(
-      id,
-      dto.condition,
-      actor,
-      dto.notes,
-    );
+    return this.assetUnitsService.changeCondition(id, dto.condition, actor, dto.notes);
   }
 
   // ----------------------------------------------------------
@@ -336,11 +323,8 @@ export class AssetUnitsController {
   // DELETE /asset-units/:id
   // ----------------------------------------------------------
 
-  @Delete(":id")
-  remove(
-    @Param("id", ParseUUIDPipe) id: string,
-    @CurrentUser() actor: AuthUser,
-  ) {
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: AuthUser) {
     return this.assetUnitsService.remove(id, actor);
   }
 }

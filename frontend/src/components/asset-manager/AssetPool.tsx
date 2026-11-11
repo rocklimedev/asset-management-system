@@ -265,7 +265,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
             <EmptyState
               icon={Package}
               title="Nothing in stock"
-              description="Nothing matches this search. Try a different word, or add new equipment from All Assets."
+              description="Nothing matches this search. Try a different word, or add new equipment from Inventory."
             />
           ) : (
             <ul

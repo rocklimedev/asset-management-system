@@ -1,20 +1,12 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
-  Index,
-  PrimaryKey,
-} from "sequelize-typescript";
+import { Table, Column, Model, DataType, HasMany, Index, PrimaryKey } from 'sequelize-typescript';
 
-import { Employee } from "./employees.model";
-import { AssetCategory } from "@/modules/assets/models/asset-category.model";
-import { Asset } from "@/modules/assets/models/asset.model";
-import { Location } from "./location.model";
+import { Employee } from './employees.model';
+import { AssetCategory } from '@/modules/assets/models/asset-category.model';
+import { Asset } from '@/modules/assets/models/asset.model';
+import { Location } from './location.model';
 
 @Table({
-  tableName: "organisations",
+  tableName: 'organisations',
   timestamps: true,
 })
 export class Organisation extends Model<Organisation> {
@@ -79,7 +71,7 @@ export class Organisation extends Model<Organisation> {
   // ============================================================
 
   @HasMany(() => Employee, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   employees!: Employee[];
 
@@ -88,7 +80,7 @@ export class Organisation extends Model<Organisation> {
   // ============================================================
 
   @HasMany(() => AssetCategory, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   categories!: AssetCategory[];
 
@@ -97,7 +89,7 @@ export class Organisation extends Model<Organisation> {
   // ============================================================
 
   @HasMany(() => Asset, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   assets!: Asset[];
 
@@ -106,7 +98,7 @@ export class Organisation extends Model<Organisation> {
   // ============================================================
 
   @HasMany(() => Location, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   locations!: Location[];
 }

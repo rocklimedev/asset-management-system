@@ -8,26 +8,22 @@ import {
   Index,
   PrimaryKey,
   Default,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import {
-  InferAttributes,
-  InferCreationAttributes,
-  CreationOptional,
-} from "sequelize";
+import { InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 
-import { System } from "./system.model";
-import { Asset } from "./asset.model";
-import { AssetUnit } from "./asset-unit.model";
-import { Employee } from "@/modules/organisation/models/employees.model";
+import { System } from './system.model';
+import { Asset } from './asset.model';
+import { AssetUnit } from './asset-unit.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
 
 export enum AssignmentStatus {
-  ACTIVE = "ACTIVE",
-  RETURNED = "RETURNED",
+  ACTIVE = 'ACTIVE',
+  RETURNED = 'RETURNED',
 }
 
 @Table({
-  tableName: "asset_assignments",
+  tableName: 'asset_assignments',
   timestamps: false,
 })
 export class AssetAssignment extends Model<
@@ -62,13 +58,13 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   declare assetId: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    targetKey: "id",
+    foreignKey: 'assetId',
+    targetKey: 'id',
   })
   declare asset?: Asset;
 
@@ -104,13 +100,13 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "asset_unit_id",
+    field: 'asset_unit_id',
   })
   declare assetUnitId: string | null;
 
   @BelongsTo(() => AssetUnit, {
-    foreignKey: "assetUnitId",
-    targetKey: "id",
+    foreignKey: 'assetUnitId',
+    targetKey: 'id',
   })
   declare assetUnit?: AssetUnit;
 
@@ -123,13 +119,13 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "employee_id",
+    field: 'employee_id',
   })
   declare employeeId: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "employeeId",
-    targetKey: "id",
+    foreignKey: 'employeeId',
+    targetKey: 'id',
   })
   declare employee?: Employee;
 
@@ -145,13 +141,13 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "system_id",
+    field: 'system_id',
   })
   declare systemId: CreationOptional<string | null>;
 
   @BelongsTo(() => System, {
-    foreignKey: "systemId",
-    targetKey: "id",
+    foreignKey: 'systemId',
+    targetKey: 'id',
   })
   declare system?: System;
 
@@ -163,7 +159,7 @@ export class AssetAssignment extends Model<
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    field: "assignedAt",
+    field: 'assignedAt',
   })
   declare assignedAt: CreationOptional<Date>;
 
@@ -174,7 +170,7 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: "returnedAt",
+    field: 'returnedAt',
   })
   declare returnedAt: Date | null;
 
@@ -186,7 +182,7 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "assigned_by",
+    field: 'assigned_by',
   })
   declare assignedBy: string;
 
@@ -199,7 +195,7 @@ export class AssetAssignment extends Model<
     type: DataType.ENUM(...Object.values(AssignmentStatus)),
     allowNull: false,
     defaultValue: AssignmentStatus.ACTIVE,
-    field: "status",
+    field: 'status',
   })
   declare status: CreationOptional<AssignmentStatus>;
 
@@ -210,7 +206,7 @@ export class AssetAssignment extends Model<
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    field: "notes",
+    field: 'notes',
   })
   declare notes: string | null;
 }

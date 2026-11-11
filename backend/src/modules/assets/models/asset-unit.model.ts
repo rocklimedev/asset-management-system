@@ -8,30 +8,30 @@ import {
   HasMany,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
-import { ServiceUnavailableException } from "@nestjs/common";
-import { CredentialCrypto } from "../../credentials/credential-crypto";
-import { Optional } from "sequelize";
+} from 'sequelize-typescript';
+import { ServiceUnavailableException } from '@nestjs/common';
+import { CredentialCrypto } from '../../credentials/credential-crypto';
+import { Optional } from 'sequelize';
 
-import { Asset } from "./asset.model";
-import { AssetAssignment } from "./asset-assignment.model";
-import { Location } from "@/modules/organisation/models/location.model";
+import { Asset } from './asset.model';
+import { AssetAssignment } from './asset-assignment.model';
+import { Location } from '@/modules/organisation/models/location.model';
 
 export enum AssetUnitStatus {
-  AVAILABLE = "AVAILABLE",
-  ASSIGNED = "ASSIGNED",
-  REPAIR = "REPAIR",
-  LOST = "LOST",
-  DAMAGED = "DAMAGED",
-  RETIRED = "RETIRED",
-  DISPOSED = "DISPOSED",
+  AVAILABLE = 'AVAILABLE',
+  ASSIGNED = 'ASSIGNED',
+  REPAIR = 'REPAIR',
+  LOST = 'LOST',
+  DAMAGED = 'DAMAGED',
+  RETIRED = 'RETIRED',
+  DISPOSED = 'DISPOSED',
 }
 
 export enum AssetUnitCondition {
-  NEW = "NEW",
-  GOOD = "GOOD",
-  FAIR = "FAIR",
-  POOR = "POOR",
+  NEW = 'NEW',
+  GOOD = 'GOOD',
+  FAIR = 'FAIR',
+  POOR = 'POOR',
 }
 
 export interface AssetUnitAttributes {
@@ -53,29 +53,26 @@ export interface AssetUnitAttributes {
 
 export type AssetUnitCreationAttributes = Optional<
   AssetUnitAttributes,
-  | "id"
-  | "unitCode"
-  | "serialNumber"
-  | "deviceId"
-  | "pcPassword"
-  | "encryptedPcPassword"
-  | "cellularIdentities"
-  | "status"
-  | "condition"
-  | "locationId"
-  | "notes"
-  | "createdAt"
-  | "updatedAt"
+  | 'id'
+  | 'unitCode'
+  | 'serialNumber'
+  | 'deviceId'
+  | 'pcPassword'
+  | 'encryptedPcPassword'
+  | 'cellularIdentities'
+  | 'status'
+  | 'condition'
+  | 'locationId'
+  | 'notes'
+  | 'createdAt'
+  | 'updatedAt'
 >;
 
 @Table({
-  tableName: "asset_units",
+  tableName: 'asset_units',
   timestamps: true,
 })
-export class AssetUnit extends Model<
-  AssetUnitAttributes,
-  AssetUnitCreationAttributes
-> {
+export class AssetUnit extends Model<AssetUnitAttributes, AssetUnitCreationAttributes> {
   @PrimaryKey
   @Column({
     type: DataType.CHAR(36),
@@ -89,13 +86,13 @@ export class AssetUnit extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    targetKey: "id",
+    foreignKey: 'assetId',
+    targetKey: 'id',
   })
   asset!: Asset;
 
@@ -103,7 +100,7 @@ export class AssetUnit extends Model<
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    field: "unit_code",
+    field: 'unit_code',
   })
   unitCode?: string | null;
 
@@ -111,21 +108,37 @@ export class AssetUnit extends Model<
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    field: "serial_number",
+    field: 'serial_number',
   })
   serialNumber?: string | null;
 
-  @Column({ type: DataType.STRING(255), allowNull: true, field: "device_id" })
+  @Column({ type: DataType.STRING(255), allowNull: true, field: 'device_id' })
   deviceId?: string | null;
-  @Column({ type: DataType.TEXT, allowNull: true, field: "encrypted_pc_password", get() { return undefined; } })
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+    field: 'encrypted_pc_password',
+    get() {
+      return undefined;
+    },
+  })
   encryptedPcPassword?: string | null;
-  @Column({ type: DataType.VIRTUAL, set(value: string) {
-    if (!value) return;
-    let crypto: CredentialCrypto;
-    try { crypto = new CredentialCrypto(process.env.CREDENTIAL_ENCRYPTION_KEY || ""); }
-    catch { throw new ServiceUnavailableException("Credential vault encryption is not configured."); }
-    (this as AssetUnit).setDataValue("encryptedPcPassword", crypto.encrypt(value, "asset-unit:pc-password"));
-  } })
+  @Column({
+    type: DataType.VIRTUAL,
+    set(value: string) {
+      if (!value) return;
+      let crypto: CredentialCrypto;
+      try {
+        crypto = new CredentialCrypto(process.env.CREDENTIAL_ENCRYPTION_KEY || '');
+      } catch {
+        throw new ServiceUnavailableException('Credential vault encryption is not configured.');
+      }
+      (this as AssetUnit).setDataValue(
+        'encryptedPcPassword',
+        crypto.encrypt(value, 'asset-unit:pc-password'),
+      );
+    },
+  })
   pcPassword?: string;
   toJSON(): any {
     const result = { ...this.get({ plain: true }) };
@@ -133,7 +146,7 @@ export class AssetUnit extends Model<
     delete result.pcPassword;
     return result;
   }
-  @Column({ type: DataType.JSON, allowNull: true, field: "cellular_identities" })
+  @Column({ type: DataType.JSON, allowNull: true, field: 'cellular_identities' })
   cellularIdentities?: { imei?: string; simNumber?: string }[] | null;
 
   @Index
@@ -157,11 +170,11 @@ export class AssetUnit extends Model<
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "location_id",
+    field: 'location_id',
   })
   locationId?: string | null;
 
-  @BelongsTo(() => Location, { foreignKey: "locationId" })
+  @BelongsTo(() => Location, { foreignKey: 'locationId' })
   location?: Location;
 
   @Column({
@@ -171,7 +184,7 @@ export class AssetUnit extends Model<
   notes?: string | null;
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "assetUnitId",
+    foreignKey: 'assetUnitId',
   })
   assignments!: AssetAssignment[];
 }

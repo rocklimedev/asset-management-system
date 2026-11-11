@@ -15,6 +15,8 @@ const Inventory = lazy(() => import('../pages/Inventory'));
 const EmployeeList = lazy(() => import('../pages/EmployeeList'));
 const Reports = lazy(() => import('../pages/Reports'));
 const UsersRoles = lazy(() => import('../pages/UsersRoles'));
+const RolesPermissions = lazy(() => import('../pages/RolesPermissions'));
+const ActivityLogs = lazy(() => import('../pages/ActivityLogs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
 const SoftwareList = lazy(() => import('../pages/SoftwareList'));
 
@@ -73,6 +75,8 @@ export default function AppRoutes() {
           <Route path="/reports" element={<Reports />} />
           <Route path="/asset-categories" element={<AssetCategories />} />
           <Route path="/users-roles" element={<UsersRoles />} />
+          <Route path="/roles-permissions" element={<RolesPermissions />} />
+          <Route path="/activity-logs" element={<ActivityLogs />} />
           <Route path="/software" element={<SoftwareList />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
