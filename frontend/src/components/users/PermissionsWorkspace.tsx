@@ -10,6 +10,7 @@ import {
 } from '../../services/api/role.api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '../ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 
 function message(error: unknown) {
@@ -292,21 +293,34 @@ export default function PermissionsWorkspace({ canManage }: { canManage: boolean
               configuring access.
             </p>
           )}
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  {canManage && <TableHead className="text-right">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
             {roles
               .filter((role) =>
                 `${role.name} ${role.description}`.toLowerCase().includes(search.toLowerCase()),
               )
               .map((role) => (
-                <article key={role.id} className="flex flex-col gap-3 rounded-lg border p-4">
-                  <div className="flex items-center gap-2">
+                <TableRow key={role.id}>
+                  <TableCell className="align-top">
+                    <div className="flex items-center gap-2">
                     <ShieldCheck className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold">{role.name}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold">{role.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="min-w-48 max-w-xs whitespace-normal align-top text-muted-foreground">
                     {role.description || 'No description'}
-                  </p>
-                  <p className="text-xs font-medium">
+                  </TableCell>
+                  <TableCell className="min-w-64 max-w-xl whitespace-normal align-top">
+                  <p className="mb-2 text-xs font-medium">
                     {role.permissions?.length || 0} permissions enabled
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -316,18 +330,23 @@ export default function PermissionsWorkspace({ canManage }: { canManage: boolean
                       </span>
                     ))}
                   </div>
+                  </TableCell>
                   {canManage && (
+                    <TableCell className="text-right align-top">
                     <Button
-                      className="mt-auto"
+                      size="sm"
                       variant="outline"
                       disabled={!permissions.length}
                       onClick={() => setEditor({ role })}
                     >
                       Configure permissions
                     </Button>
+                    </TableCell>
                   )}
-                </article>
+                </TableRow>
               ))}
+              </TableBody>
+            </Table>
           </div>
           {!roles.some((role) =>
             `${role.name} ${role.description}`.toLowerCase().includes(search.toLowerCase()),

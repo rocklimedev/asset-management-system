@@ -7,13 +7,13 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Asset } from "./asset.model";
-import { AssetUnit } from "./asset-unit.model";
+import { Asset } from './asset.model';
+import { AssetUnit } from './asset-unit.model';
 
 @Table({
-  tableName: "asset_history",
+  tableName: 'asset_history',
   timestamps: false,
 })
 export class AssetHistory extends Model<AssetHistory> {
@@ -34,12 +34,12 @@ export class AssetHistory extends Model<AssetHistory> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "asset_id",
+    foreignKey: 'asset_id',
   })
   asset!: Asset;
 
@@ -52,12 +52,12 @@ export class AssetHistory extends Model<AssetHistory> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: true,
-    field: "asset_unit_id",
+    field: 'asset_unit_id',
   })
   assetUnitId?: string | null;
 
   @BelongsTo(() => AssetUnit, {
-    foreignKey: "asset_unit_id",
+    foreignKey: 'asset_unit_id',
   })
   assetUnit?: AssetUnit;
 

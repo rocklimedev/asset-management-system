@@ -8,14 +8,14 @@ import {
   BelongsTo,
   BeforeCreate,
   BeforeUpdate,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import * as bcrypt from "bcrypt";
+import * as bcrypt from 'bcrypt';
 
-import { System } from "./system.model";
+import { System } from './system.model';
 
 @Table({
-  tableName: "system_specs",
+  tableName: 'system_specs',
   timestamps: true,
 })
 export class SystemSpecs extends Model<SystemSpecs> {
@@ -37,13 +37,13 @@ export class SystemSpecs extends Model<SystemSpecs> {
   @ForeignKey(() => System)
   @Column({
     type: DataType.CHAR(36),
-    field: "system_id",
+    field: 'system_id',
     allowNull: false,
     unique: true,
   })
   systemId!: string;
 
-  @BelongsTo(() => System, "systemId")
+  @BelongsTo(() => System, 'systemId')
   system?: System;
 
   // ============================================================
@@ -64,14 +64,14 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(255),
-    field: "local_storage",
+    field: 'local_storage',
     allowNull: true,
   })
   localStorage!: string | null;
 
   @Column({
     type: DataType.STRING(255),
-    field: "graphics_card",
+    field: 'graphics_card',
     allowNull: true,
   })
   graphicsCard!: string | null;
@@ -84,7 +84,7 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(255),
-    field: "power_supply",
+    field: 'power_supply',
     allowNull: true,
   })
   powerSupply!: string | null;
@@ -101,7 +101,7 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(100),
-    field: "monitor_size",
+    field: 'monitor_size',
     allowNull: true,
   })
   monitorSize!: string | null;
@@ -112,14 +112,14 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(255),
-    field: "operating_system",
+    field: 'operating_system',
     allowNull: true,
   })
   operatingSystem!: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    field: "os_version",
+    field: 'os_version',
     allowNull: true,
   })
   osVersion!: string | null;
@@ -130,21 +130,21 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(255),
-    field: "cloud_storage",
+    field: 'cloud_storage',
     allowNull: true,
   })
   cloudStorage!: string | null;
 
   @Column({
     type: DataType.STRING(255),
-    field: "cloud_storage_email",
+    field: 'cloud_storage_email',
     allowNull: true,
   })
   cloudStorageEmail!: string | null;
 
   @Column({
     type: DataType.STRING(255),
-    field: "cloud_storage_password",
+    field: 'cloud_storage_password',
     allowNull: true,
   })
   cloudStoragePassword!: string | null;
@@ -155,14 +155,14 @@ export class SystemSpecs extends Model<SystemSpecs> {
 
   @Column({
     type: DataType.STRING(100),
-    field: "mac_address",
+    field: 'mac_address',
     allowNull: true,
   })
   macAddress!: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    field: "ip_address",
+    field: 'ip_address',
     allowNull: true,
   })
   ipAddress!: string | null;
@@ -184,23 +184,20 @@ export class SystemSpecs extends Model<SystemSpecs> {
   @BeforeCreate
   static async hashPassword(instance: SystemSpecs) {
     if (instance.cloudStoragePassword) {
-      instance.cloudStoragePassword = await bcrypt.hash(
-        instance.cloudStoragePassword,
-        12,
-      );
+      instance.cloudStoragePassword = await bcrypt.hash(instance.cloudStoragePassword, 12);
     }
   }
 
   @BeforeUpdate
   static async hashPasswordOnUpdate(instance: SystemSpecs) {
-    if (instance.changed("cloudStoragePassword")) {
+    if (instance.changed('cloudStoragePassword')) {
       const password = instance.cloudStoragePassword;
 
       if (
         password &&
-        !password.startsWith("$2a$") &&
-        !password.startsWith("$2b$") &&
-        !password.startsWith("$2y$")
+        !password.startsWith('$2a$') &&
+        !password.startsWith('$2b$') &&
+        !password.startsWith('$2y$')
       ) {
         instance.cloudStoragePassword = await bcrypt.hash(password, 12);
       }

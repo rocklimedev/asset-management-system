@@ -1,16 +1,13 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { Op } from "sequelize";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Op } from 'sequelize';
 
-import {
-  AssetAssignment,
-  AssignmentStatus,
-} from "./models/asset-assignment.model";
-import { Asset } from "./models/asset.model";
-import { AssetUnit } from "./models/asset-unit.model";
-import { Employee } from "@/modules/organisation/models/employees.model";
+import { AssetAssignment, AssignmentStatus } from './models/asset-assignment.model';
+import { Asset } from './models/asset.model';
+import { AssetUnit } from './models/asset-unit.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
 
-import { System } from "./models/system.model";
-import { AssetCategory } from "./models/asset-category.model";
+import { System } from './models/system.model';
+import { AssetCategory } from './models/asset-category.model';
 
 @Injectable()
 export class AssetAssignmentService {
@@ -53,11 +50,11 @@ export class AssetAssignmentService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
@@ -65,21 +62,21 @@ export class AssetAssignmentService {
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     return assignments;
@@ -94,11 +91,11 @@ export class AssetAssignmentService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
@@ -106,24 +103,24 @@ export class AssetAssignmentService {
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
     });
 
     if (!assignment) {
-      throw new NotFoundException("Asset assignment not found.");
+      throw new NotFoundException('Asset assignment not found.');
     }
 
     return assignment;
@@ -156,7 +153,7 @@ export class AssetAssignmentService {
     const employee = await Employee.findByPk(employeeId);
 
     if (!employee) {
-      throw new NotFoundException("Employee not found.");
+      throw new NotFoundException('Employee not found.');
     }
 
     const where: Record<string, any> = {
@@ -174,11 +171,11 @@ export class AssetAssignmentService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
@@ -186,21 +183,21 @@ export class AssetAssignmentService {
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     return assignments;
@@ -263,14 +260,14 @@ export class AssetAssignmentService {
       include: [
         {
           model: AssetCategory,
-          as: "category",
+          as: 'category',
           required: false,
         },
       ],
     });
 
     if (!asset) {
-      throw new NotFoundException("Asset not found.");
+      throw new NotFoundException('Asset not found.');
     }
 
     const where: Record<string, any> = {
@@ -296,33 +293,33 @@ export class AssetAssignmentService {
       include: [
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     return {
@@ -348,11 +345,11 @@ export class AssetAssignmentService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
@@ -362,7 +359,7 @@ export class AssetAssignmentService {
     });
 
     if (!assetUnit) {
-      throw new NotFoundException("Asset unit not found.");
+      throw new NotFoundException('Asset unit not found.');
     }
 
     const assignments = await AssetAssignment.findAll({
@@ -372,16 +369,16 @@ export class AssetAssignmentService {
       include: [
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           include: [
             {
               model: AssetCategory,
-              as: "category",
+              as: 'category',
               required: false,
             },
           ],
@@ -389,16 +386,16 @@ export class AssetAssignmentService {
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     return {
@@ -425,26 +422,26 @@ export class AssetAssignmentService {
       include: [
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           required: false,
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
   }
 
@@ -466,7 +463,7 @@ export class AssetAssignmentService {
     const asset = await Asset.findByPk(assetId);
 
     if (!asset) {
-      throw new NotFoundException("Asset not found.");
+      throw new NotFoundException('Asset not found.');
     }
 
     const assignments = await AssetAssignment.findAll({
@@ -477,21 +474,21 @@ export class AssetAssignmentService {
       include: [
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     return assignments;
@@ -518,14 +515,14 @@ export class AssetAssignmentService {
       include: [
         {
           model: AssetCategory,
-          as: "category",
+          as: 'category',
           required: false,
         },
       ],
     });
 
     if (!asset) {
-      throw new NotFoundException("Asset not found.");
+      throw new NotFoundException('Asset not found.');
     }
 
     const assignments = await AssetAssignment.findAll({
@@ -535,21 +532,21 @@ export class AssetAssignmentService {
       include: [
         {
           model: Employee,
-          as: "employee",
+          as: 'employee',
           required: false,
         },
         {
           model: AssetUnit,
-          as: "assetUnit",
+          as: 'assetUnit',
           required: false,
         },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: false,
         },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
 
     const activeAssignments = assignments.filter(

@@ -1,42 +1,42 @@
-import { AssetsModule } from "../assets/assets.module";
-import { Module } from "@nestjs/common";
-import { SequelizeModule } from "@nestjs/sequelize";
+import { AssetsModule } from '../assets/assets.module';
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 
 // ============================================================
 // CONTROLLERS
 // ============================================================
 
-import { OrganisationsController } from "./organisation.controller";
-import { EmployeesController } from "./employees.controller";
+import { OrganisationsController } from './organisation.controller';
+import { EmployeesController } from './employees.controller';
 
 // ============================================================
 // SERVICES
 // ============================================================
 
-import { OrganisationsService } from "./organisation.service";
-import { EmployeesService } from "./employees.service";
+import { OrganisationsService } from './organisation.service';
+import { EmployeesService } from './employees.service';
 
 // ============================================================
 // ORGANISATION MODELS
 // ============================================================
 
-import { Organisation } from "./models/organisation.model";
-import { Employee } from "./models/employees.model";
-import { Department } from "./models/department.model";
-import { Location } from "./models/location.model";
+import { Organisation } from './models/organisation.model';
+import { Employee } from './models/employees.model';
+import { Department } from './models/department.model';
+import { Location } from './models/location.model';
 
 // ============================================================
 // ASSET MODELS
 // ============================================================
 
-import { Asset } from "../assets/models/asset.model";
-import { AssetCategory } from "../assets/models/asset-category.model";
+import { Asset } from '../assets/models/asset.model';
+import { AssetCategory } from '../assets/models/asset-category.model';
 
 // ============================================================
 // AUDIT
 // ============================================================
 
-import { AuditModule } from "../audit/audit.module";
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [

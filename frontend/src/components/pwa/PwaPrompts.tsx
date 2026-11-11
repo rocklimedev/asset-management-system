@@ -46,6 +46,16 @@ export function PwaPrompts() {
   const online = useOnlineStatus();
 
   const closeOfflineReady = () => setOfflineReady(false);
+
+  // The "ready offline" notice is informational. It dismisses itself so it
+  // never sits over the page content the user came to work on.
+  useEffect(() => {
+    if (!offlineReady) return;
+
+    const timer = window.setTimeout(() => setOfflineReady(false), 6000);
+
+    return () => window.clearTimeout(timer);
+  }, [offlineReady, setOfflineReady]);
   const closeUpdate = () => setNeedRefresh(false);
 
   return (

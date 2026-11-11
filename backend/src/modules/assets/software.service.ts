@@ -3,33 +3,30 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { InjectConnection, InjectModel } from "@nestjs/sequelize";
-import { col, fn, Op, Transaction } from "sequelize";
-import { Sequelize } from "sequelize-typescript";
+} from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { col, fn, Op, Transaction } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
-import { AssetKind } from "@/common/enums/assets.enums";
-import { Asset } from "@/modules/assets/models/asset.model";
-import { System } from "@/modules/assets/models/system.model";
-import { SoftwareLicense } from "@/modules/assets/models/software-license.model";
+import { AssetKind } from '@/common/enums/assets.enums';
+import { Asset } from '@/modules/assets/models/asset.model';
+import { System } from '@/modules/assets/models/system.model';
+import { SoftwareLicense } from '@/modules/assets/models/software-license.model';
 import {
   SoftwareAssignmentStatus,
   SoftwareInstallationStatus,
   SoftwareLicenseAssignment,
-} from "@/modules/assets/models/software-license-assignment.model";
-import {
-  Employee,
-  EmployeeStatus,
-} from "@/modules/organisation/models/employees.model";
+} from '@/modules/assets/models/software-license-assignment.model';
+import { Employee, EmployeeStatus } from '@/modules/organisation/models/employees.model';
 import {
   SoftwareDetails,
   SoftwareSubscriptionType,
   SoftwareUsage,
-} from "./models/software-details.model";
+} from './models/software-details.model';
 import {
   SoftwareAssignment,
   SoftwareAssignmentStatus as LegacyAssignmentStatus,
-} from "./models/software-assignment.model";
+} from './models/software-assignment.model';
 
 // ============================================================
 // DTOs
@@ -47,7 +44,7 @@ export interface CreateSoftwareDto {
   notes?: string | null;
 }
 
-export type UpdateSoftwareDto = Partial<Omit<CreateSoftwareDto, "assetId">>;
+export type UpdateSoftwareDto = Partial<Omit<CreateSoftwareDto, 'assetId'>>;
 
 export interface SoftwareListParams {
   search?: string;
@@ -57,8 +54,8 @@ export interface SoftwareListParams {
   publisher?: string;
   /** true = only top-level software (no parent) */
   rootOnly?: boolean;
-  sortBy?: "createdAt" | "name" | "publisher";
-  sortDir?: "ASC" | "DESC";
+  sortBy?: 'createdAt' | 'name' | 'publisher';
+  sortDir?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
 }
@@ -75,7 +72,7 @@ export interface CreateLicenseDto {
   cost?: number | null;
 }
 
-export type UpdateLicenseDto = Partial<Omit<CreateLicenseDto, "assetId">>;
+export type UpdateLicenseDto = Partial<Omit<CreateLicenseDto, 'assetId'>>;
 
 export interface RenewLicenseDto {
   expiryDate: Date | string;
@@ -174,7 +171,7 @@ export class SoftwareService {
   private async assertSoftwareAsset(
     assetId: string,
     t?: Transaction,
-    label = "Software asset",
+    label = 'Software asset',
   ): Promise<Asset> {
     const asset = await this.assetModel.findByPk(assetId, { transaction: t });
 
@@ -190,10 +187,7 @@ export class SoftwareService {
   }
 
   /** Returns [parent, grandparent, ...] of a software asset. */
-  private async getAncestorIds(
-    assetId: string,
-    t?: Transaction,
-  ): Promise<string[]> {
+  private async getAncestorIds(assetId: string, t?: Transaction): Promise<string[]> {
     const ids: string[] = [];
     const seen = new Set<string>([assetId]);
     let current = assetId;
@@ -201,7 +195,7 @@ export class SoftwareService {
     for (let i = 0; i < MAX_HIERARCHY_DEPTH; i++) {
       const details = await this.softwareDetailsModel.findOne({
         where: { assetId: current },
-        attributes: ["parentSoftwareId"],
+        attributes: ['parentSoftwareId'],
         transaction: t,
       });
 
@@ -216,21 +210,17 @@ export class SoftwareService {
     return ids;
   }
 
-  private async assertValidParent(
-    assetId: string,
-    parentAssetId: string,
-    t?: Transaction,
-  ) {
+  private async assertValidParent(assetId: string, parentAssetId: string, t?: Transaction) {
     if (parentAssetId === assetId) {
-      throw new BadRequestException("Software cannot be its own parent");
+      throw new BadRequestException('Software cannot be its own parent');
     }
 
-    await this.assertSoftwareAsset(parentAssetId, t, "Parent software asset");
+    await this.assertSoftwareAsset(parentAssetId, t, 'Parent software asset');
 
     const ancestorsOfParent = await this.getAncestorIds(parentAssetId, t);
     if (ancestorsOfParent.includes(assetId)) {
       throw new BadRequestException(
-        "Invalid parent: this would create a circular software hierarchy",
+        'Invalid parent: this would create a circular software hierarchy',
       );
     }
   }
@@ -241,40 +231,27 @@ export class SoftwareService {
   ) {
     if (purchaseDate && expiryDate) {
       if (new Date(expiryDate) < new Date(purchaseDate)) {
-        throw new BadRequestException(
-          "License expiry date cannot be before the purchase date",
-        );
+        throw new BadRequestException('License expiry date cannot be before the purchase date');
       }
     }
   }
 
   private assertSeats(totalSeats?: number) {
-    if (
-      totalSeats !== undefined &&
-      (!Number.isInteger(totalSeats) || totalSeats < 1)
-    ) {
-      throw new BadRequestException("Total seats must be a whole number >= 1");
+    if (totalSeats !== undefined && (!Number.isInteger(totalSeats) || totalSeats < 1)) {
+      throw new BadRequestException('Total seats must be a whole number >= 1');
     }
   }
 
   private isExpired(license: SoftwareLicense) {
-    return Boolean(
-      license.expiryDate && new Date(license.expiryDate) < new Date(),
-    );
+    return Boolean(license.expiryDate && new Date(license.expiryDate) < new Date());
   }
 
-  private async getUsedSeats(
-    licenseId: string,
-    t?: Transaction,
-    excludeAssignmentId?: string,
-  ) {
+  private async getUsedSeats(licenseId: string, t?: Transaction, excludeAssignmentId?: string) {
     return this.assignmentModel.count({
       where: {
         licenseId,
         assignmentStatus: SoftwareAssignmentStatus.ACTIVE,
-        ...(excludeAssignmentId
-          ? { id: { [Op.ne]: excludeAssignmentId } }
-          : {}),
+        ...(excludeAssignmentId ? { id: { [Op.ne]: excludeAssignmentId } } : {}),
       },
       transaction: t,
     });
@@ -297,27 +274,20 @@ export class SoftwareService {
     t: Transaction,
     excludeAssignmentId?: string,
   ) {
-    const allowedAssetIds = [
-      softwareAssetId,
-      ...(await this.getAncestorIds(softwareAssetId, t)),
-    ];
+    const allowedAssetIds = [softwareAssetId, ...(await this.getAncestorIds(softwareAssetId, t))];
 
     if (!allowedAssetIds.includes(license.assetId)) {
-      throw new BadRequestException(
-        "License does not belong to this software or its parent suite",
-      );
+      throw new BadRequestException('License does not belong to this software or its parent suite');
     }
 
     if (this.isExpired(license)) {
-      throw new BadRequestException(
-        "The selected software license has expired",
-      );
+      throw new BadRequestException('The selected software license has expired');
     }
 
     const used = await this.getUsedSeats(license.id, t, excludeAssignmentId);
 
     if (used >= license.totalSeats) {
-      throw new ConflictException("No available license seats");
+      throw new ConflictException('No available license seats');
     }
   }
 
@@ -330,13 +300,13 @@ export class SoftwareService {
     t: Transaction,
   ): Promise<SoftwareLicense | null> {
     if (dto.softwareLicenseId) {
-      const license = await this.softwareLicenseModel.findByPk(
-        dto.softwareLicenseId,
-        { transaction: t, lock: t.LOCK.UPDATE },
-      );
+      const license = await this.softwareLicenseModel.findByPk(dto.softwareLicenseId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
 
       if (!license) {
-        throw new NotFoundException("Software license not found");
+        throw new NotFoundException('Software license not found');
       }
 
       await this.validateLicenseForAssignment(license, dto.softwareAssetId, t);
@@ -352,10 +322,7 @@ export class SoftwareService {
       const candidates = await this.softwareLicenseModel.findAll({
         where: {
           assetId: { [Op.in]: assetIds },
-          [Op.or]: [
-            { expiryDate: null },
-            { expiryDate: { [Op.gt]: new Date() } },
-          ],
+          [Op.or]: [{ expiryDate: null }, { expiryDate: { [Op.gt]: new Date() } }],
         },
         transaction: t,
         lock: t.LOCK.UPDATE,
@@ -372,9 +339,7 @@ export class SoftwareService {
         if (used < candidate.totalSeats) return candidate;
       }
 
-      throw new ConflictException(
-        "No license with free seats is available for this software",
-      );
+      throw new ConflictException('No license with free seats is available for this software');
     }
 
     return null;
@@ -394,30 +359,30 @@ export class SoftwareService {
    */
   private get assignmentIncludes() {
     return [
-      { model: Asset, as: "asset" },
+      { model: Asset, as: 'asset' },
       {
         model: System,
-        as: "system",
+        as: 'system',
         include: [
           {
             model: Employee,
-            as: "employee",
+            as: 'employee',
             required: false,
           },
         ],
       },
-      { model: SoftwareLicense, as: "license", required: false },
+      { model: SoftwareLicense, as: 'license', required: false },
     ];
   }
 
   /** Legacy assignment includes (software_assignments table). */
   private get legacyAssignmentIncludes() {
     return [
-      { model: Asset, as: "softwareAsset" },
+      { model: Asset, as: 'softwareAsset' },
       {
         model: System,
-        as: "system",
-        include: [{ model: Employee, as: "employee", required: false }],
+        as: 'system',
+        include: [{ model: Employee, as: 'employee', required: false }],
       },
     ];
   }
@@ -427,20 +392,14 @@ export class SoftwareService {
   // ============================================================
 
   async create(dto: CreateSoftwareDto) {
-    const asset = await this.assertSoftwareAsset(
-      dto.assetId,
-      undefined,
-      "Asset",
-    );
+    const asset = await this.assertSoftwareAsset(dto.assetId, undefined, 'Asset');
 
     const existing = await this.softwareDetailsModel.findOne({
       where: { assetId: dto.assetId },
     });
 
     if (existing) {
-      throw new ConflictException(
-        "Software details already exist for this asset",
-      );
+      throw new ConflictException('Software details already exist for this asset');
     }
 
     if (dto.parentSoftwareId) {
@@ -450,9 +409,9 @@ export class SoftwareService {
     const software = await this.softwareDetailsModel.create({
       assetId: dto.assetId,
       parentSoftwareId: dto.parentSoftwareId ?? null,
-      usage: asset.status === "ASSIGNED" ? SoftwareUsage.IN_USE : (dto.usage ?? SoftwareUsage.UNKNOWN),
-      subscriptionType:
-        dto.subscriptionType ?? SoftwareSubscriptionType.UNKNOWN,
+      usage:
+        asset.status === 'ASSIGNED' ? SoftwareUsage.IN_USE : (dto.usage ?? SoftwareUsage.UNKNOWN),
+      subscriptionType: dto.subscriptionType ?? SoftwareSubscriptionType.UNKNOWN,
       warrantyApplicable: dto.warrantyApplicable ?? false,
       version: dto.version ?? null,
       edition: dto.edition ?? null,
@@ -469,10 +428,8 @@ export class SoftwareService {
     const where: any = {};
 
     if (params.usage) where.usage = params.usage;
-    if (params.subscriptionType)
-      where.subscriptionType = params.subscriptionType;
-    if (params.publisher)
-      where.publisher = { [Op.like]: `%${params.publisher}%` };
+    if (params.subscriptionType) where.subscriptionType = params.subscriptionType;
+    if (params.publisher) where.publisher = { [Op.like]: `%${params.publisher}%` };
 
     if (params.parentSoftwareId) {
       where.parentSoftwareId = params.parentSoftwareId;
@@ -484,30 +441,30 @@ export class SoftwareService {
     if (search) {
       const like = `%${search}%`;
       where[Op.or] = [
-        { "$asset.name$": { [Op.like]: like } },
-        { "$asset.assetTag$": { [Op.like]: like } },
+        { '$asset.name$': { [Op.like]: like } },
+        { '$asset.assetTag$': { [Op.like]: like } },
         { publisher: { [Op.like]: like } },
       ];
     }
 
-    const dir = params.sortDir === "ASC" ? "ASC" : "DESC";
+    const dir = params.sortDir === 'ASC' ? 'ASC' : 'DESC';
     const order: any[] =
-      params.sortBy === "name"
-        ? [[{ model: Asset, as: "asset" }, "name", dir]]
-        : params.sortBy === "publisher"
-          ? [["publisher", dir]]
-          : [["createdAt", dir]];
+      params.sortBy === 'name'
+        ? [[{ model: Asset, as: 'asset' }, 'name', dir]]
+        : params.sortBy === 'publisher'
+          ? [['publisher', dir]]
+          : [['createdAt', dir]];
 
     const { rows, count } = await this.softwareDetailsModel.findAndCountAll({
       where,
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           required: true,
           where: { kind: AssetKind.SOFTWARE },
         },
-        { model: Asset, as: "parentSoftware", required: false },
+        { model: Asset, as: 'parentSoftware', required: false },
       ],
       order,
       limit,
@@ -519,32 +476,32 @@ export class SoftwareService {
     const counts = assetIds.length
       ? ((await this.assignmentModel.findAll({
           attributes: [
-            [col("asset_id"), "assetId"],
-            [fn("COUNT", col("id")), "count"],
+            [col('asset_id'), 'assetId'],
+            [fn('COUNT', col('id')), 'count'],
           ],
           where: {
             assetId: { [Op.in]: assetIds },
             assignmentStatus: SoftwareAssignmentStatus.ACTIVE,
           },
-          group: ["asset_id"],
+          group: ['asset_id'],
           raw: true,
         })) as unknown as { assetId: string; count: string }[])
       : [];
 
     const countMap = new Map(counts.map((c) => [c.assetId, Number(c.count)]));
     if (assetIds.length) {
-      const legacyCounts = await this.legacyAssignmentModel.findAll({
+      const legacyCounts = (await this.legacyAssignmentModel.findAll({
         attributes: [
-          [col("software_asset_id"), "assetId"],
-          [fn("COUNT", col("id")), "count"],
+          [col('software_asset_id'), 'assetId'],
+          [fn('COUNT', col('id')), 'count'],
         ],
         where: {
           softwareAssetId: { [Op.in]: assetIds },
           status: LegacyAssignmentStatus.ACTIVE,
         },
-        group: ["software_asset_id"],
+        group: ['software_asset_id'],
         raw: true,
-      }) as unknown as { assetId: string; count: string }[];
+      })) as unknown as { assetId: string; count: string }[];
       for (const row of legacyCounts) {
         countMap.set(row.assetId, (countMap.get(row.assetId) ?? 0) + Number(row.count));
       }
@@ -569,17 +526,15 @@ export class SoftwareService {
       include: [
         {
           model: Asset,
-          as: "asset",
-          include: [
-            { model: SoftwareLicense, as: "licenses", required: false },
-          ],
+          as: 'asset',
+          include: [{ model: SoftwareLicense, as: 'licenses', required: false }],
         },
-        { model: Asset, as: "parentSoftware", required: false },
+        { model: Asset, as: 'parentSoftware', required: false },
       ],
     });
 
     if (!software) {
-      throw new NotFoundException("Software not found");
+      throw new NotFoundException('Software not found');
     }
 
     return software;
@@ -591,17 +546,15 @@ export class SoftwareService {
       include: [
         {
           model: Asset,
-          as: "asset",
-          include: [
-            { model: SoftwareLicense, as: "licenses", required: false },
-          ],
+          as: 'asset',
+          include: [{ model: SoftwareLicense, as: 'licenses', required: false }],
         },
-        { model: Asset, as: "parentSoftware", required: false },
+        { model: Asset, as: 'parentSoftware', required: false },
       ],
     });
 
     if (!software) {
-      throw new NotFoundException("Software details not found for this asset");
+      throw new NotFoundException('Software details not found for this asset');
     }
 
     return software;
@@ -611,7 +564,7 @@ export class SoftwareService {
     const software = await this.softwareDetailsModel.findByPk(id);
 
     if (!software) {
-      throw new NotFoundException("Software not found");
+      throw new NotFoundException('Software not found');
     }
 
     if (dto.parentSoftwareId) {
@@ -619,13 +572,10 @@ export class SoftwareService {
     }
 
     const patch: Partial<SoftwareDetails> = {};
-    if (dto.parentSoftwareId !== undefined)
-      patch.parentSoftwareId = dto.parentSoftwareId;
+    if (dto.parentSoftwareId !== undefined) patch.parentSoftwareId = dto.parentSoftwareId;
     if (dto.usage !== undefined) patch.usage = dto.usage;
-    if (dto.subscriptionType !== undefined)
-      patch.subscriptionType = dto.subscriptionType;
-    if (dto.warrantyApplicable !== undefined)
-      patch.warrantyApplicable = dto.warrantyApplicable;
+    if (dto.subscriptionType !== undefined) patch.subscriptionType = dto.subscriptionType;
+    if (dto.warrantyApplicable !== undefined) patch.warrantyApplicable = dto.warrantyApplicable;
     if (dto.version !== undefined) patch.version = dto.version;
     if (dto.edition !== undefined) patch.edition = dto.edition;
     if (dto.publisher !== undefined) patch.publisher = dto.publisher;
@@ -638,7 +588,7 @@ export class SoftwareService {
 
   async bulkUpdateUsage(ids: string[], usage: SoftwareUsage) {
     if (!ids?.length) {
-      throw new BadRequestException("No software selected");
+      throw new BadRequestException('No software selected');
     }
 
     const [affected] = await this.softwareDetailsModel.update(
@@ -657,7 +607,7 @@ export class SoftwareService {
       });
 
       if (!software) {
-        throw new NotFoundException("Software not found");
+        throw new NotFoundException('Software not found');
       }
 
       const activeModern = await this.assignmentModel.count({
@@ -678,7 +628,7 @@ export class SoftwareService {
 
       if (activeModern > 0 || activeLegacy > 0) {
         throw new ConflictException(
-          "Software cannot be deleted while it has active system assignments",
+          'Software cannot be deleted while it has active system assignments',
         );
       }
 
@@ -689,13 +639,13 @@ export class SoftwareService {
 
       if (children > 0) {
         throw new ConflictException(
-          "Software cannot be deleted while other software is nested under it. Re-parent or delete the child software first",
+          'Software cannot be deleted while other software is nested under it. Re-parent or delete the child software first',
         );
       }
 
       await software.destroy({ transaction: t });
 
-      return { success: true, message: "Software deleted successfully" };
+      return { success: true, message: 'Software deleted successfully' };
     });
   }
 
@@ -708,8 +658,8 @@ export class SoftwareService {
 
     return this.softwareDetailsModel.findAll({
       where: { parentSoftwareId: assetId },
-      include: [{ model: Asset, as: "asset", required: true }],
-      order: [[{ model: Asset, as: "asset" }, "name", "ASC"]],
+      include: [{ model: Asset, as: 'asset', required: true }],
+      order: [[{ model: Asset, as: 'asset' }, 'name', 'ASC']],
     });
   }
 
@@ -718,9 +668,9 @@ export class SoftwareService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           required: true,
-          attributes: ["id", "name", "assetTag"],
+          attributes: ['id', 'name', 'assetTag'],
         },
       ],
     });
@@ -746,9 +696,7 @@ export class SoftwareService {
 
     for (const d of all) {
       const node = nodes.get(d.assetId)!;
-      const parent = d.parentSoftwareId
-        ? nodes.get(d.parentSoftwareId)
-        : undefined;
+      const parent = d.parentSoftwareId ? nodes.get(d.parentSoftwareId) : undefined;
 
       if (parent) parent.children.push(node);
       else roots.push(node);
@@ -756,7 +704,7 @@ export class SoftwareService {
 
     if (rootAssetId) {
       const node = nodes.get(rootAssetId);
-      if (!node) throw new NotFoundException("Software not found");
+      if (!node) throw new NotFoundException('Software not found');
       return node;
     }
 
@@ -768,10 +716,10 @@ export class SoftwareService {
   // ============================================================
 
   async createLicense(dto: CreateLicenseDto) {
-    await this.assertSoftwareAsset(dto.assetId, undefined, "Asset");
+    await this.assertSoftwareAsset(dto.assetId, undefined, 'Asset');
 
     if (!dto.vendor?.trim() || !dto.licenseType?.trim()) {
-      throw new BadRequestException("Vendor and license type are required");
+      throw new BadRequestException('Vendor and license type are required');
     }
 
     this.assertSeats(dto.totalSeats);
@@ -795,11 +743,11 @@ export class SoftwareService {
 
   async getLicense(id: string) {
     const license = await this.softwareLicenseModel.findByPk(id, {
-      include: [{ model: Asset, as: "asset" }],
+      include: [{ model: Asset, as: 'asset' }],
     });
 
     if (!license) {
-      throw new NotFoundException("Software license not found");
+      throw new NotFoundException('Software license not found');
     }
 
     return license;
@@ -821,17 +769,14 @@ export class SoftwareService {
       where.expiryDate = { [Op.lt]: now };
     } else if (params?.expiringInDays !== undefined) {
       where.expiryDate = {
-        [Op.between]: [
-          now,
-          new Date(now.getTime() + params.expiringInDays * DAY_MS),
-        ],
+        [Op.between]: [now, new Date(now.getTime() + params.expiringInDays * DAY_MS)],
       };
     }
 
     const licenses = await this.softwareLicenseModel.findAll({
       where,
-      include: [{ model: Asset, as: "asset" }],
-      order: [["expiryDate", "ASC"]],
+      include: [{ model: Asset, as: 'asset' }],
+      order: [['expiryDate', 'ASC']],
     });
 
     if (params?.hasFreeSeats) {
@@ -849,7 +794,7 @@ export class SoftwareService {
       });
 
       if (!license) {
-        throw new NotFoundException("Software license not found");
+        throw new NotFoundException('Software license not found');
       }
 
       this.assertSeats(dto.totalSeats);
@@ -870,14 +815,11 @@ export class SoftwareService {
       const patch: any = {};
       if (dto.vendor !== undefined) patch.vendor = dto.vendor;
       if (dto.licenseType !== undefined) patch.licenseType = dto.licenseType;
-      if (dto.licenseReference !== undefined)
-        patch.licenseReference = dto.licenseReference;
+      if (dto.licenseReference !== undefined) patch.licenseReference = dto.licenseReference;
       if (dto.totalSeats !== undefined) patch.totalSeats = dto.totalSeats;
       if (dto.cost !== undefined) patch.cost = dto.cost;
       if (dto.purchaseDate !== undefined)
-        patch.purchaseDate = dto.purchaseDate
-          ? new Date(dto.purchaseDate)
-          : null;
+        patch.purchaseDate = dto.purchaseDate ? new Date(dto.purchaseDate) : null;
       if (dto.expiryDate !== undefined)
         patch.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
       if (dto.renewalDate !== undefined)
@@ -893,16 +835,11 @@ export class SoftwareService {
     const license = await this.softwareLicenseModel.findByPk(id);
 
     if (!license) {
-      throw new NotFoundException("Software license not found");
+      throw new NotFoundException('Software license not found');
     }
 
-    if (
-      license.expiryDate &&
-      new Date(dto.expiryDate) <= new Date(license.expiryDate)
-    ) {
-      throw new BadRequestException(
-        "New expiry date must be later than the current expiry date",
-      );
+    if (license.expiryDate && new Date(dto.expiryDate) <= new Date(license.expiryDate)) {
+      throw new BadRequestException('New expiry date must be later than the current expiry date');
     }
 
     return this.updateLicense(id, {
@@ -921,15 +858,13 @@ export class SoftwareService {
       });
 
       if (!license) {
-        throw new NotFoundException("Software license not found");
+        throw new NotFoundException('Software license not found');
       }
 
       const active = await this.getUsedSeats(id, t);
 
       if (active > 0) {
-        throw new ConflictException(
-          "License cannot be deleted while it has active assignments",
-        );
+        throw new ConflictException('License cannot be deleted while it has active assignments');
       }
 
       await this.assignmentModel.update(
@@ -939,17 +874,17 @@ export class SoftwareService {
 
       await license.destroy({ transaction: t });
 
-      return { success: true, message: "License deleted successfully" };
+      return { success: true, message: 'License deleted successfully' };
     });
   }
 
   async getLicenseUsage(licenseId: string) {
     const license = await this.softwareLicenseModel.findByPk(licenseId, {
-      include: [{ model: Asset, as: "asset" }],
+      include: [{ model: Asset, as: 'asset' }],
     });
 
     if (!license) {
-      throw new NotFoundException("Software license not found");
+      throw new NotFoundException('Software license not found');
     }
 
     const assignments = await this.assignmentModel.findAll({
@@ -960,19 +895,17 @@ export class SoftwareService {
       include: [
         {
           model: System,
-          as: "system",
-          include: [{ model: Employee, as: "employee", required: false }],
+          as: 'system',
+          include: [{ model: Employee, as: 'employee', required: false }],
         },
       ],
-      order: [["installedAt", "DESC"]],
+      order: [['installedAt', 'DESC']],
     });
 
     const assignedSeats = assignments.length;
     const availableSeats = Math.max(license.totalSeats - assignedSeats, 0);
     const daysToExpiry = license.expiryDate
-      ? Math.ceil(
-          (new Date(license.expiryDate).getTime() - Date.now()) / DAY_MS,
-        )
+      ? Math.ceil((new Date(license.expiryDate).getTime() - Date.now()) / DAY_MS)
       : null;
 
     return {
@@ -981,9 +914,7 @@ export class SoftwareService {
       assignedSeats,
       availableSeats,
       overAllocatedBy: Math.max(assignedSeats - license.totalSeats, 0),
-      utilisationPercent: Math.round(
-        (assignedSeats / license.totalSeats) * 100,
-      ),
+      utilisationPercent: Math.round((assignedSeats / license.totalSeats) * 100),
       isExpired: this.isExpired(license),
       daysToExpiry,
       assignments,
@@ -996,7 +927,7 @@ export class SoftwareService {
       : await this.softwareLicenseModel.findAll();
 
     if (licenseId && !licenses.length) {
-      throw new NotFoundException("Software license not found");
+      throw new NotFoundException('Software license not found');
     }
 
     const changes: { licenseId: string; before: number; after: number }[] = [];
@@ -1019,10 +950,7 @@ export class SoftwareService {
   // ASSIGNMENT: Software -> System -> Employee
   // ============================================================
 
-  private async assignInTx(
-    dto: AssignSoftwareDto,
-    t: Transaction,
-  ): Promise<string> {
+  private async assignInTx(dto: AssignSoftwareDto, t: Transaction): Promise<string> {
     await this.assertSoftwareAsset(dto.softwareAssetId, t);
 
     const details = await this.softwareDetailsModel.findOne({
@@ -1031,15 +959,11 @@ export class SoftwareService {
     });
 
     if (!details) {
-      throw new BadRequestException(
-        "Software details have not been configured for this asset",
-      );
+      throw new BadRequestException('Software details have not been configured for this asset');
     }
 
     if (details.usage === SoftwareUsage.BLOCKED) {
-      throw new BadRequestException(
-        "This software is blocked and cannot be assigned",
-      );
+      throw new BadRequestException('This software is blocked and cannot be assigned');
     }
 
     const system = await this.systemModel.findByPk(dto.systemId, {
@@ -1047,12 +971,12 @@ export class SoftwareService {
     });
 
     if (!system) {
-      throw new NotFoundException("System not found");
+      throw new NotFoundException('System not found');
     }
 
     if (!system.employeeId) {
       throw new BadRequestException(
-        "Software cannot be assigned to a system that is not assigned to an employee",
+        'Software cannot be assigned to a system that is not assigned to an employee',
       );
     }
 
@@ -1066,9 +990,7 @@ export class SoftwareService {
       transaction: t,
     });
     if (dupModern) {
-      throw new ConflictException(
-        "This software is already assigned to this system",
-      );
+      throw new ConflictException('This software is already assigned to this system');
     }
 
     const dupLegacy = await this.legacyAssignmentModel.findOne({
@@ -1080,9 +1002,7 @@ export class SoftwareService {
       transaction: t,
     });
     if (dupLegacy) {
-      throw new ConflictException(
-        "This software is already assigned to this system",
-      );
+      throw new ConflictException('This software is already assigned to this system');
     }
 
     const license = await this.resolveLicense(dto, t);
@@ -1093,8 +1013,7 @@ export class SoftwareService {
         assetId: dto.softwareAssetId,
         systemId: dto.systemId,
         licenseId: license?.id ?? null,
-        installationStatus:
-          dto.installationStatus ?? SoftwareInstallationStatus.INSTALLED,
+        installationStatus: dto.installationStatus ?? SoftwareInstallationStatus.INSTALLED,
         assignmentStatus: SoftwareAssignmentStatus.ACTIVE,
         version: dto.version ?? details.version ?? null,
         installedAt: new Date(),
@@ -1119,7 +1038,7 @@ export class SoftwareService {
 
   async bulkAssign(dto: BulkAssignSoftwareDto) {
     if (!dto.systemIds?.length) {
-      throw new BadRequestException("No systems selected");
+      throw new BadRequestException('No systems selected');
     }
 
     const succeeded: string[] = [];
@@ -1142,7 +1061,7 @@ export class SoftwareService {
         );
         succeeded.push(id);
       } catch (e: any) {
-        failed.push({ systemId, reason: e?.message ?? "Unknown error" });
+        failed.push({ systemId, reason: e?.message ?? 'Unknown error' });
       }
     }
 
@@ -1183,11 +1102,7 @@ export class SoftwareService {
           transaction: t,
         });
 
-        if (
-          existsModern ||
-          existsLegacy ||
-          child.usage === SoftwareUsage.BLOCKED
-        ) {
+        if (existsModern || existsLegacy || child.usage === SoftwareUsage.BLOCKED) {
           continue;
         }
 
@@ -1216,7 +1131,7 @@ export class SoftwareService {
     t: Transaction,
   ) {
     if (assignment.assignmentStatus !== SoftwareAssignmentStatus.ACTIVE) {
-      throw new ConflictException("Software assignment is already inactive");
+      throw new ConflictException('Software assignment is already inactive');
     }
 
     await assignment.update(
@@ -1240,7 +1155,7 @@ export class SoftwareService {
     t: Transaction,
   ) {
     if (assignment.status !== LegacyAssignmentStatus.ACTIVE) {
-      throw new ConflictException("Software assignment is already inactive");
+      throw new ConflictException('Software assignment is already inactive');
     }
 
     await assignment.update(
@@ -1267,7 +1182,7 @@ export class SoftwareService {
           lock: t.LOCK.UPDATE,
         });
         if (!locked) {
-          throw new NotFoundException("Software assignment not found");
+          throw new NotFoundException('Software assignment not found');
         }
         await this.unassignInTx(locked, notes, t);
       });
@@ -1277,7 +1192,7 @@ export class SoftwareService {
     // Legacy table
     const legacy = await this.legacyAssignmentModel.findByPk(assignmentId);
     if (!legacy) {
-      throw new NotFoundException("Software assignment not found");
+      throw new NotFoundException('Software assignment not found');
     }
 
     await this.sequelize.transaction(async (t) => {
@@ -1286,7 +1201,7 @@ export class SoftwareService {
         lock: t.LOCK.UPDATE,
       });
       if (!locked) {
-        throw new NotFoundException("Software assignment not found");
+        throw new NotFoundException('Software assignment not found');
       }
       await this.unassignLegacyInTx(locked, notes, t);
     });
@@ -1303,7 +1218,7 @@ export class SoftwareService {
     const system = await this.systemModel.findByPk(systemId);
 
     if (!system) {
-      throw new NotFoundException("System not found");
+      throw new NotFoundException('System not found');
     }
 
     const removed = await this.sequelize.transaction(async (t) => {
@@ -1350,20 +1265,16 @@ export class SoftwareService {
         });
 
         if (!current) {
-          throw new NotFoundException("Software assignment not found");
+          throw new NotFoundException('Software assignment not found');
         }
 
         if (current.systemId === toSystemId) {
-          throw new BadRequestException("Software is already on this system");
+          throw new BadRequestException('Software is already on this system');
         }
 
         const { assetId, licenseId, version } = current;
 
-        await this.unassignInTx(
-          current,
-          notes ?? `Transferred to system ${toSystemId}`,
-          t,
-        );
+        await this.unassignInTx(current, notes ?? `Transferred to system ${toSystemId}`, t);
 
         return this.assignInTx(
           {
@@ -1383,34 +1294,30 @@ export class SoftwareService {
     // Legacy path
     const legacy = await this.legacyAssignmentModel.findByPk(assignmentId);
     if (!legacy) {
-      throw new NotFoundException("Software assignment not found");
+      throw new NotFoundException('Software assignment not found');
     }
 
     if (legacy.systemId === toSystemId) {
-      throw new BadRequestException("Software is already on this system");
+      throw new BadRequestException('Software is already on this system');
     }
 
     if (legacy.status !== LegacyAssignmentStatus.ACTIVE) {
-      throw new ConflictException("Inactive assignments cannot be transferred");
+      throw new ConflictException('Inactive assignments cannot be transferred');
     }
 
     const toSystem = await this.systemModel.findByPk(toSystemId);
     if (!toSystem) {
-      throw new NotFoundException("System not found");
+      throw new NotFoundException('System not found');
     }
 
     if (!toSystem.employeeId) {
       throw new BadRequestException(
-        "Software cannot be assigned to a system that is not assigned to an employee",
+        'Software cannot be assigned to a system that is not assigned to an employee',
       );
     }
 
     await this.sequelize.transaction(async (t) => {
-      await this.unassignLegacyInTx(
-        legacy,
-        notes ?? `Transferred to system ${toSystemId}`,
-        t,
-      );
+      await this.unassignLegacyInTx(legacy, notes ?? `Transferred to system ${toSystemId}`, t);
 
       await this.legacyAssignmentModel.create(
         {
@@ -1424,7 +1331,10 @@ export class SoftwareService {
       );
       await this.softwareDetailsModel.update(
         { usage: SoftwareUsage.IN_USE },
-        { where: { assetId: legacy.softwareAssetId, usage: { [Op.ne]: SoftwareUsage.BLOCKED } }, transaction: t },
+        {
+          where: { assetId: legacy.softwareAssetId, usage: { [Op.ne]: SoftwareUsage.BLOCKED } },
+          transaction: t,
+        },
       );
     });
 
@@ -1435,7 +1345,7 @@ export class SoftwareService {
         status: LegacyAssignmentStatus.ACTIVE,
       },
       include: this.legacyAssignmentIncludes,
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
   }
 
@@ -1446,10 +1356,10 @@ export class SoftwareService {
       // Notes-only update on legacy
       const legacy = await this.legacyAssignmentModel.findByPk(assignmentId);
       if (!legacy) {
-        throw new NotFoundException("Software assignment not found");
+        throw new NotFoundException('Software assignment not found');
       }
       if (legacy.status !== LegacyAssignmentStatus.ACTIVE) {
-        throw new ConflictException("Inactive assignments cannot be modified");
+        throw new ConflictException('Inactive assignments cannot be modified');
       }
       if (dto.notes !== undefined) {
         await legacy.update({ notes: dto.notes });
@@ -1466,40 +1376,34 @@ export class SoftwareService {
       });
 
       if (!assignment) {
-        throw new NotFoundException("Software assignment not found");
+        throw new NotFoundException('Software assignment not found');
       }
 
       if (assignment.assignmentStatus !== SoftwareAssignmentStatus.ACTIVE) {
-        throw new ConflictException("Inactive assignments cannot be modified");
+        throw new ConflictException('Inactive assignments cannot be modified');
       }
 
       const previousLicenseId = assignment.licenseId;
       const patch: any = {};
 
       if (dto.version !== undefined) patch.version = dto.version;
-      if (dto.installationStatus !== undefined)
-        patch.installationStatus = dto.installationStatus;
+      if (dto.installationStatus !== undefined) patch.installationStatus = dto.installationStatus;
       if (dto.notes !== undefined) patch.notes = dto.notes;
 
       if (dto.softwareLicenseId !== undefined) {
         if (dto.softwareLicenseId === null) {
           patch.licenseId = null;
         } else if (dto.softwareLicenseId !== previousLicenseId) {
-          const license = await this.softwareLicenseModel.findByPk(
-            dto.softwareLicenseId,
-            { transaction: t, lock: t.LOCK.UPDATE },
-          );
+          const license = await this.softwareLicenseModel.findByPk(dto.softwareLicenseId, {
+            transaction: t,
+            lock: t.LOCK.UPDATE,
+          });
 
           if (!license) {
-            throw new NotFoundException("Software license not found");
+            throw new NotFoundException('Software license not found');
           }
 
-          await this.validateLicenseForAssignment(
-            license,
-            assignment.assetId,
-            t,
-            assignment.id,
-          );
+          await this.validateLicenseForAssignment(license, assignment.assetId, t, assignment.id);
 
           patch.licenseId = license.id;
         }
@@ -1536,7 +1440,7 @@ export class SoftwareService {
       include: this.legacyAssignmentIncludes,
     });
     if (!legacy) {
-      throw new NotFoundException("Software assignment not found");
+      throw new NotFoundException('Software assignment not found');
     }
     return legacy;
   }
@@ -1558,25 +1462,22 @@ export class SoftwareService {
     if (params?.systemId) where.systemId = params.systemId;
     if (params?.licenseId) where.licenseId = params.licenseId;
     if (params?.status) where.assignmentStatus = params.status;
-    if (params?.installationStatus)
-      where.installationStatus = params.installationStatus;
+    if (params?.installationStatus) where.installationStatus = params.installationStatus;
 
     const modern = await this.assignmentModel.findAll({
       where,
       include: [
-        { model: Asset, as: "asset" },
+        { model: Asset, as: 'asset' },
         {
           model: System,
-          as: "system",
+          as: 'system',
           required: Boolean(params?.employeeId),
-          where: params?.employeeId
-            ? { employeeId: params.employeeId }
-            : undefined,
-          include: [{ model: Employee, as: "employee", required: false }],
+          where: params?.employeeId ? { employeeId: params.employeeId } : undefined,
+          include: [{ model: Employee, as: 'employee', required: false }],
         },
-        { model: SoftwareLicense, as: "license", required: false },
+        { model: SoftwareLicense, as: 'license', required: false },
       ],
-      order: [["installedAt", "DESC"]],
+      order: [['installedAt', 'DESC']],
     });
 
     const results = modern.map((row) => row.toJSON());
@@ -1585,30 +1486,53 @@ export class SoftwareService {
       where: {
         ...(params?.softwareAssetId ? { softwareAssetId: params.softwareAssetId } : {}),
         ...(params?.systemId ? { systemId: params.systemId } : {}),
-        ...(params?.status ? { status: params.status === SoftwareAssignmentStatus.ACTIVE
-          ? LegacyAssignmentStatus.ACTIVE
-          : { [Op.in]: [LegacyAssignmentStatus.RETURNED, LegacyAssignmentStatus.REVOKED] } } : {}),
+        ...(params?.status
+          ? {
+              status:
+                params.status === SoftwareAssignmentStatus.ACTIVE
+                  ? LegacyAssignmentStatus.ACTIVE
+                  : { [Op.in]: [LegacyAssignmentStatus.RETURNED, LegacyAssignmentStatus.REVOKED] },
+            }
+          : {}),
       },
       include: [
-        { model: Asset, as: "softwareAsset" },
-        { model: System, as: "system", required: Boolean(params?.employeeId),
+        { model: Asset, as: 'softwareAsset' },
+        {
+          model: System,
+          as: 'system',
+          required: Boolean(params?.employeeId),
           where: params?.employeeId ? { employeeId: params.employeeId } : undefined,
-          include: [{ model: Employee, as: "employee", required: false }] },
+          include: [{ model: Employee, as: 'employee', required: false }],
+        },
       ],
-      order: [["assignedAt", "DESC"]],
+      order: [['assignedAt', 'DESC']],
     });
     for (const row of legacy) {
       const j = row.toJSON() as any;
       const active = j.status === LegacyAssignmentStatus.ACTIVE;
-      const installationStatus = active ? SoftwareInstallationStatus.INSTALLED : SoftwareInstallationStatus.UNINSTALLED;
+      const installationStatus = active
+        ? SoftwareInstallationStatus.INSTALLED
+        : SoftwareInstallationStatus.UNINSTALLED;
       if (params?.installationStatus && params.installationStatus !== installationStatus) continue;
-      results.push({ ...j, assetId: j.softwareAssetId,
-        assignmentStatus: active ? SoftwareAssignmentStatus.ACTIVE : SoftwareAssignmentStatus.REMOVED,
-        installationStatus, installedAt: j.assignedAt, removedAt: j.endedAt,
-        asset: j.softwareAsset ?? null, license: null, licenseId: null, version: null,
-        _source: "legacy" });
+      results.push({
+        ...j,
+        assetId: j.softwareAssetId,
+        assignmentStatus: active
+          ? SoftwareAssignmentStatus.ACTIVE
+          : SoftwareAssignmentStatus.REMOVED,
+        installationStatus,
+        installedAt: j.assignedAt,
+        removedAt: j.endedAt,
+        asset: j.softwareAsset ?? null,
+        license: null,
+        licenseId: null,
+        version: null,
+        _source: 'legacy',
+      });
     }
-    return results.sort((a, b) => new Date(b.installedAt ?? 0).getTime() - new Date(a.installedAt ?? 0).getTime());
+    return results.sort(
+      (a, b) => new Date(b.installedAt ?? 0).getTime() - new Date(a.installedAt ?? 0).getTime(),
+    );
   }
 
   /**
@@ -1618,7 +1542,7 @@ export class SoftwareService {
   async getSystemSoftware(systemId: string) {
     const system = await this.systemModel.findByPk(systemId);
     if (!system) {
-      throw new NotFoundException("System not found");
+      throw new NotFoundException('System not found');
     }
 
     const [modern, legacy] = await Promise.all([
@@ -1628,7 +1552,7 @@ export class SoftwareService {
           assignmentStatus: SoftwareAssignmentStatus.ACTIVE,
         },
         include: this.assignmentIncludes,
-        order: [["installedAt", "DESC"]],
+        order: [['installedAt', 'DESC']],
       }),
       this.legacyAssignmentModel.findAll({
         where: {
@@ -1636,7 +1560,7 @@ export class SoftwareService {
           status: LegacyAssignmentStatus.ACTIVE,
         },
         include: this.legacyAssignmentIncludes,
-        order: [["assignedAt", "DESC"]],
+        order: [['assignedAt', 'DESC']],
       }),
     ]);
 
@@ -1648,9 +1572,8 @@ export class SoftwareService {
           id: j.id,
           assetId: j.softwareAssetId,
           systemId: j.systemId,
-          assignmentStatus:
-            j.status === LegacyAssignmentStatus.ACTIVE ? "ACTIVE" : "REMOVED",
-          installationStatus: "INSTALLED",
+          assignmentStatus: j.status === LegacyAssignmentStatus.ACTIVE ? 'ACTIVE' : 'REMOVED',
+          installationStatus: 'INSTALLED',
           installedAt: j.assignedAt,
           removedAt: j.endedAt,
           notes: j.notes,
@@ -1659,7 +1582,7 @@ export class SoftwareService {
           asset: j.softwareAsset ?? null,
           softwareAsset: j.softwareAsset ?? null,
           system: j.system ?? null,
-          _source: "legacy",
+          _source: 'legacy',
         };
       }),
     ];
@@ -1669,12 +1592,12 @@ export class SoftwareService {
     const employee = await this.employeeModel.findByPk(employeeId);
 
     if (!employee) {
-      throw new NotFoundException("Employee not found");
+      throw new NotFoundException('Employee not found');
     }
 
     const systems = await this.systemModel.findAll({
       where: { employeeId },
-      attributes: ["id"],
+      attributes: ['id'],
     });
     const systemIds = systems.map((s) => s.id);
     if (!systemIds.length) return [];
@@ -1734,40 +1657,34 @@ export class SoftwareService {
     const now = new Date();
     const horizon = new Date(now.getTime() + expiringInDays * DAY_MS);
 
-    const [
-      byUsageRaw,
-      byTypeRaw,
-      licenses,
-      activeRaw,
-      allDetails,
-      legacyActive,
-    ] = await Promise.all([
-      this.softwareDetailsModel.findAll({
-        attributes: ["usage", [fn("COUNT", col("id")), "count"]],
-        group: ["usage"],
-        raw: true,
-      }) as unknown as Promise<{ usage: string; count: string }[]>,
-      this.softwareDetailsModel.findAll({
-        attributes: [
-          [col("subscription_type"), "subscriptionType"],
-          [fn("COUNT", col("id")), "count"],
-        ],
-        group: ["subscription_type"],
-        raw: true,
-      }) as unknown as Promise<{ subscriptionType: string; count: string }[]>,
-      this.softwareLicenseModel.findAll(),
-      this.assignmentModel.findAll({
-        attributes: [[col("asset_id"), "assetId"]],
-        where: { assignmentStatus: SoftwareAssignmentStatus.ACTIVE },
-        raw: true,
-      }) as unknown as Promise<{ assetId: string }[]>,
-      this.softwareDetailsModel.findAll({ attributes: ["assetId"] }),
-      this.legacyAssignmentModel.findAll({
-        attributes: [[col("software_asset_id"), "softwareAssetId"]],
-        where: { status: LegacyAssignmentStatus.ACTIVE },
-        raw: true,
-      }) as unknown as Promise<{ softwareAssetId: string }[]>,
-    ]);
+    const [byUsageRaw, byTypeRaw, licenses, activeRaw, allDetails, legacyActive] =
+      await Promise.all([
+        this.softwareDetailsModel.findAll({
+          attributes: ['usage', [fn('COUNT', col('id')), 'count']],
+          group: ['usage'],
+          raw: true,
+        }) as unknown as Promise<{ usage: string; count: string }[]>,
+        this.softwareDetailsModel.findAll({
+          attributes: [
+            [col('subscription_type'), 'subscriptionType'],
+            [fn('COUNT', col('id')), 'count'],
+          ],
+          group: ['subscription_type'],
+          raw: true,
+        }) as unknown as Promise<{ subscriptionType: string; count: string }[]>,
+        this.softwareLicenseModel.findAll(),
+        this.assignmentModel.findAll({
+          attributes: [[col('asset_id'), 'assetId']],
+          where: { assignmentStatus: SoftwareAssignmentStatus.ACTIVE },
+          raw: true,
+        }) as unknown as Promise<{ assetId: string }[]>,
+        this.softwareDetailsModel.findAll({ attributes: ['assetId'] }),
+        this.legacyAssignmentModel.findAll({
+          attributes: [[col('software_asset_id'), 'softwareAssetId']],
+          where: { status: LegacyAssignmentStatus.ACTIVE },
+          raw: true,
+        }) as unknown as Promise<{ softwareAssetId: string }[]>,
+      ]);
 
     const installedAssetIds = new Set([
       ...activeRaw.map((r) => r.assetId),
@@ -1781,8 +1698,8 @@ export class SoftwareService {
     return {
       software: {
         total: allDetails.length,
-        byUsage: toMap(byUsageRaw, "usage"),
-        bySubscriptionType: toMap(byTypeRaw, "subscriptionType"),
+        byUsage: toMap(byUsageRaw, 'usage'),
+        bySubscriptionType: toMap(byTypeRaw, 'subscriptionType'),
         withoutActiveInstallations: unused.length,
       },
       installations: {
@@ -1795,13 +1712,9 @@ export class SoftwareService {
         assignedSeats: licenses.reduce((s, l) => s + l.assignedSeats, 0),
         expired: licenses.filter((l) => this.isExpired(l)).length,
         expiringSoon: licenses.filter(
-          (l) =>
-            l.expiryDate &&
-            new Date(l.expiryDate) >= now &&
-            new Date(l.expiryDate) <= horizon,
+          (l) => l.expiryDate && new Date(l.expiryDate) >= now && new Date(l.expiryDate) <= horizon,
         ).length,
-        fullyUtilised: licenses.filter((l) => l.assignedSeats >= l.totalSeats)
-          .length,
+        fullyUtilised: licenses.filter((l) => l.assignedSeats >= l.totalSeats).length,
       },
     };
   }
@@ -1809,15 +1722,15 @@ export class SoftwareService {
   async getUnusedSoftware() {
     const [activeModern, activeLegacy] = await Promise.all([
       this.assignmentModel.findAll({
-        attributes: [[col("asset_id"), "assetId"]],
+        attributes: [[col('asset_id'), 'assetId']],
         where: { assignmentStatus: SoftwareAssignmentStatus.ACTIVE },
-        group: ["asset_id"],
+        group: ['asset_id'],
         raw: true,
       }) as unknown as Promise<{ assetId: string }[]>,
       this.legacyAssignmentModel.findAll({
-        attributes: [[col("software_asset_id"), "softwareAssetId"]],
+        attributes: [[col('software_asset_id'), 'softwareAssetId']],
         where: { status: LegacyAssignmentStatus.ACTIVE },
-        group: ["software_asset_id"],
+        group: ['software_asset_id'],
         raw: true,
       }) as unknown as Promise<{ softwareAssetId: string }[]>,
     ]);
@@ -1832,7 +1745,7 @@ export class SoftwareService {
       include: [
         {
           model: Asset,
-          as: "asset",
+          as: 'asset',
           required: true,
         },
       ],
@@ -1852,9 +1765,7 @@ export class SoftwareService {
     });
     const detailsByAsset = new Map(detailsList.map((d) => [d.assetId, d]));
 
-    const expiredLicenseInstalls = active.filter(
-      (a) => a.license && this.isExpired(a.license),
-    );
+    const expiredLicenseInstalls = active.filter((a) => a.license && this.isExpired(a.license));
 
     const unlicensedInstalls = active.filter((a) => {
       const d = detailsByAsset.get(a.assetId);
@@ -1869,19 +1780,14 @@ export class SoftwareService {
 
     const inactiveEmployeeInstalls = active.filter((a) => {
       const status = a.system?.employee?.status;
-      return (
-        status === EmployeeStatus.EXITED || status === EmployeeStatus.INACTIVE
-      );
+      return status === EmployeeStatus.EXITED || status === EmployeeStatus.INACTIVE;
     });
 
     const licenses = await this.softwareLicenseModel.findAll();
     const usedByLicense = new Map<string, number>();
     for (const a of active) {
       if (a.licenseId) {
-        usedByLicense.set(
-          a.licenseId,
-          (usedByLicense.get(a.licenseId) ?? 0) + 1,
-        );
+        usedByLicense.set(a.licenseId, (usedByLicense.get(a.licenseId) ?? 0) + 1);
       }
     }
 

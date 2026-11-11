@@ -1,12 +1,6 @@
-import { Transform } from "class-transformer";
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MaxLength,
-} from "class-validator";
-import { PartialType } from "@nestjs/mapped-types";
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateSystemDto {
   @IsUUID()
@@ -16,7 +10,7 @@ export class CreateSystemDto {
   // SYSTEM TAG
   // ============================================================
 
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
@@ -26,7 +20,7 @@ export class CreateSystemDto {
   // NAME
   // ============================================================
 
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)

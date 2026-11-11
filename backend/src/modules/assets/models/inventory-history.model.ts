@@ -7,34 +7,34 @@ import {
   BelongsTo,
   Index,
   PrimaryKey,
-} from "sequelize-typescript";
+} from 'sequelize-typescript';
 
-import { Asset } from "./asset.model";
+import { Asset } from './asset.model';
 
 export enum InventoryChangeType {
   // ============================================================
   // PHYSICAL INVENTORY MOVEMENTS
   // ============================================================
 
-  RESTOCK = "RESTOCK", // new stock received / added to inventory
+  RESTOCK = 'RESTOCK', // new stock received / added to inventory
 
-  CONSUMED = "CONSUMED", // physical stock consumed / removed
+  CONSUMED = 'CONSUMED', // physical stock consumed / removed
 
-  WRITE_OFF = "WRITE_OFF", // lost, damaged, disposed, or permanently removed stock
+  WRITE_OFF = 'WRITE_OFF', // lost, damaged, disposed, or permanently removed stock
 
-  ADJUSTMENT = "ADJUSTMENT", // manual physical stock correction
+  ADJUSTMENT = 'ADJUSTMENT', // manual physical stock correction
 
   // ============================================================
   // CUSTODY / ASSIGNMENT EVENTS
   // ============================================================
 
-  ASSIGNED = "ASSIGNED", // asset assigned to an employee/system; physical quantity unchanged
+  ASSIGNED = 'ASSIGNED', // asset assigned to an employee/system; physical quantity unchanged
 
-  RETURNED = "RETURNED", // asset returned from employee/system; physical quantity unchanged
+  RETURNED = 'RETURNED', // asset returned from employee/system; physical quantity unchanged
 }
 
 @Table({
-  tableName: "inventory_history",
+  tableName: 'inventory_history',
   timestamps: false,
 })
 export class InventoryHistory extends Model<InventoryHistory> {
@@ -59,13 +59,13 @@ export class InventoryHistory extends Model<InventoryHistory> {
   @Column({
     type: DataType.CHAR(36),
     allowNull: false,
-    field: "asset_id",
+    field: 'asset_id',
   })
   assetId!: string;
 
   @BelongsTo(() => Asset, {
-    foreignKey: "assetId",
-    targetKey: "id",
+    foreignKey: 'assetId',
+    targetKey: 'id',
   })
   asset!: Asset;
 
@@ -130,7 +130,7 @@ export class InventoryHistory extends Model<InventoryHistory> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    field: "quantity_after",
+    field: 'quantity_after',
   })
   quantityAfter!: number;
 
@@ -153,7 +153,7 @@ export class InventoryHistory extends Model<InventoryHistory> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    field: "quantity_assigned_after",
+    field: 'quantity_assigned_after',
   })
   quantityAssignedAfter!: number;
 

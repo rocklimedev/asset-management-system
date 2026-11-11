@@ -1,12 +1,12 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { ExtractJwt, Strategy } from "passport-jwt";
-import { InjectModel } from "@nestjs/sequelize";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { InjectModel } from '@nestjs/sequelize';
 
-import { User, UserStatus } from "@/modules/users/models/user.model";
-import { Role } from "@/modules/roles/models/role.model";
-import { Permission } from "@/modules/roles/models/permission.model";
-import { RolePermission } from "@/modules/roles/models/role-permission.model";
+import { User, UserStatus } from '@/modules/users/models/user.model';
+import { Role } from '@/modules/roles/models/role.model';
+import { Permission } from '@/modules/roles/models/permission.model';
+import { RolePermission } from '@/modules/roles/models/role-permission.model';
 
 export interface JwtPayload {
   sub: string;
@@ -37,17 +37,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       include: [
         {
           model: Role,
-          as: "role",
+          as: 'role',
 
           include: [
             {
               model: RolePermission,
-              as: "permissions",
+              as: 'permissions',
 
               include: [
                 {
                   model: Permission,
-                  as: "permission",
+                  as: 'permission',
                 },
               ],
             },
@@ -57,11 +57,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user || user.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException("Account is not active.");
+      throw new UnauthorizedException('Account is not active.');
     }
 
     if (!user.role) {
-      throw new UnauthorizedException("User role is not configured.");
+      throw new UnauthorizedException('User role is not configured.');
     }
 
     return {
@@ -74,9 +74,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roleName: user.role.name,
 
       permissions:
-        user.role.permissions?.map(
-          (rolePermission) => rolePermission.permission.key,
-        ) ?? [],
+        user.role.permissions?.map((rolePermission) => rolePermission.permission.key) ?? [],
     };
   }
 }

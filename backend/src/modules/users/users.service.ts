@@ -1,16 +1,12 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
-import * as bcrypt from "bcrypt";
-import { InjectModel } from "@nestjs/sequelize";
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { InjectModel } from '@nestjs/sequelize';
 
-import { AuditService } from "@/modules/audit/audit.service";
-import { AuthUser } from "@/common/decorator/current-user.decorator";
+import { AuditService } from '@/modules/audit/audit.service';
+import { AuthUser } from '@/common/decorator/current-user.decorator';
 
-import { User, UserStatus } from "./models/user.model";
-import { Role } from "@/modules/roles/models/role.model";
+import { User, UserStatus } from './models/user.model';
+import { Role } from '@/modules/roles/models/role.model';
 
 interface CreateUserPayload {
   name: string;
@@ -44,8 +40,8 @@ export class UsersService {
     return [
       {
         model: Role,
-        as: "role",
-        attributes: ["id", "name", "description"],
+        as: 'role',
+        attributes: ['id', 'name', 'description'],
       },
     ];
   }
@@ -56,19 +52,11 @@ export class UsersService {
 
   async findAll() {
     return this.userModel.findAll({
-      attributes: [
-        "id",
-        "name",
-        "email",
-        "status",
-        "createdAt",
-        "roleId",
-        "employeeId",
-      ],
+      attributes: ['id', 'name', 'email', 'status', 'createdAt', 'roleId', 'employeeId'],
 
       include: this.getUserInclude(),
 
-      order: [["name", "ASC"]],
+      order: [['name', 'ASC']],
     });
   }
 
@@ -84,7 +72,7 @@ export class UsersService {
     });
 
     if (existing) {
-      throw new ConflictException("A user with this email already exists.");
+      throw new ConflictException('A user with this email already exists.');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -99,8 +87,8 @@ export class UsersService {
 
     await this.audit.log({
       userId: actor.id,
-      action: "USER_CREATED",
-      entity: "User",
+      action: 'USER_CREATED',
+      entity: 'User',
       entityId: user.id,
       metadata: {
         name: user.name,
@@ -111,15 +99,7 @@ export class UsersService {
     });
 
     return this.userModel.findByPk(user.id, {
-      attributes: [
-        "id",
-        "name",
-        "email",
-        "status",
-        "createdAt",
-        "roleId",
-        "employeeId",
-      ],
+      attributes: ['id', 'name', 'email', 'status', 'createdAt', 'roleId', 'employeeId'],
       include: this.getUserInclude(),
     });
   }
@@ -132,17 +112,14 @@ export class UsersService {
     const user = await this.userModel.findByPk(id);
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException('User not found.');
     }
 
     // ----------------------------------------------------------
     // Check email uniqueness
     // ----------------------------------------------------------
 
-    if (
-      dto.email !== undefined &&
-      dto.email.toLowerCase() !== user.email.toLowerCase()
-    ) {
+    if (dto.email !== undefined && dto.email.toLowerCase() !== user.email.toLowerCase()) {
       const existing = await this.userModel.findOne({
         where: {
           email: dto.email,
@@ -150,7 +127,7 @@ export class UsersService {
       });
 
       if (existing && existing.id !== id) {
-        throw new ConflictException("A user with this email already exists.");
+        throw new ConflictException('A user with this email already exists.');
       }
     }
 
@@ -180,27 +157,17 @@ export class UsersService {
 
     await this.audit.log({
       userId: actor.id,
-      action: "USER_UPDATED",
-      entity: "User",
+      action: 'USER_UPDATED',
+      entity: 'User',
       entityId: user.id,
       metadata: {
-        updatedFields: Object.keys(updateData).filter(
-          (field) => field !== "passwordHash",
-        ),
+        updatedFields: Object.keys(updateData).filter((field) => field !== 'passwordHash'),
         passwordChanged: dto.password !== undefined,
       },
     });
 
     return this.userModel.findByPk(user.id, {
-      attributes: [
-        "id",
-        "name",
-        "email",
-        "status",
-        "createdAt",
-        "roleId",
-        "employeeId",
-      ],
+      attributes: ['id', 'name', 'email', 'status', 'createdAt', 'roleId', 'employeeId'],
       include: this.getUserInclude(),
     });
   }
@@ -213,15 +180,15 @@ export class UsersService {
     const user = await this.userModel.findByPk(id);
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException('User not found.');
     }
 
     await user.destroy();
 
     await this.audit.log({
       userId: actor.id,
-      action: "USER_DELETED",
-      entity: "User",
+      action: 'USER_DELETED',
+      entity: 'User',
       entityId: id,
       metadata: {
         name: user.name,
@@ -233,7 +200,7 @@ export class UsersService {
 
     return {
       success: true,
-      message: "User deleted successfully.",
+      message: 'User deleted successfully.',
       id,
     };
   }
@@ -246,7 +213,7 @@ export class UsersService {
     const user = await this.userModel.findByPk(id);
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException('User not found.');
     }
 
     const previousStatus = user.status;
@@ -257,8 +224,8 @@ export class UsersService {
 
     await this.audit.log({
       userId: actor.id,
-      action: status === UserStatus.DISABLED ? "USER_DISABLED" : "USER_ENABLED",
-      entity: "User",
+      action: status === UserStatus.DISABLED ? 'USER_DISABLED' : 'USER_ENABLED',
+      entity: 'User',
       entityId: user.id,
       metadata: {
         previousStatus,
@@ -267,15 +234,7 @@ export class UsersService {
     });
 
     return this.userModel.findByPk(user.id, {
-      attributes: [
-        "id",
-        "name",
-        "email",
-        "status",
-        "createdAt",
-        "roleId",
-        "employeeId",
-      ],
+      attributes: ['id', 'name', 'email', 'status', 'createdAt', 'roleId', 'employeeId'],
       include: this.getUserInclude(),
     });
   }
@@ -288,7 +247,7 @@ export class UsersService {
     const user = await this.userModel.findByPk(id);
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException('User not found.');
     }
 
     const previousRoleId = user.roleId;
@@ -299,8 +258,8 @@ export class UsersService {
 
     await this.audit.log({
       userId: actor.id,
-      action: "ROLE_CHANGED",
-      entity: "User",
+      action: 'ROLE_CHANGED',
+      entity: 'User',
       entityId: user.id,
       metadata: {
         previousRoleId,
@@ -309,15 +268,7 @@ export class UsersService {
     });
 
     return this.userModel.findByPk(user.id, {
-      attributes: [
-        "id",
-        "name",
-        "email",
-        "status",
-        "createdAt",
-        "roleId",
-        "employeeId",
-      ],
+      attributes: ['id', 'name', 'email', 'status', 'createdAt', 'roleId', 'employeeId'],
       include: this.getUserInclude(),
     });
   }

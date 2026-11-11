@@ -1,29 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from "@nestjs/common";
-import {
-  IsEmail,
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MinLength,
-} from "class-validator";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { IsEmail, IsEnum, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
-import { UsersService } from "./users.service";
+import { UsersService } from './users.service';
 import { RequirePermissions } from '@/common/decorator/roles.decorator';
-import { UserStatus } from "./models/user.model";
+import { UserStatus } from './models/user.model';
 
-import {
-  CurrentUser,
-  AuthUser,
-} from "@/common/decorator/current-user.decorator";
+import { CurrentUser, AuthUser } from '@/common/decorator/current-user.decorator';
 
 class CreateUserDto {
   @IsString()
@@ -73,7 +55,7 @@ class ChangeUserRoleDto {
   roleId!: string;
 }
 
-@Controller("users")
+@Controller('users')
 @RequirePermissions('users.manage')
 export class UsersController {
   constructor(private readonly service: UsersService) {}
@@ -100,12 +82,8 @@ export class UsersController {
   // UPDATE USER
   // ============================================================
 
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() dto: UpdateUserDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: AuthUser) {
     return this.service.update(id, dto, user);
   }
 
@@ -113,8 +91,8 @@ export class UsersController {
   // DELETE USER
   // ============================================================
 
-  @Delete(":id")
-  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+  @Delete(':id')
+  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user);
   }
 
@@ -122,9 +100,9 @@ export class UsersController {
   // UPDATE USER STATUS
   // ============================================================
 
-  @Patch(":id/status")
+  @Patch(':id/status')
   setStatus(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @Body() dto: UpdateUserStatusDto,
     @CurrentUser() user: AuthUser,
   ) {
@@ -135,9 +113,9 @@ export class UsersController {
   // UPDATE USER ROLE
   // ============================================================
 
-  @Patch(":id/role")
+  @Patch(':id/role')
   changeRole(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @Body() dto: ChangeUserRoleDto,
     @CurrentUser() user: AuthUser,
   ) {

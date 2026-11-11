@@ -1,12 +1,5 @@
-import {
-  IsEnum,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-} from "class-validator";
-import { InventoryChangeType } from "../models/inventory-history.model";
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { InventoryChangeType } from '../models/inventory-history.model';
 
 export class AdjustInventoryDto {
   @IsEnum(InventoryChangeType)
@@ -21,8 +14,8 @@ export class AdjustInventoryDto {
   // Only required when changeType is ADJUSTMENT, since a manual stock
   // correction can go either way. Ignored for every other changeType.
   @IsOptional()
-  @IsIn(["increase", "decrease"])
-  direction?: "increase" | "decrease";
+  @IsIn(['increase', 'decrease'])
+  direction?: 'increase' | 'decrease';
 
   @IsOptional()
   @IsString()

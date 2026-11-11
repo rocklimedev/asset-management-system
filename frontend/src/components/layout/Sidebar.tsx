@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Settings } from 'lucide-react';
+import { useAuth } from '../../services/context/AuthContext';
 
 import { cn } from '@/lib/utils';
 import { AppMark } from './AppMark';
@@ -104,6 +105,56 @@ export function NavList({
 }
 
 // ============================================================
+// USER CARD — who is signed in, with a one-click way to settings.
+// Sits at the foot of the desktop sidebar, as in the reference.
+// ============================================================
+
+function SidebarUser({ collapsed }: { collapsed: boolean }) {
+  const { user } = useAuth();
+
+  const name = user?.name || 'Signed in';
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || '?';
+
+  return (
+    <NavLink
+      to="/settings"
+      title={collapsed ? name : undefined}
+      aria-label={collapsed ? `${name}, settings` : undefined}
+      className={cn(
+        'mx-2 mb-2 flex items-center rounded-lg border border-sidebar-border bg-sidebar-hover',
+        'outline-none transition-colors hover:border-sidebar-ring focus-visible:ring-2 focus-visible:ring-sidebar-ring',
+        collapsed ? 'justify-center p-2' : 'gap-3 p-2.5',
+      )}
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+        {initials}
+      </span>
+
+      {!collapsed && (
+        <>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium leading-tight text-sidebar-strong">
+              {name}
+            </span>
+
+            <span className="block truncate text-xs leading-tight text-sidebar-muted">
+              {user?.role || user?.email || ''}
+            </span>
+          </span>
+
+          <Settings className="h-4 w-4 shrink-0 text-sidebar-muted" aria-hidden="true" />
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+// ============================================================
 // DESKTOP SIDEBAR
 // ============================================================
 
@@ -136,6 +187,11 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
       {/* NAVIGATION */}
       <NavList collapsed={collapsed} />
+
+      {/* USER */}
+      <div className="border-t border-sidebar-border pt-2">
+        <SidebarUser collapsed={collapsed} />
+      </div>
 
       {/* COLLAPSE */}
       <button

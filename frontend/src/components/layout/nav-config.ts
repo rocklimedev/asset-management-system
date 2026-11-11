@@ -7,6 +7,8 @@ import {
   LayoutGrid,
   UserSquare2,
   Users,
+  ShieldCheck,
+  History,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -54,13 +56,13 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         to: '/inventory',
-        label: 'All Assets',
+        label: 'Inventory',
         description: 'Every hardware and software asset',
         icon: Archive,
       },
       {
         to: '/asset-manager',
-        label: 'Assign Assets',
+        label: 'Asset Manager',
         description: 'People, computers and the equipment they hold',
         icon: Boxes,
       },
@@ -94,9 +96,21 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         to: '/users-roles',
-        label: 'Users & Roles',
+        label: 'Users',
         description: 'Who can sign in and what they can do',
         icon: Users,
+      },
+      {
+        to: '/roles-permissions',
+        label: 'Roles & Permissions',
+        description: 'Manage roles and access permissions',
+        icon: ShieldCheck,
+      },
+      {
+        to: '/activity-logs',
+        label: 'Activity Logs',
+        description: 'Review business changes and account activity',
+        icon: History,
       },
     ],
   },

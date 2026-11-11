@@ -3,10 +3,10 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 
-import { AssetCategory, AssetKind } from "./models/asset-category.model";
+import { AssetCategory, AssetKind } from './models/asset-category.model';
 
 interface CreateAssetCategoryDto {
   name: string;
@@ -38,14 +38,12 @@ export class AssetCategoryService {
     const name = dto.name?.trim();
 
     if (!name) {
-      throw new BadRequestException("Category name is required");
+      throw new BadRequestException('Category name is required');
     }
 
     if (!Object.values(AssetKind).includes(dto.type)) {
       throw new BadRequestException(
-        `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(
-          ", ",
-        )}`,
+        `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(', ')}`,
       );
     }
 
@@ -58,9 +56,7 @@ export class AssetCategoryService {
     });
 
     if (existing) {
-      throw new ConflictException(
-        "An asset category with this name and type already exists",
-      );
+      throw new ConflictException('An asset category with this name and type already exists');
     }
 
     return this.assetCategoryModel.create({
@@ -90,9 +86,7 @@ export class AssetCategoryService {
     if (options?.type) {
       if (!Object.values(AssetKind).includes(options.type)) {
         throw new BadRequestException(
-          `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(
-            ", ",
-          )}`,
+          `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(', ')}`,
         );
       }
 
@@ -107,11 +101,11 @@ export class AssetCategoryService {
       where,
       include: [
         {
-          association: "assets",
+          association: 'assets',
           required: false,
         },
       ],
-      order: [["name", "ASC"]],
+      order: [['name', 'ASC']],
     });
   }
 
@@ -123,7 +117,7 @@ export class AssetCategoryService {
     const category = await this.assetCategoryModel.findByPk(id, {
       include: [
         {
-          association: "assets",
+          association: 'assets',
           required: false,
         },
       ],
@@ -140,10 +134,7 @@ export class AssetCategoryService {
   // UPDATE
   // ============================================================
 
-  async update(
-    id: string,
-    dto: UpdateAssetCategoryDto,
-  ): Promise<AssetCategory> {
+  async update(id: string, dto: UpdateAssetCategoryDto): Promise<AssetCategory> {
     const category = await this.assetCategoryModel.findByPk(id);
 
     if (!category) {
@@ -154,20 +145,15 @@ export class AssetCategoryService {
       const name = dto.name.trim();
 
       if (!name) {
-        throw new BadRequestException("Category name cannot be empty");
+        throw new BadRequestException('Category name cannot be empty');
       }
 
       dto.name = name;
     }
 
-    if (
-      dto.type !== undefined &&
-      !Object.values(AssetKind).includes(dto.type)
-    ) {
+    if (dto.type !== undefined && !Object.values(AssetKind).includes(dto.type)) {
       throw new BadRequestException(
-        `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(
-          ", ",
-        )}`,
+        `Invalid asset type. Allowed values: ${Object.values(AssetKind).join(', ')}`,
       );
     }
 
@@ -185,9 +171,7 @@ export class AssetCategoryService {
       });
 
       if (existing && existing.id !== category.id) {
-        throw new ConflictException(
-          "An asset category with this name and type already exists",
-        );
+        throw new ConflictException('An asset category with this name and type already exists');
       }
     }
 
@@ -217,7 +201,7 @@ export class AssetCategoryService {
     const category = await this.assetCategoryModel.findByPk(id, {
       include: [
         {
-          association: "assets",
+          association: 'assets',
           required: false,
         },
       ],
@@ -228,15 +212,13 @@ export class AssetCategoryService {
     }
 
     if (category.assets && category.assets.length > 0) {
-      throw new ConflictException(
-        "Cannot delete this category because assets are assigned to it",
-      );
+      throw new ConflictException('Cannot delete this category because assets are assigned to it');
     }
 
     await category.destroy();
 
     return {
-      message: "Asset category deleted successfully",
+      message: 'Asset category deleted successfully',
     };
   }
 

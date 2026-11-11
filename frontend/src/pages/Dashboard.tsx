@@ -22,7 +22,7 @@ import { useGetEmployeesQuery } from '../services/api/employees.api';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
+import { Button, buttonVariants } from '../components/ui/button';
 import { PageHeader } from '../components/layout/PageHeader';
 import { CreateAssetModal } from '../components/asset-manager/CreateAssetModal';
 import { QuickAddAsset } from '../components/quick/QuickAddAsset';
@@ -171,6 +171,49 @@ function getDaysUntil(dateValue: string | Date, from: Date): number {
 }
 
 // ============================================================
+// MINI STAT
+// A compact, clickable figure for secondary counts.
+// ============================================================
+
+function MiniStat({
+  label,
+  value,
+  icon: Icon,
+  to,
+  tone = 'default',
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  to: string;
+  tone?: 'default' | 'danger';
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card outline-none transition-colors hover:border-primary-border focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+
+      <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{label}</span>
+
+      <span
+        className={`text-lg font-semibold tabular-nums ${
+          tone === 'danger' ? 'text-destructive-strong' : 'text-foreground'
+        }`}
+      >
+        {value}
+      </span>
+
+      <ChevronRight
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
+// ============================================================
 // BAR ROW
 // ============================================================
 
@@ -272,25 +315,23 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <div className="h-6 w-32 animate-pulse rounded bg-muted" />
-
-          <div className="mt-2 h-4 w-72 animate-pulse rounded bg-muted" />
+      <div className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6 lg:px-8" aria-busy="true">
+        <div className="space-y-2">
+          <div className="h-7 w-40 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-72 animate-pulse rounded bg-muted" />
         </div>
 
         <HomeTasks onAddAsset={() => setIsAddAssetOpen(true)} />
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="h-24 animate-pulse rounded-xl bg-muted" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-36 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-56 animate-pulse rounded-xl bg-muted" />
-          ))}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="h-80 animate-pulse rounded-xl bg-muted xl:col-span-2" />
+          <div className="h-80 animate-pulse rounded-xl bg-muted" />
         </div>
       </div>
     );
@@ -304,7 +345,7 @@ export default function Dashboard() {
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="rounded-lg border border-destructive-border bg-destructive-muted px-4 py-3 text-sm text-destructive-strong">
-          Couldn&apos;t load report data.{' '}
+          Couldn&apos;t load your dashboard.{' '}
           <button
             onClick={() => {
               refetchAssets();
@@ -504,17 +545,22 @@ export default function Dashboard() {
 
   const employeeAssignmentMap = new Map<string, number>();
 
-  assets
-    .filter((asset) => asset.status === 'ASSIGNED')
-    .forEach((asset) => {
-      const employee = asset.assignments?.find(
-        (assignment) => assignment.status === 'ACTIVE',
-      )?.employee;
+  assets.forEach((asset) => {
+    asset.assignments?.forEach((assignment) => {
+      if (assignment.status !== 'ACTIVE') return;
 
-      const employeeName = employee ? getEmployeeName(employee as Employee) : 'Unknown employee';
+      // Components belong to a system; their employee is stored on that system.
+      const employeeId = assignment.employeeId || assignment.system?.employeeId;
+      const employee = assignment.employee || assignment.system?.employee ||
+        employees.find((item) => item.id === employeeId);
 
+      // A component in an unassigned computer has no employee custodian yet.
+      if (!employee && !employeeId) return;
+
+      const employeeName = getEmployeeName(employee as Employee | undefined);
       employeeAssignmentMap.set(employeeName, (employeeAssignmentMap.get(employeeName) || 0) + 1);
     });
+  });
 
   const employeeAssignments = Array.from(employeeAssignmentMap.entries())
     .map(([employee, count]) => ({
@@ -595,114 +641,330 @@ export default function Dashboard() {
   // RENDER
   // ==========================================================
 
-  return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
+  // ==========================================================
+  // ACTIVITY TEXT
+  // ==========================================================
 
+  const describeActivity = (activity: (typeof recentActivity)[number]) => {
+    if (activity.action === 'TRANSFERRED') {
+      return (
+        <>
+          <b className="font-medium">{activity.assetName}</b> transferred from {activity.fromValue} to{' '}
+          {activity.toValue}
+        </>
+      );
+    }
+
+    if (activity.action === 'ASSIGNED') {
+      return (
+        <>
+          <b className="font-medium">{activity.assetName}</b> assigned to {activity.toValue}
+        </>
+      );
+    }
+
+    if (activity.action === 'CREATED') {
+      return (
+        <>
+          New asset added: <b className="font-medium">{activity.assetName}</b>
+        </>
+      );
+    }
+
+    if (activity.action === 'STATUS_CHANGED') {
+      return (
+        <>
+          <b className="font-medium">{activity.assetName}</b> status changed to {activity.toValue}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <b className="font-medium">{activity.assetName}</b> {formatAction(activity.action)}
+      </>
+    );
+  };
+
+  // ==========================================================
+  // RENDER
+  // Reading order: what the numbers are, what changed recently,
+  // what needs action, then the breakdowns for deeper review.
+  // ==========================================================
+
+  return (
+    <div className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
         title="Dashboard"
-        description="An overview of your assets and what needs attention."
+        description="Your assets at a glance, and what needs your attention."
         actions={
-          <Button onClick={() => setIsAddAssetOpen(true)}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Add Asset
-          </Button>
+          <>
+            <Link to="/reports" className={buttonVariants({ variant: 'outline' })}>
+              Reports
+            </Link>
+
+            <Button onClick={() => setIsAddAssetOpen(true)}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add Asset
+            </Button>
+          </>
         }
       />
 
       <HomeTasks onAddAsset={() => setIsAddAssetOpen(true)} />
 
       {/* ======================================================
-          NEEDS ATTENTION
-          Only items that actually need action; each opens the
-          matching list.
+          HEADLINE NUMBERS
+          Four figures that answer "how are we doing?" at a glance.
       ====================================================== */}
 
-      <Card className="p-5">
-        <div className="mb-3">
-          <h2 className="text-sm font-semibold text-foreground">Needs attention</h2>
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            Select an item to see the assets or licenses involved.
-          </p>
-        </div>
-
-        {attentionItems.length === 0 ? (
-          <div className="flex items-center gap-2 rounded-lg bg-success-muted px-3 py-3 text-sm text-success-strong">
-            <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-            Nothing needs attention right now.
-          </div>
-        ) : (
-          <ul className="divide-y divide-border rounded-lg border border-border">
-            {attentionItems.map((item) => (
-              <li key={item.label}>
-                <Link
-                  to={item.to}
-                  className="flex items-center justify-between gap-3 px-3 py-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                >
-                  <span className="min-w-0 truncate text-foreground">{item.label}</span>
-
-                  <span className="flex shrink-0 items-center gap-2">
-                    <Badge tone={item.tone}>{item.count}</Badge>
-
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      {/* ======================================================
-          KPI CARDS
-      ====================================================== */}
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Total Assets" value={totalAssets} icon={Boxes} to="/inventory" />
+      <section aria-label="Headline numbers" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Total assets"
+          value={totalAssets}
+          icon={Boxes}
+          to="/inventory"
+          hint={`${hardwareAssets.length} hardware · ${softwareAssets.length} software`}
+        />
 
         <StatCard
           label="Assigned"
           value={assignedAssets}
           icon={CheckCircle2}
+          tone="brand"
           to="/inventory?status=ASSIGNED"
+          hint={`${assignmentRate.toFixed(0)}% of all assets`}
         />
 
         <StatCard
-          label="Available"
+          label="Available to give out"
           value={availableAssets}
           icon={PackageOpen}
+          tone="ok"
           to="/inventory?status=AVAILABLE"
+          hint="In stock and ready to assign"
         />
 
-        <StatCard label="Employees" value={employees.length} icon={Users} to="/employees" />
-
         <StatCard
-          label="Hardware"
-          value={hardwareAssets.length}
-          icon={Laptop}
-          to="/inventory?kind=HARDWARE"
-        />
-
-        <StatCard label="Software" value={softwareAssets.length} icon={AppWindow} to="/software" />
-
-        <StatCard
-          label="Under Repair"
+          label="Under repair"
           value={underRepair}
           icon={Wrench}
-          tone="warn"
+          tone={underRepair > 0 ? 'warn' : 'default'}
           to="/inventory?status=REPAIR"
+          hint={underRepair > 0 ? 'Waiting on a fix' : 'Nothing in repair'}
         />
+      </section>
 
-        <StatCard
-          label="Expiring Licenses"
+      <section aria-label="Secondary numbers" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MiniStat label="Employees" value={employees.length} icon={Users} to="/employees" />
+
+        <MiniStat label="Hardware items" value={hardwareAssets.length} icon={Laptop} to="/inventory?kind=HARDWARE" />
+
+        <MiniStat label="Software items" value={softwareAssets.length} icon={AppWindow} to="/software" />
+
+        <MiniStat
+          label="Expiring licences"
           value={licenseExpirations.length}
           icon={ShieldAlert}
-          tone="danger"
           to="/software"
+          tone={licenseExpirations.length > 0 ? 'danger' : 'default'}
         />
+      </section>
+
+      {/* ======================================================
+          ACTIVITY + ATTENTION
+          Recent changes on the left (wide). What needs action and
+          what is expiring on the right.
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-start">
+        <Card className="p-5 xl:col-span-2">
+          <div className="mb-5 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Recent activity</h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                {totalHistoryEntries} records across {assetsWithHistory} of {totalAssets} assets
+              </p>
+            </div>
+
+            <Clock3 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </div>
+
+          {recentActivity.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No recent activity yet.</p>
+          ) : (
+            <ol aria-label="Recent activity">
+              {recentActivity.map((activity) => (
+                <li key={activity.id} className="group relative flex gap-4 pb-5 last:pb-0">
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-[8px] top-[22px] w-px bg-border group-last:hidden"
+                  />
+
+                  <span
+                    aria-hidden="true"
+                    className="relative mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 border-primary bg-card"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-foreground">{describeActivity(activity)}</p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {new Date(activity.createdAt).toLocaleString()} · {activity.performedBy}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+
+        <div className="flex flex-col gap-4">
+          {/* NEEDS ATTENTION — only items that need action; each opens the list. */}
+
+          <Card className="p-5">
+            <div className="mb-3">
+              <h2 className="text-sm font-semibold text-foreground">Needs attention</h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Select an item to see the assets or licences involved.
+              </p>
+            </div>
+
+            {attentionItems.length === 0 ? (
+              <div className="flex items-center gap-2 rounded-lg bg-success-muted px-3 py-3 text-sm text-success-strong">
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Nothing needs attention right now.
+              </div>
+            ) : (
+              <ul className="divide-y divide-border rounded-lg border border-border">
+                {attentionItems.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.to}
+                      className="flex items-center justify-between gap-3 px-3 py-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    >
+                      <span className="min-w-0 text-foreground">{item.label}</span>
+
+                      <span className="flex shrink-0 items-center gap-2">
+                        <Badge tone={item.tone}>{item.count}</Badge>
+
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          {/* UPCOMING — licences and warranties in the next 90 days. */}
+
+        <Card className="p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Licenses and warranties expiring in the next 90 days.
+              </p>
+            </div>
+
+            <Clock3 className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          {/* LICENSES */}
+
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                License expirations
+              </p>
+
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {licenseExpirations.length}
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {licenseExpirations.slice(0, 5).map((asset) => {
+                const expiryDate = asset.license?.expiryDate;
+
+                if (!expiryDate) return null;
+
+                const daysLeft = getDaysUntil(expiryDate, today);
+
+                return (
+                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
+                    <div className="min-w-0">
+                      <p className="truncate text-foreground">{asset.name}</p>
+
+                      {asset.assetTag && (
+                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
+                      )}
+                    </div>
+
+                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
+                    </Badge>
+                  </div>
+                );
+              })}
+
+              {licenseExpirations.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+              )}
+            </div>
+          </div>
+
+          {/* WARRANTIES */}
+
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Warranty expirations
+              </p>
+
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {warrantyExpirations.length}
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {warrantyExpirations.slice(0, 5).map((asset) => {
+                const expiryDate = asset.warrantyExpiry;
+
+                if (!expiryDate) return null;
+
+                const daysLeft = getDaysUntil(expiryDate, today);
+
+                return (
+                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
+                    <div className="min-w-0">
+                      <p className="truncate text-foreground">{asset.name}</p>
+
+                      {asset.assetTag && (
+                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
+                      )}
+                    </div>
+
+                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
+                    </Badge>
+                  </div>
+                );
+              })}
+
+              {warrantyExpirations.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+              )}
+            </div>
+          </div>
+        </Card>
+        </div>
       </div>
 
       {/* ======================================================
@@ -881,7 +1143,7 @@ export default function Dashboard() {
           CATEGORY ANALYTICS
       ====================================================== */}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* HARDWARE */}
 
         <Card className="p-5">
@@ -939,14 +1201,7 @@ export default function Dashboard() {
             )}
           </div>
         </Card>
-      </div>
-
-      {/* ======================================================
-          ASSIGNMENT ANALYTICS
-      ====================================================== */}
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* EMPLOYEE ASSIGNMENTS */}
+        {/* ASSET ASSIGNMENTS */}
 
         <Card className="p-5">
           <div className="mb-5 flex items-center justify-between">
@@ -977,232 +1232,8 @@ export default function Dashboard() {
       </div>
 
       {/* ======================================================
-          ACTIVITY SUMMARY
+          ASSIGNMENT ANALYTICS
       ====================================================== */}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Activity Records</p>
-
-              <p className="mt-1 text-2xl font-semibold text-foreground">{totalHistoryEntries}</p>
-            </div>
-
-            <Clock3 className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          <p className="mt-3 text-xs text-muted-foreground">
-            Total asset history records currently available.
-          </p>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Assets With Activity</p>
-
-              <p className="mt-1 text-2xl font-semibold text-foreground">{assetsWithHistory}</p>
-            </div>
-
-            <Boxes className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          <p className="mt-3 text-xs text-muted-foreground">
-            Assets containing at least one recorded history entry.
-          </p>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Activity Coverage</p>
-
-              <p className="mt-1 text-2xl font-semibold text-foreground">
-                {totalAssets > 0 ? ((assetsWithHistory / totalAssets) * 100).toFixed(0) : 0}%
-              </p>
-            </div>
-
-            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          <p className="mt-3 text-xs text-muted-foreground">
-            Percentage of assets with recorded history.
-          </p>
-        </Card>
-      </div>
-
-      {/* ======================================================
-          RECENT ACTIVITY / UPCOMING
-      ====================================================== */}
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* RECENT ACTIVITY */}
-
-        <Card className="p-5">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Latest changes recorded against assets.
-              </p>
-            </div>
-
-            <Clock3 className="h-4 w-4 text-muted-foreground" />
-          </div>
-
-          <ul className="space-y-4">
-            {recentActivity.map((activity) => (
-              <li key={activity.id} className="flex items-start gap-3">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-foreground">
-                    {activity.action === 'TRANSFERRED' ? (
-                      <>
-                        <b className="font-medium">{activity.assetName}</b> transferred from{' '}
-                        {activity.fromValue} to {activity.toValue}
-                      </>
-                    ) : activity.action === 'ASSIGNED' ? (
-                      <>
-                        <b className="font-medium">{activity.assetName}</b> assigned to{' '}
-                        {activity.toValue}
-                      </>
-                    ) : activity.action === 'CREATED' ? (
-                      <>
-                        New asset added: <b className="font-medium">{activity.assetName}</b>
-                      </>
-                    ) : activity.action === 'STATUS_CHANGED' ? (
-                      <>
-                        <b className="font-medium">{activity.assetName}</b> status changed to{' '}
-                        {activity.toValue}
-                      </>
-                    ) : (
-                      <>
-                        <b className="font-medium">{activity.assetName}</b>{' '}
-                        {formatAction(activity.action)}
-                      </>
-                    )}
-                  </p>
-
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(activity.createdAt).toLocaleString()} · {activity.performedBy}
-                  </p>
-                </div>
-              </li>
-            ))}
-
-            {recentActivity.length === 0 && (
-              <p className="text-sm text-muted-foreground">No recent activity yet.</p>
-            )}
-          </ul>
-        </Card>
-
-        {/* UPCOMING */}
-
-        <Card className="p-5">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Licenses and warranties expiring in the next 90 days.
-              </p>
-            </div>
-
-            <Clock3 className="h-4 w-4 text-muted-foreground" />
-          </div>
-
-          {/* LICENSES */}
-
-          <div className="mb-6">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                License expirations
-              </p>
-
-              <span className="text-xs tabular-nums text-muted-foreground">
-                {licenseExpirations.length}
-              </span>
-            </div>
-
-            <div className="space-y-2.5">
-              {licenseExpirations.slice(0, 5).map((asset) => {
-                const expiryDate = asset.license?.expiryDate;
-
-                if (!expiryDate) return null;
-
-                const daysLeft = getDaysUntil(expiryDate, today);
-
-                return (
-                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
-                    <div className="min-w-0">
-                      <p className="truncate text-foreground">{asset.name}</p>
-
-                      {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
-                      )}
-                    </div>
-
-                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
-                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
-                    </Badge>
-                  </div>
-                );
-              })}
-
-              {licenseExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
-              )}
-            </div>
-          </div>
-
-          {/* WARRANTIES */}
-
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Warranty expirations
-              </p>
-
-              <span className="text-xs tabular-nums text-muted-foreground">
-                {warrantyExpirations.length}
-              </span>
-            </div>
-
-            <div className="space-y-2.5">
-              {warrantyExpirations.slice(0, 5).map((asset) => {
-                const expiryDate = asset.warrantyExpiry;
-
-                if (!expiryDate) return null;
-
-                const daysLeft = getDaysUntil(expiryDate, today);
-
-                return (
-                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
-                    <div className="min-w-0">
-                      <p className="truncate text-foreground">{asset.name}</p>
-
-                      {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
-                      )}
-                    </div>
-
-                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
-                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
-                    </Badge>
-                  </div>
-                );
-              })}
-
-              {warrantyExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
-              )}
-            </div>
-          </div>
-        </Card>
-      </div>
 
       <QuickAddAsset
         open={isAddAssetOpen}

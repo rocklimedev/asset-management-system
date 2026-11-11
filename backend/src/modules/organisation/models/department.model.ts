@@ -1,14 +1,7 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Index,
-} from "sequelize-typescript";
+import { Table, Column, Model, DataType, PrimaryKey, Index } from 'sequelize-typescript';
 
 @Table({
-  tableName: "departments",
+  tableName: 'departments',
   timestamps: true,
   updatedAt: false,
 })

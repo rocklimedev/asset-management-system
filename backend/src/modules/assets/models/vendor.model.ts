@@ -1,17 +1,9 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
-  PrimaryKey,
-  Index,
-} from "sequelize-typescript";
+import { Table, Column, Model, DataType, HasMany, PrimaryKey, Index } from 'sequelize-typescript';
 
-import { Asset } from "./asset.model";
+import { Asset } from './asset.model';
 
 @Table({
-  tableName: "vendors",
+  tableName: 'vendors',
   timestamps: true,
   updatedAt: false,
 })
@@ -45,7 +37,7 @@ export class Vendor extends Model<Vendor> {
   // ============================================================
 
   @HasMany(() => Asset, {
-    foreignKey: "vendor_id",
+    foreignKey: 'vendor_id',
   })
   assets!: Asset[];
 }

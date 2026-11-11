@@ -10,27 +10,24 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
-} from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-import { AssetPoolQueryDto } from "./dto/asset-pool-query.dto";
-import { AdjustInventoryDto } from "./dto/adjust-inventory.dto";
-import { AssetUnitsService } from "./asset-units.service";
-import { AssetsService } from "./assets.service";
-import { CreateAssetDto } from "./dto/create-asset.dto";
-import { UpdateAssetDto } from "./dto/update-asset.dto";
-import { AssignAssetDto } from "./dto/assign-asset.dto";
-import { TransferAssetDto } from "./dto/transfer-asset.dto";
+import { AssetPoolQueryDto } from './dto/asset-pool-query.dto';
+import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
+import { AssetUnitsService } from './asset-units.service';
+import { AssetsService } from './assets.service';
+import { CreateAssetDto } from './dto/create-asset.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssignAssetDto } from './dto/assign-asset.dto';
+import { TransferAssetDto } from './dto/transfer-asset.dto';
 
-import { RequirePermissions } from "@/common/decorator/roles.decorator";
-import {
-  CurrentUser,
-  AuthUser,
-} from "@/common/decorator/current-user.decorator";
+import { RequirePermissions } from '@/common/decorator/roles.decorator';
+import { CurrentUser, AuthUser } from '@/common/decorator/current-user.decorator';
 
-import { CdnUploadFile } from "../cdn/cdn.service";
+import { CdnUploadFile } from '../cdn/cdn.service';
 
-@Controller("assets")
+@Controller('assets')
 export class AssetsController {
   constructor(
     private readonly service: AssetsService,
@@ -71,7 +68,7 @@ export class AssetsController {
   // This must be ABOVE `@Get(":id")` so "pool" is not treated
   // as an asset ID.
   // ============================================================
-  @Get("pool")
+  @Get('pool')
   findPool(@Query() query: AssetPoolQueryDto) {
     return this.service.findPool({
       search: query.search,
@@ -92,11 +89,8 @@ export class AssetsController {
   // This route exists for manual/admin use.
   // ============================================================
 
-  @Post("release-for-employee/:employeeId")
-  releaseForExitedEmployee(
-    @Param("employeeId") employeeId: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Post('release-for-employee/:employeeId')
+  releaseForExitedEmployee(@Param('employeeId') employeeId: string, @CurrentUser() user: AuthUser) {
     return this.service.releaseAssetsForExitedEmployee(employeeId, user);
   }
 
@@ -104,13 +98,13 @@ export class AssetsController {
   // GET SINGLE ASSET
   // ============================================================
 
-  @Get(":id/units")
-  findUnits(@Param("id", ParseUUIDPipe) id: string) {
+  @Get(':id/units')
+  findUnits(@Param('id', ParseUUIDPipe) id: string) {
     return this.units.findByAsset(id);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
@@ -118,8 +112,8 @@ export class AssetsController {
   // GET ASSET HISTORY
   // ============================================================
 
-  @Get(":id/history")
-  history(@Param("id") id: string) {
+  @Get(':id/history')
+  history(@Param('id') id: string) {
     return this.service.history(id);
   }
 
@@ -136,12 +130,8 @@ export class AssetsController {
   // UPDATE ASSET
   // ============================================================
 
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() dto: UpdateAssetDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateAssetDto, @CurrentUser() user: AuthUser) {
     return this.service.update(id, dto, user);
   }
 
@@ -149,12 +139,8 @@ export class AssetsController {
   // ASSIGN ASSET
   // ============================================================
 
-  @Post(":id/assign")
-  assign(
-    @Param("id") id: string,
-    @Body() dto: AssignAssetDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Post(':id/assign')
+  assign(@Param('id') id: string, @Body() dto: AssignAssetDto, @CurrentUser() user: AuthUser) {
     return this.service.assign(id, dto, user);
   }
 
@@ -162,12 +148,8 @@ export class AssetsController {
   // TRANSFER ASSET
   // ============================================================
 
-  @Post(":id/transfer")
-  transfer(
-    @Param("id") id: string,
-    @Body() dto: TransferAssetDto,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Post(':id/transfer')
+  transfer(@Param('id') id: string, @Body() dto: TransferAssetDto, @CurrentUser() user: AuthUser) {
     return this.service.transfer(id, dto, user);
   }
 
@@ -175,10 +157,10 @@ export class AssetsController {
   // RETURN ASSET
   // ============================================================
 
-  @Post(":id/return")
+  @Post(':id/return')
   returnAsset(
-    @Param("id") id: string,
-    @Body("notes") notes: string,
+    @Param('id') id: string,
+    @Body('notes') notes: string,
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.returnAsset(id, user, notes);
@@ -188,18 +170,18 @@ export class AssetsController {
   // ASSET IMAGE (IN-HOUSE CDN)
   // ============================================================
 
-  @Post(":id/image")
-  @UseInterceptors(FileInterceptor("file"))
+  @Post(':id/image')
+  @UseInterceptors(FileInterceptor('file'))
   setImage(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @UploadedFile() file: CdnUploadFile | undefined,
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.setImage(id, file, user);
   }
 
-  @Post(":id/image/remove")
-  removeImage(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+  @Post(':id/image/remove')
+  removeImage(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.removeImage(id, user);
   }
 
@@ -207,21 +189,21 @@ export class AssetsController {
   // INVENTORY ADJUSTMENT
   // ============================================================
 
-  @Post(":id/inventory/adjust")
+  @Post(':id/inventory/adjust')
   adjustInventory(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @Body() dto: AdjustInventoryDto,
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.adjustInventory(id, dto, user);
   }
 
-  @Get(":id/inventory/history")
-  inventoryHistory(@Param("id") id: string) {
+  @Get(':id/inventory/history')
+  inventoryHistory(@Param('id') id: string) {
     return this.service.inventoryHistory(id);
   }
-  @Delete(":id")
-  delete(@Param("id") id: string, @CurrentUser() actor: AuthUser) {
+  @Delete(':id')
+  delete(@Param('id') id: string, @CurrentUser() actor: AuthUser) {
     return this.service.delete(id, actor);
   }
 }

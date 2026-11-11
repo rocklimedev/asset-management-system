@@ -24,7 +24,7 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     data-slot="table-header"
-    className={cn("bg-muted [&_tr]:border-b [&_tr]:border-border", className)}
+    className={cn("bg-muted/40 [&_tr]:border-b [&_tr]:border-border", className)}
     {...props}
   />
 ));
@@ -68,7 +68,7 @@ const TableRow = React.forwardRef<
     data-slot="table-row"
     className={cn(
       "border-b border-border transition-colors duration-100",
-      "hover:bg-muted data-[state=selected]:bg-accent",
+      "hover:bg-muted/50 data-[state=selected]:bg-accent",
       className,
     )}
     {...props}
@@ -84,7 +84,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     data-slot="table-head"
     className={cn(
-      "h-10 whitespace-nowrap px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+      "h-11 whitespace-nowrap px-4 text-left align-middle text-xs font-medium text-muted-foreground",
       "[&:has([role=checkbox])]:pr-0",
       className,
     )}
@@ -101,7 +101,7 @@ const TableCell = React.forwardRef<
     ref={ref}
     data-slot="table-cell"
     className={cn(
-      "whitespace-nowrap px-3 py-2.5 align-middle text-foreground",
+      "whitespace-nowrap px-4 py-3 align-middle text-foreground",
       "[&:has([role=checkbox])]:pr-0",
       className,
     )}

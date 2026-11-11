@@ -9,16 +9,16 @@ import {
   HasMany,
   HasOne,
   Index,
-} from "sequelize-typescript";
-import { SoftwareLicenseAssignment } from "./software-license-assignment.model";
-import { Employee } from "@/modules/organisation/models/employees.model";
-import { Organisation } from "@/modules/organisation/models/organisation.model";
-import { AssetAssignment } from "./asset-assignment.model";
-import { AssetCategory } from "./asset-category.model";
-import { SystemSpecs } from "./system-specs.model";
+} from 'sequelize-typescript';
+import { SoftwareLicenseAssignment } from './software-license-assignment.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
+import { Organisation } from '@/modules/organisation/models/organisation.model';
+import { AssetAssignment } from './asset-assignment.model';
+import { AssetCategory } from './asset-category.model';
+import { SystemSpecs } from './system-specs.model';
 
 @Table({
-  tableName: "systems",
+  tableName: 'systems',
   timestamps: true,
 })
 export class System extends Model<System> {
@@ -48,12 +48,11 @@ export class System extends Model<System> {
 
   @Index
   @ForeignKey(() => AssetCategory)
-  @Column({ type: DataType.CHAR(36), allowNull: true, field: "category_id" })
+  @Column({ type: DataType.CHAR(36), allowNull: true, field: 'category_id' })
   categoryId!: string | null;
 
-  @BelongsTo(() => AssetCategory, { foreignKey: "categoryId" })
+  @BelongsTo(() => AssetCategory, { foreignKey: 'categoryId' })
   category?: AssetCategory;
-
 
   @Column({
     type: DataType.TEXT,
@@ -69,13 +68,13 @@ export class System extends Model<System> {
   @ForeignKey(() => Organisation)
   @Column({
     type: DataType.CHAR(36),
-    field: "organisation_id",
+    field: 'organisation_id',
     allowNull: true,
   })
   organisationId!: string | null;
 
   @BelongsTo(() => Organisation, {
-    foreignKey: "organisation_id",
+    foreignKey: 'organisation_id',
   })
   organisation?: Organisation;
 
@@ -86,13 +85,13 @@ export class System extends Model<System> {
   @ForeignKey(() => Employee)
   @Column({
     type: DataType.CHAR(36),
-    field: "employee_id",
+    field: 'employee_id',
     allowNull: true,
   })
   employeeId!: string | null;
 
   @BelongsTo(() => Employee, {
-    foreignKey: "employeeId",
+    foreignKey: 'employeeId',
   })
   employee?: Employee;
 
@@ -101,7 +100,7 @@ export class System extends Model<System> {
   // ============================================================
 
   @HasOne(() => SystemSpecs, {
-    foreignKey: "systemId",
+    foreignKey: 'systemId',
   })
   specs?: SystemSpecs;
   // ============================================================
@@ -109,7 +108,7 @@ export class System extends Model<System> {
   // ============================================================
 
   @HasMany(() => SoftwareLicenseAssignment, {
-    foreignKey: "systemId",
+    foreignKey: 'systemId',
   })
   softwareAssignments?: SoftwareLicenseAssignment[];
   // ============================================================
@@ -117,7 +116,7 @@ export class System extends Model<System> {
   // ============================================================
 
   @HasMany(() => AssetAssignment, {
-    foreignKey: "systemId",
+    foreignKey: 'systemId',
   })
   assignments?: AssetAssignment[];
 }

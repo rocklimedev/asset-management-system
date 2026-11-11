@@ -10,14 +10,14 @@ import {
   MaxLength,
   Min,
   ValidateNested,
-} from "class-validator";
-import { Type } from "class-transformer";
-import { CellularIdentityDto } from "./cellular-identity.dto";
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { CellularIdentityDto } from './cellular-identity.dto';
 
-import { AssetCondition, AssetStatus } from "../models/asset.model";
+import { AssetCondition, AssetStatus } from '../models/asset.model';
 
-import { AssetKind } from "../models/asset-category.model";
-import { AssetTrackingMode } from "../models/asset.model";
+import { AssetKind } from '../models/asset-category.model';
+import { AssetTrackingMode } from '../models/asset.model';
 
 /**
  * Data used when creating individual physical units together
@@ -87,7 +87,7 @@ export class CreateAssetUnitInputDto {
   // ----------------------------------------------------------
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string;
 
   // ----------------------------------------------------------
@@ -144,10 +144,10 @@ export class CreateAssetDto {
   // ==========================================================
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   organisationId?: string;
 
-  @IsUUID("4")
+  @IsUUID('4')
   categoryId!: string;
 
   // ==========================================================
@@ -188,7 +188,7 @@ export class CreateAssetDto {
   // ==========================================================
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   vendorId?: string;
 
   @IsOptional()
@@ -235,7 +235,7 @@ export class CreateAssetDto {
   // ==========================================================
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   locationId?: string;
 
   // ==========================================================
@@ -287,7 +287,7 @@ export class CreateAssetDto {
   // ==========================================================
 
   @IsOptional()
-  @IsUUID("4")
+  @IsUUID('4')
   assignEmployeeId?: string;
 
   // ==========================================================

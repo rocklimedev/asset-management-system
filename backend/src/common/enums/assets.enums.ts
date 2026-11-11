@@ -1,4 +1,4 @@
 export enum AssetKind {
-  HARDWARE = "HARDWARE",
-  SOFTWARE = "SOFTWARE",
+  HARDWARE = 'HARDWARE',
+  SOFTWARE = 'SOFTWARE',
 }

@@ -1,11 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { randomUUID } from "crypto";
-import * as fs from "fs/promises";
-import * as path from "path";
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Minimal file shape required by the CDN service.
@@ -36,9 +32,9 @@ export interface CdnUploadFile {
  */
 
 const ALLOWED_MIME_TYPES: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
 };
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -52,36 +48,31 @@ export interface CdnUploadResult {
 
 @Injectable()
 export class CdnService {
-  private readonly storageRoot =
-    process.env.CDN_STORAGE_ROOT || "/var/cdn-storage";
+  private readonly storageRoot = process.env.CDN_STORAGE_ROOT || '/var/cdn-storage';
 
   private readonly publicBaseUrl =
-    process.env.CDN_PUBLIC_BASE_URL || "https://cdn.internal.company.com";
+    process.env.CDN_PUBLIC_BASE_URL || 'https://cdn.internal.company.com';
 
   // ============================================================
   // UPLOAD ASSET IMAGE
   // ============================================================
 
-  async uploadAssetImage(
-    file: CdnUploadFile | undefined,
-  ): Promise<CdnUploadResult> {
+  async uploadAssetImage(file: CdnUploadFile | undefined): Promise<CdnUploadResult> {
     if (!file) {
-      throw new BadRequestException("No file was provided.");
+      throw new BadRequestException('No file was provided.');
     }
 
     const extension = ALLOWED_MIME_TYPES[file.mimetype];
 
     if (!extension) {
-      throw new BadRequestException(
-        "Unsupported image type. Allowed types: JPEG, PNG, WEBP.",
-      );
+      throw new BadRequestException('Unsupported image type. Allowed types: JPEG, PNG, WEBP.');
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      throw new BadRequestException("Image exceeds the 5MB size limit.");
+      throw new BadRequestException('Image exceeds the 5MB size limit.');
     }
 
-    const relativeDir = "assets/images";
+    const relativeDir = 'assets/images';
     const fileName = `${randomUUID()}.${extension}`;
     const relativeKey = `${relativeDir}/${fileName}`;
 
@@ -96,9 +87,7 @@ export class CdnService {
 
       await fs.writeFile(absolutePath, file.buffer);
     } catch {
-      throw new InternalServerErrorException(
-        "Failed to store image on the CDN volume.",
-      );
+      throw new InternalServerErrorException('Failed to store image on the CDN volume.');
     }
 
     return {
@@ -124,7 +113,7 @@ export class CdnService {
     const normalizedRoot = path.normalize(this.storageRoot);
 
     if (!absolutePath.startsWith(normalizedRoot)) {
-      throw new BadRequestException("Invalid image key.");
+      throw new BadRequestException('Invalid image key.');
     }
 
     try {

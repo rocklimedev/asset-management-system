@@ -1,18 +1,10 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  HasMany,
-  PrimaryKey,
-  Index,
-} from "sequelize-typescript";
+import { Table, Column, Model, DataType, HasMany, PrimaryKey, Index } from 'sequelize-typescript';
 
-import { RolePermission } from "./role-permission.model";
-import { User } from "@/modules/users/models/user.model";
+import { RolePermission } from './role-permission.model';
+import { User } from '@/modules/users/models/user.model';
 
 @Table({
-  tableName: "roles",
+  tableName: 'roles',
   timestamps: false,
 })
 export class Role extends Model<Role> {
@@ -55,7 +47,7 @@ export class Role extends Model<Role> {
   // ============================================================
 
   @HasMany(() => RolePermission, {
-    foreignKey: "role_id",
+    foreignKey: 'role_id',
   })
   permissions!: RolePermission[];
 
@@ -64,7 +56,7 @@ export class Role extends Model<Role> {
   // ============================================================
 
   @HasMany(() => User, {
-    foreignKey: "role_id",
+    foreignKey: 'role_id',
   })
   users!: User[];
 }

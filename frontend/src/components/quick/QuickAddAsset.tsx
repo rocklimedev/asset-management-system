@@ -146,7 +146,7 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
       await createAsset(payload).unwrap();
       toast.add({
         type: 'success',
-        title: 'Added to All Assets',
+        title: 'Added to Inventory',
         description: `${name.trim()} is now in stock.`,
       });
       onClose();
@@ -422,7 +422,7 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
             </Button>
           ) : (
             <Button type="button" disabled={saving} onClick={save}>
-              {saving ? 'Saving…' : 'Add to All Assets'}
+              {saving ? 'Saving…' : 'Add to Inventory'}
             </Button>
           )}
         </div>

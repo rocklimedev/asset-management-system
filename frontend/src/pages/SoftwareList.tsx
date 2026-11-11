@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input';
 import { RowActions } from '@/components/ui/row-actions';
 import { toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { ListToolbar, TablePagination } from '../components/list';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 import { QuickAddSoftware } from '../components/quick/QuickAddSoftware';
@@ -183,46 +184,43 @@ export function SoftwareList() {
 
       {/* FILTERS */}
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-60 flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              aria-label="Search software"
-              placeholder="Search by name or publisher"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+        <ListToolbar
+          className="rounded-xl border border-border bg-card"
+          title="Software"
+          count={pagination?.total}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name or publisher"
+          filters={
+            <select
+              aria-label="Filter by status"
+              value={usage}
+              onChange={(e) => setUsage(e.target.value as SoftwareUsage | '')}
+              className={SELECT_CLASSES}
+            >
+              <option value="">Any status</option>
+              {SOFTWARE_USAGE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          }
+          actions={
+            <>
+              <Button variant="ghost" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
+                <SlidersHorizontal aria-hidden="true" />
+                More filters{extraFilters ? ` (${extraFilters})` : ''}
+              </Button>
 
-          <select
-            aria-label="Filter by status"
-            value={usage}
-            onChange={(e) => setUsage(e.target.value as SoftwareUsage | '')}
-            className={SELECT_CLASSES}
-          >
-            <option value="">Any status</option>
-            {SOFTWARE_USAGE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-
-          <Button variant="ghost" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
-            <SlidersHorizontal aria-hidden="true" />
-            More filters{extraFilters ? ` (${extraFilters})` : ''}
-          </Button>
-
-          {hasFilters ? (
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              Clear
-            </Button>
-          ) : null}
-        </div>
+              {hasFilters ? (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  Clear
+                </Button>
+              ) : null}
+            </>
+          }
+        />
 
         {showMore ? (
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
@@ -406,30 +404,15 @@ export function SoftwareList() {
 
       {/* PAGINATION */}
       {pagination && pagination.totalPages > 1 ? (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Page {pagination.page} of {pagination.totalPages} · {pagination.total} titles
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeft aria-hidden="true" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= pagination.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-              <ChevronRight aria-hidden="true" />
-            </Button>
-          </div>
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <TablePagination
+            page={pagination.page}
+            pageSize={pagination.limit}
+            total={pagination.total}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            noun="titles"
+          />
         </div>
       ) : null}
 

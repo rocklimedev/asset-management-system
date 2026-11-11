@@ -1,4 +1,4 @@
-import { ChevronRight, LogOut, Menu, Search, Settings } from 'lucide-react';
+import { ChevronDown, ChevronRight, LogOut, Menu, Moon, Search, Settings, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
@@ -27,8 +27,26 @@ function getInitials(name?: string, email?: string) {
   return '?';
 }
 
+/**
+ * Top bar: breadcrumb on the left, a single centred search that opens the
+ * command palette (⌘K), and the account menu on the right. One search, one
+ * place to find things, the same on every page.
+ */
 export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  const toggleTheme = () => {
+    const nextDarkMode = !darkMode;
+    document.documentElement.classList.toggle('dark', nextDarkMode);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextDarkMode ? '#0F1729' : '#f8fafc');
+    setDarkMode(nextDarkMode);
+    try {
+      localStorage.setItem('itam-theme', nextDarkMode ? 'dark' : 'light');
+    } catch {
+      // Keep the toggle usable when browser storage is unavailable.
+    }
+  };
 
   const location = useLocation();
   const segments = location.pathname.split('/').filter(Boolean);
@@ -51,10 +69,8 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
   return (
     <>
-      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-background px-4 shadow-card">
-        {/* ==================================================
-            MOBILE MENU
-        ================================================== */}
+      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-background px-4">
+        {/* MOBILE MENU */}
 
         <button
           type="button"
@@ -63,17 +79,15 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
           className={cn(
             'inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground md:hidden',
             'transition-colors hover:bg-muted hover:text-foreground',
-            'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
+            'outline-none focus-visible:ring-2 focus-visible:ring-ring',
           )}
         >
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* ==================================================
-            BREADCRUMB
-        ================================================== */}
+        {/* BREADCRUMB */}
 
-        <nav aria-label="Breadcrumb" className="hidden items-center gap-1.5 text-sm sm:flex">
+        <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-1.5 text-sm lg:flex">
           <Link
             to="/"
             className="rounded text-muted-foreground transition-colors hover:text-foreground"
@@ -83,41 +97,49 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
           {(segments.length === 0 ? [''] : segments).map((segment, index) => (
             <span key={index} className="flex items-center gap-1.5">
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
 
-              <span className="font-medium text-foreground">
+              <span className="truncate font-medium text-foreground">
                 {ROUTE_LABELS[segment] ?? segment}
               </span>
             </span>
           ))}
         </nav>
 
-        {/* ==================================================
-            SEARCH
-        ================================================== */}
+        {/* SEARCH — centred, opens the command palette */}
+
+        <div className="flex min-w-0 flex-1 justify-center">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="Search (press Control or Command K)"
+            className={cn(
+              'flex h-9 w-full max-w-md items-center gap-2 rounded-full border border-border bg-card px-3.5',
+              'text-sm text-muted-foreground transition-colors hover:border-primary-border hover:text-foreground',
+              'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            )}
+          >
+            <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+
+            <span className="flex-1 truncate text-left">Search pages and actions</span>
+
+            <kbd className="hidden shrink-0 rounded border border-border bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground sm:inline">
+              {IS_MAC ? '⌘K' : 'Ctrl K'}
+            </kbd>
+          </button>
+        </div>
 
         <button
           type="button"
-          onClick={() => setPaletteOpen(true)}
-          className={cn(
-            'ml-auto flex h-8 items-center gap-2 rounded-md border border-input bg-background px-2.5',
-            'text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-            'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
-          )}
+          onClick={toggleTheme}
+          aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Search className="h-4 w-4" />
-
-          <span className="hidden sm:inline">Search pages…</span>
-          <span className="sr-only sm:hidden">Search pages</span>
-
-          <kbd className="ml-2 hidden rounded border border-border bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground sm:inline">
-            {IS_MAC ? '⌘K' : 'Ctrl K'}
-          </kbd>
+          {darkMode ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
         </button>
 
-        {/* ==================================================
-            ACCOUNT
-        ================================================== */}
+        {/* ACCOUNT */}
 
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
@@ -125,15 +147,29 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
               type="button"
               aria-label="Account menu"
               className={cn(
-                'rounded-full outline-none',
-                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
+                'flex shrink-0 items-center gap-2.5 rounded-full py-1 pl-1 pr-2 outline-none transition-colors hover:bg-muted',
+                'focus-visible:ring-2 focus-visible:ring-ring',
               )}
             >
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground">
+                <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
                   {initials}
                 </AvatarFallback>
               </Avatar>
+
+              <span className="hidden min-w-0 text-left md:block">
+                <span className="block max-w-[10rem] truncate text-sm font-medium leading-tight text-foreground">
+                  {user?.name || 'Signed in'}
+                </span>
+
+                {user?.role && (
+                  <span className="block truncate text-xs leading-tight text-muted-foreground">
+                    {user.role}
+                  </span>
+                )}
+              </span>
+
+              <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" aria-hidden="true" />
             </button>
           </DropdownMenu.Trigger>
 
@@ -161,10 +197,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
               <DropdownMenu.Item
                 asChild
-                className={cn(
-                  'flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-2 text-sm outline-none',
-                  'text-foreground focus:bg-muted',
-                )}
+                className="flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-2 text-sm text-foreground outline-none focus:bg-muted"
               >
                 <Link to="/settings">
                   <Settings className="h-4 w-4 text-muted-foreground" />
@@ -174,10 +207,7 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
               <DropdownMenu.Item
                 onSelect={() => logout()}
-                className={cn(
-                  'flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-2 text-sm outline-none',
-                  'text-muted-foreground focus:bg-destructive-muted focus:text-destructive-strong',
-                )}
+                className="flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-2 text-sm text-muted-foreground outline-none focus:bg-destructive-muted focus:text-destructive-strong"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out

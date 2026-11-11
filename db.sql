@@ -1,10 +1,3 @@
--- --------------------------------------------------------
--- Host:                         119.18.54.11
--- Server version:               5.7.23-23 - Percona Server (GPL), Release 23, Revision 500fcf5
--- Server OS:                    Linux
--- HeidiSQL Version:             12.17.0.7270
--- --------------------------------------------------------
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET NAMES utf8 */;
 /*!50503 SET NAMES utf8mb4 */;
@@ -14,12 +7,9 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-
--- Dumping database structure for spsyn8lm_asset_management
 CREATE DATABASE IF NOT EXISTS `spsyn8lm_asset_management` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;
 USE `spsyn8lm_asset_management`;
 
--- Dumping structure for table spsyn8lm_asset_management.asset_assignments
 CREATE TABLE IF NOT EXISTS `asset_assignments` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -45,9 +35,6 @@ CREATE TABLE IF NOT EXISTS `asset_assignments` (
   CONSTRAINT `fk_asset_assignments_system` FOREIGN KEY (`system_id`) REFERENCES `systems` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.asset_categories
 CREATE TABLE IF NOT EXISTS `asset_categories` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -64,9 +51,6 @@ CREATE TABLE IF NOT EXISTS `asset_categories` (
   CONSTRAINT `fk_asset_categories_organisation` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.asset_history
 CREATE TABLE IF NOT EXISTS `asset_history` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -85,9 +69,6 @@ CREATE TABLE IF NOT EXISTS `asset_history` (
   CONSTRAINT `fk_asset_history_asset_unit` FOREIGN KEY (`asset_unit_id`) REFERENCES `asset_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.asset_transfers
 CREATE TABLE IF NOT EXISTS `asset_transfers` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -115,9 +96,6 @@ CREATE TABLE IF NOT EXISTS `asset_transfers` (
   CONSTRAINT `fk_asset_transfers_to_employee` FOREIGN KEY (`to_employee_id`) REFERENCES `employees` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.asset_units
 CREATE TABLE IF NOT EXISTS `asset_units` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -129,6 +107,9 @@ CREATE TABLE IF NOT EXISTS `asset_units` (
   `notes` text COLLATE utf8mb4_unicode_ci,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `cellular_identities` json DEFAULT NULL,
+  `device_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `encrypted_pc_password` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uq_asset_units_unit_code` (`unit_code`) USING BTREE,
   UNIQUE KEY `uq_asset_units_serial_number` (`serial_number`) USING BTREE,
@@ -140,9 +121,6 @@ CREATE TABLE IF NOT EXISTS `asset_units` (
   CONSTRAINT `fk_asset_units_location` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.assets
 CREATE TABLE IF NOT EXISTS `assets` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `assetTag` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -187,9 +165,6 @@ CREATE TABLE IF NOT EXISTS `assets` (
   CONSTRAINT `fk_assets_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.audit_logs
 CREATE TABLE IF NOT EXISTS `audit_logs` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -206,9 +181,6 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   CONSTRAINT `fk_audit_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.departments
 CREATE TABLE IF NOT EXISTS `departments` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -217,9 +189,6 @@ CREATE TABLE IF NOT EXISTS `departments` (
   UNIQUE KEY `uq_departments_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.employees
 CREATE TABLE IF NOT EXISTS `employees` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `employeeCode` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -236,6 +205,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
   `joiningDate` datetime DEFAULT NULL,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deletedAt` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_employees_employeeCode` (`employeeCode`),
   UNIQUE KEY `uq_employees_email` (`email`),
@@ -250,9 +220,6 @@ CREATE TABLE IF NOT EXISTS `employees` (
   CONSTRAINT `fk_employees_organisation` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.inventory_history
 CREATE TABLE IF NOT EXISTS `inventory_history` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -270,9 +237,6 @@ CREATE TABLE IF NOT EXISTS `inventory_history` (
   CONSTRAINT `fk_inventory_history_asset` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.inventory_history_backup_20260923
 CREATE TABLE IF NOT EXISTS `inventory_history_backup_20260923` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -289,9 +253,6 @@ CREATE TABLE IF NOT EXISTS `inventory_history_backup_20260923` (
   KEY `idx_inventory_history_createdAt` (`createdAt`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.locations
 CREATE TABLE IF NOT EXISTS `locations` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -303,9 +264,6 @@ CREATE TABLE IF NOT EXISTS `locations` (
   CONSTRAINT `fk_locations_organisation` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.organisations
 CREATE TABLE IF NOT EXISTS `organisations` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -320,9 +278,6 @@ CREATE TABLE IF NOT EXISTS `organisations` (
   KEY `idx_organisations_isActive` (`isActive`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -331,9 +286,6 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.role_permissions
 CREATE TABLE IF NOT EXISTS `role_permissions` (
   `role_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `permission_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -343,9 +295,6 @@ CREATE TABLE IF NOT EXISTS `role_permissions` (
   CONSTRAINT `fk_role_permissions_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.roles
 CREATE TABLE IF NOT EXISTS `roles` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -354,9 +303,6 @@ CREATE TABLE IF NOT EXISTS `roles` (
   UNIQUE KEY `uq_roles_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.software_assignments
 CREATE TABLE IF NOT EXISTS `software_assignments` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `software_asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -375,9 +321,6 @@ CREATE TABLE IF NOT EXISTS `software_assignments` (
   CONSTRAINT `fk_software_assignments_system` FOREIGN KEY (`system_id`) REFERENCES `systems` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.software_details
 CREATE TABLE IF NOT EXISTS `software_details` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -400,9 +343,6 @@ CREATE TABLE IF NOT EXISTS `software_details` (
   CONSTRAINT `fk_software_details_parent_software` FOREIGN KEY (`parent_software_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.software_license_assignments
 CREATE TABLE IF NOT EXISTS `software_license_assignments` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -427,9 +367,6 @@ CREATE TABLE IF NOT EXISTS `software_license_assignments` (
   CONSTRAINT `fk_software_license_assignments_system` FOREIGN KEY (`system_id`) REFERENCES `systems` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.software_licenses
 CREATE TABLE IF NOT EXISTS `software_licenses` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `asset_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -450,9 +387,6 @@ CREATE TABLE IF NOT EXISTS `software_licenses` (
   CONSTRAINT `fk_software_licenses_asset` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.system_specs
 CREATE TABLE IF NOT EXISTS `system_specs` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `system_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -480,9 +414,6 @@ CREATE TABLE IF NOT EXISTS `system_specs` (
   CONSTRAINT `fk_system_specs_system` FOREIGN KEY (`system_id`) REFERENCES `systems` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.systems
 CREATE TABLE IF NOT EXISTS `systems` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `systemTag` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -492,17 +423,17 @@ CREATE TABLE IF NOT EXISTS `systems` (
   `organisation_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `category_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_systems_systemTag` (`systemTag`),
   KEY `idx_systems_employee_id` (`employee_id`),
   KEY `idx_systems_organisation_id` (`organisation_id`) USING BTREE,
+  KEY `idx_systems_category` (`category_id`),
+  CONSTRAINT `fk_systems_category` FOREIGN KEY (`category_id`) REFERENCES `asset_categories` (`id`),
   CONSTRAINT `fk_systems_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_systems_organisation` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.users
 CREATE TABLE IF NOT EXISTS `users` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -522,9 +453,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   CONSTRAINT `fk_users_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Data exporting was unselected.
-
--- Dumping structure for table spsyn8lm_asset_management.vendors
 CREATE TABLE IF NOT EXISTS `vendors` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -532,8 +460,6 @@ CREATE TABLE IF NOT EXISTS `vendors` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_vendors_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Data exporting was unselected.
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
