@@ -1,5 +1,7 @@
 import {
   Archive,
+  Network,
+  Building2,
   Wrench,
   Tags,
   Boxes,
@@ -74,10 +76,40 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Boxes,
       },
       {
+        to: '/asset-categories',
+        label: 'Categories',
+        description: 'Manage hardware and software categories',
+        icon: Tags,
+      },
+      {
         to: '/software',
         label: 'Software & Licenses',
         description: 'Installed software and license seats',
         icon: ComputerIcon,
+      },
+    ],
+  },
+  {
+    label: 'Network',
+    items: [
+      {
+        to: '/network/racks',
+        label: 'Racks',
+        description: 'Manage racks and their equipment',
+        icon: Boxes,
+      },
+      {
+        to: '/network/areas',
+        label: 'Areas',
+        description: 'Manage physical network areas',
+        icon: Building2,
+      },
+      {
+        to: '/network',
+        label: 'Network Map',
+        description: 'Office racks and network connections',
+        icon: Network,
+        end: true,
       },
     ],
   },
@@ -95,12 +127,6 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Administration',
     items: [
-      {
-        to: '/asset-categories',
-        label: 'Asset Categories',
-        description: 'Manage hardware and software categories',
-        icon: Tags,
-      },
       {
         to: '/users-roles',
         label: 'Users',
@@ -131,4 +157,6 @@ export const ROUTE_LABELS: Record<string, string> = {
   '': 'Dashboard',
   ...Object.fromEntries(NAV_ITEMS.map((item) => [item.to.replace(/^\//, ''), item.label])),
   settings: 'Settings',
+  racks: 'Racks',
+  areas: 'Areas',
 };

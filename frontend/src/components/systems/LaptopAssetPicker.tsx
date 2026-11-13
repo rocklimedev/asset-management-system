@@ -1,3 +1,4 @@
+import { TablePagination } from '../list/TablePagination';
 import { useState } from 'react';
 import {
   useGetAssetCategoriesQuery,
@@ -6,7 +7,6 @@ import {
 } from '../../services/api/asset.api';
 import type { SystemRecord } from '../../services/api/asset.api';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
 
 export type LaptopSelection = { assetId: string; assetUnitId: string } | null;
 type Props = {
@@ -106,24 +106,7 @@ export function LaptopAssetPicker({ categoryId, value, onChange, system, disable
               No available laptops found. Add laptop stock in Assets or assign one later.
             </p>
           )}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={disabled || isFetching || page === 1}
-              onClick={() => setPage((current) => current - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={disabled || isFetching || !pool || page >= pool.totalPages}
-              onClick={() => setPage((current) => current + 1)}
-            >
-              Next
-            </Button>
-          </div>
+          <TablePagination page={page} pageSize={20} total={pool?.total ?? 0} totalPages={pool?.totalPages ?? 1} onPageChange={setPage} disabled={disabled || isFetching || !pool} noun="laptops" />
           {value && (
             <div>
               <label htmlFor="computer-laptop-unit" className="text-sm font-medium">

@@ -9,7 +9,12 @@
     "start:prod": "node dist/main",
     "migrate:systems": "node scripts/migrate-systems.cjs",
     "migrate:cellular": "node scripts/migrate-cellular-identities.cjs",
-    "test:systems": "npm run build && node --test test/systems.test.cjs"
+    "test:systems": "npm run build && node --test test/systems.test.cjs",
+    "migrate:network": "npm run build && node scripts/network.cjs --migrate",
+    "seed:network": "npm run build && node scripts/network.cjs",
+    "upgrade:network": "npm run build && node scripts/network.cjs --upgrade",
+    "test:network": "npm run build && node --test test/network.test.cjs",
+    "seed:network:sql": "npm run build && node scripts/export-network-seed.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

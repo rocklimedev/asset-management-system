@@ -1,3 +1,4 @@
+import { TablePagination } from '../list/TablePagination';
 import { useState } from 'react';
 
 import { useAssignSystemMutation } from '../../services/api/asset.api';
@@ -133,34 +134,7 @@ export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) 
           </p>
         )}
 
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            disabled={page <= 1 || loadingEmployees}
-            onClick={() => {
-              setPage((p) => p - 1);
-              setEmployeeId('');
-            }}
-          >
-            Previous
-          </Button>
-
-          <span className="text-xs">Page {page}</span>
-
-          <Button
-            variant="outline"
-            disabled={
-              loadingEmployees ||
-              page * (employeeResult?.pageSize ?? 24) >= (employeeResult?.total ?? 0)
-            }
-            onClick={() => {
-              setPage((p) => p + 1);
-              setEmployeeId('');
-            }}
-          >
-            Next
-          </Button>
-        </div>
+        <TablePagination page={page} pageSize={employeeResult?.pageSize ?? 24} total={employeeResult?.total ?? 0} totalPages={Math.ceil((employeeResult?.total ?? 0) / (employeeResult?.pageSize ?? 24))} onPageChange={(next) => { setPage(next); setEmployeeId(''); }} disabled={loadingEmployees || !employeeResult} noun="employees" />
 
         <Button
           disabled={!employeeId || assignState.isLoading || loadingEmployees}

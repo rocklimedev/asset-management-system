@@ -1,3 +1,4 @@
+import { TablePagination } from '../components/list/TablePagination';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Plus, RefreshCw, Wrench } from 'lucide-react';
@@ -74,7 +75,7 @@ export default function RepairMaintenance() {
             </tr>)}</tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground"><span>{data.total} matching unit{data.total === 1 ? '' : 's'} · Page {page} of {Math.max(1, data.totalPages)}</span><div className="flex gap-2"><Button size="sm" variant="outline" disabled={page <= 1 || list.isFetching} onClick={() => setPage(current => current - 1)}>Previous</Button><Button size="sm" variant="outline" disabled={page >= data.totalPages || list.isFetching} onClick={() => setPage(current => current + 1)}>Next</Button></div></div>
+        <TablePagination page={page} pageSize={PAGE_SIZE} total={data.total} totalPages={data.totalPages} onPageChange={setPage} disabled={list.isFetching} noun="units" />
       </>}
     </section>
     <Dialog open={startOpen || Boolean(selected)} onOpenChange={value => { if (!value) close(); }}>
@@ -87,7 +88,7 @@ export default function RepairMaintenance() {
             <label className="block text-sm">Asset unit<select required className="mt-1 h-10 w-full rounded-md border bg-background px-3" disabled={mutation.isLoading || candidates.isFetching} value={selected?.id || ''} onChange={event => setSelected(candidates.currentData?.items.find(unit => unit.id === event.target.value) || null)}><option value="">Choose a unit</option>{candidates.currentData?.items.map(unit => <option key={unit.id} value={unit.id}>{unit.asset?.name} · {unit.unitCode || unit.serialNumber || unit.id}</option>)}</select></label>
             {candidates.isError && <p role="alert" className="text-sm text-destructive">Could not load units. <button type="button" className="underline" onClick={() => candidates.refetch()}>Retry</button></p>}
             {candidates.currentData?.items.length === 0 && <p className="text-xs text-muted-foreground">No units match. Try another search or status.</p>}
-            <div className="flex justify-between"><Button type="button" size="sm" variant="outline" disabled={candidatePage <= 1 || candidates.isFetching || mutation.isLoading} onClick={() => { setCandidatePage(current => current - 1); setSelected(null); }}>Previous</Button><Button type="button" size="sm" variant="outline" disabled={!candidates.currentData || candidatePage >= candidates.currentData.totalPages || candidates.isFetching || mutation.isLoading} onClick={() => { setCandidatePage(current => current + 1); setSelected(null); }}>Next</Button></div>
+            <TablePagination page={candidatePage} pageSize={PAGE_SIZE} total={candidates.currentData?.total ?? 0} totalPages={candidates.currentData?.totalPages ?? 1} onPageChange={(next) => { setCandidatePage(next); setSelected(null); }} disabled={!candidates.currentData || candidates.isFetching || mutation.isLoading} noun="units" />
           </div>}
           <label className="block space-y-1 text-sm"><span>{targetStatus === 'AVAILABLE' ? 'Work completed / service notes' : 'Issue / maintenance notes'}</span><Textarea required maxLength={5000} disabled={mutation.isLoading} value={notes} onChange={event => setNotes(event.target.value)} placeholder="Describe the issue or work completed. Include the service provider or reference if useful." /></label>
           <p className="text-xs text-muted-foreground">This change and your notes are saved in the asset history.</p>

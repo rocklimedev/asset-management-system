@@ -9,8 +9,8 @@ function pageItems(current: number, last: number): (number | '…')[] {
   if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
 
   const items: (number | '…')[] = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(last - 1, current + 1);
+  const start = Math.max(2, Math.min(current - 1, last - 3));
+  const end = Math.min(last - 1, Math.max(current + 1, 4));
 
   if (start > 2) items.push('…');
   for (let p = start; p <= end; p++) items.push(p);
@@ -37,6 +37,7 @@ export function TablePagination({
   rowsPerPage,
   onRowsPerPageChange,
   rowsPerPageOptions = [10, 15, 25, 50],
+  disabled = false,
 }: {
   page: number;
   pageSize: number;
@@ -47,6 +48,7 @@ export function TablePagination({
   rowsPerPage?: number;
   onRowsPerPageChange?: (size: number) => void;
   rowsPerPageOptions?: number[];
+  disabled?: boolean;
 }) {
   const last = Math.max(totalPages, 1);
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -60,6 +62,7 @@ export function TablePagination({
             Rows per page
             <select
               value={rowsPerPage}
+              disabled={disabled}
               onChange={(event) => onRowsPerPageChange(Number(event.target.value))}
               className={SELECT}
             >
@@ -77,11 +80,11 @@ export function TablePagination({
         </span>
       </div>
 
-      <nav aria-label="Pagination" className="flex items-center gap-1">
+      <nav aria-label="Pagination" className="flex flex-wrap items-center gap-1">
         <button
           type="button"
           className={NAV}
-          disabled={page <= 1}
+          disabled={disabled || page <= 1}
           onClick={() => onPageChange(1)}
           aria-label="First page"
         >
@@ -91,7 +94,7 @@ export function TablePagination({
         <button
           type="button"
           className={NAV}
-          disabled={page <= 1}
+          disabled={disabled || page <= 1}
           onClick={() => onPageChange(page - 1)}
           aria-label="Previous page"
         >
@@ -108,9 +111,11 @@ export function TablePagination({
               key={item}
               type="button"
               aria-current={item === page ? 'page' : undefined}
+              aria-label={`Page ${item}`}
+              disabled={disabled}
               onClick={() => onPageChange(item)}
               className={cn(
-                'inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-medium tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-medium tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
                 item === page
                   ? 'border border-primary-border bg-primary-muted text-primary'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -124,7 +129,7 @@ export function TablePagination({
         <button
           type="button"
           className={NAV}
-          disabled={page >= last}
+          disabled={disabled || page >= last}
           onClick={() => onPageChange(page + 1)}
           aria-label="Next page"
         >
@@ -134,7 +139,7 @@ export function TablePagination({
         <button
           type="button"
           className={NAV}
-          disabled={page >= last}
+          disabled={disabled || page >= last}
           onClick={() => onPageChange(last)}
           aria-label="Last page"
         >

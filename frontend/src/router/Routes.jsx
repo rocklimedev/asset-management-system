@@ -20,6 +20,8 @@ const RolesPermissions = lazy(() => import('../pages/RolesPermissions'));
 const ActivityLogs = lazy(() => import('../pages/ActivityLogs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
 const SoftwareList = lazy(() => import('../pages/SoftwareList'));
+const Network = lazy(() => import('../pages/Network'));
+const NetworkDirectory = lazy(() => import('../pages/NetworkDirectory'));
 
 // Preserve old Computer Builds links and their query parameters.
 function SystemsRedirect() {
@@ -80,6 +82,9 @@ export default function AppRoutes() {
           <Route path="/roles-permissions" element={<RolesPermissions />} />
           <Route path="/activity-logs" element={<ActivityLogs />} />
           <Route path="/software" element={<SoftwareList />} />
+          <Route path="/network" element={<Network />} />
+          <Route path="/network/racks" element={<NetworkDirectory key="racks" collection="racks" />} />
+          <Route path="/network/areas" element={<NetworkDirectory key="areas" collection="areas" />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

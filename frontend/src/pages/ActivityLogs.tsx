@@ -1,3 +1,4 @@
+import { TablePagination } from '../components/list/TablePagination';
 import { useEffect, useState } from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -249,27 +250,7 @@ export default function ActivityLogs() {
               </Table>
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-            <p className="text-muted-foreground">
-              {data?.total ?? 0} records · Page {page} of {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={page <= 1 || isFetching}
-                onClick={() => setPage((previous) => previous - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                disabled={!data || page >= totalPages || isFetching}
-                onClick={() => setPage((previous) => previous + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+          <TablePagination page={page} pageSize={50} total={data?.total ?? 0} totalPages={totalPages} onPageChange={setPage} disabled={isFetching || !data} noun="records" />
         </Card>
       )}
     </div>

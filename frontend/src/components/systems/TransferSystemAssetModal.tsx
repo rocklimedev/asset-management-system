@@ -1,3 +1,4 @@
+import { TablePagination } from '../list/TablePagination';
 import { useState } from 'react';
 import { useGetSystemsQuery, useTransferAssetMutation } from '../../services/api/asset.api';
 import { useTransferSoftwareInstallationMutation } from '../../services/api/software.api';
@@ -158,23 +159,7 @@ export function TransferSystemAssetModal({
             Could not load employees.
           </p>
         )}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            disabled={busy || isFetching || page <= 1}
-            onClick={() => changePage(page - 1)}
-          >
-            Previous
-          </Button>
-          <span className="text-xs">Page {page}</span>
-          <Button
-            variant="outline"
-            disabled={busy || isFetching || page * (result?.pageSize ?? 24) >= (result?.total ?? 0)}
-            onClick={() => changePage(page + 1)}
-          >
-            Next
-          </Button>
-        </div>
+        <TablePagination page={page} pageSize={result?.pageSize ?? 24} total={result?.total ?? 0} totalPages={Math.ceil((result?.total ?? 0) / (result?.pageSize ?? 24))} onPageChange={changePage} disabled={busy || isFetching || !result} noun="employees" />
         {employeeId && (
           <>
             <Label htmlFor="transfer-destination-system">Destination system</Label>

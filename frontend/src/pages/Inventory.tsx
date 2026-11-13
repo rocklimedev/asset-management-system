@@ -1,3 +1,4 @@
+import { TablePagination } from '../components/list/TablePagination';
 import { OverlayRoot } from '@/components/ui/overlay-root';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -14,6 +15,7 @@ import {
   Pencil,
   History,
   Trash2,
+  Gift,
   Loader2,
 } from 'lucide-react';
 
@@ -509,16 +511,6 @@ export default function Inventory() {
   // ============================================================
   // PAGINATION
   // ============================================================
-
-  function goToPreviousPage() {
-    setPage(Math.max(1, page - 1));
-    clearSelection();
-  }
-
-  function goToNextPage() {
-    setPage(Math.min(totalPages, page + 1));
-    clearSelection();
-  }
 
   // ============================================================
   // VIEW
@@ -1158,8 +1150,14 @@ export default function Inventory() {
                               Adjust inventory
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick={() => openDisposition(asset, 'DISCARD')}>Discard</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openDisposition(asset, 'GIVE_AWAY')}>Give away</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDisposition(asset, 'DISCARD')}>
+                              <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
+                              Discard
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDisposition(asset, 'GIVE_AWAY')}>
+                              <Gift className="mr-2 h-4 w-4" aria-hidden="true" />
+                              Give away
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openInventoryHistory(asset)}>
                               <Boxes className="mr-2 h-4 w-4" />
                               Inventory history
@@ -1189,36 +1187,7 @@ export default function Inventory() {
               PAGINATION
           ================================================== */}
 
-          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              Showing {total === 0 ? 0 : (page - 1) * pageSize + 1} -{' '}
-              {Math.min(page * pageSize, total)} of {total} assets
-            </span>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page === 1 || isFetching}
-                onClick={goToPreviousPage}
-              >
-                Previous
-              </Button>
-
-              <span className="px-1">
-                Page {page} of {Math.max(totalPages, 1)}
-              </span>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages || isFetching}
-                onClick={goToNextPage}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} totalPages={totalPages} onPageChange={(next) => { setPage(next); clearSelection(); }} disabled={isFetching} noun="assets" />
         </>
       )}
 
