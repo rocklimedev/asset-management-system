@@ -1,3 +1,4 @@
+import { RecordAttachments } from '../attachments/RecordAttachments';
 import { useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
@@ -176,9 +177,9 @@ export function SystemDetailDrawer({
         toEmployeeId: system.employeeId,
         fromSystemId: component ? undefined : system.id,
         toSystemId: component ? system.id : undefined,
-        reason: component ? 'Marked as workstation component' : 'Marked as employee asset',
+        reason: component ? 'Marked as workstation peripheral' : 'Marked as team member asset',
       }).unwrap();
-      toast.add({ title: component ? 'Marked as component' : 'Marked as asset', type: 'success' });
+      toast.add({ title: component ? 'Marked as peripheral' : 'Marked as asset', type: 'success' });
     } catch (error) {
       toast.add({
         title: 'Could not change assignment',
@@ -223,7 +224,7 @@ export function SystemDetailDrawer({
 
       toast.add({
         title: 'System returned',
-        description: 'Its components remain together.',
+        description: 'Its peripherals remain together.',
         type: 'success',
       });
     } catch (error) {
@@ -357,6 +358,7 @@ export function SystemDetailDrawer({
             </div>
           </div>
 
+          <div className="p-5"><RecordAttachments resource="systems" id={system.id} disabled={busy} /></div>
           <Tabs.Root key={system.id} defaultValue="specifications" className="min-w-0">
             <Tabs.List
               aria-label="Work station details"
@@ -364,9 +366,11 @@ export function SystemDetailDrawer({
             >
               {[
                 { value: 'specifications', label: 'Specifications', icon: Cpu },
-                { value: 'components', label: 'Components', icon: Package },
+                { value: 'components', label: 'Peripherals', icon: Package },
                 { value: 'assets', label: 'Assets', icon: Package },
                 { value: 'software', label: 'Software', icon: AppWindow },
+                { value: 'computerParts', label: 'Computer Parts', icon: Cpu },
+                { value: 'accessories', label: 'Accessories', icon: Package },
               ].map(({ value, label, icon: Icon }) => (
                 <Tabs.Trigger
                   key={value}
@@ -383,6 +387,15 @@ export function SystemDetailDrawer({
               SPECIFICATIONS
           ============================================================ */}
 
+            {(['computerParts', 'accessories'] as const).map((field) => (
+              <Tabs.Content key={field} value={field} className="space-y-4 p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">{field === 'computerParts' ? 'Computer Parts' : 'Accessories'}</h3>
+                  <Button variant="outline" size="sm" disabled={busy} onClick={() => onEdit(system)}>Edit</Button>
+                </div>
+                <p className="whitespace-pre-wrap break-words text-sm">{system[field] || 'No items recorded. Edit this workstation to add items.'}</p>
+              </Tabs.Content>
+            ))}
             <Tabs.Content value="specifications" className="p-5">
               <div className="rounded-xl border bg-muted/10 p-4">
                 <div className="mb-5 flex items-center justify-between">
@@ -542,7 +555,7 @@ export function SystemDetailDrawer({
                     disabled={isBusy || !system.employeeId}
                     onClick={() => setSoftwareModalOpen(true)}
                     title={
-                      !system.employeeId ? 'Assign the system to an employee first' : undefined
+                      !system.employeeId ? 'Assign the system to an team member first' : undefined
                     }
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -653,7 +666,7 @@ export function SystemDetailDrawer({
 
             <Tabs.Content value="components" className="p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-medium">Components ({system.assignments?.length ?? 0})</h3>
+                <h3 className="font-medium">Peripherals ({system.assignments?.length ?? 0})</h3>
 
                 <Button size="sm" disabled={isBusy} onClick={onOpenAssetPool}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -732,7 +745,7 @@ export function SystemDetailDrawer({
                   <h3 className="font-medium">Assets ({directAssets.length})</h3>
                   <p className="text-xs text-muted-foreground">
                     Equipment assigned directly to{' '}
-                    {system.employee?.name ?? 'the work station�s employee'}. Shared across their
+                    {system.employee?.name ?? 'the work station�s team member'}. Shared across their
                     work stations.
                   </p>
                 </div>
@@ -791,7 +804,7 @@ export function SystemDetailDrawer({
                             },
                           },
                           {
-                            label: 'Mark as component',
+                            label: 'Mark as peripheral',
                             disabled: isBusy || assignment.asset?.kind === 'SOFTWARE',
                             onSelect: () => markAs(assignment.assetId, true),
                           },

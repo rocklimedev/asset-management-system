@@ -125,4 +125,3 @@ function MobileNavDrawer({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-

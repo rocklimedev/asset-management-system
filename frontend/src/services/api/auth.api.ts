@@ -62,10 +62,16 @@ export const authApi = createApi({
   tagTypes: ['Auth', 'Profile'],
 
   endpoints: (builder) => ({
-    updateProfile: builder.mutation<{ id: string; name: string; email: string }, { name: string; email: string }>({
+    updateProfile: builder.mutation<
+      { id: string; name: string; email: string },
+      { name: string; email: string }
+    >({
       query: (body) => ({ url: '/auth/profile', method: 'PATCH', body }),
     }),
-    resetPassword: builder.mutation<{ message: string }, { currentPassword: string; newPassword: string }>({
+    resetPassword: builder.mutation<
+      { message: string },
+      { currentPassword: string; newPassword: string }
+    >({
       query: (body) => ({ url: '/auth/reset-password', method: 'POST', body }),
     }),
     // ============================================================

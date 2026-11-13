@@ -108,7 +108,7 @@ export function EmployeeCard({
                 type="button"
                 onClick={() => onAssignSystemClick(employee)}
                 title={
-                  hasSystem ? 'Transfer this employee’s system' : 'Assign an unassigned system'
+                  hasSystem ? 'Transfer this team member’s system' : 'Assign an unassigned system'
                 }
                 className={clsx(
                   'rounded-md p-1.5 hover:bg-muted',

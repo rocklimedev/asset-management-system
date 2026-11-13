@@ -61,7 +61,7 @@ export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) 
 
       toast.add({
         title: 'System assigned',
-        description: 'Its components remain together.',
+        description: 'Its peripherals remain together.',
         type: 'success',
       });
 
@@ -91,8 +91,8 @@ export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) 
         </DialogHeader>
 
         <Input
-          aria-label="Search employees"
-          placeholder="Search employees"
+          aria-label="Search team members"
+          placeholder="Search team members"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -101,10 +101,10 @@ export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) 
           }}
         />
 
-        <Label htmlFor="system-employee">Employee</Label>
+        <Label htmlFor="system-team member">Employee</Label>
 
         <select
-          id="system-employee"
+          id="system-team member"
           className="h-10 w-full rounded-md border bg-background px-3 text-sm"
           value={employeeId}
           onChange={(e) => setEmployeeId(e.target.value)}

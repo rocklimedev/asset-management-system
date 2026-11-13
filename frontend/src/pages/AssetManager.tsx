@@ -184,7 +184,7 @@ export default function AssetManager() {
       <EmptyState
         icon={Monitor}
         title="Select a work station"
-        description="Choose a work station to manage specifications, components, employee assets and software."
+        description="Choose a work station to manage specifications, peripherals, team member assets and software."
       />
     </div>
   );
@@ -198,7 +198,7 @@ export default function AssetManager() {
       <PageHeader
         className="mb-6"
         title="Asset Manager"
-        description="Manage work stations, their components, software and employee assets."
+        description="Manage work stations, their peripherals, software and team member assets."
         actions={
           <>
             <Button variant="outline" onClick={() => setQuickComputerOpen(true)}>
@@ -253,8 +253,8 @@ export default function AssetManager() {
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Find a work station or employee"
-              aria-label="Find a work station or employee"
+              placeholder="Find a work station or team member"
+              aria-label="Find a work station or team member"
             />
             <select
               value={organisationId}
@@ -355,6 +355,7 @@ function ComputerRow({
 }) {
   const holder = system.employee?.name ?? null;
   const parts = system.assignments?.length ?? 0;
+  const image = system.attachments?.filter(file => file.purpose === 'image').slice(-1)[0];
 
   return (
     <button
@@ -374,7 +375,7 @@ function ComputerRow({
             : 'border-border bg-muted text-muted-foreground')
         }
       >
-        <Monitor className="h-4 w-4" />
+        {image ? <img src={image.url} alt={system.name} className="h-full w-full rounded-md object-cover" /> : <Monitor className="h-4 w-4" />}
       </span>
 
       <span className="min-w-0 flex-1">

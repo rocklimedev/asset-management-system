@@ -7,6 +7,8 @@ import { AuthUser } from '@/common/decorator/current-user.decorator';
 
 import { User, UserStatus } from './models/user.model';
 import { Role } from '@/modules/roles/models/role.model';
+import { Employee } from '@/modules/organisation/models/employees.model';
+import { UniqueConstraintError } from 'sequelize';
 
 interface CreateUserPayload {
   name: string;
@@ -30,7 +32,45 @@ export class UsersService {
     private readonly userModel: typeof User,
 
     private readonly audit: AuditService,
+    @InjectModel(Employee)
+    private readonly employeeModel: typeof Employee,
   ) {}
+
+  async employeeOptions() {
+    const [employees, users] = await Promise.all([
+      this.employeeModel.findAll({
+        attributes: ['id', 'name', 'employeeCode', 'email', 'status'],
+        order: [['name', 'ASC']],
+      }),
+      this.userModel.findAll({ attributes: ['id', 'employeeId'] }),
+    ]);
+    const linkedUsers = new Map(
+      users.filter((user) => user.employeeId).map((user) => [user.employeeId, user.id]),
+    );
+    return employees.map((employee) => ({
+      ...employee.get({ plain: true }),
+      linkedUserId: linkedUsers.get(employee.id) ?? null,
+    }));
+  }
+
+  private async validateEmployeeLink(employeeId: string, userId?: string) {
+    if (!(await this.employeeModel.findByPk(employeeId, { attributes: ['id'] }))) {
+      throw new NotFoundException('Employee not found.');
+    }
+    const linked = await this.userModel.findOne({ where: { employeeId }, attributes: ['id'] });
+    if (linked && linked.id !== userId) {
+      throw new ConflictException('This employee is already linked to another user.');
+    }
+  }
+
+  private rethrowWriteError(error: unknown): never {
+    if (error instanceof UniqueConstraintError) {
+      throw new ConflictException(
+        'Email or employee is already linked to another user. Refresh and try again.',
+      );
+    }
+    throw error;
+  }
 
   // ============================================================
   // USER INCLUDE
@@ -42,6 +82,11 @@ export class UsersService {
         model: Role,
         as: 'role',
         attributes: ['id', 'name', 'description'],
+      },
+      {
+        model: Employee,
+        as: 'employee',
+        attributes: ['id', 'name', 'employeeCode', 'email', 'status'],
       },
     ];
   }
@@ -65,6 +110,7 @@ export class UsersService {
   // ============================================================
 
   async create(dto: CreateUserPayload, actor: AuthUser) {
+    if (dto.employeeId) await this.validateEmployeeLink(dto.employeeId);
     const existing = await this.userModel.findOne({
       where: {
         email: dto.email,
@@ -77,13 +123,15 @@ export class UsersService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.userModel.create({
-      name: dto.name,
-      email: dto.email,
-      passwordHash,
-      roleId: dto.roleId,
-      employeeId: dto.employeeId ?? null,
-    } as User);
+    const user = await this.userModel
+      .create({
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+        roleId: dto.roleId,
+        employeeId: dto.employeeId ?? null,
+      } as User)
+      .catch((error) => this.rethrowWriteError(error));
 
     await this.audit.log({
       userId: actor.id,
@@ -114,6 +162,8 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found.');
     }
+    const previousEmployeeId = user.employeeId ?? null;
+    if (dto.employeeId) await this.validateEmployeeLink(dto.employeeId, id);
 
     // ----------------------------------------------------------
     // Check email uniqueness
@@ -153,7 +203,7 @@ export class UsersService {
       updateData.passwordHash = await bcrypt.hash(dto.password, 10);
     }
 
-    await user.update(updateData);
+    await user.update(updateData).catch((error) => this.rethrowWriteError(error));
 
     await this.audit.log({
       userId: actor.id,
@@ -163,6 +213,7 @@ export class UsersService {
       metadata: {
         updatedFields: Object.keys(updateData).filter((field) => field !== 'passwordHash'),
         passwordChanged: dto.password !== undefined,
+        ...(dto.employeeId !== undefined ? { previousEmployeeId, employeeId: dto.employeeId } : {}),
       },
     });
 

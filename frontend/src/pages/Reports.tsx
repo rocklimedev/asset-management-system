@@ -737,7 +737,7 @@ function AssignedReportView({ filters }: { filters: ReportFilters }) {
       <ReportTable
         loading={isFetching}
         title="Assigned Assets"
-        description="Assets currently assigned to employees."
+        description="Assets currently assigned to team members."
       >
         <TableHeader>
           <TableRow>

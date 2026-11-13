@@ -86,6 +86,9 @@ export class Asset extends Model<Asset> {
   })
   name!: string;
 
+  @Column({ type: DataType.JSON, allowNull: true })
+  attachments!: import('../record-attachments.service').RecordAttachment[] | null;
+
   // ============================================================
   // KIND
   // ============================================================

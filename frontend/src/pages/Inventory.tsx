@@ -21,6 +21,7 @@ import {
   useGetAssetsQuery,
   useGetAssetQuery,
   useDeleteAssetMutation,
+  useDisposeAssetMutation,
   useGetAssetCategoriesQuery,
   useAssignAssetMutation,
   useGetSystemsQuery,
@@ -60,6 +61,7 @@ import { AssetHistoryModal } from '../components/asset-manager/AssetHistoryModal
 import { UpdateInventoryModal } from '../components/asset-manager/UpdateInventoryModal';
 import { InventoryHistoryModal } from '../components/asset-manager/InventoryHistoryModal';
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { toast } from '../components/ui/toast';
 import { useConfirm } from '../components/ui/confirm-dialog';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -312,6 +314,14 @@ export default function Inventory() {
   // MUTATIONS / QUERIES
   // ============================================================
 
+  const [disposition, setDisposition] = useState<{ asset: Asset; action: 'DISCARD' | 'GIVE_AWAY' } | null>(null);
+  const [dispositionQuantity, setDispositionQuantity] = useState('1');
+  const [dispositionReason, setDispositionReason] = useState('');
+  const [recipient, setRecipient] = useState('');
+  const [disposeAsset, disposalState] = useDisposeAssetMutation();
+  function openDisposition(asset: Asset, action: 'DISCARD' | 'GIVE_AWAY') {
+    setDisposition({ asset, action }); setDispositionQuantity('1'); setDispositionReason(''); setRecipient('');
+  }
   const [deleteAsset, { isLoading: isDeleting }] = useDeleteAssetMutation();
 
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
@@ -748,6 +758,26 @@ export default function Inventory() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+      <Dialog open={Boolean(disposition)} onOpenChange={(open) => { if (!open && !disposalState.isLoading) setDisposition(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{disposition?.action === 'GIVE_AWAY' ? 'Give away asset' : 'Discard asset'}</DialogTitle>
+            <DialogDescription>{disposition?.asset.name}. Available units will be marked disposed, oldest first. The action is recorded in history. Return assigned units first.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={async (event) => {
+            event.preventDefault(); if (!disposition || disposalState.isLoading) return;
+            try {
+              await disposeAsset({ id: disposition.asset.id, action: disposition.action, quantity: Number(dispositionQuantity), reason: dispositionReason.trim(), recipient: recipient.trim() || undefined }).unwrap();
+              toast.add({ title: 'Asset disposition recorded', type: 'success' }); setDisposition(null);
+            } catch (error) { toast.add({ title: 'Could not record disposition', description: (error as { data?: { message?: string } }).data?.message || 'Please try again.', type: 'error' }); }
+          }}>
+            <label className="block text-sm">Quantity<Input type="number" min={1} step={1} required value={dispositionQuantity} disabled={disposalState.isLoading} onChange={e => setDispositionQuantity(e.target.value)} /></label>
+            {disposition?.action === 'GIVE_AWAY' && <label className="block text-sm">Recipient<Input required maxLength={255} value={recipient} disabled={disposalState.isLoading} onChange={e => setRecipient(e.target.value)} /></label>}
+            <label className="block text-sm">Reason<Input required maxLength={5000} value={dispositionReason} disabled={disposalState.isLoading} onChange={e => setDispositionReason(e.target.value)} /></label>
+            <Button type="submit" disabled={disposalState.isLoading || !dispositionReason.trim() || (disposition?.action === 'GIVE_AWAY' && !recipient.trim())}>{disposalState.isLoading ? 'Saving…' : 'Confirm'}</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
       {/* ======================================================
           HEADER
       ====================================================== */}
@@ -1128,6 +1158,8 @@ export default function Inventory() {
                               Adjust inventory
                             </DropdownMenuItem>
 
+                            <DropdownMenuItem onClick={() => openDisposition(asset, 'DISCARD')}>Discard</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDisposition(asset, 'GIVE_AWAY')}>Give away</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openInventoryHistory(asset)}>
                               <Boxes className="mr-2 h-4 w-4" />
                               Inventory history

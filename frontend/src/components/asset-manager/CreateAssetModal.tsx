@@ -1,5 +1,6 @@
+import { AttachmentFields, RecordAttachments, usePendingAttachments } from '../attachments/RecordAttachments';
 import { OverlayRoot } from '@/components/ui/overlay-root';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
 
 import {
@@ -316,6 +317,9 @@ function assetToFormValues(asset: Asset): AssetFormValues {
 // ============================================================
 
 export function CreateAssetModal({ open, onClose, asset, locations = [] }: CreateAssetModalProps) {
+  const attachments = usePendingAttachments(open, asset?.id);
+  const savedId = useRef<string>();
+  useEffect(() => { savedId.current = undefined; }, [open, asset?.id]);
   const isEditMode = Boolean(asset?.id);
 
   // ==========================================================
@@ -765,6 +769,7 @@ export function CreateAssetModal({ open, onClose, asset, locations = [] }: Creat
               cellularIdentities: normalizeIdentities(unit.cellularIdentities),
             }).unwrap();
         }
+        await attachments.save('assets', asset!.id);
 
         toast.add({
           title: 'Asset updated',
@@ -774,7 +779,12 @@ export function CreateAssetModal({ open, onClose, asset, locations = [] }: Creat
       } else {
         const payload = buildCreatePayload();
 
-        await createAsset(payload).unwrap();
+        if (!savedId.current) {
+          const response = await createAsset(payload).unwrap() as { id?: string; data?: { id?: string } };
+          savedId.current = response.data?.id || response.id;
+          if (!savedId.current) throw new Error('Asset saved without an ID. Reopen the asset to upload files.');
+        }
+        await attachments.save('assets', savedId.current!);
 
         toast.add({
           title: 'Asset created',
@@ -791,7 +801,7 @@ export function CreateAssetModal({ open, onClose, asset, locations = [] }: Creat
         title: isEditMode ? 'Update failed' : 'Creation failed',
         description: getErrorMessage(
           error,
-          isEditMode ? 'Failed to update asset.' : 'Failed to create asset.',
+          isEditMode ? 'Failed to update asset.' : savedId.current ? 'Asset was saved. Retry to upload remaining files, or reopen it from inventory.' : 'Failed to create asset.',
         ),
         type: 'error',
       });
@@ -896,6 +906,10 @@ export function CreateAssetModal({ open, onClose, asset, locations = [] }: Creat
         ==================================================== */}
 
         <form onSubmit={handleSubmit}>
+          <div className="px-6 py-4">
+            {asset?.id && <RecordAttachments resource="assets" id={asset.id} readOnly />}
+            <AttachmentFields files={attachments.files} setFiles={attachments.setFiles} disabled={isSubmitting} />
+          </div>
           <div className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2">
             {/* NAME */}
 

@@ -205,7 +205,7 @@ const EmployeeDetailDrawer = ({ employee, open, onClose, onEdit }: EmployeeDetai
 
             <DetailSection title="Basic Information">
               <DetailGrid>
-                <DetailItem icon={IdCard} label="Employee Code" value={employee.employeeCode} />
+                <DetailItem icon={IdCard} label="Team member Code" value={employee.employeeCode} />
 
                 <DetailItem icon={User} label="Name" value={employee.name} />
 
@@ -237,7 +237,7 @@ const EmployeeDetailDrawer = ({ employee, open, onClose, onEdit }: EmployeeDetai
             </DetailSection>
 
             {reports.length > 0 && (
-              <DetailSection title="Reporting Employees">
+              <DetailSection title="Reporting Team">
                 <div className="space-y-2">
                   {reports.map((report) => (
                     <div key={report.id} className="flex items-center gap-3 rounded-lg border p-3">
@@ -274,7 +274,7 @@ const EmployeeDetailDrawer = ({ employee, open, onClose, onEdit }: EmployeeDetai
                       {system.assignments
                         ?.map((a) => a.asset?.name)
                         .filter(Boolean)
-                        .join(', ') || 'No components yet'}
+                        .join(', ') || 'No peripherals yet'}
                     </p>
                   </Link>
                 ))}
@@ -341,7 +341,7 @@ const EmployeeDetailDrawer = ({ employee, open, onClose, onEdit }: EmployeeDetai
                   }
                 />
 
-                <DetailItem icon={IdCard} label="Employee ID" value={employee.id} />
+                <DetailItem icon={IdCard} label="Team member ID" value={employee.id} />
               </DetailGrid>
             </DetailSection>
           </div>

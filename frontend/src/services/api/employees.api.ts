@@ -265,7 +265,7 @@ export const employeesApi = createApi({
     },
   }),
 
-  tagTypes: ['Employee', 'Organisation'],
+  tagTypes: ['Team member', 'Organisation'],
   endpoints: (builder) => ({
     // ============================================================
     // GET ALL EMPLOYEES
@@ -290,12 +290,12 @@ export const employeesApi = createApi({
 
         return [
           ...employees.map(({ id }) => ({
-            type: 'Employee' as const,
+            type: 'Team member' as const,
             id,
           })),
 
           {
-            type: 'Employee' as const,
+            type: 'Team member' as const,
             id: 'LIST',
           },
         ];
@@ -315,7 +315,7 @@ export const employeesApi = createApi({
 
       providesTags: (result, error, id) => [
         {
-          type: 'Employee' as const,
+          type: 'Team member' as const,
           id,
         },
       ],
@@ -335,7 +335,7 @@ export const employeesApi = createApi({
 
       invalidatesTags: [
         {
-          type: 'Employee',
+          type: 'Team member',
           id: 'LIST',
         },
       ],
@@ -355,12 +355,12 @@ export const employeesApi = createApi({
 
       invalidatesTags: (result, error, { id }) => [
         {
-          type: 'Employee' as const,
+          type: 'Team member' as const,
           id,
         },
 
         {
-          type: 'Employee' as const,
+          type: 'Team member' as const,
           id: 'LIST',
         },
       ],
@@ -377,8 +377,8 @@ export const employeesApi = createApi({
         error
           ? []
           : [
-              { type: 'Employee', id },
-              { type: 'Employee', id: 'LIST' },
+              { type: 'Team member', id },
+              { type: 'Team member', id: 'LIST' },
             ],
     }),
 
@@ -390,12 +390,12 @@ export const employeesApi = createApi({
 
       invalidatesTags: (result, error, id) => [
         {
-          type: 'Employee' as const,
+          type: 'Team member' as const,
           id,
         },
 
         {
-          type: 'Employee' as const,
+          type: 'Team member' as const,
           id: 'LIST',
         },
       ],

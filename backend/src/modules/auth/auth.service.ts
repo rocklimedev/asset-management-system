@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UniqueConstraintError } from 'sequelize';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -50,9 +55,12 @@ export class AuthService {
     }
     const previousHash = user.passwordHash;
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    const [updated] = await this.userModel.update({ passwordHash }, {
-      where: { id: userId, passwordHash: previousHash, status: UserStatus.ACTIVE },
-    });
+    const [updated] = await this.userModel.update(
+      { passwordHash },
+      {
+        where: { id: userId, passwordHash: previousHash, status: UserStatus.ACTIVE },
+      },
+    );
     if (!updated) throw new BadRequestException('Password changed during this request. Try again.');
     return { message: 'Password reset successfully.' };
   }
@@ -115,6 +123,7 @@ export class AuthService {
         email: user.email,
 
         role: user.role?.name ?? null,
+        employeeId: user.employeeId ?? null,
 
         permissions:
           user.role?.permissions?.map((rolePermission) => rolePermission.permission.key) ?? [],

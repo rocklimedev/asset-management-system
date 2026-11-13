@@ -22,7 +22,12 @@ export class AuditController {
       throw new BadRequestException('Page must be a positive integer.');
     }
     for (const date of [from, to]) {
-      if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) {
+      if (
+        date &&
+        (!/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+          !Number.isFinite(Date.parse(date)) ||
+          new Date(date).toISOString().slice(0, 10) !== date)
+      ) {
         throw new BadRequestException('Dates must use YYYY-MM-DD.');
       }
     }

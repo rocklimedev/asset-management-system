@@ -1,6 +1,6 @@
-import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import { AppModule } from "./app.module";
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,10 +9,10 @@ async function bootstrap() {
   // CORS
   // ============================
   const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://rocklime-asset-manager.vercel.app",
-    "https://itos.spsyndicate.net",
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://rocklime-asset-manager.vercel.app',
+    'https://itos.spsyndicate.net',
   ];
 
   app.enableCors({
@@ -27,27 +27,21 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      console.log("CORS blocked origin:", origin);
-      return callback(new Error("Not allowed by CORS"), false);
+      console.log('CORS blocked origin:', origin);
+      return callback(new Error('Not allowed by CORS'), false);
     },
 
     credentials: true,
 
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
 
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Accept",
-      "Origin",
-      "X-Requested-With",
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   });
 
   // ============================
   // GLOBAL API PREFIX
   // ============================
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix('api');
 
   // ============================
   // VALIDATION

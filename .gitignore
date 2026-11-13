@@ -4,3 +4,5 @@ dist/
 *.tsbuildinfo
 vps-deploy-key
 vps-deploy-key.pub
+# Local CDN uploads
+backend/storage/cdn/

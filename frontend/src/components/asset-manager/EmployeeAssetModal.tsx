@@ -75,7 +75,7 @@ export default function EmployeeAssetModal({
       ids.map((id) =>
         returnAsset({
           id,
-          notes: 'Removed via employee asset manager',
+          notes: 'Removed via team member asset manager',
         }).unwrap(),
       ),
     );

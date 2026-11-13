@@ -34,12 +34,16 @@ function getInitials(name?: string, email?: string) {
  */
 export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+  const [darkMode, setDarkMode] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  );
 
   const toggleTheme = () => {
     const nextDarkMode = !darkMode;
     document.documentElement.classList.toggle('dark', nextDarkMode);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextDarkMode ? '#0F1729' : '#f8fafc');
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', nextDarkMode ? '#0F1729' : '#f8fafc');
     setDarkMode(nextDarkMode);
     try {
       localStorage.setItem('itam-theme', nextDarkMode ? 'dark' : 'light');
@@ -87,7 +91,10 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
 
         {/* BREADCRUMB */}
 
-        <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-1.5 text-sm lg:flex">
+        <nav
+          aria-label="Breadcrumb"
+          className="hidden min-w-0 items-center gap-1.5 text-sm lg:flex"
+        >
           <Link
             to="/"
             className="rounded text-muted-foreground transition-colors hover:text-foreground"
@@ -136,7 +143,11 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
           title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {darkMode ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
+          {darkMode ? (
+            <Sun className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Moon className="h-5 w-5" aria-hidden="true" />
+          )}
         </button>
 
         {/* ACCOUNT */}
@@ -169,7 +180,10 @@ export function Header({ onMobileMenu }: { onMobileMenu: () => void }) {
                 )}
               </span>
 
-              <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" aria-hidden="true" />
+              <ChevronDown
+                className="hidden h-4 w-4 text-muted-foreground md:block"
+                aria-hidden="true"
+              />
             </button>
           </DropdownMenu.Trigger>
 

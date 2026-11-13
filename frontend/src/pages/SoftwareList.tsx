@@ -208,7 +208,11 @@ export function SoftwareList() {
           }
           actions={
             <>
-              <Button variant="ghost" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
+              <Button
+                variant="ghost"
+                aria-expanded={showMore}
+                onClick={() => setShowMore((v) => !v)}
+              >
                 <SlidersHorizontal aria-hidden="true" />
                 More filters{extraFilters ? ` (${extraFilters})` : ''}
               </Button>

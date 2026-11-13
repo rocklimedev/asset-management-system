@@ -397,7 +397,7 @@ const EmployeeList: React.FC = () => {
       closeModal();
 
       toast.add({
-        title: editingEmployee ? 'Changes saved' : 'Employee added',
+        title: editingEmployee ? 'Changes saved' : 'Team member added',
         description: editingEmployee
           ? `${payload.name} has been updated.`
           : `${payload.name} can now be assigned assets.`,
@@ -407,7 +407,7 @@ const EmployeeList: React.FC = () => {
       await refetch();
     } catch (error) {
       toast.add({
-        title: editingEmployee ? 'Could not save changes' : 'Could not add employee',
+        title: editingEmployee ? 'Could not save changes' : 'Could not add team member',
         description: apiErrorMessage(error),
         type: 'error',
       });
@@ -427,7 +427,7 @@ const EmployeeList: React.FC = () => {
       title: `Delete ${employee.name}?`,
       description:
         'This employee will be removed from employee lists. Their history will be retained. All assigned assets and computers must be returned first.',
-      confirmLabel: 'Delete employee',
+      confirmLabel: 'Delete team member',
       tone: 'danger',
     });
     if (!confirmed) return;
@@ -439,13 +439,13 @@ const EmployeeList: React.FC = () => {
       }
       setPage((current) => (employees.length === 1 ? Math.max(1, current - 1) : current));
       toast.add({
-        title: 'Employee deleted',
+        title: 'Team member deleted',
         description: `${employee.name} has been removed from employee lists.`,
         type: 'success',
       });
     } catch (error) {
       toast.add({
-        title: 'Could not delete employee',
+        title: 'Could not delete team member',
         description: apiErrorMessage(error),
         type: 'error',
       });
@@ -500,7 +500,7 @@ const EmployeeList: React.FC = () => {
       }
 
       toast.add({
-        title: 'Employee marked as exited',
+        title: 'Team member marked as exited',
         description: `${employee.name}'s assets have been returned to stock.`,
         type: 'success',
       });
@@ -508,7 +508,7 @@ const EmployeeList: React.FC = () => {
       await refetch();
     } catch (error) {
       toast.add({
-        title: 'Could not mark employee as exited',
+        title: 'Could not mark team member as exited',
         description: apiErrorMessage(error),
         type: 'error',
       });
@@ -565,7 +565,7 @@ const EmployeeList: React.FC = () => {
 
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <PageHeader
-          title="Employees"
+          title="Team"
           description="People in your organisation, who they report to, and the assets they currently hold."
         />
 
@@ -585,9 +585,9 @@ const EmployeeList: React.FC = () => {
       {/* SUMMARY */}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <SummaryCard icon={Users} label="Total Employees" value={total} />
+        <SummaryCard icon={Users} label="Total Team" value={total} />
 
-        <SummaryCard icon={User} label="Active Employees" value={activeCount} />
+        <SummaryCard icon={User} label="Active Team" value={activeCount} />
       </div>
 
       {/* TABLE */}
@@ -603,74 +603,74 @@ const EmployeeList: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-{/* SEARCH */}
+            {/* SEARCH */}
 
-              <div className="relative w-full sm:w-[280px]">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative w-full sm:w-[280px]">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-                <Input
-                  value={search}
-                  onChange={(event) => {
-                    setSearch(event.target.value);
-                    setPage(1);
-                  }}
-                  placeholder="Search employees..."
-                  className="pl-9"
+              <Input
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search team members..."
+                className="pl-9"
+              />
+            </div>
+
+            {/* STATUS */}
+
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setStatus(value as EmployeeStatus);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* ORGANISATION */}
+
+            <Select
+              value={organisationId}
+              disabled={loadingOrganisations || organisationsError}
+              onValueChange={(value) => {
+                setOrganisationId(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue
+                  placeholder={
+                    loadingOrganisations
+                      ? 'Loading organisations�'
+                      : organisationsError
+                        ? 'Organisations unavailable'
+                        : 'Organisation'
+                  }
                 />
-              </div>
+              </SelectTrigger>
 
-              {/* STATUS */}
-
-              <Select
-                value={status}
-                onValueChange={(value) => {
-                  setStatus(value as EmployeeStatus);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* ORGANISATION */}
-
-              <Select
-                value={organisationId}
-                disabled={loadingOrganisations || organisationsError}
-                onValueChange={(value) => {
-                  setOrganisationId(value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue
-                    placeholder={
-                      loadingOrganisations
-                        ? 'Loading organisations�'
-                        : organisationsError
-                          ? 'Organisations unavailable'
-                          : 'Organisation'
-                    }
-                  />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {organisationOptions.map((organisation) => (
-                    <SelectItem key={organisation.id} value={organisation.id}>
-                      {organisation.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectContent>
+                {organisationOptions.map((organisation) => (
+                  <SelectItem key={organisation.id} value={organisation.id}>
+                    {organisation.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -815,7 +815,7 @@ const EmployeeList: React.FC = () => {
                                   onSelect: () => openDetails(employee),
                                 },
                                 {
-                                  label: 'Edit employee',
+                                  label: 'Edit team member',
                                   icon: Pencil,
                                   onSelect: () => openEdit(employee),
                                 },
@@ -828,7 +828,7 @@ const EmployeeList: React.FC = () => {
                                   onSelect: () => handleDelete(employee),
                                 },
                                 {
-                                  label: 'Delete employee',
+                                  label: 'Delete team member',
                                   icon: Trash2,
                                   destructive: true,
                                   disabled: !canDeleteEmployees || isDeleting || isDeletingRecord,

@@ -69,6 +69,11 @@ export class UsersController {
     return this.service.findAll();
   }
 
+  @Get('employee-options')
+  employeeOptions() {
+    return this.service.employeeOptions();
+  }
+
   // ============================================================
   // CREATE USER
   // ============================================================

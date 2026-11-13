@@ -170,7 +170,7 @@ export default function SystemsPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <PageHeader
           title="Computer Builds"
-          description="Combine individual parts into one computer, optionally limit it to an organisation, then assign the whole computer to an employee."
+          description="Combine individual parts into one computer, optionally limit it to an organisation, then assign the whole computer to an team member."
         />
 
         <Button onClick={openCreate} disabled={busy}>
@@ -186,10 +186,10 @@ export default function SystemsPage() {
       <div className="grid gap-4 sm:grid-cols-5">
         {[
           ['Systems', systems.length],
-          ['Assigned to employees', assignedCount],
+          ['Assigned to team members', assignedCount],
           ['Unassigned inventory', systems.length - assignedCount],
           ['Organisation scoped', organisationSystems.filter((s) => !!s.organisationId).length],
-          ['Components', systems.reduce((n, s) => n + (s.assignments?.length ?? 0), 0)],
+          ['Peripherals', systems.reduce((n, s) => n + (s.assignments?.length ?? 0), 0)],
         ].map(([label, count]) => (
           <div key={String(label)} className="rounded-xl border bg-card p-4">
             <p className="text-sm text-muted-foreground">{label}</p>
@@ -222,8 +222,8 @@ export default function SystemsPage() {
         </Tabs.List>
         <p className="mt-2 text-sm text-muted-foreground">
           {activeTab === 'grid'
-            ? 'Systems assigned to employees.'
-            : 'Unassigned systems available for employee assignment.'}
+            ? 'Systems assigned to team members.'
+            : 'Unassigned systems available for team member assignment.'}
         </p>
         <Tabs.Content value={activeTab} className="mt-4 outline-none">
           {isLoading ? (
@@ -242,7 +242,7 @@ export default function SystemsPage() {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     aria-label="Search systems"
-                    placeholder="Search systems, employees or organisations"
+                    placeholder="Search systems, team members or organisations"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9"

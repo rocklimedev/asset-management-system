@@ -1,5 +1,6 @@
 import {
   Archive,
+  Wrench,
   Tags,
   Boxes,
   BarChart3,
@@ -61,6 +62,12 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Archive,
       },
       {
+        to: '/repair-maintenance',
+        label: 'Repair & Maintenance',
+        description: 'Track repairs and maintain equipment',
+        icon: Wrench,
+      },
+      {
         to: '/asset-manager',
         label: 'Asset Manager',
         description: 'People, computers and the equipment they hold',
@@ -79,7 +86,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         to: '/employees',
-        label: 'Employees',
+        label: 'Team',
         description: 'People who can receive assets',
         icon: UserSquare2,
       },

@@ -18,9 +18,12 @@ export interface ActivityFilters {
 }
 
 export const activityApi = authApi.injectEndpoints({
-  endpoints: builder => ({
-    getActivityLogs: builder.query<{ items: ActivityLog[]; total: number; page: number; pageSize: number }, ActivityFilters & { page: number }>({
-      query: params => ({ url: '/audit-logs', params }),
+  endpoints: (builder) => ({
+    getActivityLogs: builder.query<
+      { items: ActivityLog[]; total: number; page: number; pageSize: number },
+      ActivityFilters & { page: number }
+    >({
+      query: (params) => ({ url: '/audit-logs', params }),
       keepUnusedDataFor: 0,
     }),
   }),

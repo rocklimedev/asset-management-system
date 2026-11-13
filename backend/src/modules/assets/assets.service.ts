@@ -21,6 +21,7 @@ import { CdnUploadFile } from '../cdn/cdn.service';
 import { CdnService } from '../cdn/cdn.service';
 
 import { CreateAssetDto, CreateAssetUnitInputDto } from './dto/create-asset.dto';
+import { DisposeAssetDto } from './dto/dispose-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssignAssetDto } from './dto/assign-asset.dto';
 import { TransferAssetDto } from './dto/transfer-asset.dto';
@@ -107,6 +108,33 @@ export class AssetsService {
   // ============================================================
   // COMMON INCLUDE
   // ============================================================
+
+  async dispose(id: string, dto: DisposeAssetDto, actor: AuthUser) {
+    if (!dto.reason.trim() || (dto.action === 'GIVE_AWAY' && !dto.recipient?.trim())) {
+      throw new BadRequestException('Enter a reason and, for a give-away, a recipient.');
+    }
+    return this.sequelize.transaction(async (transaction) => {
+      const asset = await this.assetModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!asset) throw new NotFoundException('Asset not found.');
+      const units = await this.assetUnitModel.findAll({
+        where: { assetId: id, status: AssetUnitStatus.AVAILABLE },
+        order: [['createdAt', 'ASC']], limit: dto.quantity, transaction, lock: transaction.LOCK.UPDATE,
+      });
+      if (units.length !== dto.quantity) throw new BadRequestException('Not enough available units. Return assigned units first.');
+      const notes = [dto.action === 'GIVE_AWAY' ? 'Given away to ' + dto.recipient!.trim() : 'Discarded', dto.reason.trim()].join(': ');
+      for (const unit of units) {
+        const assignment = await this.assetAssignmentModel.findOne({ where: { assetUnitId: unit.id, status: AssignmentStatus.ACTIVE }, transaction });
+        if (assignment) throw new BadRequestException('Return assigned units first.');
+        await unit.update({ status: AssetUnitStatus.DISPOSED, notes: [unit.notes, notes].filter(Boolean).join('\n') }, { transaction });
+        await this.assetHistoryModel.create({ assetId: id, assetUnitId: unit.id, action: dto.action === 'GIVE_AWAY' ? 'ASSET_GIVEN_AWAY' : 'ASSET_DISCARDED', performedBy: actor.name, fromValue: unit.unitCode, toValue: 'DISPOSED', notes } as AssetHistory, { transaction });
+      }
+      await this.refreshAssetAssignmentState(id, transaction);
+      const remaining = await this.assetUnitModel.count({ where: { assetId: id, status: { [Op.ne]: AssetUnitStatus.DISPOSED } }, transaction });
+      if (remaining === 0) await asset.update({ status: AssetStatus.DISPOSED }, { transaction });
+      await this.audit.log({ userId: actor.id, action: dto.action === 'GIVE_AWAY' ? 'ASSET_GIVEN_AWAY' : 'ASSET_DISCARDED', entity: 'Asset', entityId: id, metadata: { ...dto, unitIds: units.map(u => u.id) } }, transaction);
+      return { message: 'Asset disposition recorded.' };
+    });
+  }
 
   private get assetInclude() {
     return [

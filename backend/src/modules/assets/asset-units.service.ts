@@ -207,6 +207,11 @@ export class AssetUnitsService {
     });
   }
 
+  async history(id: string) {
+    await this.findOne(id);
+    return this.assetHistoryModel.findAll({ where: { assetUnitId: id }, order: [['createdAt', 'DESC']] });
+  }
+
   async findOne(id: string) {
     const unit = await this.assetUnitModel.findByPk(id, {
       include: this.unitInclude,
@@ -993,6 +998,7 @@ export class AssetUnitsService {
       await unit.update(
         {
           status,
+          ...(notes !== undefined ? { notes } : {}),
         },
         {
           transaction: t,

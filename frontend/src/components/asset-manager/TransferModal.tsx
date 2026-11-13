@@ -17,7 +17,7 @@ import type { Asset } from '../../services/api/asset.api';
 import type { Employee } from '../../services/api/employees.api';
 
 const REASONS = [
-  'Employee transfer',
+  'Team member transfer',
   'Team reassignment',
   'Manager request',
   'Equipment upgrade',
@@ -121,7 +121,7 @@ export function TransferModal({
                   size="sm"
                   className="w-full border-0 bg-transparent px-0 font-medium text-primary-strong hover:bg-transparent"
                 >
-                  <SelectValue placeholder="Select an employee..." />
+                  <SelectValue placeholder="Select an team member..." />
                 </SelectTrigger>
 
                 <SelectContent>
@@ -134,7 +134,7 @@ export function TransferModal({
               </Select>
             ) : (
               <p className="mt-0.5 truncate font-medium text-primary-strong">
-                {toEmployee?.name ?? 'No employee selected'}
+                {toEmployee?.name ?? 'No team member selected'}
               </p>
             )}
           </div>

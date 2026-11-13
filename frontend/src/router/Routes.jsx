@@ -11,6 +11,7 @@ import { useAuth } from '../services/context/AuthContext';
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const AssetManager = lazy(() => import('../pages/AssetManager'));
 const AssetCategories = lazy(() => import('../pages/AssetCategories'));
+const RepairMaintenance = lazy(() => import('../pages/RepairMaintenance'));
 const Inventory = lazy(() => import('../pages/Inventory'));
 const EmployeeList = lazy(() => import('../pages/EmployeeList'));
 const Reports = lazy(() => import('../pages/Reports'));
@@ -70,6 +71,7 @@ export default function AppRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/asset-manager" element={<AssetManager />} />
           <Route path="/systems" element={<SystemsRedirect />} />
+          <Route path="/repair-maintenance" element={<RepairMaintenance />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/reports" element={<Reports />} />

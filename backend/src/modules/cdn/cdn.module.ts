@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 
@@ -6,11 +7,12 @@ import { CdnController } from './cdn.controller';
 
 @Module({
   imports: [
+    ConfigModule,
     MulterModule.register({
       // In-memory buffer — CdnService writes it to our own storage volume.
       // No third-party storage SDK involved.
       limits: {
-        fileSize: 5 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024,
       },
     }),
   ],

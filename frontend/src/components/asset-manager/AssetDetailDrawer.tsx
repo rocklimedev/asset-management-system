@@ -1,3 +1,4 @@
+import { RecordAttachments } from '../attachments/RecordAttachments';
 import { OverlayRoot } from '@/components/ui/overlay-root';
 import { X, Clock, ArrowRightLeft, Undo2, UserRound, Monitor, Package } from 'lucide-react';
 
@@ -173,7 +174,7 @@ export function AssetDetailDrawer({
       return 'System';
     }
 
-    return 'Employee';
+    return 'Team member';
   };
 
   // ============================================================
@@ -240,6 +241,7 @@ export function AssetDetailDrawer({
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
           <div className="space-y-6">
+            <RecordAttachments resource="assets" id={asset.id} />
             {/* ==================================================
                 STATUS
             ================================================== */}
@@ -450,7 +452,7 @@ export function AssetDetailDrawer({
                             )}
 
                             {assignment.system?.employeeId && (
-                              <Field label="System employee" value={assignment.system.employeeId} />
+                              <Field label="System team member" value={assignment.system.employeeId} />
                             )}
                           </div>
 

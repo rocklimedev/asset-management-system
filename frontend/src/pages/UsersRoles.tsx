@@ -27,7 +27,6 @@ import { RowActions } from '@/components/ui/row-actions';
 // TYPES
 // ============================================================
 
-
 // ============================================================
 // COMPONENT
 // ============================================================
@@ -226,14 +225,25 @@ export default function UsersRoles() {
         Unable to verify your permissions. Reload to try again.
       </p>
     );
-  if (!canManageUsers) return <p role="alert" className="p-6 text-sm text-muted-foreground">You do not have permission to manage users.</p>;
+  if (!canManageUsers)
+    return (
+      <p role="alert" className="p-6 text-sm text-muted-foreground">
+        You do not have permission to manage users.
+      </p>
+    );
 
   const visibleUsers = users.filter((user) => {
     const query = userSearch.trim().toLowerCase();
 
     if (!query) return true;
 
-    return [user.name, user.email, user.role?.name]
+    return [
+      user.name,
+      user.email,
+      user.role?.name,
+      user.employee?.name,
+      user.employee?.employeeCode,
+    ]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(query));
   });
@@ -268,7 +278,6 @@ export default function UsersRoles() {
               TAB NAVIGATION
           ==================================================== */}
 
-
           {/* ====================================================
               USERS TAB
           ==================================================== */}
@@ -280,7 +289,7 @@ export default function UsersRoles() {
                 count={users.length}
                 search={userSearch}
                 onSearchChange={setUserSearch}
-                searchPlaceholder="Search name, email or role"
+                searchPlaceholder="Search name, email, role or team member"
               />
 
               {/* LOADING */}
@@ -321,6 +330,7 @@ export default function UsersRoles() {
                         <th className="px-5 py-2.5 font-medium">Name</th>
 
                         <th className="px-5 py-2.5 font-medium">Email</th>
+                        <th className="px-5 py-2.5 font-medium">Linked employee</th>
 
                         <th className="px-5 py-2.5 font-medium">Role</th>
 
@@ -356,6 +366,18 @@ export default function UsersRoles() {
                           {/* EMAIL */}
 
                           <td className="px-5 py-2.5 text-muted-foreground">{user.email || '—'}</td>
+                          <td className="px-5 py-2.5">
+                            {user.employee ? (
+                              <>
+                                <p className="font-medium">{user.employee.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.employee.employeeCode}
+                                </p>
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground">Not linked</span>
+                            )}
+                          </td>
 
                           {/* ROLE */}
 
@@ -414,7 +436,10 @@ export default function UsersRoles() {
                       ))}
                       {visibleUsers.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                          <td
+                            colSpan={6}
+                            className="px-5 py-10 text-center text-sm text-muted-foreground"
+                          >
                             No users match &ldquo;{userSearch}&rdquo;.
                           </td>
                         </tr>
@@ -429,7 +454,6 @@ export default function UsersRoles() {
           {/* ====================================================
               ROLES TAB
           ==================================================== */}
-
         </Card>
       </div>
 
