@@ -19,6 +19,8 @@ const UsersRoles = lazy(() => import('../pages/UsersRoles'));
 const RolesPermissions = lazy(() => import('../pages/RolesPermissions'));
 const ActivityLogs = lazy(() => import('../pages/ActivityLogs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
+const ConnectorsPage = lazy(() => import('../pages/Connectors'));
+const Communication = lazy(() => import('../pages/Communication'));
 const SoftwareList = lazy(() => import('../pages/SoftwareList'));
 const Network = lazy(() => import('../pages/Network'));
 const NetworkDirectory = lazy(() => import('../pages/NetworkDirectory'));
@@ -83,9 +85,17 @@ export default function AppRoutes() {
           <Route path="/activity-logs" element={<ActivityLogs />} />
           <Route path="/software" element={<SoftwareList />} />
           <Route path="/network" element={<Network />} />
-          <Route path="/network/racks" element={<NetworkDirectory key="racks" collection="racks" />} />
-          <Route path="/network/areas" element={<NetworkDirectory key="areas" collection="areas" />} />
+          <Route
+            path="/network/racks"
+            element={<NetworkDirectory key="racks" collection="racks" />}
+          />
+          <Route
+            path="/network/areas"
+            element={<NetworkDirectory key="areas" collection="areas" />}
+          />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/connectors" element={<ConnectorsPage />} />
+          <Route path="/communication" element={<Communication />} />
         </Route>
       </Route>
 

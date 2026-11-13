@@ -12,6 +12,7 @@ import {
   Users,
   ShieldCheck,
   History,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -117,6 +118,12 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'People',
     items: [
       {
+        to: '/communication',
+        label: 'Communication',
+        description: 'Zoho accounts, channels and employee onboarding',
+        icon: MessageSquare,
+      },
+      {
         to: '/employees',
         label: 'Team',
         description: 'People who can receive assets',
@@ -157,6 +164,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   '': 'Dashboard',
   ...Object.fromEntries(NAV_ITEMS.map((item) => [item.to.replace(/^\//, ''), item.label])),
   settings: 'Settings',
+  connectors: 'Connectors',
   racks: 'Racks',
   areas: 'Areas',
 };

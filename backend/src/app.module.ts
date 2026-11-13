@@ -4,7 +4,9 @@ import { CredentialsModule } from './modules/credentials/credentials.module';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_FILTER } from '@nestjs/core';
+import { CommunicationModule } from './modules/communication/communication.module';
+import { ZohoFailureFilter } from './modules/zoho-auth/zoho-failure.filter';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { AssetsModule } from './modules/assets/assets.module';
@@ -45,6 +47,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     ]),
 
     AuthModule,
+    CommunicationModule,
     CredentialsModule,
     NetworkModule,
     AssetsModule,
@@ -56,6 +59,7 @@ import { ReportsModule } from './modules/reports/reports.module';
   ],
 
   providers: [
+    { provide: APP_FILTER, useClass: ZohoFailureFilter },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

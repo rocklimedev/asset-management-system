@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Plug, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useResetPasswordMutation, useUpdateProfileMutation } from '../services/api/auth.api';
@@ -307,6 +308,22 @@ export default function Settings() {
             </DialogContent>
           </Dialog>
         </CardContent>
+      </Card>
+
+      <Card className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="min-w-0 flex-1 flex-col gap-1 p-0">
+          <CardTitle className="flex items-center gap-2">
+            <Plug aria-hidden="true" />
+            Connectors
+          </CardTitle>
+          <CardDescription>
+            Connect Zoho Mail and Cliq, check connection health and manage access.
+          </CardDescription>
+        </CardHeader>
+        <Link to="/settings/connectors" className={buttonVariants()}>
+          Manage connectors
+          <ArrowRight aria-hidden="true" />
+        </Link>
       </Card>
 
       <p className="text-sm text-muted-foreground">

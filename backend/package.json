@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "migrate:communication": "node scripts/migrate-communication.cjs",
+    "test:communication": "npm run build && node --test test/communication.test.cjs",
     "build": "nest build && tsc-alias -p tsconfig.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
