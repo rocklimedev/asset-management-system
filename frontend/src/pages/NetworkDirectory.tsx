@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, Save } from 'lucide-react';
+import { Download, RefreshCw } from 'lucide-react';
+import { NetworkAutosave, type SaveState } from '../components/network/autosave';
 import { useLazyNetworkQuery, useSaveNetworkMutation } from '../services/api/network.api';
 import { useAuth } from '../services/context/AuthContext';
 import type { NetworkDocument } from '../types/network';
@@ -40,7 +41,12 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
   const [areaId, setAreaId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const dirty = !!document && JSON.stringify(document) !== baseline;
+  const [saveState, setSaveState] = useState<SaveState>('saved');
+  const [saveError, setSaveError] = useState('');
+  const autosave = useRef<NetworkAutosave | null>(null);
+  const loadSequence = useRef(0);
+  const serialized = document ? JSON.stringify(document) : '';
+  const dirty = !!document && serialized !== baseline;
   const title = collection === 'racks' ? 'Network Racks' : 'Network Areas';
 
   async function load() {
@@ -56,22 +62,64 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
       return;
     setBusy(true);
     setError('');
+    const sequence = ++loadSequence.current;
     try {
+      await autosave.current?.dispose();
       const data = await fetchNetwork().unwrap();
+      if (sequence !== loadSequence.current) return;
+      autosave.current = new NetworkAutosave(
+        { revision: data.revision, snapshot: JSON.stringify(data.document) },
+        async (snapshot, revision) => {
+          try {
+            const saved = await saveNetwork({ document: JSON.parse(snapshot), revision }).unwrap();
+            return { revision: saved.revision, snapshot };
+          } catch (error) {
+            throw Object.assign(new Error(requestError(error, 'Could not save changes.')),
+              { status: (error as { status?: number }).status });
+          }
+        },
+        async () => {
+          const saved = await fetchNetwork().unwrap();
+          return { revision: saved.revision, snapshot: JSON.stringify(saved.document) };
+        },
+        (state, version, message) => {
+          if (sequence !== loadSequence.current) return;
+          setSaveState(state);
+          setSaveError(message || '');
+          if (version) {
+            setRevision(version.revision);
+            setBaseline(version.snapshot);
+          }
+        },
+      );
+      setSaveState('saved');
+      setSaveError('');
       setDocument(structuredClone(data.document));
       setBaseline(JSON.stringify(data.document));
       setRevision(data.revision);
       setSelection(null);
     } catch (e) {
+      if (sequence !== loadSequence.current) return;
       setError(requestError(e, 'Could not load network.'));
+      if (document) {
+        setSaveState('error');
+        setSaveError('Automatic saving is paused because reload failed. Export your edits or retry Reload.');
+      }
     } finally {
-      setBusy(false);
+      if (sequence === loadSequence.current) setBusy(false);
     }
   }
 
   useEffect(() => {
     void load();
+    return () => {
+      loadSequence.current++;
+      void autosave.current?.dispose();
+    };
   }, [accessToken]);
+  useEffect(() => {
+    if (document && !busy) autosave.current?.update(serialized);
+  }, [serialized, busy]);
   useEffect(() => {
     const before = (event: BeforeUnloadEvent) => {
       if (dirty) {
@@ -97,25 +145,18 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
     };
   }, [dirty]);
 
-  async function save() {
-    if (!document || busy) return;
-    const snapshot = JSON.stringify(document);
-    setBusy(true);
-    setError('');
-    try {
-      const data = await saveNetwork({ document, revision }).unwrap();
-      setBaseline(snapshot);
-      setRevision(data.revision);
-      toast.add({ title: `${title} saved`, type: 'success' });
-    } catch (e) {
-      setError(requestError(e, 'Could not save changes.'));
-    } finally {
-      setBusy(false);
-    }
+  function exportJSON() {
+    if (!document) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(document, null, 2)], { type: 'application/json' }));
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = 'office-network.json';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   function add() {
-    if (!document) return;
+    if (!document || busy) return;
     const next = structuredClone(document),
       id = uid();
     if (collection === 'areas')
@@ -135,7 +176,7 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
   }
 
   async function remove() {
-    if (!document || !selection) return;
+    if (!document || !selection || busy) return;
     const reason = deletionReason(document, selection.collection, selection.id);
     if (reason) {
       setError(reason);
@@ -144,7 +185,7 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
     if (
       !(await confirm({
         title: 'Delete selected item?',
-        description: 'The item is removed from your draft. Save to keep this change.',
+        description: 'The removal will save automatically.',
         confirmLabel: 'Delete',
         tone: 'danger',
       }))
@@ -161,7 +202,7 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
   }
 
   function addPort(deviceId: string) {
-    if (!document) return;
+    if (!document || busy) return;
     const next = structuredClone(document),
       id = uid();
     const labels = new Set(next.ports.filter((p) => p.deviceId === deviceId).map((p) => p.label));
@@ -194,21 +235,25 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
         title={title}
         description={
           collection === 'racks'
-            ? 'Manage racks, their physical areas and equipment. Save changes to update the network map.'
-            : 'Manage physical areas and their hierarchy. Save changes to update the network map.'
+            ? 'Manage racks, their physical areas and equipment. Changes save automatically.'
+            : 'Manage physical areas and their hierarchy. Changes save automatically.'
         }
         actions={
           <>
-            <StatusPill tone={dirty ? 'warn' : 'neutral'}>
-              {dirty ? 'Unsaved changes' : document ? `Saved · revision ${revision}` : 'Loading…'}
-            </StatusPill>
+            <span role="status" aria-live="polite">
+              <StatusPill tone={saveError ? 'warn' : dirty ? 'neutral' : 'ok'}>
+                {saveState === 'conflict' ? 'Save conflict' : saveState === 'error' ? 'Save failed'
+                  : saveState === 'retrying' ? 'Retrying save…' : saveState === 'saving' ? 'Saving…'
+                    : dirty ? 'Changes pending…' : document ? `Saved · revision ${revision}` : 'Loading…'}
+              </StatusPill>
+            </span>
             <Button variant="outline" size="sm" disabled={busy} onClick={() => void load()}>
               <RefreshCw />
               Reload
             </Button>
-            <Button size="sm" disabled={!dirty || busy} loading={busy} onClick={() => void save()}>
-              <Save />
-              Save changes
+            <Button variant="outline" size="sm" disabled={!document} onClick={exportJSON}>
+              <Download />
+              Export JSON
             </Button>
           </>
         }
@@ -241,6 +286,11 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {saveError && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{saveError}</AlertDescription>
         </Alert>
       )}
       {!document ? (
@@ -296,7 +346,7 @@ export default function NetworkDirectory({ collection }: { collection: 'racks' |
                 <NetworkInspector
                   document={document}
                   selection={selection}
-                  onChange={setDocument}
+                  onChange={(next) => { if (!busy) setDocument(next); }}
                   onDelete={() => void remove()}
                   select={setSelection}
                   onTrace={() =>
