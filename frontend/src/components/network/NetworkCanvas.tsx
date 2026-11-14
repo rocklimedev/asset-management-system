@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Compass, Info, Maximize2, Minus, Plus } from 'lucide-react';
 import type { ConnectionEnd, NetworkDocument, Position } from '../../types/network';
-import { moveRack, withinArea } from './topology';
+import { moveArea, moveRack, rackDeviceConnectionIds, withinArea } from './topology';
 import { KIND_META, kindColor } from './network-ui';
 import { Button } from '../ui/button';
 
@@ -27,9 +27,10 @@ export function NetworkCanvas({
   onPort,
   showAreas,
   showLabels,
+  showRackDeviceLines,
+  canvasRef,
   grid,
   snap,
-  compactRackConnections,
   dimensionMode,
   onDimension,
   onFit,
@@ -47,15 +48,18 @@ export function NetworkCanvas({
   onPort: (end: ConnectionEnd) => void;
   showAreas: boolean;
   showLabels: boolean;
+  showRackDeviceLines: boolean;
+  canvasRef: RefObject<SVGSVGElement>;
   grid: boolean;
   snap: boolean;
-  compactRackConnections: boolean;
   dimensionMode: boolean;
   onDimension: (a: [number, number], b: [number, number]) => void;
   onFit: () => void;
   overlay?: ReactNode;
 }) {
-  const svg = useRef<SVGSVGElement>(null);
+  const svg = canvasRef;
+  const rackLines = useMemo(() => rackDeviceConnectionIds(d), [d]);
+  const visibleConnections = d.connections.filter((c) => showRackDeviceLines || !rackLines.has(c.id));
   const [view, setView] = useState({ x: 0, y: 0, k: 1 });
   const [size, setSize] = useState({ w: 900, h: 600 });
   const [showMap, setShowMap] = useState(true);
@@ -177,7 +181,11 @@ export function NetworkCanvas({
         dy = Math.round(dy / 25) * 25;
       }
       if (current.collection === 'racks') {
-        onChange(moveRack(current.original, current.id, dx, dy, compactRackConnections));
+        onChange(moveRack(current.original, current.id, dx, dy));
+        return;
+      }
+      if (current.collection === 'areas') {
+        onChange(moveArea(current.original, current.id, dx, dy));
         return;
       }
       const next = structuredClone(current.original),
@@ -186,33 +194,6 @@ export function NetworkCanvas({
         const v = next.devices.find((v) => v.id === current.id)!;
         v.x = selected.x + dx;
         v.y = selected.y + dy;
-      }
-      if (current.collection === 'areas') {
-        const areas = new Set([current.id]);
-        let changed = true;
-        while (changed) {
-          changed = false;
-          for (const a of next.areas)
-            if (a.parentId && areas.has(a.parentId) && !areas.has(a.id)) {
-              areas.add(a.id);
-              changed = true;
-            }
-        }
-        for (const a of next.areas)
-          if (areas.has(a.id)) {
-            a.x += dx;
-            a.y += dy;
-          }
-        for (const r of next.racks)
-          if (areas.has(r.areaId)) {
-            r.x += dx;
-            r.y += dy;
-          }
-        for (const v of next.devices)
-          if (areas.has(v.areaId)) {
-            v.x += dx;
-            v.y += dy;
-          }
       }
       onChange(next);
     } else if (pan.current) {
@@ -299,7 +280,7 @@ export function NetworkCanvas({
           {grid && (
             <rect x={-10000} y={-10000} width={20000} height={20000} fill="url(#network-grid)" />
           )}
-
+          <g data-network-content="true">
           {showAreas &&
             d.areas.map((a) => (
               <g
@@ -321,7 +302,7 @@ export function NetworkCanvas({
                 <text textAnchor="middle" y={2} fontSize={10} fill="currentColor">
                   {a.name.slice(0, 34)}
                 </text>
-                <title>Area: {a.name} · drag to move its contents</title>
+                <title>Area: {a.name} · drag to move its contents and condense devices</title>
               </g>
             ))}
 
@@ -364,7 +345,7 @@ export function NetworkCanvas({
             );
           })}
 
-          {d.connections.map((c) => {
+          {visibleConnections.map((c) => {
             const a = anchor(c.source),
               b = anchor(c.target);
             const active = selection?.id === c.id || trace.includes(c.id);
@@ -568,7 +549,8 @@ export function NetworkCanvas({
               </text>
             </g>
           ))}
-          {dimStart && <circle cx={dimStart[0]} cy={dimStart[1]} r={5} fill="#dc2626" />}
+          {dimStart && <circle data-export-ignore="true" cx={dimStart[0]} cy={dimStart[1]} r={5} fill="#dc2626" />}
+          </g>
         </g>
       </svg>
 
@@ -665,7 +647,7 @@ export function NetworkCanvas({
               setView((v) => ({ ...v, x: size.w / 2 - wx * v.k, y: size.h / 2 - wy * v.k }));
             }}
           >
-            {d.connections.map((c) => {
+            {visibleConnections.map((c) => {
               const p1 = toMini(anchor(c.source).x, anchor(c.source).y),
                 p2 = toMini(anchor(c.target).x, anchor(c.target).y);
               return (

@@ -11,11 +11,11 @@ const api = authApi.enhanceEndpoints({ addTagTypes: ['Network'] });
 export const networkApi = api.injectEndpoints({
   endpoints: (builder) => ({
     network: builder.query<NetworkResponse, void>({
-      query: () => '/network',
+      query: () => ({ url: '/network', timeout: 30000 }),
       providesTags: ['Network'],
     }),
     saveNetwork: builder.mutation<NetworkResponse, NetworkResponse>({
-      query: (body) => ({ url: '/network', method: 'PUT', body }),
+      query: (body) => ({ url: '/network', method: 'PUT', body, timeout: 30000 }),
       invalidatesTags: (_result, error) => (error ? [] : ['Network']),
     }),
   }),

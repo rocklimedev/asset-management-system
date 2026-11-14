@@ -16,7 +16,6 @@ import {
   RefreshCw,
   Route,
   Ruler,
-  Save,
   Search,
   TriangleAlert,
   Undo2,
@@ -28,6 +27,8 @@ import { BACKEND } from '../lib/api';
 import { useAuth } from '../services/context/AuthContext';
 import type { Connection, ConnectionEnd, Device, NetworkDocument, Port } from '../types/network';
 import { NetworkCanvas, type Selection } from '../components/network/NetworkCanvas';
+import { NetworkAutosave, type SaveState } from '../components/network/autosave';
+import { downloadNetwork } from '../components/network/network-export';
 import { NetworkInspector } from '../components/network/NetworkInspector';
 import {
   NetworkExplorer,
@@ -36,6 +37,9 @@ import {
 } from '../components/network/NetworkExplorer';
 import { ToolbarSelect } from '../components/network/network-ui';
 import {
+  condenseRack,
+  condenseArea,
+  condenseDevices,
   deletionReason,
   endLabel,
   portConnection,
@@ -78,6 +82,10 @@ export default function Network() {
   const [document, setDocument] = useState<NetworkDocument | null>(null);
   const [revision, setRevision] = useState(0);
   const [baseline, setBaseline] = useState('');
+  const [saveState, setSaveState] = useState<SaveState>('saved');
+  const [saveError, setSaveError] = useState('');
+  const autosave = useRef<NetworkAutosave | null>(null);
+  const loadSequence = useRef(0);
   const [selection, setSelection] = useState<Selection>(null);
   const [tab, setTab] = useState<Collection>('racks');
   const [error, setError] = useState('');
@@ -89,9 +97,11 @@ export default function Network() {
   const [pending, setPending] = useState<ConnectionEnd | null>(null);
   const [showAreas, setShowAreas] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
+  const [showRackDeviceLines, setShowRackDeviceLines] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const canvas = useRef<SVGSVGElement>(null);
   const [grid, setGrid] = useState(true);
   const [snap, setSnap] = useState(false);
-  const [compactRackConnections, setCompactRackConnections] = useState(true);
   const [showExplorer, setShowExplorer] = useState(true);
   const [showInspector, setShowInspector] = useState(true);
   const [traceId, setTraceId] = useState('');
@@ -110,14 +120,15 @@ export default function Network() {
       method,
       headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
     });
     const data = await response.json();
     if (!response.ok)
-      throw new Error(
+      throw Object.assign(new Error(
         Array.isArray(data.message)
           ? data.message.join(', ')
           : data.message || 'Network request failed.',
-      );
+      ), { status: response.status });
     return data;
   }
 
@@ -140,8 +151,34 @@ export default function Network() {
       return;
     setBusy(true);
     setError('');
+    const sequence = ++loadSequence.current;
     try {
+      await autosave.current?.dispose();
       const data = await api();
+      if (sequence !== loadSequence.current) return;
+      const snapshot = JSON.stringify(data.document);
+      autosave.current = new NetworkAutosave(
+        { revision: data.revision, snapshot },
+        async (snapshot, revision) => {
+          const saved = await api('', 'PUT', { document: JSON.parse(snapshot), revision });
+          return { revision: saved.revision, snapshot };
+        },
+        async () => {
+          const saved = await api();
+          return { revision: saved.revision, snapshot: JSON.stringify(saved.document) };
+        },
+        (state, version, message) => {
+          if (sequence !== loadSequence.current) return;
+          setSaveState(state);
+          setSaveError(message || '');
+          if (version) {
+            setRevision(version.revision);
+            setBaseline(version.snapshot);
+          }
+        },
+      );
+      setSaveState('saved');
+      setSaveError('');
       setDocument(data.document);
       setRevision(data.revision);
       setBaseline(JSON.stringify(data.document));
@@ -154,15 +191,28 @@ export default function Network() {
       redo.current = [];
       setFitKey((k) => k + 1);
     } catch (e) {
+      if (sequence !== loadSequence.current) return;
       setError(e instanceof Error ? e.message : 'Could not load topology.');
+      if (document) {
+        setSaveState('error');
+        setSaveError('Automatic saving is paused because reload failed. Your edits remain here. Retry Reload to resume.');
+      }
     } finally {
-      setBusy(false);
+      if (sequence === loadSequence.current) setBusy(false);
     }
   }
 
   useEffect(() => {
     void load();
+    return () => {
+      loadSequence.current++;
+      void autosave.current?.dispose();
+    };
   }, [accessToken]);
+
+  useEffect(() => {
+    if (document && !busy) autosave.current?.update(serialized);
+  }, [serialized, busy]);
 
   useEffect(() => {
     const before = (e: BeforeUnloadEvent) => {
@@ -188,6 +238,7 @@ export default function Network() {
   }, [dirty]);
 
   function change(next: NetworkDocument) {
+    if (busy) return;
     if (document && Date.now() - lastHistory.current > 600) {
       history.current.push(document);
       if (history.current.length > 100) history.current.shift();
@@ -198,6 +249,7 @@ export default function Network() {
   }
 
   function undo() {
+    if (busy) return;
     if (document && history.current.length) {
       redo.current.push(document);
       setDocument(history.current.pop()!);
@@ -206,33 +258,11 @@ export default function Network() {
   }
 
   function redoEdit() {
+    if (busy) return;
     if (document && redo.current.length) {
       history.current.push(document);
       setDocument(redo.current.pop()!);
       lastHistory.current = 0;
-    }
-  }
-
-  async function save() {
-    if (!document) return;
-    setBusy(true);
-    setError('');
-    const snapshot = serialized;
-    try {
-      const data = await api('', 'PUT', { document, revision });
-      setRevision(data.revision);
-      setBaseline(snapshot);
-      toast.add({
-        title: 'Network saved',
-        description: `Revision ${data.revision} is now the live version.`,
-        type: 'success',
-      });
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Save failed. Your edits remain available to export.',
-      );
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -248,35 +278,51 @@ export default function Network() {
     URL.revokeObjectURL(url);
   }
 
+  async function exportDrawing(format: 'png' | 'pdf') {
+    if (!canvas.current || exporting) return;
+    setExporting(true);
+    try {
+      await downloadNetwork(canvas.current, format);
+    } catch (error) {
+      toast.add({ title: 'Download failed', description: error instanceof Error ? error.message : 'Could not export the network.', type: 'error' });
+    } finally { setExporting(false); }
+  }
+
   async function importJSON(imported: File) {
+    const sequence = loadSequence.current;
     if (
-      dirty &&
       !(await confirm({
         title: 'Replace the network with this file?',
-        description: 'Your unsaved edits will be replaced. Nothing is saved until you press Save.',
+        description: 'This replaces the current network and saves it automatically.',
         confirmLabel: 'Import file',
         tone: 'danger',
       }))
     )
       return;
+    if (sequence !== loadSequence.current) return;
     setBusy(true);
     setError('');
     try {
       const data = await api('/validate', 'POST', { document: JSON.parse(await imported.text()) });
-      change(data.document);
+      if (sequence !== loadSequence.current) return;
+      lastHistory.current = 0;
+      history.current.push(document!);
+      redo.current = [];
+      setDocument(data.document);
       setSelection(null);
       setAreaId('');
       setTraceId('');
       setFitKey((k) => k + 1);
       toast.add({
         title: 'File imported',
-        description: 'Review the map, then save to publish it.',
+        description: 'The imported network will save automatically.',
         type: 'info',
       });
     } catch (e) {
+      if (sequence !== loadSequence.current) return;
       setError(e instanceof Error ? e.message : 'Could not import JSON.');
     } finally {
-      setBusy(false);
+      if (sequence === loadSequence.current) setBusy(false);
     }
   }
 
@@ -420,7 +466,7 @@ export default function Network() {
         : `Delete this ${selection.collection.slice(0, -1)}?`,
       description: isCable
         ? 'The cable record is removed. Its ports become available again.'
-        : 'It is removed from the draft. Save the network to keep the change.',
+        : 'The removal will save automatically.',
       confirmLabel: isCable ? 'Disconnect cable' : 'Delete',
       tone: 'danger',
     });
@@ -446,7 +492,7 @@ export default function Network() {
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        if (dirty && !busy) void save();
+        if (!busy) void autosave.current?.flush();
         return;
       }
       if (typing) return;
@@ -555,7 +601,7 @@ export default function Network() {
     <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-6">
       <PageHeader
         title="Network"
-        description="Map sites, racks, equipment, ports and cables. Edits are a draft until you save."
+        description="Map sites, racks, equipment, ports and cables. Changes save automatically."
         actions={
           <>
             <Link
@@ -570,9 +616,13 @@ export default function Network() {
             >
               Manage areas
             </Link>
-            <StatusPill tone={dirty ? 'warn' : revision ? 'ok' : 'neutral'}>
-              {dirty ? 'Unsaved changes' : revision ? `Saved · revision ${revision}` : 'Loading…'}
-            </StatusPill>
+            <span role="status" aria-live="polite">
+              <StatusPill tone={saveError ? 'warn' : dirty ? 'neutral' : revision ? 'ok' : 'neutral'}>
+                {saveState === 'conflict' ? 'Save conflict' : saveState === 'error' ? 'Save failed'
+                  : saveState === 'retrying' ? 'Retrying save…' : saveState === 'saving' ? 'Saving…'
+                    : dirty ? 'Changes pending…' : revision ? `Saved · revision ${revision}` : 'Loading…'}
+              </StatusPill>
+            </span>
             <Button variant="outline" size="sm" disabled={busy} onClick={() => void load()}>
               <RefreshCw />
               Reload
@@ -582,7 +632,7 @@ export default function Network() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!document || busy}
+                  disabled={!document || busy || exporting}
                   aria-label="Import and export"
                 >
                   <MoreHorizontal />
@@ -598,17 +648,17 @@ export default function Network() {
                   <Download />
                   Export JSON
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void exportDrawing('png')} disabled={!document || exporting}>
+                  <Download />
+                  Download PNG image
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void exportDrawing('pdf')} disabled={!document || exporting}>
+                  <Download />
+                  Download PDF
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              size="sm"
-              disabled={!dirty || !document || busy}
-              loading={busy}
-              onClick={() => void save()}
-            >
-              <Save />
-              Save network
-            </Button>
           </>
         }
       />
@@ -628,6 +678,11 @@ export default function Network() {
       {error && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {saveError && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{saveError}</AlertDescription>
         </Alert>
       )}
 
@@ -889,6 +944,7 @@ export default function Network() {
 
             <div className="h-[560px] min-w-0 xl:h-full">
               <NetworkCanvas
+                canvasRef={canvas}
                 document={document}
                 onChange={change}
                 selection={selection}
@@ -901,15 +957,55 @@ export default function Network() {
                 onPort={clickPort}
                 showAreas={showAreas}
                 showLabels={showLabels}
+                showRackDeviceLines={showRackDeviceLines}
                 grid={grid}
                 snap={snap}
-                compactRackConnections={compactRackConnections}
                 dimensionMode={dimensionMode}
                 onDimension={(a, b) =>
                   change({ ...document, dims: [...document.dims, { uid: uid(), a, b, off: 40 }] })
                 }
                 onFit={() => setFitKey((k) => k + 1)}
                 overlay={
+                  <div className="flex flex-wrap justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-card shadow-card"
+                    disabled={busy || (selection?.collection !== 'racks' && selection?.collection !== 'areas')}
+                    title="Pack equipment and dedicated connected devices close to their racks. Rack positions stay fixed."
+                    onClick={() => {
+                      if (selection?.collection !== 'racks' && selection?.collection !== 'areas') return;
+                      lastHistory.current = 0;
+                      const isArea = selection.collection === 'areas';
+                      change(isArea ? condenseArea(document, selection.id) : condenseRack(document, selection.id));
+                      lastHistory.current = 0;
+                      if (isArea) setShowAreas(true);
+                      setFitKey((k) => k + 1);
+                      toast.add({ title: 'Rack devices condensed', description: 'Equipment and dedicated connections packed close to their racks.', type: 'success' });
+                    }}
+                  >
+                    <LayoutGrid />
+                    {selection?.collection === 'areas' ? 'Condense area' : 'Condense rack'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-card shadow-card"
+                    disabled={busy || (selection?.collection !== 'racks' && selection?.collection !== 'areas')}
+                    title="Select a rack or area to pack rack equipment and dedicated connected devices together. Rack positions stay fixed."
+                    onClick={() => {
+                      if (selection?.collection !== 'racks' && selection?.collection !== 'areas') return;
+                      lastHistory.current = 0;
+                      change(condenseDevices(document, selection.collection, selection.id));
+                      lastHistory.current = 0;
+                      if (selection.collection === 'areas') setShowAreas(true);
+                      setFitKey((k) => k + 1);
+                      toast.add({ title: 'Devices condensed', description: 'Equipment and dedicated devices packed near their racks.', type: 'success' });
+                    }}
+                  >
+                    <Boxes />
+                    Condense devices
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="bg-card shadow-card">
@@ -919,6 +1015,9 @@ export default function Network() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>Show on map</DropdownMenuLabel>
+                      <DropdownMenuCheckboxItem checked={showRackDeviceLines} onCheckedChange={setShowRackDeviceLines}>
+                        Rack-to-device lines
+                      </DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={showAreas} onCheckedChange={setShowAreas}>
                         Area boundaries
                       </DropdownMenuCheckboxItem>
@@ -935,20 +1034,13 @@ export default function Network() {
                         Snap to grid
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Rack movement</DropdownMenuLabel>
-                      <DropdownMenuCheckboxItem
-                        checked={compactRackConnections}
-                        onCheckedChange={setCompactRackConnections}
-                      >
-                        Keep connections near rack
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={() => setFitKey((k) => k + 1)}>
                         <Maximize2 />
                         Fit network to view
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  </div>
                 }
               />
             </div>
@@ -975,7 +1067,7 @@ export default function Network() {
 
           <p className="text-xs text-muted-foreground">
             Shortcuts: V select · C connect · M measure · F fit · Esc cancel · Delete remove ·
-            Ctrl+Z undo · Ctrl+S save
+            Ctrl+Z undo · Changes save automatically
           </p>
         </>
       )}
