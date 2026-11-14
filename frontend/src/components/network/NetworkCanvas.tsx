@@ -5,7 +5,10 @@ import { moveRack, withinArea } from './topology';
 import { KIND_META, kindColor } from './network-ui';
 import { Button } from '../ui/button';
 
-export type Selection = { collection: 'areas' | 'racks' | 'devices' | 'ports' | 'connections'; id: string } | null;
+export type Selection = {
+  collection: 'areas' | 'racks' | 'devices' | 'ports' | 'connections';
+  id: string;
+} | null;
 
 type Collection = 'devices' | 'racks' | 'areas';
 const MINI = { w: 184, h: 116 };
@@ -57,7 +60,13 @@ export function NetworkCanvas({
   const [size, setSize] = useState({ w: 900, h: 600 });
   const [showMap, setShowMap] = useState(true);
   const [showLegend, setShowLegend] = useState(false);
-  const drag = useRef<{ id: string; collection: Collection; start: Position; original: NetworkDocument; moved: boolean } | null>(null);
+  const drag = useRef<{
+    id: string;
+    collection: Collection;
+    start: Position;
+    original: NetworkDocument;
+    moved: boolean;
+  } | null>(null);
   const pan = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
   const [dimStart, setDimStart] = useState<[number, number] | null>(null);
 
@@ -84,10 +93,16 @@ export function NetworkCanvas({
     if (!bounds || !d.devices.length) return;
     const nodes = d.devices.filter((v) => withinArea(d, v.areaId, areaId));
     if (!nodes.length) return;
-    const minX = Math.min(...nodes.map((v) => v.x)) - 150, maxX = Math.max(...nodes.map((v) => v.x)) + 150;
-    const minY = Math.min(...nodes.map((v) => v.y)) - 120, maxY = Math.max(...nodes.map((v) => v.y)) + 120;
+    const minX = Math.min(...nodes.map((v) => v.x)) - 150,
+      maxX = Math.max(...nodes.map((v) => v.x)) + 150;
+    const minY = Math.min(...nodes.map((v) => v.y)) - 120,
+      maxY = Math.max(...nodes.map((v) => v.y)) + 120;
     const k = Math.min(bounds.width / (maxX - minX), bounds.height / (maxY - minY), 1.2);
-    setView({ x: bounds.width / 2 - ((minX + maxX) / 2) * k, y: bounds.height / 2 - ((minY + maxY) / 2) * k, k });
+    setView({
+      x: bounds.width / 2 - ((minX + maxX) / 2) * k,
+      y: bounds.height / 2 - ((minY + maxY) / 2) * k,
+      k,
+    });
   }, [fitKey, areaId]);
 
   const world = (x: number, y: number): [number, number] => {
@@ -97,7 +112,9 @@ export function NetworkCanvas({
 
   function zoomBy(factor: number) {
     setView((v) => {
-      const k = clampZoom(v.k * factor), cx = size.w / 2, cy = size.h / 2;
+      const k = clampZoom(v.k * factor),
+        cx = size.w / 2,
+        cy = size.h / 2;
       return { k, x: cx - ((cx - v.x) * k) / v.k, y: cy - ((cy - v.y) * k) / v.k };
     });
   }
@@ -108,7 +125,9 @@ export function NetworkCanvas({
     const device = d.devices.find((v) => v.id === end.deviceId);
     if (!device) return { x: 0, y: 0 };
     const index = portsFor(device.id).findIndex((p) => p.id === end.portId);
-    return index < 0 ? device : { x: device.x - 80 + (index % 5) * 40, y: device.y + 18 + Math.floor(index / 5) * 20 };
+    return index < 0
+      ? device
+      : { x: device.x - 80 + (index % 5) * 40, y: device.y + 18 + Math.floor(index / 5) * 20 };
   };
   const occupied = new Set(d.connections.flatMap((c) => [c.source.portId, c.target.portId]));
   const matches = (id: string) => {
@@ -117,7 +136,15 @@ export function NetworkCanvas({
       !!v &&
       withinArea(d, v.areaId, areaId) &&
       (!query ||
-        [v.name, v.code, v.ip, v.mac, v.notes, d.areas.find((a) => a.id === v.areaId)?.name, d.racks.find((r) => r.id === v.rackId)?.name]
+        [
+          v.name,
+          v.code,
+          v.ip,
+          v.mac,
+          v.notes,
+          d.areas.find((a) => a.id === v.areaId)?.name,
+          d.racks.find((r) => r.id === v.rackId)?.name,
+        ]
           .join(' ')
           .toLowerCase()
           .includes(query.toLowerCase()))
@@ -141,7 +168,8 @@ export function NetworkCanvas({
     const current = drag.current;
     if (current) {
       const [x, y] = world(e.clientX, e.clientY);
-      let dx = x - current.start.x, dy = y - current.start.y;
+      let dx = x - current.start.x,
+        dy = y - current.start.y;
       if (Math.hypot(dx, dy) < 2 && !current.moved) return;
       current.moved = true;
       if (snap) {
@@ -152,7 +180,8 @@ export function NetworkCanvas({
         onChange(moveRack(current.original, current.id, dx, dy, compactRackConnections));
         return;
       }
-      const next = structuredClone(current.original), selected = current.original[current.collection].find((v) => v.id === current.id)!;
+      const next = structuredClone(current.original),
+        selected = current.original[current.collection].find((v) => v.id === current.id)!;
       if (current.collection === 'devices') {
         const v = next.devices.find((v) => v.id === current.id)!;
         v.x = selected.x + dx;
@@ -163,29 +192,34 @@ export function NetworkCanvas({
         let changed = true;
         while (changed) {
           changed = false;
-          for (const a of next.areas) if (a.parentId && areas.has(a.parentId) && !areas.has(a.id)) {
-            areas.add(a.id);
-            changed = true;
+          for (const a of next.areas)
+            if (a.parentId && areas.has(a.parentId) && !areas.has(a.id)) {
+              areas.add(a.id);
+              changed = true;
+            }
+        }
+        for (const a of next.areas)
+          if (areas.has(a.id)) {
+            a.x += dx;
+            a.y += dy;
           }
-        }
-        for (const a of next.areas) if (areas.has(a.id)) {
-          a.x += dx;
-          a.y += dy;
-        }
-        for (const r of next.racks) if (areas.has(r.areaId)) {
-          r.x += dx;
-          r.y += dy;
-        }
-        for (const v of next.devices) if (areas.has(v.areaId)) {
-          v.x += dx;
-          v.y += dy;
-        }
+        for (const r of next.racks)
+          if (areas.has(r.areaId)) {
+            r.x += dx;
+            r.y += dy;
+          }
+        for (const v of next.devices)
+          if (areas.has(v.areaId)) {
+            v.x += dx;
+            v.y += dy;
+          }
       }
       onChange(next);
     } else if (pan.current) {
       // React may run the updater after pointer-up clears the pan ref.
       const { vx, vy, x, y } = pan.current;
-      const nextX = vx + e.clientX - x, nextY = vy + e.clientY - y;
+      const nextX = vx + e.clientX - x,
+        nextY = vy + e.clientY - y;
       setView((v) => ({ ...v, x: nextX, y: nextY }));
     }
   };
@@ -193,14 +227,23 @@ export function NetworkCanvas({
   // Overview geometry: bounds of the network plus the current viewport.
   const xs = [...d.devices.map((v) => v.x), ...d.racks.map((r) => r.x), ...d.areas.map((a) => a.x)];
   const ys = [...d.devices.map((v) => v.y), ...d.racks.map((r) => r.y), ...d.areas.map((a) => a.y)];
-  const vx0 = -view.x / view.k, vy0 = -view.y / view.k;
-  const vx1 = (size.w - view.x) / view.k, vy1 = (size.h - view.y) / view.k;
-  const minX = Math.min(vx0, ...xs) - 160, maxX = Math.max(vx1, ...xs) + 160;
-  const minY = Math.min(vy0, ...ys) - 120, maxY = Math.max(vy1, ...ys) + 120;
-  const spanX = maxX - minX, spanY = maxY - minY;
+  const vx0 = -view.x / view.k,
+    vy0 = -view.y / view.k;
+  const vx1 = (size.w - view.x) / view.k,
+    vy1 = (size.h - view.y) / view.k;
+  const minX = Math.min(vx0, ...xs) - 160,
+    maxX = Math.max(vx1, ...xs) + 160;
+  const minY = Math.min(vy0, ...ys) - 120,
+    maxY = Math.max(vy1, ...ys) + 120;
+  const spanX = maxX - minX,
+    spanY = maxY - minY;
   const scale = Math.min(MINI.w / spanX, MINI.h / spanY);
-  const offX = (MINI.w - spanX * scale) / 2, offY = (MINI.h - spanY * scale) / 2;
-  const toMini = (x: number, y: number) => ({ x: (x - minX) * scale + offX, y: (y - minY) * scale + offY });
+  const offX = (MINI.w - spanX * scale) / 2,
+    offY = (MINI.h - spanY * scale) / 2;
+  const toMini = (x: number, y: number) => ({
+    x: (x - minX) * scale + offX,
+    y: (y - minY) * scale + offY,
+  });
 
   const kinds = Object.keys(KIND_META) as (keyof typeof KIND_META)[];
 
@@ -213,7 +256,9 @@ export function NetworkCanvas({
         role="img"
         onWheel={(e) => {
           e.preventDefault();
-          const b = svg.current!.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top;
+          const b = svg.current!.getBoundingClientRect(),
+            x = e.clientX - b.left,
+            y = e.clientY - b.top;
           setView((v) => {
             const k = clampZoom(v.k * Math.exp(-e.deltaY * 0.001));
             return { k, x: x - ((x - v.x) * k) / v.k, y: y - ((y - v.y) * k) / v.k };
@@ -226,7 +271,11 @@ export function NetworkCanvas({
         }}
         onPointerMove={move}
         onPointerUp={(e) => {
-          if (dimensionMode && pan.current && Math.hypot(e.clientX - pan.current.x, e.clientY - pan.current.y) < 4) {
+          if (
+            dimensionMode &&
+            pan.current &&
+            Math.hypot(e.clientX - pan.current.x, e.clientY - pan.current.y) < 4
+          ) {
             const p = world(e.clientX, e.clientY);
             if (dimStart) {
               onDimension(dimStart, p);
@@ -247,13 +296,31 @@ export function NetworkCanvas({
           </pattern>
         </defs>
         <g transform={`translate(${view.x},${view.y}) scale(${view.k})`}>
-          {grid && <rect x={-10000} y={-10000} width={20000} height={20000} fill="url(#network-grid)" />}
+          {grid && (
+            <rect x={-10000} y={-10000} width={20000} height={20000} fill="url(#network-grid)" />
+          )}
 
           {showAreas &&
             d.areas.map((a) => (
-              <g key={a.id} transform={`translate(${a.x},${a.y})`} onPointerDown={(e) => start(e, 'areas', a.id)} className="cursor-move">
-                <rect x={-105} y={-16} width={210} height={28} rx={6} fill="hsl(var(--card))" stroke={selection?.id === a.id ? '#f59e0b' : '#16a34a'} strokeDasharray="4 3" />
-                <text textAnchor="middle" y={2} fontSize={10} fill="currentColor">{a.name.slice(0, 34)}</text>
+              <g
+                key={a.id}
+                transform={`translate(${a.x},${a.y})`}
+                onPointerDown={(e) => start(e, 'areas', a.id)}
+                className="cursor-move"
+              >
+                <rect
+                  x={-105}
+                  y={-16}
+                  width={210}
+                  height={28}
+                  rx={6}
+                  fill="hsl(var(--card))"
+                  stroke={selection?.id === a.id ? '#f59e0b' : '#16a34a'}
+                  strokeDasharray="4 3"
+                />
+                <text textAnchor="middle" y={2} fontSize={10} fill="currentColor">
+                  {a.name.slice(0, 34)}
+                </text>
                 <title>Area: {a.name} · drag to move its contents</title>
               </g>
             ))}
@@ -266,10 +333,31 @@ export function NetworkCanvas({
             const bottom = Math.max(r.y + 65, ...children.map((v) => v.y + height(v.id) - 40));
             const isSelected = selection?.id === r.id;
             return (
-              <g key={r.id} opacity={!withinArea(d, r.areaId, areaId) ? 0.2 : 1} className="cursor-move" onPointerDown={(e) => start(e, 'racks', r.id)}>
+              <g
+                key={r.id}
+                opacity={!withinArea(d, r.areaId, areaId) ? 0.2 : 1}
+                className="cursor-move"
+                onPointerDown={(e) => start(e, 'racks', r.id)}
+              >
                 <title>{r.name} · drag to move equipment and connected devices</title>
-                <rect x={left} y={top - 23} width={right - left} height={bottom - top + 33} rx={10} fill={isSelected ? 'hsl(var(--primary) / 0.04)' : 'none'} stroke={isSelected ? '#f59e0b' : '#94a3b8'} strokeDasharray="5 4" />
-                <text x={left + 8} y={top - 8} fontSize={11} fill="currentColor" className="cursor-move" onPointerDown={(e) => start(e, 'racks', r.id)}>
+                <rect
+                  x={left}
+                  y={top - 23}
+                  width={right - left}
+                  height={bottom - top + 33}
+                  rx={10}
+                  fill={isSelected ? 'hsl(var(--primary) / 0.04)' : 'none'}
+                  stroke={isSelected ? '#f59e0b' : '#94a3b8'}
+                  strokeDasharray="5 4"
+                />
+                <text
+                  x={left + 8}
+                  y={top - 8}
+                  fontSize={11}
+                  fill="currentColor"
+                  className="cursor-move"
+                  onPointerDown={(e) => start(e, 'racks', r.id)}
+                >
                   {r.name.slice(0, 30)}
                 </text>
               </g>
@@ -277,12 +365,34 @@ export function NetworkCanvas({
           })}
 
           {d.connections.map((c) => {
-            const a = anchor(c.source), b = anchor(c.target);
+            const a = anchor(c.source),
+              b = anchor(c.target);
             const active = selection?.id === c.id || trace.includes(c.id);
-            const color = active ? '#f59e0b' : c.kind === 'uplink' ? '#f97316' : c.kind === 'crosslink' ? '#2563eb' : '#94a3b8';
-            const dimmed = query || areaId ? (matches(c.source.deviceId) || matches(c.target.deviceId) ? 1 : 0.1) : trace.length && !active ? 0.2 : 1;
+            const color = active
+              ? '#f59e0b'
+              : c.kind === 'uplink'
+                ? '#f97316'
+                : c.kind === 'crosslink'
+                  ? '#2563eb'
+                  : '#94a3b8';
+            const dimmed =
+              query || areaId
+                ? matches(c.source.deviceId) || matches(c.target.deviceId)
+                  ? 1
+                  : 0.1
+                : trace.length && !active
+                  ? 0.2
+                  : 1;
             return (
-              <g key={c.id} opacity={dimmed} onPointerDown={(e) => { e.stopPropagation(); select({ collection: 'connections', id: c.id }); }} className="cursor-pointer">
+              <g
+                key={c.id}
+                opacity={dimmed}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  select({ collection: 'connections', id: c.id });
+                }}
+                className="cursor-pointer"
+              >
                 <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth={15} />
                 <line
                   x1={a.x}
@@ -291,40 +401,108 @@ export function NetworkCanvas({
                   y2={b.y}
                   stroke={color}
                   strokeWidth={active ? 4 : c.kind === 'uplink' ? 2.8 : 1.3}
-                  strokeDasharray={c.verification === 'assumed' ? '7 5' : c.status === 'planned' ? '2 4' : undefined}
+                  strokeDasharray={
+                    c.verification === 'assumed'
+                      ? '7 5'
+                      : c.status === 'planned'
+                        ? '2 4'
+                        : undefined
+                  }
                 />
                 {(showLabels || active) && (
-                  <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 5} textAnchor="middle" fontSize={9} fill={color} stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">
+                  <text
+                    x={(a.x + b.x) / 2}
+                    y={(a.y + b.y) / 2 - 5}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fill={color}
+                    stroke="hsl(var(--background))"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                  >
                     {c.cableCode || c.kind}
                   </text>
                 )}
-                <title>{c.cableCode} · {c.kind} · {c.verification}</title>
+                <title>
+                  {c.cableCode} · {c.kind} · {c.verification}
+                </title>
               </g>
             );
           })}
 
           {d.devices.map((v) => {
-            const ports = portsFor(v.id), h = height(v.id), isSelected = selection?.id === v.id, color = kindColor(v.kind);
+            const ports = portsFor(v.id),
+              h = height(v.id),
+              isSelected = selection?.id === v.id,
+              color = kindColor(v.kind);
             const cursor = linking ? 'cursor-crosshair' : 'cursor-move';
             if (!ports.length && !v.rackId)
               return (
-                <g key={v.id} transform={`translate(${v.x},${v.y})`} opacity={matches(v.id) ? 1 : 0.12} onPointerDown={(e) => start(e, 'devices', v.id)} className={cursor}>
-                  <rect x={-10} y={-9} width={20} height={18} rx={4} fill={color} stroke={isSelected ? '#f59e0b' : color} strokeWidth={isSelected ? 4 : 1} />
-                  <text x={16} y={-2} fontSize={10} fill="currentColor" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{v.name.slice(0, 40)}</text>
-                  <text x={16} y={11} fontSize={8} fill="currentColor" opacity={0.65}>{v.code} · {v.kind}</text>
-                  <title>{v.name} · {d.areas.find((a) => a.id === v.areaId)?.name}</title>
+                <g
+                  key={v.id}
+                  transform={`translate(${v.x},${v.y})`}
+                  opacity={matches(v.id) ? 1 : 0.12}
+                  onPointerDown={(e) => start(e, 'devices', v.id)}
+                  className={cursor}
+                >
+                  <rect
+                    x={-10}
+                    y={-9}
+                    width={20}
+                    height={18}
+                    rx={4}
+                    fill={color}
+                    stroke={isSelected ? '#f59e0b' : color}
+                    strokeWidth={isSelected ? 4 : 1}
+                  />
+                  <text
+                    x={16}
+                    y={-2}
+                    fontSize={10}
+                    fill="currentColor"
+                    stroke="hsl(var(--background))"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                  >
+                    {v.name.slice(0, 40)}
+                  </text>
+                  <text x={16} y={11} fontSize={8} fill="currentColor" opacity={0.65}>
+                    {v.code} · {v.kind}
+                  </text>
+                  <title>
+                    {v.name} · {d.areas.find((a) => a.id === v.areaId)?.name}
+                  </title>
                 </g>
               );
             return (
-              <g key={v.id} transform={`translate(${v.x},${v.y})`} opacity={matches(v.id) ? 1 : 0.12} onPointerDown={(e) => start(e, 'devices', v.id)} className={cursor}>
-                <rect x={-100} y={-35} width={200} height={h} rx={8} fill="hsl(var(--card))" stroke={isSelected ? '#f59e0b' : color} strokeWidth={isSelected ? 3 : 1.5} />
+              <g
+                key={v.id}
+                transform={`translate(${v.x},${v.y})`}
+                opacity={matches(v.id) ? 1 : 0.12}
+                onPointerDown={(e) => start(e, 'devices', v.id)}
+                className={cursor}
+              >
+                <rect
+                  x={-100}
+                  y={-35}
+                  width={200}
+                  height={h}
+                  rx={8}
+                  fill="hsl(var(--card))"
+                  stroke={isSelected ? '#f59e0b' : color}
+                  strokeWidth={isSelected ? 3 : 1.5}
+                />
                 <rect x={-100} y={-35} width={200} height={6} rx={3} fill={color} />
-                <text x={-90} y={-13} fontSize={11} fontWeight={600} fill="currentColor">{v.name.slice(0, 31)}</text>
+                <text x={-90} y={-13} fontSize={11} fontWeight={600} fill="currentColor">
+                  {v.name.slice(0, 31)}
+                </text>
                 <text x={-90} y={2} fontSize={9} fill="currentColor" opacity={0.65}>
-                  {v.code} · {v.kind}{v.ip ? ' · ' + v.ip : ''}
+                  {v.code} · {v.kind}
+                  {v.ip ? ' · ' + v.ip : ''}
                 </text>
                 {ports.map((p, i) => {
-                  const used = occupied.has(p.id), selectedPort = selection?.id === p.id;
+                  const used = occupied.has(p.id),
+                    selectedPort = selection?.id === p.id;
                   return (
                     <g
                       key={p.id}
@@ -336,22 +514,57 @@ export function NetworkCanvas({
                       }}
                       className="cursor-pointer"
                     >
-                      <rect width={34} height={16} rx={3} fill={used ? color : 'hsl(var(--muted))'} stroke={selectedPort ? '#f59e0b' : '#94a3b8'} strokeWidth={selectedPort ? 3 : 1} />
-                      <text x={17} y={11} textAnchor="middle" fontSize={9} fill={used ? '#fff' : 'currentColor'}>{p.label.slice(0, 5)}</text>
-                      <title>{p.label} · {used ? 'Connected' : 'Available'}{p.poe ? ' · PoE' : ''}</title>
+                      <rect
+                        width={34}
+                        height={16}
+                        rx={3}
+                        fill={used ? color : 'hsl(var(--muted))'}
+                        stroke={selectedPort ? '#f59e0b' : '#94a3b8'}
+                        strokeWidth={selectedPort ? 3 : 1}
+                      />
+                      <text
+                        x={17}
+                        y={11}
+                        textAnchor="middle"
+                        fontSize={9}
+                        fill={used ? '#fff' : 'currentColor'}
+                      >
+                        {p.label.slice(0, 5)}
+                      </text>
+                      <title>
+                        {p.label} · {used ? 'Connected' : 'Available'}
+                        {p.poe ? ' · PoE' : ''}
+                      </title>
                     </g>
                   );
                 })}
-                <title>{v.name} · {d.areas.find((a) => a.id === v.areaId)?.name}</title>
+                <title>
+                  {v.name} · {d.areas.find((a) => a.id === v.areaId)?.name}
+                </title>
               </g>
             );
           })}
 
           {d.dims.map((dim) => (
             <g key={dim.uid}>
-              <line x1={dim.a[0]} y1={dim.a[1]} x2={dim.b[0]} y2={dim.b[1]} stroke="#dc2626" strokeDasharray="4 3" />
-              <text x={(dim.a[0] + dim.b[0]) / 2} y={(dim.a[1] + dim.b[1]) / 2 - 5} fontSize={12} fill="#dc2626">
-                {(Math.hypot(dim.b[0] - dim.a[0], dim.b[1] - dim.a[1]) / d.settings.unitsPerMeter).toFixed(2)} m
+              <line
+                x1={dim.a[0]}
+                y1={dim.a[1]}
+                x2={dim.b[0]}
+                y2={dim.b[1]}
+                stroke="#dc2626"
+                strokeDasharray="4 3"
+              />
+              <text
+                x={(dim.a[0] + dim.b[0]) / 2}
+                y={(dim.a[1] + dim.b[1]) / 2 - 5}
+                fontSize={12}
+                fill="#dc2626"
+              >
+                {(
+                  Math.hypot(dim.b[0] - dim.a[0], dim.b[1] - dim.a[1]) / d.settings.unitsPerMeter
+                ).toFixed(2)}{' '}
+                m
               </text>
             </g>
           ))}
@@ -366,7 +579,11 @@ export function NetworkCanvas({
           <ul className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-muted-foreground">
             {kinds.map((kind) => (
               <li key={kind} className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-sm" style={{ background: KIND_META[kind].color }} aria-hidden="true" />
+                <span
+                  className="h-2.5 w-2.5 rounded-sm"
+                  style={{ background: KIND_META[kind].color }}
+                  aria-hidden="true"
+                />
                 {KIND_META[kind].label}
               </li>
             ))}
@@ -387,10 +604,18 @@ export function NetworkCanvas({
 
       {/* Floating view controls */}
       <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg border border-border bg-card p-1 shadow-card">
-        <Button variant="ghost" size="icon-sm" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.2)}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Zoom out"
+          onClick={() => zoomBy(1 / 1.2)}
+        >
           <Minus />
         </Button>
-        <span className="w-12 text-center text-xs font-medium tabular-nums text-muted-foreground" aria-live="polite">
+        <span
+          className="w-12 text-center text-xs font-medium tabular-nums text-muted-foreground"
+          aria-live="polite"
+        >
           {Math.round(view.k * 100)}%
         </span>
         <Button variant="ghost" size="icon-sm" aria-label="Zoom in" onClick={() => zoomBy(1.2)}>
@@ -400,10 +625,22 @@ export function NetworkCanvas({
           <Maximize2 />
         </Button>
         <span className="mx-0.5 h-5 w-px bg-border" aria-hidden="true" />
-        <Button variant={showLegend ? 'secondary' : 'ghost'} size="icon-sm" aria-label="Toggle legend" aria-pressed={showLegend} onClick={() => setShowLegend((v) => !v)}>
+        <Button
+          variant={showLegend ? 'secondary' : 'ghost'}
+          size="icon-sm"
+          aria-label="Toggle legend"
+          aria-pressed={showLegend}
+          onClick={() => setShowLegend((v) => !v)}
+        >
           <Info />
         </Button>
-        <Button variant={showMap ? 'secondary' : 'ghost'} size="icon-sm" aria-label="Toggle overview map" aria-pressed={showMap} onClick={() => setShowMap((v) => !v)}>
+        <Button
+          variant={showMap ? 'secondary' : 'ghost'}
+          size="icon-sm"
+          aria-label="Toggle overview map"
+          aria-pressed={showMap}
+          onClick={() => setShowMap((v) => !v)}
+        >
           <Compass />
         </Button>
       </div>
@@ -411,7 +648,9 @@ export function NetworkCanvas({
       {/* Overview minimap: click to jump the view */}
       {showMap && d.devices.length > 0 && (
         <div className="absolute bottom-3 right-3 rounded-lg border border-border bg-card p-2 shadow-card">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Overview</p>
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Overview
+          </p>
           <svg
             width={MINI.w}
             height={MINI.h}
@@ -427,12 +666,34 @@ export function NetworkCanvas({
             }}
           >
             {d.connections.map((c) => {
-              const p1 = toMini(anchor(c.source).x, anchor(c.source).y), p2 = toMini(anchor(c.target).x, anchor(c.target).y);
-              return <line key={c.id} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#94a3b8" strokeOpacity={0.5} strokeWidth={0.6} />;
+              const p1 = toMini(anchor(c.source).x, anchor(c.source).y),
+                p2 = toMini(anchor(c.target).x, anchor(c.target).y);
+              return (
+                <line
+                  key={c.id}
+                  x1={p1.x}
+                  y1={p1.y}
+                  x2={p2.x}
+                  y2={p2.y}
+                  stroke="#94a3b8"
+                  strokeOpacity={0.5}
+                  strokeWidth={0.6}
+                />
+              );
             })}
             {d.devices.map((v) => {
               const p = toMini(v.x, v.y);
-              return <rect key={v.id} x={p.x - 2.5} y={p.y - 2} width={5} height={4} rx={1} fill={kindColor(v.kind)} />;
+              return (
+                <rect
+                  key={v.id}
+                  x={p.x - 2.5}
+                  y={p.y - 2}
+                  width={5}
+                  height={4}
+                  rx={1}
+                  fill={kindColor(v.kind)}
+                />
+              );
             })}
             <rect
               x={toMini(vx0, vy0).x}
@@ -450,11 +711,29 @@ export function NetworkCanvas({
   );
 }
 
-function LineSample({ color, width, dash, label }: { color: string; width: number; dash?: string; label: string }) {
+function LineSample({
+  color,
+  width,
+  dash,
+  label,
+}: {
+  color: string;
+  width: number;
+  dash?: string;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-2">
       <svg width="28" height="8" aria-hidden="true">
-        <line x1="0" y1="4" x2="28" y2="4" stroke={color} strokeWidth={width} strokeDasharray={dash} />
+        <line
+          x1="0"
+          y1="4"
+          x2="28"
+          y2="4"
+          stroke={color}
+          strokeWidth={width}
+          strokeDasharray={dash}
+        />
       </svg>
       <span>{label}</span>
     </div>

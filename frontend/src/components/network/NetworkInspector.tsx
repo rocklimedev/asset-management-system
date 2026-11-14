@@ -3,7 +3,17 @@ import { Route, Trash2, X } from 'lucide-react';
 import type { Connection, Device, NetworkDocument } from '../../types/network';
 import type { Selection } from './NetworkCanvas';
 import { deletionReason, portConnection, traceCore } from './topology';
-import { KIND_OPTIONS, KindIcon, KIND_META, Field, Section, SelectField, deviceLabel, plural, shortEnd } from './network-ui';
+import {
+  KIND_OPTIONS,
+  KindIcon,
+  KIND_META,
+  Field,
+  Section,
+  SelectField,
+  deviceLabel,
+  plural,
+  shortEnd,
+} from './network-ui';
 import { useConfirm } from '../ui/confirm-dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -35,7 +45,11 @@ const VERIFICATION_OPTIONS = [
   { value: 'unverified', label: 'Unverified' },
   { value: 'assumed', label: 'Assumed' },
 ];
-const KIND_LABEL: Record<Connection['kind'], string> = { access: 'Access cable', uplink: 'Uplink', crosslink: 'Crosslink' };
+const KIND_LABEL: Record<Connection['kind'], string> = {
+  access: 'Access cable',
+  uplink: 'Uplink',
+  crosslink: 'Crosslink',
+};
 
 type HealthCheck = {
   title: string;
@@ -61,19 +75,63 @@ function healthChecks(d: NetworkDocument): HealthCheck[] {
   const unresolved = d.connections.filter((c) => !c.source.portId || !c.target.portId);
   const unconfirmed = d.connections.filter((c) => c.verification !== 'confirmed');
   const planned = d.connections.filter((c) => c.status === 'planned');
-  const isolated = d.devices.filter((v) => !d.connections.some((c) => c.source.deviceId === v.id || c.target.deviceId === v.id));
+  const isolated = d.devices.filter(
+    (v) => !d.connections.some((c) => c.source.deviceId === v.id || c.target.deviceId === v.id),
+  );
   const noRoute = d.devices.filter((v) => v.kind !== 'core' && traceCore(d, v.id) === null);
   const noRack = d.devices.filter((v) => !v.rackId);
   const noIp = d.devices.filter((v) => !v.ip);
 
   return [
-    { title: 'Cables without assigned ports', hint: 'Record the physical port so the cable can be traced and checked.', tone: 'warn', count: unresolved.length, items: unresolved.map(cableItem) },
-    { title: 'Devices with no cables', hint: 'Nothing connects these devices to the rest of the network.', tone: 'warn', count: isolated.length, items: isolated.map(deviceItem) },
-    { title: 'No documented route to core', hint: 'Traces use documented, non-planned links only. This is not a live test.', tone: 'warn', count: noRoute.length, items: noRoute.map(deviceItem) },
-    { title: 'Cables not yet confirmed', hint: 'Assumed or unverified links appear dashed on the map.', tone: 'info', count: unconfirmed.length, items: unconfirmed.map(cableItem) },
-    { title: 'Planned cables', hint: 'Planned links are excluded from route tracing until they go live.', tone: 'info', count: planned.length, items: planned.map(cableItem) },
-    { title: 'Devices outside a rack', hint: 'Wall-mounted or floor equipment is fine; record it if it should sit in a rack.', tone: 'neutral', count: noRack.length, items: noRack.map(deviceItem) },
-    { title: 'Devices without an IP address', hint: 'Add addresses for equipment you manage remotely.', tone: 'neutral', count: noIp.length, items: noIp.map(deviceItem) },
+    {
+      title: 'Cables without assigned ports',
+      hint: 'Record the physical port so the cable can be traced and checked.',
+      tone: 'warn',
+      count: unresolved.length,
+      items: unresolved.map(cableItem),
+    },
+    {
+      title: 'Devices with no cables',
+      hint: 'Nothing connects these devices to the rest of the network.',
+      tone: 'warn',
+      count: isolated.length,
+      items: isolated.map(deviceItem),
+    },
+    {
+      title: 'No documented route to core',
+      hint: 'Traces use documented, non-planned links only. This is not a live test.',
+      tone: 'warn',
+      count: noRoute.length,
+      items: noRoute.map(deviceItem),
+    },
+    {
+      title: 'Cables not yet confirmed',
+      hint: 'Assumed or unverified links appear dashed on the map.',
+      tone: 'info',
+      count: unconfirmed.length,
+      items: unconfirmed.map(cableItem),
+    },
+    {
+      title: 'Planned cables',
+      hint: 'Planned links are excluded from route tracing until they go live.',
+      tone: 'info',
+      count: planned.length,
+      items: planned.map(cableItem),
+    },
+    {
+      title: 'Devices outside a rack',
+      hint: 'Wall-mounted or floor equipment is fine; record it if it should sit in a rack.',
+      tone: 'neutral',
+      count: noRack.length,
+      items: noRack.map(deviceItem),
+    },
+    {
+      title: 'Devices without an IP address',
+      hint: 'Add addresses for equipment you manage remotely.',
+      tone: 'neutral',
+      count: noIp.length,
+      items: noIp.map(deviceItem),
+    },
   ];
 }
 
@@ -95,7 +153,8 @@ export function NetworkInspector({
   onAddPort: (id: string) => void;
 }) {
   const checks = useMemo(() => healthChecks(d), [d]);
-  if (!selection) return <Overview document={d} checks={checks} onChange={onChange} onSelect={select} />;
+  if (!selection)
+    return <Overview document={d} checks={checks} onChange={onChange} onSelect={select} />;
 
   const sel = selection;
   const item = (d[sel.collection] as Array<{ id: string }>).find((v) => v.id === sel.id);
@@ -136,7 +195,8 @@ export function NetworkInspector({
     </Field>
   );
 
-  const deleteLabel = sel.collection === 'connections' ? 'Disconnect cable' : `Delete ${sel.collection.slice(0, -1)}`;
+  const deleteLabel =
+    sel.collection === 'connections' ? 'Disconnect cable' : `Delete ${sel.collection.slice(0, -1)}`;
   const reason = deletionReason(d, sel.collection, sel.id);
 
   let title = '';
@@ -153,7 +213,11 @@ export function NetworkInspector({
     while (changed) {
       changed = false;
       for (const candidate of d.areas)
-        if (candidate.parentId && descendants.has(candidate.parentId) && !descendants.has(candidate.id)) {
+        if (
+          candidate.parentId &&
+          descendants.has(candidate.parentId) &&
+          !descendants.has(candidate.id)
+        ) {
           descendants.add(candidate.id);
           changed = true;
         }
@@ -166,13 +230,17 @@ export function NetworkInspector({
           <SelectField
             label="Parent area"
             value={a.parentId || ''}
-            options={d.areas.filter((v) => !descendants.has(v.id)).map((v) => ({ value: v.id, label: v.name }))}
+            options={d.areas
+              .filter((v) => !descendants.has(v.id))
+              .map((v) => ({ value: v.id, label: v.name }))}
             emptyLabel="Top level area"
             onChange={(id) => patch({ parentId: id || null })}
           />
         </Section>
         <Section title={`Inside this area (${devices.length} devices)`}>
-          <p className="text-sm text-muted-foreground">{plural(d.racks.filter((r) => r.areaId === a.id).length, 'rack')} hold equipment here.</p>
+          <p className="text-sm text-muted-foreground">
+            {plural(d.racks.filter((r) => r.areaId === a.id).length, 'rack')} hold equipment here.
+          </p>
           <DeviceLinks devices={devices} onSelect={(id) => select({ collection: 'devices', id })} />
         </Section>
       </>
@@ -199,14 +267,20 @@ export function NetworkInspector({
           />
         </Section>
         <Section title={`Equipment (${equipment.length})`}>
-          <DeviceLinks devices={equipment} onSelect={(id) => select({ collection: 'devices', id })} empty="Empty rack. Move a device here from its details." />
+          <DeviceLinks
+            devices={equipment}
+            onSelect={(id) => select({ collection: 'devices', id })}
+            empty="Empty rack. Move a device here from its details."
+          />
         </Section>
       </>
     );
   } else if (sel.collection === 'devices') {
     const v = d.devices.find((x) => x.id === sel.id)!;
     const ports = d.ports.filter((p) => p.deviceId === v.id);
-    const connections = d.connections.filter((c) => c.source.deviceId === v.id || c.target.deviceId === v.id);
+    const connections = d.connections.filter(
+      (c) => c.source.deviceId === v.id || c.target.deviceId === v.id,
+    );
     const path = traceCore(d, v.id);
     const racks = d.racks.filter((r) => r.areaId === v.areaId);
     eyebrow = KIND_META[v.kind].label;
@@ -219,7 +293,12 @@ export function NetworkInspector({
             {textField('name', 'Device name')}
             {textField('code', 'Code or asset tag', { mono: true })}
           </div>
-          <SelectField label="Device type" value={v.kind} options={KIND_OPTIONS} onChange={(kind) => patch({ kind })} />
+          <SelectField
+            label="Device type"
+            value={v.kind}
+            options={KIND_OPTIONS}
+            onChange={(kind) => patch({ kind })}
+          />
         </Section>
 
         <Section title="Location">
@@ -230,7 +309,13 @@ export function NetworkInspector({
               options={d.areas.map((a) => ({ value: a.id, label: a.name }))}
               onChange={(areaId) => patch({ areaId, rackId: null })}
             />
-            <SelectField label="Rack" value={v.rackId || ''} options={racks.map((r) => ({ value: r.id, label: r.name }))} emptyLabel="Outside a rack" onChange={(id) => patch({ rackId: id || null })} />
+            <SelectField
+              label="Rack"
+              value={v.rackId || ''}
+              options={racks.map((r) => ({ value: r.id, label: r.name }))}
+              emptyLabel="Outside a rack"
+              onChange={(id) => patch({ rackId: id || null })}
+            />
           </div>
         </Section>
 
@@ -263,7 +348,9 @@ export function NetworkInspector({
                       onClick={() => select({ collection: 'ports', id: p.id })}
                       className={cn(
                         'h-8 rounded-md border font-mono text-xs font-medium tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
-                        used ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/15' : 'border-border bg-muted text-muted-foreground hover:bg-accent',
+                        used
+                          ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/15'
+                          : 'border-border bg-muted text-muted-foreground hover:bg-accent',
                       )}
                     >
                       {p.label}
@@ -271,10 +358,14 @@ export function NetworkInspector({
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground">Blue ports are cabled. Grey ports are free.</p>
+              <p className="text-xs text-muted-foreground">
+                Blue ports are cabled. Grey ports are free.
+              </p>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">No ports yet. Add a port to start recording cables.</p>
+            <p className="text-sm text-muted-foreground">
+              No ports yet. Add a port to start recording cables.
+            </p>
           )}
         </Section>
 
@@ -330,23 +421,37 @@ export function NetworkInspector({
         <Section title="Port">
           <div className="grid gap-3 sm:grid-cols-2">
             {textField('label', 'Port number or label', { mono: true })}
-            <SelectField label="Medium" value={p.medium} options={MEDIUM_OPTIONS} onChange={(medium) => patch({ medium })} />
+            <SelectField
+              label="Medium"
+              value={p.medium}
+              options={MEDIUM_OPTIONS}
+              onChange={(medium) => patch({ medium })}
+            />
           </div>
           <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <Checkbox checked={p.poe} onCheckedChange={(checked) => patch({ poe: checked === true })} />
+            <Checkbox
+              checked={p.poe}
+              onCheckedChange={(checked) => patch({ poe: checked === true })}
+            />
             PoE capable
           </label>
         </Section>
         <Section title="Cable">
           {c ? (
-            <button type="button" onClick={() => select({ collection: 'connections', id: c.id })} className="block w-full rounded-lg border border-border p-3 text-left hover:bg-muted">
+            <button
+              type="button"
+              onClick={() => select({ collection: 'connections', id: c.id })}
+              className="block w-full rounded-lg border border-border p-3 text-left hover:bg-muted"
+            >
               <p className="text-sm font-medium">{c.cableCode || KIND_LABEL[c.kind]}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {shortEnd(d, c.source)} ↔ {shortEnd(d, c.target)}
               </p>
             </button>
           ) : (
-            <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">Free. No cable is recorded on this port.</div>
+            <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
+              Free. No cable is recorded on this port.
+            </div>
           )}
         </Section>
       </>
@@ -358,22 +463,32 @@ export function NetworkInspector({
     const endpoint = (key: 'source' | 'target') => {
       const end = c[key];
       const other = c[key === 'source' ? 'target' : 'source'];
-      const available = d.ports.filter((p) => p.deviceId === end.deviceId && !portConnection(d, p.id, c.id));
+      const available = d.ports.filter(
+        (p) => p.deviceId === end.deviceId && !portConnection(d, p.id, c.id),
+      );
       return (
         <div className="space-y-3 rounded-lg border border-border p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{key === 'source' ? 'From' : 'To'}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {key === 'source' ? 'From' : 'To'}
+          </p>
           <SelectField
             label="Device"
             value={end.deviceId}
             options={d.devices
               .filter((v) => v.id !== other.deviceId)
-              .map((v) => ({ value: v.id, label: `${v.code || v.name} · ${d.areas.find((a) => a.id === v.areaId)?.name ?? 'No area'}` }))}
+              .map((v) => ({
+                value: v.id,
+                label: `${v.code || v.name} · ${d.areas.find((a) => a.id === v.areaId)?.name ?? 'No area'}`,
+              }))}
             onChange={(id) => patch({ [key]: { deviceId: id, portId: null } })}
           />
           <SelectField
             label="Physical port"
             value={end.portId || ''}
-            options={available.map((p) => ({ value: p.id, label: `Port ${p.label}${p.poe ? ' · PoE' : ''} · ${p.medium}` }))}
+            options={available.map((p) => ({
+              value: p.id,
+              label: `Port ${p.label}${p.poe ? ' · PoE' : ''} · ${p.medium}`,
+            }))}
             emptyLabel="Unassigned, not yet recorded"
             onChange={(id) => patch({ [key]: { ...end, portId: id || null } })}
           />
@@ -383,22 +498,46 @@ export function NetworkInspector({
     };
     body = (
       <>
-        <Section title="Cable">{textField('cableCode', 'Cable or wire code', { mono: true })}</Section>
+        <Section title="Cable">
+          {textField('cableCode', 'Cable or wire code', { mono: true })}
+        </Section>
         <div className="grid gap-3">
           {endpoint('source')}
           {endpoint('target')}
         </div>
         <Section title="Classification">
           <div className="grid gap-3 sm:grid-cols-2">
-            <SelectField label="Connection type" value={c.kind} options={CONNECTION_KIND_OPTIONS} onChange={(kind) => patch({ kind })} />
-            <SelectField label="Cable medium" value={c.medium} options={MEDIUM_OPTIONS} onChange={(medium) => patch({ medium })} />
-            <SelectField label="Operational status" value={c.status} options={STATUS_OPTIONS} onChange={(status) => patch({ status })} />
-            <SelectField label="Documentation" value={c.verification} options={VERIFICATION_OPTIONS} onChange={(verification) => patch({ verification })} />
+            <SelectField
+              label="Connection type"
+              value={c.kind}
+              options={CONNECTION_KIND_OPTIONS}
+              onChange={(kind) => patch({ kind })}
+            />
+            <SelectField
+              label="Cable medium"
+              value={c.medium}
+              options={MEDIUM_OPTIONS}
+              onChange={(medium) => patch({ medium })}
+            />
+            <SelectField
+              label="Operational status"
+              value={c.status}
+              options={STATUS_OPTIONS}
+              onChange={(status) => patch({ status })}
+            />
+            <SelectField
+              label="Documentation"
+              value={c.verification}
+              options={VERIFICATION_OPTIONS}
+              onChange={(verification) => patch({ verification })}
+            />
           </div>
         </Section>
         {(!c.source.portId || !c.target.portId) && (
           <Alert variant="info">
-            <AlertDescription>One end has no port yet. The cable is kept; select the actual port when you know it.</AlertDescription>
+            <AlertDescription>
+              One end has no port yet. The cable is kept; select the actual port when you know it.
+            </AlertDescription>
           </Alert>
         )}
       </>
@@ -409,13 +548,24 @@ export function NetworkInspector({
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-start justify-between gap-3 border-b border-border p-4">
         <div className="flex min-w-0 items-center gap-2.5">
-          {headerIcon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">{headerIcon}</span>}
+          {headerIcon && (
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+              {headerIcon}
+            </span>
+          )}
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{eyebrow}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {eyebrow}
+            </p>
             <h2 className="truncate text-base font-semibold text-foreground">{title}</h2>
           </div>
         </div>
-        <Button variant="ghost" size="icon-sm" aria-label="Close inspector" onClick={() => select(null)}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Close inspector"
+          onClick={() => select(null)}
+        >
           <X />
         </Button>
       </div>
@@ -428,7 +578,13 @@ export function NetworkInspector({
 
       <div className="border-t border-border bg-muted/40 p-3">
         {reason && <p className="mb-2 text-xs text-muted-foreground">{reason}</p>}
-        <Button variant="destructive" size="sm" className="w-full" disabled={!!reason} onClick={onDelete}>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="w-full"
+          disabled={!!reason}
+          onClick={onDelete}
+        >
           <Trash2 />
           {deleteLabel}
         </Button>
@@ -437,7 +593,15 @@ export function NetworkInspector({
   );
 }
 
-function DeviceLinks({ devices, onSelect, empty = 'Nothing here yet.' }: { devices: Device[]; onSelect: (id: string) => void; empty?: string }) {
+function DeviceLinks({
+  devices,
+  onSelect,
+  empty = 'Nothing here yet.',
+}: {
+  devices: Device[];
+  onSelect: (id: string) => void;
+  empty?: string;
+}) {
   if (!devices.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -479,10 +643,14 @@ function Overview({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-border p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Overview</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Overview
+        </p>
         <h2 className="text-base font-semibold text-foreground">Network health</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {issues ? `${plural(issues, 'item')} to review. Select one to open it.` : 'Everything documented is in order.'}
+          {issues
+            ? `${plural(issues, 'item')} to review. Select one to open it.`
+            : 'Everything documented is in order.'}
         </p>
       </div>
 
@@ -492,17 +660,30 @@ function Overview({
             <div key={check.title} className="rounded-lg border border-border p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium">{check.title}</p>
-                {check.count ? <StatusPill tone={check.tone}>{check.count}</StatusPill> : <StatusPill tone="ok">Clear</StatusPill>}
+                {check.count ? (
+                  <StatusPill tone={check.tone}>{check.count}</StatusPill>
+                ) : (
+                  <StatusPill tone="ok">Clear</StatusPill>
+                )}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{check.hint}</p>
               {check.items.length > 0 && (
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {check.items.slice(0, 4).map((item) => (
-                    <Button key={item.key} size="xs" variant="outline" onClick={() => onSelect(item.target)}>
+                    <Button
+                      key={item.key}
+                      size="xs"
+                      variant="outline"
+                      onClick={() => onSelect(item.target)}
+                    >
                       {item.label}
                     </Button>
                   ))}
-                  {check.items.length > 4 && <span className="text-xs text-muted-foreground">+{check.items.length - 4} more</span>}
+                  {check.items.length > 4 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{check.items.length - 4} more
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -523,7 +704,8 @@ function Overview({
                 value={d.settings.unitsPerMeter}
                 onChange={(e) => {
                   const value = Number(e.target.value);
-                  if (value > 0 && Number.isFinite(value)) onChange({ ...d, settings: { ...d.settings, unitsPerMeter: value } });
+                  if (value > 0 && Number.isFinite(value))
+                    onChange({ ...d, settings: { ...d.settings, unitsPerMeter: value } });
                 }}
               />
               <span className="text-sm text-muted-foreground">units = 1 m</span>
@@ -531,7 +713,9 @@ function Overview({
           </Field>
           {d.dims.length > 0 && (
             <div className="flex items-center justify-between gap-2 rounded-lg border border-border p-3">
-              <span className="text-sm text-muted-foreground">{plural(d.dims.length, 'measurement')} on the map</span>
+              <span className="text-sm text-muted-foreground">
+                {plural(d.dims.length, 'measurement')} on the map
+              </span>
               <Button size="xs" variant="outline" onClick={() => void clearMeasurements()}>
                 Clear
               </Button>
@@ -540,7 +724,8 @@ function Overview({
         </Section>
 
         <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-          Select anything on the map or in the explorer to edit it. Press Esc to clear the selection.
+          Select anything on the map or in the explorer to edit it. Press Esc to clear the
+          selection.
         </p>
       </div>
     </div>

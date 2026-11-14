@@ -12,9 +12,8 @@ import {
 // ============================================================
 // ROW ACTIONS
 //
-// One visible primary action (with a text label) plus an
-// overflow menu for everything else, so rows stay scannable and
-// every action is discoverable by name — never icon-only guesses.
+// One primary action plus an overflow menu for everything else.
+// Icon-only primary actions retain an accessible label and tooltip.
 // ============================================================
 
 export interface RowActionItem {
@@ -33,6 +32,7 @@ interface RowActionsProps {
   primary?: {
     label: string;
     icon?: LucideIcon;
+    iconOnly?: boolean;
     onClick: () => void;
     disabled?: boolean;
   };
@@ -48,12 +48,14 @@ export function RowActions({ recordName, primary, items }: RowActionsProps) {
         <Button
           type="button"
           variant="outline"
-          size="sm"
+          size={primary.iconOnly && PrimaryIcon ? "icon-sm" : "sm"}
+          aria-label={`${primary.label} ${recordName}`}
+          title={primary.iconOnly && PrimaryIcon ? `${primary.label} ${recordName}` : undefined}
           onClick={primary.onClick}
           disabled={primary.disabled}
         >
           {PrimaryIcon && <PrimaryIcon aria-hidden="true" />}
-          {primary.label}
+          {(!primary.iconOnly || !PrimaryIcon) && primary.label}
         </Button>
       )}
 

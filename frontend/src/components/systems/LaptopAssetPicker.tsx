@@ -106,7 +106,15 @@ export function LaptopAssetPicker({ categoryId, value, onChange, system, disable
               No available laptops found. Add laptop stock in Assets or assign one later.
             </p>
           )}
-          <TablePagination page={page} pageSize={20} total={pool?.total ?? 0} totalPages={pool?.totalPages ?? 1} onPageChange={setPage} disabled={disabled || isFetching || !pool} noun="laptops" />
+          <TablePagination
+            page={page}
+            pageSize={20}
+            total={pool?.total ?? 0}
+            totalPages={pool?.totalPages ?? 1}
+            onPageChange={setPage}
+            disabled={disabled || isFetching || !pool}
+            noun="laptops"
+          />
           {value && (
             <div>
               <label htmlFor="computer-laptop-unit" className="text-sm font-medium">

@@ -117,12 +117,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'People',
     items: [
-      {
-        to: '/communication',
-        label: 'Communication',
-        description: 'Zoho accounts, channels and employee onboarding',
-        icon: MessageSquare,
-      },
+      // {
+      //   to: '/communication',
+      //   label: 'Communication',
+      //   description: 'Zoho accounts, channels and employee onboarding',
+      //   icon: MessageSquare,
+      // },
       {
         to: '/employees',
         label: 'Team',
@@ -135,7 +135,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Administration',
     items: [
       {
-        to: '/users-roles',
+        to: '/users',
         label: 'Users',
         description: 'Who can sign in and what they can do',
         icon: Users,

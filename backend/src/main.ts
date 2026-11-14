@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { json } from 'express';
+import { registerBodyParsers } from './common/body-parsers';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use('/api/network', json({ limit: '1mb' }));
+  registerBodyParsers(app);
 
   // ============================
   // CORS

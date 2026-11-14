@@ -1,4 +1,8 @@
-import { AttachmentFields, RecordAttachments, usePendingAttachments } from '../attachments/RecordAttachments';
+import {
+  AttachmentFields,
+  RecordAttachments,
+  usePendingAttachments,
+} from '../attachments/RecordAttachments';
 import { ComputerCategorySelect } from './ComputerCategorySelect';
 import { LaptopAssetPicker, type LaptopSelection } from './LaptopAssetPicker';
 import { useGetEmployeesQuery } from '../../services/api/employees.api';
@@ -204,7 +208,11 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
         }).unwrap();
         progress.current.laptopUnitId = laptop.assetUnitId;
       }
-      if (employeeId && employeeId !== system?.employeeId && progress.current.assignedEmployeeId !== employeeId) {
+      if (
+        employeeId &&
+        employeeId !== system?.employeeId &&
+        progress.current.assignedEmployeeId !== employeeId
+      ) {
         await assignSystem({ id: systemId, employeeId }).unwrap();
         progress.current.assignedEmployeeId = employeeId;
       }
@@ -238,7 +246,11 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
 
         <form onSubmit={save} className="space-y-6">
           {system?.id && <RecordAttachments resource="systems" id={system.id} readOnly />}
-          <AttachmentFields files={attachments.files} setFiles={attachments.setFiles} disabled={busy} />
+          <AttachmentFields
+            files={attachments.files}
+            setFiles={attachments.setFiles}
+            disabled={busy}
+          />
           {/* ============================================================
               SYSTEM INFORMATION
           ============================================================ */}
@@ -604,10 +616,23 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
 
           {(['computerParts', 'accessories'] as const).map((field) => (
             <div key={field} className="space-y-2">
-              <Label htmlFor={field}>{field === 'computerParts' ? 'Computer Parts' : 'Accessories'}</Label>
-              <Textarea id={field} maxLength={5000} disabled={busy}
-                placeholder={field === 'computerParts' ? 'SSD, RAM, processor, graphics card…' : 'Laptop bag, stand, cables, adapters…'}
-                value={editor[field]} onChange={(event) => setEditor((current) => ({ ...current, [field]: event.target.value }))} />
+              <Label htmlFor={field}>
+                {field === 'computerParts' ? 'Computer Parts' : 'Accessories'}
+              </Label>
+              <Textarea
+                id={field}
+                maxLength={5000}
+                disabled={busy}
+                placeholder={
+                  field === 'computerParts'
+                    ? 'SSD, RAM, processor, graphics card…'
+                    : 'Laptop bag, stand, cables, adapters…'
+                }
+                value={editor[field]}
+                onChange={(event) =>
+                  setEditor((current) => ({ ...current, [field]: event.target.value }))
+                }
+              />
             </div>
           ))}
           {system && loadingSpecs && (

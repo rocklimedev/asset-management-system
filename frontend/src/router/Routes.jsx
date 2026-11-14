@@ -80,7 +80,8 @@ export default function AppRoutes() {
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/asset-categories" element={<AssetCategories />} />
-          <Route path="/users-roles" element={<UsersRoles />} />
+          <Route path="/users" element={<UsersRoles />} />
+          <Route path="/users-roles" element={<Navigate to="/users" replace />} />
           <Route path="/roles-permissions" element={<RolesPermissions />} />
           <Route path="/activity-logs" element={<ActivityLogs />} />
           <Route path="/software" element={<SoftwareList />} />

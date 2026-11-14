@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // RTK QUERY LOGIN
   // ==========================================================
 
-  const [loginMutation, { isLoading: loginLoading }] = useLoginMutation();
+  const [loginMutation] = useLoginMutation();
 
   // ==========================================================
   // LOAD AUTH DATA
@@ -292,13 +292,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (typeof error === 'object' && error !== null && 'data' in error) {
           const rtkError = error as {
+            status?: number | string;
             data?: {
-              message?: string;
+              message?: string | string[];
             };
           };
 
-          if (rtkError.data?.message) {
-            throw new Error(rtkError.data.message);
+          const message = rtkError.data?.message;
+          if (typeof message === 'string' && message.trim()) {
+            throw new Error(message);
+          }
+          if (Array.isArray(message) && message.length) {
+            throw new Error(message.join(' '));
+          }
+        }
+
+        if (typeof error === 'object' && error !== null && 'status' in error) {
+          if (error.status === 'FETCH_ERROR') {
+            throw new Error('Unable to reach the server. Check your connection and try again.');
+          }
+          if (error.status === 'TIMEOUT_ERROR') {
+            throw new Error('Sign-in timed out. Please try again.');
           }
         }
 
@@ -346,7 +360,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     isAuthenticated: Boolean(accessToken),
 
-    loading: loading || loginLoading,
+    // Only the initial auth check should replace the route with a loading screen.
+    // LoginPage manages its own pending state and must stay mounted on failure.
+    loading,
 
     login,
     logout,

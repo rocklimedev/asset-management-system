@@ -159,7 +159,15 @@ export function TransferSystemAssetModal({
             Could not load employees.
           </p>
         )}
-        <TablePagination page={page} pageSize={result?.pageSize ?? 24} total={result?.total ?? 0} totalPages={Math.ceil((result?.total ?? 0) / (result?.pageSize ?? 24))} onPageChange={changePage} disabled={busy || isFetching || !result} noun="employees" />
+        <TablePagination
+          page={page}
+          pageSize={result?.pageSize ?? 24}
+          total={result?.total ?? 0}
+          totalPages={Math.ceil((result?.total ?? 0) / (result?.pageSize ?? 24))}
+          onPageChange={changePage}
+          disabled={busy || isFetching || !result}
+          noun="employees"
+        />
         {employeeId && (
           <>
             <Label htmlFor="transfer-destination-system">Destination system</Label>

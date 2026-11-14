@@ -134,7 +134,18 @@ export function AssignSystemModal({ open, system, onClose, onAssigned }: Props) 
           </p>
         )}
 
-        <TablePagination page={page} pageSize={employeeResult?.pageSize ?? 24} total={employeeResult?.total ?? 0} totalPages={Math.ceil((employeeResult?.total ?? 0) / (employeeResult?.pageSize ?? 24))} onPageChange={(next) => { setPage(next); setEmployeeId(''); }} disabled={loadingEmployees || !employeeResult} noun="employees" />
+        <TablePagination
+          page={page}
+          pageSize={employeeResult?.pageSize ?? 24}
+          total={employeeResult?.total ?? 0}
+          totalPages={Math.ceil((employeeResult?.total ?? 0) / (employeeResult?.pageSize ?? 24))}
+          onPageChange={(next) => {
+            setPage(next);
+            setEmployeeId('');
+          }}
+          disabled={loadingEmployees || !employeeResult}
+          noun="employees"
+        />
 
         <Button
           disabled={!employeeId || assignState.isLoading || loadingEmployees}

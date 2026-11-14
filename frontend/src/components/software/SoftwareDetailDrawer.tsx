@@ -141,7 +141,9 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
           </div>
         </div>
 
-        <section className="border-b border-border p-5"><RecordAttachments resource="assets" id={software.assetId} disabled={busy} /></section>
+        <section className="border-b border-border p-5">
+          <RecordAttachments resource="assets" id={software.assetId} disabled={busy} />
+        </section>
         {/* LICENSES */}
         <section className="border-b border-border p-5">
           <div className="mb-3 flex items-center justify-between gap-3">

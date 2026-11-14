@@ -358,7 +358,9 @@ export function SystemDetailDrawer({
             </div>
           </div>
 
-          <div className="p-5"><RecordAttachments resource="systems" id={system.id} disabled={busy} /></div>
+          <div className="p-5">
+            <RecordAttachments resource="systems" id={system.id} disabled={busy} />
+          </div>
           <Tabs.Root key={system.id} defaultValue="specifications" className="min-w-0">
             <Tabs.List
               aria-label="Work station details"
@@ -390,10 +392,21 @@ export function SystemDetailDrawer({
             {(['computerParts', 'accessories'] as const).map((field) => (
               <Tabs.Content key={field} value={field} className="space-y-4 p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{field === 'computerParts' ? 'Computer Parts' : 'Accessories'}</h3>
-                  <Button variant="outline" size="sm" disabled={busy} onClick={() => onEdit(system)}>Edit</Button>
+                  <h3 className="font-medium">
+                    {field === 'computerParts' ? 'Computer Parts' : 'Accessories'}
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => onEdit(system)}
+                  >
+                    Edit
+                  </Button>
                 </div>
-                <p className="whitespace-pre-wrap break-words text-sm">{system[field] || 'No items recorded. Edit this workstation to add items.'}</p>
+                <p className="whitespace-pre-wrap break-words text-sm">
+                  {system[field] || 'No items recorded. Edit this workstation to add items.'}
+                </p>
               </Tabs.Content>
             ))}
             <Tabs.Content value="specifications" className="p-5">

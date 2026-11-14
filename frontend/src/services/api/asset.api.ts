@@ -38,7 +38,15 @@ export type AssetUnitCondition = AssetCondition;
 export type TransferStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
 export type InventoryChangeType = 'RESTOCK' | 'CONSUMED' | 'RETURNED' | 'ADJUSTMENT' | 'WRITE_OFF';
 
-export interface RecordAttachment { id: string; key: string; url: string; name: string; mimeType: string; size: number; purpose: 'image' | 'invoice'; }
+export interface RecordAttachment {
+  id: string;
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  purpose: 'image' | 'invoice';
+}
 export interface AssetUnit {
   deviceId?: string | null;
   pcPassword?: string;
@@ -341,7 +349,16 @@ export const assetApi = createApi({
       ],
     }),
 
-    disposeAsset: builder.mutation<{ message: string }, { id: string; action: 'DISCARD' | 'GIVE_AWAY'; quantity: number; reason: string; recipient?: string }>({
+    disposeAsset: builder.mutation<
+      { message: string },
+      {
+        id: string;
+        action: 'DISCARD' | 'GIVE_AWAY';
+        quantity: number;
+        reason: string;
+        recipient?: string;
+      }
+    >({
       query: ({ id, ...body }) => ({ url: '/assets/' + id + '/dispose', method: 'POST', body }),
       invalidatesTags: ['Asset', 'AssetUnit', 'AssetHistory'],
     }),
@@ -358,13 +375,21 @@ export const assetApi = createApi({
       ],
     }),
 
-    getRecordAttachments: builder.query<RecordAttachment[], { resource: 'assets' | 'systems'; id: string }>({
+    getRecordAttachments: builder.query<
+      RecordAttachment[],
+      { resource: 'assets' | 'systems'; id: string }
+    >({
       query: ({ resource, id }) => '/record-attachments/' + resource + '/' + id,
       providesTags: ['RecordAttachment'],
     }),
-    uploadRecordAttachment: builder.mutation<RecordAttachment, { resource: 'assets' | 'systems'; id: string; purpose: 'image' | 'invoice'; file: File }>({
+    uploadRecordAttachment: builder.mutation<
+      RecordAttachment,
+      { resource: 'assets' | 'systems'; id: string; purpose: 'image' | 'invoice'; file: File }
+    >({
       query: ({ resource, id, purpose, file }) => {
-        const body = new FormData(); body.append('purpose', purpose); body.append('file', file);
+        const body = new FormData();
+        body.append('purpose', purpose);
+        body.append('file', file);
         return { url: '/record-attachments/' + resource + '/' + id, method: 'POST', body };
       },
       invalidatesTags: ['RecordAttachment', 'Asset', 'System'],

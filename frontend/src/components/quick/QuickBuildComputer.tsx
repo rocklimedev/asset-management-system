@@ -344,7 +344,15 @@ export function QuickBuildComputer({
           )}
         </div>
 
-        {step === 3 && <div className="px-6 pb-4"><AttachmentFields files={attachments.files} setFiles={attachments.setFiles} disabled={saving} /></div>}
+        {step === 3 && (
+          <div className="px-6 pb-4">
+            <AttachmentFields
+              files={attachments.files}
+              setFiles={attachments.setFiles}
+              disabled={saving}
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border bg-card px-6 py-4">
           <Button
             type="button"

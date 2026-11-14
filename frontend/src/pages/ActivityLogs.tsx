@@ -250,7 +250,15 @@ export default function ActivityLogs() {
               </Table>
             </div>
           )}
-          <TablePagination page={page} pageSize={50} total={data?.total ?? 0} totalPages={totalPages} onPageChange={setPage} disabled={isFetching || !data} noun="records" />
+          <TablePagination
+            page={page}
+            pageSize={50}
+            total={data?.total ?? 0}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            disabled={isFetching || !data}
+            noun="records"
+          />
         </Card>
       )}
     </div>

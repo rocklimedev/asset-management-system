@@ -42,7 +42,13 @@ export function kindColor(kind: DeviceKind) {
 
 export function KindIcon({ kind, className }: { kind: DeviceKind; className?: string }) {
   const Icon = KIND_META[kind]?.icon ?? Network;
-  return <Icon className={cn('h-4 w-4', className)} style={{ color: kindColor(kind) }} aria-hidden="true" />;
+  return (
+    <Icon
+      className={cn('h-4 w-4', className)}
+      style={{ color: kindColor(kind) }}
+      aria-hidden="true"
+    />
+  );
 }
 
 /* ------------------------------------------------------------
@@ -164,7 +170,9 @@ export function Section({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {title}
+        </h3>
         {action}
       </div>
       {children}

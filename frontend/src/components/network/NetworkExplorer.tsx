@@ -65,12 +65,24 @@ export function NetworkExplorer({
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2" role="list" aria-label={meta.plural}>
+      <div
+        className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2"
+        role="list"
+        aria-label={meta.plural}
+      >
         {!items.length && (
           <div className="p-2">
             <EmptyState
-              title={hasFilters ? `No matching ${meta.plural.toLowerCase()}` : `No ${meta.plural.toLowerCase()} yet`}
-              description={hasFilters ? 'Clear the search or area filter to see everything.' : `Add a ${meta.singular} to start mapping.`}
+              title={
+                hasFilters
+                  ? `No matching ${meta.plural.toLowerCase()}`
+                  : `No ${meta.plural.toLowerCase()} yet`
+              }
+              description={
+                hasFilters
+                  ? 'Clear the search or area filter to see everything.'
+                  : `Add a ${meta.singular} to start mapping.`
+              }
             />
           </div>
         )}
@@ -81,7 +93,12 @@ export function NetworkExplorer({
             const devices = d.devices.filter((v) => v.areaId === a.id).length;
             const parent = d.areas.find((p) => p.id === a.parentId)?.name;
             return (
-              <button key={a.id} role="listitem" className={rowClass(selection?.id === a.id)} onClick={() => onSelect({ collection: 'areas', id: a.id })}>
+              <button
+                key={a.id}
+                role="listitem"
+                className={rowClass(selection?.id === a.id)}
+                onClick={() => onSelect({ collection: 'areas', id: a.id })}
+              >
                 <p className="truncate text-sm font-medium">{a.name}</p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {parent ? `Inside ${parent} · ` : 'Top level · '}
@@ -96,7 +113,12 @@ export function NetworkExplorer({
             const devices = d.devices.filter((v) => v.rackId === r.id).length;
             const area = d.areas.find((a) => a.id === r.areaId)?.name ?? 'No area';
             return (
-              <button key={r.id} role="listitem" className={rowClass(selection?.id === r.id)} onClick={() => onSelect({ collection: 'racks', id: r.id })}>
+              <button
+                key={r.id}
+                role="listitem"
+                className={rowClass(selection?.id === r.id)}
+                onClick={() => onSelect({ collection: 'racks', id: r.id })}
+              >
                 <p className="truncate text-sm font-medium">{r.name}</p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {area} · {plural(devices, 'device')}
@@ -105,68 +127,114 @@ export function NetworkExplorer({
             );
           })}
 
-        {tab === 'devices' && groupBy(items as Device[], (v) => d.areas.find((a) => a.id === v.areaId)?.name ?? 'No area').map(([group, devices]) => (
-          <div key={group} className="space-y-1">
-            <p className="px-2 pt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group}</p>
-            {devices.map((v) => {
-              const ports = d.ports.filter((p) => p.deviceId === v.id);
-              const used = ports.filter((p) => portConnection(d, p.id)).length;
-              return (
-                <button key={v.id} role="listitem" className={rowClass(selection?.id === v.id)} onClick={() => onSelect({ collection: 'devices', id: v.id })}>
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
-                      <KindIcon kind={v.kind} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{v.name}</p>
-                      <p className="truncate font-mono text-xs text-muted-foreground">
-                        {v.code || 'No code'}
-                        {v.ip ? ` · ${v.ip}` : ''}
-                      </p>
+        {tab === 'devices' &&
+          groupBy(
+            items as Device[],
+            (v) => d.areas.find((a) => a.id === v.areaId)?.name ?? 'No area',
+          ).map(([group, devices]) => (
+            <div key={group} className="space-y-1">
+              <p className="px-2 pt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {group}
+              </p>
+              {devices.map((v) => {
+                const ports = d.ports.filter((p) => p.deviceId === v.id);
+                const used = ports.filter((p) => portConnection(d, p.id)).length;
+                return (
+                  <button
+                    key={v.id}
+                    role="listitem"
+                    className={rowClass(selection?.id === v.id)}
+                    onClick={() => onSelect({ collection: 'devices', id: v.id })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+                        <KindIcon kind={v.kind} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{v.name}</p>
+                        <p className="truncate font-mono text-xs text-muted-foreground">
+                          {v.code || 'No code'}
+                          {v.ip ? ` · ${v.ip}` : ''}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0 text-[11px]">
+                        {used}/{ports.length} ports
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="shrink-0 text-[11px]">
-                      {used}/{ports.length} ports
-                    </Badge>
-                  </div>
-                  <p className="mt-1 pl-9 text-[11px] text-muted-foreground">{KIND_META[v.kind].label}{v.rackId ? ' · in rack' : ' · not in a rack'}</p>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+                    <p className="mt-1 pl-9 text-[11px] text-muted-foreground">
+                      {KIND_META[v.kind].label}
+                      {v.rackId ? ' · in rack' : ' · not in a rack'}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
 
-        {tab === 'ports' && groupBy(items as Port[], (p) => d.devices.find((v) => v.id === p.deviceId)?.name ?? 'Unknown device').map(([group, ports]) => (
-          <div key={group} className="space-y-1">
-            <p className="px-2 pt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group}</p>
-            {ports.map((p) => {
-              const connected = !!portConnection(d, p.id);
-              return (
-                <button key={p.id} role="listitem" className={rowClass(selection?.id === p.id)} onClick={() => onSelect({ collection: 'ports', id: p.id })}>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="font-mono text-sm font-medium">Port {p.label}</span>
-                      <Badge variant="outline" className="text-[11px] capitalize">{p.medium}</Badge>
-                      {p.poe && <Badge variant="outline" className="text-[11px]">PoE</Badge>}
+        {tab === 'ports' &&
+          groupBy(
+            items as Port[],
+            (p) => d.devices.find((v) => v.id === p.deviceId)?.name ?? 'Unknown device',
+          ).map(([group, ports]) => (
+            <div key={group} className="space-y-1">
+              <p className="px-2 pt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {group}
+              </p>
+              {ports.map((p) => {
+                const connected = !!portConnection(d, p.id);
+                return (
+                  <button
+                    key={p.id}
+                    role="listitem"
+                    className={rowClass(selection?.id === p.id)}
+                    onClick={() => onSelect({ collection: 'ports', id: p.id })}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="font-mono text-sm font-medium">Port {p.label}</span>
+                        <Badge variant="outline" className="text-[11px] capitalize">
+                          {p.medium}
+                        </Badge>
+                        {p.poe && (
+                          <Badge variant="outline" className="text-[11px]">
+                            PoE
+                          </Badge>
+                        )}
+                      </div>
+                      <StatusPill tone={connected ? 'ok' : 'neutral'}>
+                        {connected ? 'Connected' : 'Free'}
+                      </StatusPill>
                     </div>
-                    <StatusPill tone={connected ? 'ok' : 'neutral'}>{connected ? 'Connected' : 'Free'}</StatusPill>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
 
         {tab === 'connections' &&
           (items as Connection[]).map((c) => (
-            <button key={c.id} role="listitem" className={rowClass(selection?.id === c.id)} onClick={() => onSelect({ collection: 'connections', id: c.id })}>
+            <button
+              key={c.id}
+              role="listitem"
+              className={rowClass(selection?.id === c.id)}
+              onClick={() => onSelect({ collection: 'connections', id: c.id })}
+            >
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-sm font-medium">{c.cableCode || <span className="italic text-muted-foreground">Unlabelled cable</span>}</p>
+                <p className="truncate text-sm font-medium">
+                  {c.cableCode || (
+                    <span className="italic text-muted-foreground">Unlabelled cable</span>
+                  )}
+                </p>
                 <StatusPill tone={VERIFICATION_TONE[c.verification]}>{c.verification}</StatusPill>
               </div>
               <p className="mt-1 truncate text-xs text-muted-foreground">
                 {shortEnd(d, c.source)} <span aria-hidden="true">↔</span> {shortEnd(d, c.target)}
               </p>
-              {(!c.source.portId || !c.target.portId) && <p className="mt-1 text-[11px] font-medium text-warning-strong">Port not yet assigned</p>}
+              {(!c.source.portId || !c.target.portId) && (
+                <p className="mt-1 text-[11px] font-medium text-warning-strong">
+                  Port not yet assigned
+                </p>
+              )}
             </button>
           ))}
       </div>

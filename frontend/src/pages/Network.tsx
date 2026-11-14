@@ -29,9 +29,20 @@ import { useAuth } from '../services/context/AuthContext';
 import type { Connection, ConnectionEnd, Device, NetworkDocument, Port } from '../types/network';
 import { NetworkCanvas, type Selection } from '../components/network/NetworkCanvas';
 import { NetworkInspector } from '../components/network/NetworkInspector';
-import { NetworkExplorer, type Collection, type NetworkItem } from '../components/network/NetworkExplorer';
+import {
+  NetworkExplorer,
+  type Collection,
+  type NetworkItem,
+} from '../components/network/NetworkExplorer';
 import { ToolbarSelect } from '../components/network/network-ui';
-import { deletionReason, endLabel, portConnection, traceCore, uid, withinArea } from '../components/network/topology';
+import {
+  deletionReason,
+  endLabel,
+  portConnection,
+  traceCore,
+  uid,
+  withinArea,
+} from '../components/network/topology';
 import { Button, buttonVariants } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Alert, AlertDescription } from '../components/ui/alert';
@@ -84,7 +95,9 @@ export default function Network() {
   const [showExplorer, setShowExplorer] = useState(true);
   const [showInspector, setShowInspector] = useState(true);
   const [traceId, setTraceId] = useState('');
-  const history = useRef<NetworkDocument[]>([]), redo = useRef<NetworkDocument[]>([]), lastHistory = useRef(0);
+  const history = useRef<NetworkDocument[]>([]),
+    redo = useRef<NetworkDocument[]>([]),
+    lastHistory = useRef(0);
   const file = useRef<HTMLInputElement>(null);
 
   const serialized = useMemo(() => (document ? JSON.stringify(document) : ''), [document]);
@@ -99,7 +112,12 @@ export default function Network() {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(Array.isArray(data.message) ? data.message.join(', ') : data.message || 'Network request failed.');
+    if (!response.ok)
+      throw new Error(
+        Array.isArray(data.message)
+          ? data.message.join(', ')
+          : data.message || 'Network request failed.',
+      );
     return data;
   }
 
@@ -110,7 +128,16 @@ export default function Network() {
   }
 
   async function load() {
-    if (dirty && !(await confirm({ title: 'Discard unsaved edits?', description: 'Reloading replaces your draft with the last saved network.', confirmLabel: 'Discard and reload', tone: 'danger' }))) return;
+    if (
+      dirty &&
+      !(await confirm({
+        title: 'Discard unsaved edits?',
+        description: 'Reloading replaces your draft with the last saved network.',
+        confirmLabel: 'Discard and reload',
+        tone: 'danger',
+      }))
+    )
+      return;
     setBusy(true);
     setError('');
     try {
@@ -195,9 +222,15 @@ export default function Network() {
       const data = await api('', 'PUT', { document, revision });
       setRevision(data.revision);
       setBaseline(snapshot);
-      toast.add({ title: 'Network saved', description: `Revision ${data.revision} is now the live version.`, type: 'success' });
+      toast.add({
+        title: 'Network saved',
+        description: `Revision ${data.revision} is now the live version.`,
+        type: 'success',
+      });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed. Your edits remain available to export.');
+      setError(
+        e instanceof Error ? e.message : 'Save failed. Your edits remain available to export.',
+      );
     } finally {
       setBusy(false);
     }
@@ -205,7 +238,9 @@ export default function Network() {
 
   function exportJSON() {
     if (!document) return;
-    const url = URL.createObjectURL(new Blob([JSON.stringify(document, null, 2)], { type: 'application/json' }));
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(document, null, 2)], { type: 'application/json' }),
+    );
     const a = window.document.createElement('a');
     a.href = url;
     a.download = 'office-network.json';
@@ -214,7 +249,16 @@ export default function Network() {
   }
 
   async function importJSON(imported: File) {
-    if (dirty && !(await confirm({ title: 'Replace the network with this file?', description: 'Your unsaved edits will be replaced. Nothing is saved until you press Save.', confirmLabel: 'Import file', tone: 'danger' }))) return;
+    if (
+      dirty &&
+      !(await confirm({
+        title: 'Replace the network with this file?',
+        description: 'Your unsaved edits will be replaced. Nothing is saved until you press Save.',
+        confirmLabel: 'Import file',
+        tone: 'danger',
+      }))
+    )
+      return;
     setBusy(true);
     setError('');
     try {
@@ -224,7 +268,11 @@ export default function Network() {
       setAreaId('');
       setTraceId('');
       setFitKey((k) => k + 1);
-      toast.add({ title: 'File imported', description: 'Review the map, then save to publish it.', type: 'info' });
+      toast.add({
+        title: 'File imported',
+        description: 'Review the map, then save to publish it.',
+        type: 'info',
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not import JSON.');
     } finally {
@@ -244,16 +292,30 @@ export default function Network() {
       return;
     }
     if ([source, target].some((end) => end.portId && portConnection(document, end.portId))) {
-      setError('A selected port already has a cable. Disconnect that cable or choose another port.');
+      setError(
+        'A selected port already has a cable. Disconnect that cable or choose another port.',
+      );
       return;
     }
-    const sourcePort = document.ports.find((p) => p.id === source.portId), targetPort = document.ports.find((p) => p.id === target.portId);
-    if (sourcePort && targetPort && sourcePort.medium !== 'unknown' && targetPort.medium !== 'unknown' && sourcePort.medium !== targetPort.medium) {
+    const sourcePort = document.ports.find((p) => p.id === source.portId),
+      targetPort = document.ports.find((p) => p.id === target.portId);
+    if (
+      sourcePort &&
+      targetPort &&
+      sourcePort.medium !== 'unknown' &&
+      targetPort.medium !== 'unknown' &&
+      sourcePort.medium !== targetPort.medium
+    ) {
       setError('Choose ports with matching media.');
       return;
     }
-    const next = structuredClone(document), id = uid();
-    const backbone = [source, target].every((end) => ['core', 'switch', 'router'].includes(document.devices.find((v) => v.id === end.deviceId)!.kind));
+    const next = structuredClone(document),
+      id = uid();
+    const backbone = [source, target].every((end) =>
+      ['core', 'switch', 'router'].includes(
+        document.devices.find((v) => v.id === end.deviceId)!.kind,
+      ),
+    );
     next.connections.push({
       id,
       source,
@@ -284,26 +346,50 @@ export default function Network() {
 
   function addPort(deviceId: string) {
     if (!document) return;
-    const next = structuredClone(document), id = uid();
+    const next = structuredClone(document),
+      id = uid();
     const labels = new Set(next.ports.filter((p) => p.deviceId === deviceId).map((p) => p.label));
     let number = 1;
     while (labels.has(String(number))) number++;
-    next.ports.push({ id, deviceId, label: String(number), medium: 'copper', poe: false, notes: '' });
+    next.ports.push({
+      id,
+      deviceId,
+      label: String(number),
+      medium: 'copper',
+      poe: false,
+      notes: '',
+    });
     change(next);
     select({ collection: 'ports', id });
   }
 
   function add() {
     if (!document) return;
-    const next = structuredClone(document), id = uid(), area = areaId || document.areas[0]?.id;
-    if (tab === 'areas') next.areas.push({ id, name: 'New area', parentId: areaId || null, notes: '', x: 0, y: 0 });
+    const next = structuredClone(document),
+      id = uid(),
+      area = areaId || document.areas[0]?.id;
+    if (tab === 'areas')
+      next.areas.push({ id, name: 'New area', parentId: areaId || null, notes: '', x: 0, y: 0 });
     if (tab === 'racks') {
       if (!area) return setError('Create an area first.');
       next.racks.push({ id, name: 'New rack', areaId: area, notes: '', x: 0, y: 0 });
     }
     if (tab === 'devices') {
       if (!area) return setError('Create an area first.');
-      next.devices.push({ id, name: 'New device', code: '', kind: 'switch', areaId: area, rackId: null, model: '', ip: '', mac: '', notes: '', x: 0, y: 0 });
+      next.devices.push({
+        id,
+        name: 'New device',
+        code: '',
+        kind: 'switch',
+        areaId: area,
+        rackId: null,
+        model: '',
+        ip: '',
+        mac: '',
+        notes: '',
+        x: 0,
+        y: 0,
+      });
     }
     if (tab === 'ports') {
       const device = selection?.collection === 'devices' ? selection.id : document.devices[0]?.id;
@@ -329,8 +415,12 @@ export default function Network() {
     }
     const isCable = selection.collection === 'connections';
     const ok = await confirm({
-      title: isCable ? 'Disconnect this cable?' : `Delete this ${selection.collection.slice(0, -1)}?`,
-      description: isCable ? 'The cable record is removed. Its ports become available again.' : 'It is removed from the draft. Save the network to keep the change.',
+      title: isCable
+        ? 'Disconnect this cable?'
+        : `Delete this ${selection.collection.slice(0, -1)}?`,
+      description: isCable
+        ? 'The cable record is removed. Its ports become available again.'
+        : 'It is removed from the draft. Save the network to keep the change.',
       confirmLabel: isCable ? 'Disconnect cable' : 'Delete',
       tone: 'danger',
     });
@@ -338,7 +428,8 @@ export default function Network() {
     const next = structuredClone(document);
     const lists = next as unknown as Record<string, Array<{ id: string }>>;
     lists[selection.collection] = lists[selection.collection].filter((v) => v.id !== selection.id);
-    if (selection.collection === 'devices') next.ports = next.ports.filter((p) => p.deviceId !== selection.id);
+    if (selection.collection === 'devices')
+      next.ports = next.ports.filter((p) => p.deviceId !== selection.id);
     change(next);
     setSelection(null);
     setError('');
@@ -349,7 +440,9 @@ export default function Network() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
-      const typing = !!target?.closest('input,textarea,select,[contenteditable="true"],[role="listbox"]');
+      const typing = !!target?.closest(
+        'input,textarea,select,[contenteditable="true"],[role="listbox"]',
+      );
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 's') {
         e.preventDefault();
@@ -383,8 +476,12 @@ export default function Network() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const trace = useMemo(() => (document && traceId ? traceCore(document, traceId) : null), [document, traceId]);
-  const unresolved = document?.connections.filter((c) => !c.source.portId || !c.target.portId).length ?? 0;
+  const trace = useMemo(
+    () => (document && traceId ? traceCore(document, traceId) : null),
+    [document, traceId],
+  );
+  const unresolved =
+    document?.connections.filter((c) => !c.source.portId || !c.target.portId).length ?? 0;
   const selectedDevice = selection?.collection === 'devices' ? selection.id : null;
   const hasFilters = !!(query.trim() || areaId);
 
@@ -393,18 +490,37 @@ export default function Network() {
     return (d[tab] as NetworkItem[]).filter((item) => {
       if (q && !JSON.stringify(item).toLowerCase().includes(q)) {
         if (tab === 'ports') {
-          if (!d.devices.find((v) => v.id === (item as Port).deviceId)?.name.toLowerCase().includes(q)) return false;
+          if (
+            !d.devices
+              .find((v) => v.id === (item as Port).deviceId)
+              ?.name.toLowerCase()
+              .includes(q)
+          )
+            return false;
         } else if (tab === 'connections') {
           const cable = item as Connection;
-          if (![endLabel(d, cable.source), endLabel(d, cable.target)].join(' ').toLowerCase().includes(q)) return false;
+          if (
+            ![endLabel(d, cable.source), endLabel(d, cable.target)]
+              .join(' ')
+              .toLowerCase()
+              .includes(q)
+          )
+            return false;
         } else return false;
       }
       if (!areaId) return true;
       if (tab === 'areas') return withinArea(d, item.id, areaId);
-      if (tab === 'ports') return withinArea(d, d.devices.find((v) => v.id === (item as Port).deviceId)?.areaId || '', areaId);
+      if (tab === 'ports')
+        return withinArea(
+          d,
+          d.devices.find((v) => v.id === (item as Port).deviceId)?.areaId || '',
+          areaId,
+        );
       if (tab === 'connections') {
         const cable = item as Connection;
-        return [cable.source.deviceId, cable.target.deviceId].some((id) => withinArea(d, d.devices.find((v) => v.id === id)?.areaId || '', areaId));
+        return [cable.source.deviceId, cable.target.deviceId].some((id) =>
+          withinArea(d, d.devices.find((v) => v.id === id)?.areaId || '', areaId),
+        );
       }
       return withinArea(d, (item as Device).areaId, areaId);
     });
@@ -412,14 +528,26 @@ export default function Network() {
 
   const visibleItems: NetworkItem[] = document ? visibleFor(document) : [];
 
-  const tiles: { key: Collection | 'unresolved'; label: string; count: number; icon: LucideIcon; warn?: boolean }[] = document
+  const tiles: {
+    key: Collection | 'unresolved';
+    label: string;
+    count: number;
+    icon: LucideIcon;
+    warn?: boolean;
+  }[] = document
     ? [
         { key: 'areas', label: 'Areas', count: document.areas.length, icon: Building2 },
         { key: 'racks', label: 'Racks', count: document.racks.length, icon: LayoutGrid },
         { key: 'devices', label: 'Devices', count: document.devices.length, icon: Boxes },
         { key: 'ports', label: 'Ports', count: document.ports.length, icon: Plug },
         { key: 'connections', label: 'Cables', count: document.connections.length, icon: Cable },
-        { key: 'unresolved', label: 'Cables missing ports', count: unresolved, icon: TriangleAlert, warn: true },
+        {
+          key: 'unresolved',
+          label: 'Cables missing ports',
+          count: unresolved,
+          icon: TriangleAlert,
+          warn: true,
+        },
       ]
     : [];
 
@@ -430,8 +558,18 @@ export default function Network() {
         description="Map sites, racks, equipment, ports and cables. Edits are a draft until you save."
         actions={
           <>
-            <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/network/racks">Manage racks</Link>
-            <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/network/areas">Manage areas</Link>
+            <Link
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              to="/network/racks"
+            >
+              Manage racks
+            </Link>
+            <Link
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              to="/network/areas"
+            >
+              Manage areas
+            </Link>
             <StatusPill tone={dirty ? 'warn' : revision ? 'ok' : 'neutral'}>
               {dirty ? 'Unsaved changes' : revision ? `Saved · revision ${revision}` : 'Loading…'}
             </StatusPill>
@@ -441,7 +579,12 @@ export default function Network() {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={!document || busy} aria-label="Import and export">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!document || busy}
+                  aria-label="Import and export"
+                >
                   <MoreHorizontal />
                   Data
                 </Button>
@@ -457,7 +600,12 @@ export default function Network() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button size="sm" disabled={!dirty || !document || busy} loading={busy} onClick={() => void save()}>
+            <Button
+              size="sm"
+              disabled={!dirty || !document || busy}
+              loading={busy}
+              onClick={() => void save()}
+            >
               <Save />
               Save network
             </Button>
@@ -485,7 +633,11 @@ export default function Network() {
 
       {!document ? (
         busy || !error ? (
-          <div className="h-[640px] animate-pulse rounded-xl border border-border bg-card" role="status" aria-live="polite">
+          <div
+            className="h-[640px] animate-pulse rounded-xl border border-border bg-card"
+            role="status"
+            aria-live="polite"
+          >
             <span className="sr-only">Loading network…</span>
           </div>
         ) : (
@@ -521,20 +673,32 @@ export default function Network() {
                   }}
                   className={cn(
                     'flex items-center gap-3 rounded-xl border p-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
-                    active ? 'border-primary bg-primary/5' : attention ? 'border-warning-border bg-warning-muted/60 hover:bg-warning-muted' : 'border-border bg-card hover:bg-muted',
+                    active
+                      ? 'border-primary bg-primary/5'
+                      : attention
+                        ? 'border-warning-border bg-warning-muted/60 hover:bg-warning-muted'
+                        : 'border-border bg-card hover:bg-muted',
                   )}
                 >
                   <span
                     className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                      attention ? 'bg-warning text-warning-foreground' : active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+                      attention
+                        ? 'bg-warning text-warning-foreground'
+                        : active
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted text-muted-foreground',
                     )}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-lg font-semibold tabular-nums leading-tight text-foreground">{tile.count}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{tile.label}</span>
+                    <span className="block text-lg font-semibold tabular-nums leading-tight text-foreground">
+                      {tile.count}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {tile.label}
+                    </span>
                   </span>
                 </button>
               );
@@ -544,7 +708,10 @@ export default function Network() {
           {/* Toolbar: find, filter, change mode, act on the selection */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2 shadow-card">
             <div className="relative w-full sm:w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
               <Input
                 type="search"
                 aria-label="Search network"
@@ -563,7 +730,12 @@ export default function Network() {
               onChange={setAreaId}
             />
 
-            <SegmentedControl label="Canvas mode" value={mode} onChange={enterMode} options={MODE_OPTIONS} />
+            <SegmentedControl
+              label="Canvas mode"
+              value={mode}
+              onChange={enterMode}
+              options={MODE_OPTIONS}
+            />
 
             <Button
               variant={showExplorer ? 'secondary' : 'outline'}
@@ -581,7 +753,11 @@ export default function Network() {
               size="sm"
               aria-pressed={showInspector}
               aria-controls="network-inspector"
-              title={showInspector ? 'Hide network health and details panel' : 'Show network health and details panel'}
+              title={
+                showInspector
+                  ? 'Hide network health and details panel'
+                  : 'Show network health and details panel'
+              }
               onClick={() => setShowInspector((visible) => !visible)}
             >
               <PanelRight />
@@ -589,10 +765,24 @@ export default function Network() {
             </Button>
 
             <div className="ml-auto flex flex-wrap items-center gap-1">
-              <Button variant="ghost" size="icon-sm" aria-label="Undo" title="Undo (Ctrl+Z)" disabled={!history.current.length} onClick={undo}>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Undo"
+                title="Undo (Ctrl+Z)"
+                disabled={!history.current.length}
+                onClick={undo}
+              >
                 <Undo2 />
               </Button>
-              <Button variant="ghost" size="icon-sm" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled={!redo.current.length} onClick={redoEdit}>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Redo"
+                title="Redo (Ctrl+Shift+Z)"
+                disabled={!redo.current.length}
+                onClick={redoEdit}
+              >
                 <Redo2 />
               </Button>
               <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
@@ -600,7 +790,12 @@ export default function Network() {
                 <Maximize2 />
                 Fit view
               </Button>
-              <Button variant="outline" size="sm" disabled={!selectedDevice} onClick={() => setTraceId(selectedDevice || '')}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!selectedDevice}
+                onClick={() => setTraceId(selectedDevice || '')}
+              >
                 <Route />
                 Trace to core
               </Button>
@@ -613,7 +808,10 @@ export default function Network() {
           </div>
 
           {linking && (
-            <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-info-border bg-info-muted px-3 py-2 text-sm text-info-strong">
+            <div
+              role="status"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-info-border bg-info-muted px-3 py-2 text-sm text-info-strong"
+            >
               <span>
                 {pending
                   ? `Cable from ${endLabel(document, pending)}. Choose the destination device or a free port.`
@@ -638,24 +836,46 @@ export default function Network() {
                 <span className="text-muted-foreground">Selected equipment is a core switch.</span>
               ) : (
                 trace.map((c, i) => (
-                  <Button key={c.id} size="xs" variant="outline" onClick={() => select({ collection: 'connections', id: c.id })}>
+                  <Button
+                    key={c.id}
+                    size="xs"
+                    variant="outline"
+                    onClick={() => select({ collection: 'connections', id: c.id })}
+                  >
                     {i + 1}. {c.cableCode || c.kind} · {c.verification}
                   </Button>
                 ))
               )}
-              <span className="text-muted-foreground">Uses documented links only. It does not test live reachability.</span>
+              <span className="text-muted-foreground">
+                Uses documented links only. It does not test live reachability.
+              </span>
             </div>
           )}
 
           {/* Workspace: explorer | map | inspector */}
-          <div className={cn(
-            'grid gap-4 xl:h-[calc(100dvh-22rem)] xl:min-h-[640px]',
-            showExplorer && showInspector && 'xl:grid-cols-[260px_minmax(0,1fr)_320px] 2xl:grid-cols-[300px_minmax(0,1fr)_360px]',
-            showExplorer && !showInspector && 'xl:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)]',
-            !showExplorer && showInspector && 'xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_360px]',
-            !showExplorer && !showInspector && 'grid-cols-[minmax(0,1fr)]',
-          )}>
-            <aside id="network-explorer" className={cn('h-[460px] min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card xl:h-full', showExplorer ? 'flex' : 'hidden')} aria-label="Network explorer">
+          <div
+            className={cn(
+              'grid gap-4 xl:h-[calc(100dvh-22rem)] xl:min-h-[640px]',
+              showExplorer &&
+                showInspector &&
+                'xl:grid-cols-[260px_minmax(0,1fr)_320px] 2xl:grid-cols-[300px_minmax(0,1fr)_360px]',
+              showExplorer &&
+                !showInspector &&
+                'xl:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)]',
+              !showExplorer &&
+                showInspector &&
+                'xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_360px]',
+              !showExplorer && !showInspector && 'grid-cols-[minmax(0,1fr)]',
+            )}
+          >
+            <aside
+              id="network-explorer"
+              className={cn(
+                'h-[460px] min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card xl:h-full',
+                showExplorer ? 'flex' : 'hidden',
+              )}
+              aria-label="Network explorer"
+            >
               <NetworkExplorer
                 document={document}
                 tab={tab}
@@ -685,7 +905,9 @@ export default function Network() {
                 snap={snap}
                 compactRackConnections={compactRackConnections}
                 dimensionMode={dimensionMode}
-                onDimension={(a, b) => change({ ...document, dims: [...document.dims, { uid: uid(), a, b, off: 40 }] })}
+                onDimension={(a, b) =>
+                  change({ ...document, dims: [...document.dims, { uid: uid(), a, b, off: 40 }] })
+                }
                 onFit={() => setFitKey((k) => k + 1)}
                 overlay={
                   <DropdownMenu>
@@ -700,7 +922,10 @@ export default function Network() {
                       <DropdownMenuCheckboxItem checked={showAreas} onCheckedChange={setShowAreas}>
                         Area boundaries
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={showLabels} onCheckedChange={setShowLabels}>
+                      <DropdownMenuCheckboxItem
+                        checked={showLabels}
+                        onCheckedChange={setShowLabels}
+                      >
                         Cable codes
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={grid} onCheckedChange={setGrid}>
@@ -711,7 +936,10 @@ export default function Network() {
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>Rack movement</DropdownMenuLabel>
-                      <DropdownMenuCheckboxItem checked={compactRackConnections} onCheckedChange={setCompactRackConnections}>
+                      <DropdownMenuCheckboxItem
+                        checked={compactRackConnections}
+                        onCheckedChange={setCompactRackConnections}
+                      >
                         Keep connections near rack
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
@@ -725,7 +953,14 @@ export default function Network() {
               />
             </div>
 
-            <aside id="network-inspector" className={cn('h-[460px] min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card xl:h-full', showInspector ? 'flex' : 'hidden')} aria-label="Network inspector">
+            <aside
+              id="network-inspector"
+              className={cn(
+                'h-[460px] min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card xl:h-full',
+                showInspector ? 'flex' : 'hidden',
+              )}
+              aria-label="Network inspector"
+            >
               <NetworkInspector
                 document={document}
                 selection={selection}
@@ -739,7 +974,8 @@ export default function Network() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Shortcuts: V select · C connect · M measure · F fit · Esc cancel · Delete remove · Ctrl+Z undo · Ctrl+S save
+            Shortcuts: V select · C connect · M measure · F fit · Esc cancel · Delete remove ·
+            Ctrl+Z undo · Ctrl+S save
           </p>
         </>
       )}

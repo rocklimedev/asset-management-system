@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
   Boxes,
@@ -58,8 +59,6 @@ import { PageHeader } from '@/components/layout/PageHeader';
 // ============================================================
 // TYPES
 // ============================================================
-
-type ReportTab = 'assets' | 'inventory' | 'assigned' | 'damaged' | 'status' | 'systems';
 
 interface FilterState {
   organisationId: string;
@@ -1092,7 +1091,24 @@ function ReportTable({
 // ============================================================
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState<ReportTab>('assets');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const activeTab = TABS.find((tab) => searchParams.has(tab.value))?.value ?? 'assets';
+
+  const handleTabChange = (value: string) => {
+    const tab = TABS.find((tab) => tab.value === value);
+    if (!tab || tab.value === activeTab) return;
+
+    const nextParams = new URLSearchParams(location.search);
+    TABS.forEach((reportTab) => nextParams.delete(reportTab.value));
+    const remainingParams = nextParams.toString();
+    navigate({
+      pathname: location.pathname,
+      search: `?${tab.value}${remainingParams ? `&${remainingParams}` : ''}`,
+      hash: location.hash,
+    });
+  };
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
@@ -1161,62 +1177,63 @@ export default function Reports() {
           REPORT TABS
       ====================================================== */}
 
-      <Tabs.Root
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(value as ReportTab)}
-        className="space-y-5"
-      >
-        <Tabs.List className="flex items-center gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
+      <Tabs.Root value={activeTab} onValueChange={handleTabChange} className="space-y-5">
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-1 sm:flex-row sm:items-center sm:justify-between">
+          <Tabs.List
+            aria-label="Report types"
+            className="flex min-w-0 items-center gap-1 overflow-x-auto"
+          >
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
 
-            return (
-              <Tabs.Trigger
-                key={tab.value}
-                value={tab.value}
-                className={cn(
-                  'flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  'text-muted-foreground hover:bg-muted hover:text-foreground',
-                  'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
-                  'outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </Tabs.Trigger>
-            );
-          })}
-        </Tabs.List>
+              return (
+                <Tabs.Trigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={cn(
+                    'flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
+                    'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </Tabs.Trigger>
+              );
+            })}
+          </Tabs.List>
 
-        <div className="flex justify-start">
-          <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <DrawerTrigger asChild>
-              <Button variant="outline">
-                <Filter className="h-4 w-4" />
-                Report Filters
-                {Object.keys(appliedFilters).length > 0 && (
-                  <Badge variant="secondary">{Object.keys(appliedFilters).length}</Badge>
-                )}
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>Report Filters</DrawerTitle>
-                <DrawerDescription>
-                  {activeTab === 'systems'
-                    ? 'Filter systems by organisation. Only the organisation filter applies to this report.'
-                    : `Narrow the ${activeLabel.toLowerCase()} report using the filters below.`}
-                </DrawerDescription>
-              </DrawerHeader>
-              <ReportFiltersBar
-                filters={filters}
-                onChange={handleFilterChange}
-                onApply={handleApplyFilters}
-                onReset={handleResetFilters}
-                isLoading={false}
-              />
-            </DrawerContent>
-          </Drawer>
+          <div className="flex shrink-0 justify-end">
+            <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <DrawerTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                  {Object.keys(appliedFilters).length > 0 && (
+                    <Badge variant="secondary">{Object.keys(appliedFilters).length}</Badge>
+                  )}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Filters</DrawerTitle>
+                  <DrawerDescription>
+                    {activeTab === 'systems'
+                      ? 'Filter systems by organisation. Only the organisation filter applies to this report.'
+                      : `Narrow the ${activeLabel.toLowerCase()} report using the filters below.`}
+                  </DrawerDescription>
+                </DrawerHeader>
+                <ReportFiltersBar
+                  filters={filters}
+                  onChange={handleFilterChange}
+                  onApply={handleApplyFilters}
+                  onReset={handleResetFilters}
+                  isLoading={false}
+                />
+              </DrawerContent>
+            </Drawer>
+          </div>
         </div>
 
         {/* ====================================================

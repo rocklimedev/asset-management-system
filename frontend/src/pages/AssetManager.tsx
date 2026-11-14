@@ -355,7 +355,7 @@ function ComputerRow({
 }) {
   const holder = system.employee?.name ?? null;
   const parts = system.assignments?.length ?? 0;
-  const image = system.attachments?.filter(file => file.purpose === 'image').slice(-1)[0];
+  const image = system.attachments?.filter((file) => file.purpose === 'image').slice(-1)[0];
 
   return (
     <button
@@ -375,7 +375,15 @@ function ComputerRow({
             : 'border-border bg-muted text-muted-foreground')
         }
       >
-        {image ? <img src={image.url} alt={system.name} className="h-full w-full rounded-md object-cover" /> : <Monitor className="h-4 w-4" />}
+        {image ? (
+          <img
+            src={image.url}
+            alt={system.name}
+            className="h-full w-full rounded-md object-cover"
+          />
+        ) : (
+          <Monitor className="h-4 w-4" />
+        )}
       </span>
 
       <span className="min-w-0 flex-1">
