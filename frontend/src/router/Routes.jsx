@@ -11,6 +11,7 @@ import { useAuth } from '../services/context/AuthContext';
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const AssetManager = lazy(() => import('../pages/AssetManager'));
 const AssetCategories = lazy(() => import('../pages/AssetCategories'));
+const RepairMaintenance = lazy(() => import('../pages/RepairMaintenance'));
 const Inventory = lazy(() => import('../pages/Inventory'));
 const EmployeeList = lazy(() => import('../pages/EmployeeList'));
 const Reports = lazy(() => import('../pages/Reports'));
@@ -18,7 +19,11 @@ const UsersRoles = lazy(() => import('../pages/UsersRoles'));
 const RolesPermissions = lazy(() => import('../pages/RolesPermissions'));
 const ActivityLogs = lazy(() => import('../pages/ActivityLogs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
+const ConnectorsPage = lazy(() => import('../pages/Connectors'));
+const Communication = lazy(() => import('../pages/Communication'));
 const SoftwareList = lazy(() => import('../pages/SoftwareList'));
+const Network = lazy(() => import('../pages/Network'));
+const NetworkDirectory = lazy(() => import('../pages/NetworkDirectory'));
 
 // Preserve old Computer Builds links and their query parameters.
 function SystemsRedirect() {
@@ -70,15 +75,28 @@ export default function AppRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/asset-manager" element={<AssetManager />} />
           <Route path="/systems" element={<SystemsRedirect />} />
+          <Route path="/repair-maintenance" element={<RepairMaintenance />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/asset-categories" element={<AssetCategories />} />
-          <Route path="/users-roles" element={<UsersRoles />} />
+          <Route path="/users" element={<UsersRoles />} />
+          <Route path="/users-roles" element={<Navigate to="/users" replace />} />
           <Route path="/roles-permissions" element={<RolesPermissions />} />
           <Route path="/activity-logs" element={<ActivityLogs />} />
           <Route path="/software" element={<SoftwareList />} />
+          <Route path="/network" element={<Network />} />
+          <Route
+            path="/network/racks"
+            element={<NetworkDirectory key="racks" collection="racks" />}
+          />
+          <Route
+            path="/network/areas"
+            element={<NetworkDirectory key="areas" collection="areas" />}
+          />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/connectors" element={<ConnectorsPage />} />
+          <Route path="/communication" element={<Communication />} />
         </Route>
       </Route>
 

@@ -1,3 +1,4 @@
+import { AttachmentFields, usePendingAttachments } from '../attachments/RecordAttachments';
 import { ComputerCategorySelect } from '../systems/ComputerCategorySelect';
 import { LaptopAssetPicker, type LaptopSelection } from '../systems/LaptopAssetPicker';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -59,8 +60,9 @@ export function QuickBuildComputer({
   onOpenFullForm,
   employeeId: presetEmployeeId = null,
 }: QuickBuildComputerProps) {
+  const attachments = usePendingAttachments(open);
   const [laptop, setLaptop] = useState<LaptopSelection>(null);
-  const progress = useRef<{ id?: string; laptopUnitId?: string }>({});
+  const progress = useRef<{ id?: string; laptopUnitId?: string; assignedEmployeeId?: string }>({});
   const [finishing, setFinishing] = useState(false);
   const [updateSystem] = useUpdateSystemMutation();
   const [assignAsset] = useAssignAssetMutation();
@@ -151,10 +153,12 @@ export function QuickBuildComputer({
         }).unwrap();
         progress.current.laptopUnitId = laptop.assetUnitId;
       }
-      if (giveTo) {
+      if (giveTo && progress.current.assignedEmployeeId !== giveTo) {
         await assignSystem({ id: systemId, employeeId: giveTo }).unwrap();
+        progress.current.assignedEmployeeId = giveTo;
       }
 
+      await attachments.save('systems', systemId);
       toast.add({
         type: 'success',
         title: 'Computer built',
@@ -340,6 +344,15 @@ export function QuickBuildComputer({
           )}
         </div>
 
+        {step === 3 && (
+          <div className="px-6 pb-4">
+            <AttachmentFields
+              files={attachments.files}
+              setFiles={attachments.setFiles}
+              disabled={saving}
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border bg-card px-6 py-4">
           <Button
             type="button"

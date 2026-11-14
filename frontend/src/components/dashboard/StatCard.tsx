@@ -49,7 +49,8 @@ export function StatCard({
     <div
       className={cn(
         'flex h-full flex-col gap-5 rounded-xl border border-border bg-card p-5 shadow-card',
-        to && 'transition-colors group-hover:border-primary-border group-focus-visible:border-primary-border',
+        to &&
+          'transition-colors group-hover:border-primary-border group-focus-visible:border-primary-border',
         className,
       )}
     >

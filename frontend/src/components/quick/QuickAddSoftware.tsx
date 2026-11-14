@@ -1,3 +1,4 @@
+import { AttachmentFields, usePendingAttachments } from '../attachments/RecordAttachments';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -78,6 +79,7 @@ function errorText(error: unknown) {
 }
 
 export function QuickAddSoftware({ open, onClose }: Props) {
+  const attachments = usePendingAttachments(open);
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
 
@@ -102,6 +104,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
     categoryId?: string;
     assetId?: string;
     catalogDone?: boolean;
+    licenseDone?: boolean;
   }>({});
 
   const [createCategory] = useCreateAssetCategoryMutation();
@@ -210,7 +213,7 @@ export function QuickAddSoftware({ open, onClose }: Props) {
       }
 
       // 4. A licence record, only for paid / licensed software.
-      if (isLicensed) {
+      if (isLicensed && !progress.current.licenseDone) {
         await createLicense({
           assetId,
           vendor,
@@ -222,6 +225,8 @@ export function QuickAddSoftware({ open, onClose }: Props) {
         }).unwrap();
       }
 
+      progress.current.licenseDone = true;
+      await attachments.save('assets', assetId);
       toast.add({
         type: 'success',
         title: 'Software added',
@@ -479,6 +484,15 @@ export function QuickAddSoftware({ open, onClose }: Props) {
           )}
         </div>
 
+        {step === 3 && (
+          <div className="px-6 pb-4">
+            <AttachmentFields
+              files={attachments.files}
+              setFiles={attachments.setFiles}
+              disabled={saving}
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border bg-card px-6 py-4">
           <Button
             type="button"

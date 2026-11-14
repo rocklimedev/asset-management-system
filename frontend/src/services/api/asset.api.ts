@@ -38,6 +38,15 @@ export type AssetUnitCondition = AssetCondition;
 export type TransferStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
 export type InventoryChangeType = 'RESTOCK' | 'CONSUMED' | 'RETURNED' | 'ADJUSTMENT' | 'WRITE_OFF';
 
+export interface RecordAttachment {
+  id: string;
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  purpose: 'image' | 'invoice';
+}
 export interface AssetUnit {
   deviceId?: string | null;
   pcPassword?: string;
@@ -252,6 +261,7 @@ export const assetApi = createApi({
   tagTypes: [
     'Asset',
     'AssetHistory',
+    'RecordAttachment',
     'AssetUnit',
     'AssetAssignment',
     'Software',
@@ -339,6 +349,19 @@ export const assetApi = createApi({
       ],
     }),
 
+    disposeAsset: builder.mutation<
+      { message: string },
+      {
+        id: string;
+        action: 'DISCARD' | 'GIVE_AWAY';
+        quantity: number;
+        reason: string;
+        recipient?: string;
+      }
+    >({
+      query: ({ id, ...body }) => ({ url: '/assets/' + id + '/dispose', method: 'POST', body }),
+      invalidatesTags: ['Asset', 'AssetUnit', 'AssetHistory'],
+    }),
     deleteAsset: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/assets/${id}`,
@@ -352,6 +375,25 @@ export const assetApi = createApi({
       ],
     }),
 
+    getRecordAttachments: builder.query<
+      RecordAttachment[],
+      { resource: 'assets' | 'systems'; id: string }
+    >({
+      query: ({ resource, id }) => '/record-attachments/' + resource + '/' + id,
+      providesTags: ['RecordAttachment'],
+    }),
+    uploadRecordAttachment: builder.mutation<
+      RecordAttachment,
+      { resource: 'assets' | 'systems'; id: string; purpose: 'image' | 'invoice'; file: File }
+    >({
+      query: ({ resource, id, purpose, file }) => {
+        const body = new FormData();
+        body.append('purpose', purpose);
+        body.append('file', file);
+        return { url: '/record-attachments/' + resource + '/' + id, method: 'POST', body };
+      },
+      invalidatesTags: ['RecordAttachment', 'Asset', 'System'],
+    }),
     setAssetImage: builder.mutation<AssetResponse, { id: string; file: File }>({
       query: ({ id, file }) => {
         const formData = new FormData();
@@ -711,7 +753,7 @@ export const assetApi = createApi({
 
     getAssetUnits: builder.query<AssetUnitsResponse, GetAssetUnitsParams | undefined>({
       query: (params = {}) => ({
-        url: '/assets/units',
+        url: '/asset-units',
         method: 'GET',
         params: {
           assetId: params.assetId || undefined,
@@ -739,7 +781,7 @@ export const assetApi = createApi({
     }),
 
     getAssetUnit: builder.query<AssetUnit, string>({
-      query: (id) => `/assets/units/${id}`,
+      query: (id) => `/asset-units/${id}`,
 
       providesTags: (result, error, id) => [{ type: 'AssetUnit', id }],
 
@@ -755,8 +797,8 @@ export const assetApi = createApi({
     }),
 
     createAssetUnit: builder.mutation<AssetUnit, CreateAssetUnitRequest>({
-      query: (body) => ({
-        url: '/assets/units',
+      query: ({ assetId, ...body }) => ({
+        url: `/asset-units/asset/${assetId}`,
         method: 'POST',
         body,
       }),
@@ -771,7 +813,7 @@ export const assetApi = createApi({
 
     updateAssetUnit: builder.mutation<AssetUnit, UpdateAssetUnitRequest>({
       query: ({ id, ...body }) => ({
-        url: `/assets/units/${id}`,
+        url: `/asset-units/${id}`,
         method: 'PATCH',
         body,
       }),
@@ -790,14 +832,16 @@ export const assetApi = createApi({
       { id: string; status: AssetUnitStatus; notes?: string }
     >({
       query: ({ id, ...body }) => ({
-        url: `/assets/units/${id}/status`,
+        url: `/asset-units/${id}/status`,
         method: 'PATCH',
         body,
       }),
 
       invalidatesTags: (result, error, { id }) => [
         { type: 'AssetUnit', id },
-        { type: 'Asset', id: 'POOL' },
+        { type: 'AssetUnit', id: 'LIST' },
+        'Asset',
+        'AssetHistory',
       ],
     }),
 
@@ -806,7 +850,7 @@ export const assetApi = createApi({
       { id: string; condition: AssetUnitCondition; notes?: string }
     >({
       query: ({ id, ...body }) => ({
-        url: `/assets/units/${id}/condition`,
+        url: `/asset-units/${id}/condition`,
         method: 'PATCH',
         body,
       }),
@@ -819,7 +863,7 @@ export const assetApi = createApi({
       { id: string; locationId?: string; notes?: string }
     >({
       query: ({ id, ...body }) => ({
-        url: `/assets/units/${id}/location`,
+        url: `/asset-units/${id}`,
         method: 'PATCH',
         body,
       }),
@@ -829,7 +873,7 @@ export const assetApi = createApi({
 
     deleteAssetUnit: builder.mutation<{ message: string }, string>({
       query: (id) => ({
-        url: `/assets/units/${id}`,
+        url: `/asset-units/${id}`,
         method: 'DELETE',
       }),
 
@@ -841,7 +885,7 @@ export const assetApi = createApi({
     }),
 
     getAssetUnitHistory: builder.query<AssetHistoryEntry[], string>({
-      query: (id) => `/assets/units/${id}/history`,
+      query: (id) => `/asset-units/${id}/history`,
 
       providesTags: (result, error, id) => [{ type: 'AssetHistory', id: `unit-${id}` }],
 
@@ -998,8 +1042,11 @@ export const {
   useCreateAssetMutation,
   useUpdateAssetMutation,
   useDeleteAssetMutation,
+  useDisposeAssetMutation,
   useRemoveAssetImageMutation,
   useSetAssetImageMutation,
+  useGetRecordAttachmentsQuery,
+  useUploadRecordAttachmentMutation,
   useGetSoftwareAssetsQuery,
   useGetAssetPoolQuery,
   useAssignAssetMutation,

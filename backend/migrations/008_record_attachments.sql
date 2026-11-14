@@ -1,0 +1,2 @@
+ALTER TABLE assets ADD COLUMN attachments JSON NULL;
+ALTER TABLE systems ADD COLUMN attachments JSON NULL;

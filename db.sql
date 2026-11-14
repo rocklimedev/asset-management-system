@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS `assets` (
   `tracking_mode` enum('INDIVIDUAL','QUANTITY') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'QUANTITY',
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `attachments` json DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_assets_assetTag` (`assetTag`),
   UNIQUE KEY `uq_assets_serialNumber` (`serialNumber`),
@@ -263,6 +264,93 @@ CREATE TABLE IF NOT EXISTS `locations` (
   KEY `idx_locations_organisation_id` (`organisation_id`),
   CONSTRAINT `fk_locations_organisation` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_areas` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `parent_id` char(36) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` json NOT NULL,
+  PRIMARY KEY (`map_id`,`id`),
+  KEY `map_id` (`map_id`,`parent_id`),
+  CONSTRAINT `network_areas_ibfk_1` FOREIGN KEY (`map_id`) REFERENCES `network_maps` (`id`),
+  CONSTRAINT `network_areas_ibfk_2` FOREIGN KEY (`map_id`, `parent_id`) REFERENCES `network_areas` (`map_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_connections` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `source_device_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `source_port_id` char(36) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `target_device_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `target_port_id` char(36) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `cable_code` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `kind` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` json NOT NULL,
+  PRIMARY KEY (`map_id`,`id`),
+  KEY `map_id` (`map_id`,`source_device_id`,`source_port_id`),
+  KEY `map_id_2` (`map_id`,`target_device_id`,`target_port_id`),
+  CONSTRAINT `network_connections_ibfk_1` FOREIGN KEY (`map_id`, `source_device_id`) REFERENCES `network_devices` (`map_id`, `id`),
+  CONSTRAINT `network_connections_ibfk_2` FOREIGN KEY (`map_id`, `target_device_id`) REFERENCES `network_devices` (`map_id`, `id`),
+  CONSTRAINT `network_connections_ibfk_3` FOREIGN KEY (`map_id`, `source_device_id`, `source_port_id`) REFERENCES `network_ports` (`map_id`, `device_id`, `id`),
+  CONSTRAINT `network_connections_ibfk_4` FOREIGN KEY (`map_id`, `target_device_id`, `target_port_id`) REFERENCES `network_ports` (`map_id`, `device_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+ 
+CREATE TABLE IF NOT EXISTS `network_devices` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `area_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `rack_id` char(36) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `kind` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` json NOT NULL,
+  PRIMARY KEY (`map_id`,`id`),
+  KEY `map_id` (`map_id`,`area_id`),
+  KEY `map_id_2` (`map_id`,`rack_id`),
+  CONSTRAINT `network_devices_ibfk_1` FOREIGN KEY (`map_id`, `area_id`) REFERENCES `network_areas` (`map_id`, `id`),
+  CONSTRAINT `network_devices_ibfk_2` FOREIGN KEY (`map_id`, `rack_id`) REFERENCES `network_racks` (`map_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_map_legacy_backups` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `revision` int(10) unsigned NOT NULL,
+  `document` json NOT NULL,
+  `backed_up_at` datetime NOT NULL,
+  PRIMARY KEY (`map_id`,`revision`),
+  CONSTRAINT `network_map_legacy_backups_ibfk_1` FOREIGN KEY (`map_id`) REFERENCES `network_maps` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_maps` (
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `document` json NOT NULL,
+  `revision` int(10) unsigned NOT NULL DEFAULT '1',
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_ports` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `device_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `label` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` json NOT NULL,
+  PRIMARY KEY (`map_id`,`id`),
+  UNIQUE KEY `port_device_id` (`map_id`,`device_id`,`id`),
+  UNIQUE KEY `port_device_label` (`map_id`,`device_id`,`label`),
+  CONSTRAINT `network_ports_ibfk_1` FOREIGN KEY (`map_id`, `device_id`) REFERENCES `network_devices` (`map_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `network_racks` (
+  `map_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `area_id` char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` json NOT NULL,
+  PRIMARY KEY (`map_id`,`id`),
+  KEY `map_id` (`map_id`,`area_id`),
+  CONSTRAINT `network_racks_ibfk_1` FOREIGN KEY (`map_id`, `area_id`) REFERENCES `network_areas` (`map_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `organisations` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -424,6 +512,9 @@ CREATE TABLE IF NOT EXISTS `systems` (
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `category_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `computerParts` text COLLATE utf8mb4_unicode_ci,
+  `accessories` text COLLATE utf8mb4_unicode_ci,
+  `attachments` json DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_systems_systemTag` (`systemTag`),
   KEY `idx_systems_employee_id` (`employee_id`),

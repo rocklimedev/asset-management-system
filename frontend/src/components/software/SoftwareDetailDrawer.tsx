@@ -1,3 +1,4 @@
+import { RecordAttachments } from '../attachments/RecordAttachments';
 import { KeyRound, Package, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -140,6 +141,9 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
           </div>
         </div>
 
+        <section className="border-b border-border p-5">
+          <RecordAttachments resource="assets" id={software.assetId} disabled={busy} />
+        </section>
         {/* LICENSES */}
         <section className="border-b border-border p-5">
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -261,7 +265,7 @@ export function SoftwareDetailDrawer({ software, onClose, onEdit }: Props) {
                   <div className="mr-auto min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">{systemName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {install.system?.employee?.name ?? 'No employee'} ·{' '}
+                      {install.system?.employee?.name ?? 'No team member'} ·{' '}
                       {install.version ? `v${install.version} · ` : ''}
                       {install.license ? `${install.license.vendor} license` : 'No license'} ·{' '}
                       {fmtDate(install.installedAt)}

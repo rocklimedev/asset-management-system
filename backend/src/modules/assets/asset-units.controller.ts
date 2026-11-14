@@ -229,6 +229,11 @@ export class AssetUnitsController {
   // GET /asset-units/:id
   // ----------------------------------------------------------
 
+  @Get(':id/history')
+  history(@Param('id', ParseUUIDPipe) id: string) {
+    return this.assetUnitsService.history(id);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.assetUnitsService.findOne(id);

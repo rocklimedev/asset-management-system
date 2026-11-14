@@ -150,7 +150,7 @@ const EmployeeFormModal = ({
 
   const codeError =
     attempted && !value.employeeCode.trim()
-      ? 'Enter the employee code, for example EMP-001.'
+      ? 'Enter the team member code, for example EMP-001.'
       : undefined;
 
   const nameError = attempted && !value.name.trim() ? "Enter the employee's full name." : undefined;
@@ -183,11 +183,11 @@ const EmployeeFormModal = ({
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
         <DialogHeader>
-          <DialogTitle>{editingEmployee ? 'Edit employee' : 'Add employee'}</DialogTitle>
+          <DialogTitle>{editingEmployee ? 'Edit team member' : 'Add team member'}</DialogTitle>
 
           <DialogDescription>
             {editingEmployee
-              ? 'Update the employee information below.'
+              ? 'Update the team member information below.'
               : 'Add the code and name first. Everything else is optional and can be added later.'}
           </DialogDescription>
         </DialogHeader>
@@ -196,7 +196,7 @@ const EmployeeFormModal = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* EMPLOYEE CODE */}
 
-            <FormField label="Employee code" required htmlFor={`${formId}-code`} error={codeError}>
+            <FormField label="Team member code" required htmlFor={`${formId}-code`} error={codeError}>
               <Input
                 id={`${formId}-code`}
                 aria-invalid={!!codeError}
@@ -216,7 +216,7 @@ const EmployeeFormModal = ({
                 aria-describedby={nameError ? `${formId}-name-error` : undefined}
                 value={value.name}
                 onChange={(event) => onChange('name', event.target.value)}
-                placeholder="Enter employee name"
+                placeholder="Enter team member name"
               />
             </FormField>
 
@@ -227,7 +227,7 @@ const EmployeeFormModal = ({
                 type="email"
                 value={value.email}
                 onChange={(event) => onChange('email', event.target.value)}
-                placeholder="employee@company.com"
+                placeholder="team member@company.com"
               />
             </FormField>
 
@@ -334,7 +334,7 @@ const EmployeeFormModal = ({
               ? 'Saving…'
               : editingEmployee
                 ? 'Save changes'
-                : 'Add employee'}
+                : 'Add team member'}
           </Button>
         </DialogFooter>
       </DialogContent>

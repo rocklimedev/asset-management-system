@@ -1,3 +1,4 @@
+import { TablePagination } from '../list/TablePagination';
 import { useEffect, useState } from 'react';
 import { Package, Search } from 'lucide-react';
 
@@ -409,27 +410,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t px-6 py-3">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1 || isFetching}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Previous
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            Page {page} of {Math.max(data?.totalPages ?? 1, 1)}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= (data?.totalPages ?? 1) || isFetching}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
+        <TablePagination page={page} pageSize={20} total={data?.total ?? 0} totalPages={data?.totalPages ?? 1} onPageChange={setPage} disabled={isFetching || !data} noun="assets" />
       </DialogContent>
     </Dialog>
   );

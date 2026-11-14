@@ -132,6 +132,9 @@ export interface AssetHistoryEntry {
 export type AssetHistory = AssetHistoryEntry;
 
 export interface SystemRecord {
+  attachments?: import('../services/api/asset.api').RecordAttachment[] | null;
+  computerParts?: string | null;
+  accessories?: string | null;
   categoryId?: string | null;
   category?: AssetCategory | null;
   id: string;
@@ -147,6 +150,8 @@ export interface SystemRecord {
 }
 
 export interface SystemInput {
+  computerParts?: string | null;
+  accessories?: string | null;
   categoryId?: string | null;
   systemTag: string;
   name?: string | null;

@@ -144,7 +144,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search employees or assets..."
+            placeholder="Search team members or assets..."
             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
 
@@ -196,7 +196,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           {query.length > 0 && !employeesLoading && employees.length > 0 && (
             <div className="mb-2">
               <p className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Employees
+                Team
               </p>
 
               {employees.slice(0, 5).map((employee) => (
@@ -212,7 +212,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     <div className="truncate font-medium text-foreground">
                       {employee.name ||
                         `${employee.firstName ?? ''} ${employee.lastName ?? ''}`.trim() ||
-                        'Unnamed employee'}
+                        'Unnamed team member'}
                     </div>
 
                     {employee.department?.name && (

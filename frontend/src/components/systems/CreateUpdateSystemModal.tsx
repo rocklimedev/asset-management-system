@@ -1,3 +1,8 @@
+import {
+  AttachmentFields,
+  RecordAttachments,
+  usePendingAttachments,
+} from '../attachments/RecordAttachments';
 import { ComputerCategorySelect } from './ComputerCategorySelect';
 import { LaptopAssetPicker, type LaptopSelection } from './LaptopAssetPicker';
 import { useGetEmployeesQuery } from '../../services/api/employees.api';
@@ -45,6 +50,8 @@ type Props = {
 };
 
 type EditorState = {
+  computerParts: string;
+  accessories: string;
   categoryId: string;
   name: string;
   systemTag: string;
@@ -53,6 +60,8 @@ type EditorState = {
 };
 
 const emptyEditor: EditorState = {
+  computerParts: '',
+  accessories: '',
   categoryId: '',
   name: '',
   systemTag: '',
@@ -61,10 +70,11 @@ const emptyEditor: EditorState = {
 };
 
 export function CreateUpdateSystemModal({ open, system, organisations, onClose, onSaved }: Props) {
+  const attachments = usePendingAttachments(open, system?.id);
   const [laptop, setLaptop] = useState<LaptopSelection>(null);
   const [employeeId, setEmployeeId] = useState('');
   const [employeeSearch, setEmployeeSearch] = useState('');
-  const progress = useRef<{ id?: string; laptopUnitId?: string }>({});
+  const progress = useRef<{ id?: string; laptopUnitId?: string; assignedEmployeeId?: string }>({});
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [assignAsset, assetAssignment] = useAssignAssetMutation();
@@ -108,6 +118,8 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
       setEditor({
         categoryId: system.categoryId ?? '',
         name: system.name,
+        computerParts: system.computerParts ?? '',
+        accessories: system.accessories ?? '',
         systemTag: system.systemTag,
         notes: system.notes ?? '',
         organisationId: system.organisationId ?? '',
@@ -151,6 +163,8 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
       const body = {
         categoryId: editor.categoryId,
         name: editor.name.trim(),
+        computerParts: editor.computerParts.trim() || null,
+        accessories: editor.accessories.trim() || null,
         systemTag: editor.systemTag.trim(),
         notes: editor.notes.trim() || null,
         organisationId: editor.organisationId || null,
@@ -194,9 +208,15 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
         }).unwrap();
         progress.current.laptopUnitId = laptop.assetUnitId;
       }
-      if (employeeId && employeeId !== system?.employeeId) {
+      if (
+        employeeId &&
+        employeeId !== system?.employeeId &&
+        progress.current.assignedEmployeeId !== employeeId
+      ) {
         await assignSystem({ id: systemId, employeeId }).unwrap();
+        progress.current.assignedEmployeeId = employeeId;
       }
+      await attachments.save('systems', systemId);
       toast.add({ title: 'System saved', type: 'success' });
       onSaved(systemId);
     } catch (error) {
@@ -225,6 +245,12 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
         </DialogHeader>
 
         <form onSubmit={save} className="space-y-6">
+          {system?.id && <RecordAttachments resource="systems" id={system.id} readOnly />}
+          <AttachmentFields
+            files={attachments.files}
+            setFiles={attachments.setFiles}
+            disabled={busy}
+          />
           {/* ============================================================
               SYSTEM INFORMATION
           ============================================================ */}
@@ -253,18 +279,18 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
               disabled={busy || Boolean(progress.current.laptopUnitId)}
             />
             <div className="space-y-2 rounded-md border p-3">
-              <Label htmlFor="computer-employee">
+              <Label htmlFor="computer-team member">
                 Assign this computer to an employee (optional)
               </Label>
               <Input
-                aria-label="Search employee to assign computer"
-                placeholder="Search employees"
+                aria-label="Search team member to assign computer"
+                placeholder="Search team members"
                 value={employeeSearch}
                 disabled={busy}
                 onChange={(event) => setEmployeeSearch(event.target.value)}
               />
               <select
-                id="computer-employee"
+                id="computer-team member"
                 value={employeeId}
                 disabled={busy || loadingEmployees}
                 onChange={(event) => setEmployeeId(event.target.value)}
@@ -272,7 +298,7 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
               >
                 <option value="">
                   {system?.employeeId
-                    ? 'Keep current employee'
+                    ? 'Keep current team member'
                     : 'Assign later — keep in inventory'}
                 </option>
                 {employeeId && !employees.some((employee) => employee.id === employeeId) && (
@@ -588,6 +614,27 @@ export function CreateUpdateSystemModal({ open, system, organisations, onClose, 
             />
           </div>
 
+          {(['computerParts', 'accessories'] as const).map((field) => (
+            <div key={field} className="space-y-2">
+              <Label htmlFor={field}>
+                {field === 'computerParts' ? 'Computer Parts' : 'Accessories'}
+              </Label>
+              <Textarea
+                id={field}
+                maxLength={5000}
+                disabled={busy}
+                placeholder={
+                  field === 'computerParts'
+                    ? 'SSD, RAM, processor, graphics card…'
+                    : 'Laptop bag, stand, cables, adapters…'
+                }
+                value={editor[field]}
+                onChange={(event) =>
+                  setEditor((current) => ({ ...current, [field]: event.target.value }))
+                }
+              />
+            </div>
+          ))}
           {system && loadingSpecs && (
             <p className="text-xs text-muted-foreground">Loading existing specifications…</p>
           )}

@@ -159,9 +159,9 @@ function formatAction(action: string): string {
 }
 
 function getEmployeeName(employee?: Employee | null): string {
-  if (!employee) return 'Unknown employee';
+  if (!employee) return 'Unknown team member';
 
-  return employee.name || employee.employeeCode || employee.email || 'Unknown employee';
+  return employee.name || employee.employeeCode || employee.email || 'Unknown team member';
 }
 
 function getDaysUntil(dateValue: string | Date, from: Date): number {
@@ -549,9 +549,11 @@ export default function Dashboard() {
     asset.assignments?.forEach((assignment) => {
       if (assignment.status !== 'ACTIVE') return;
 
-      // Components belong to a system; their employee is stored on that system.
+      // Peripherals belong to a system; their employee is stored on that system.
       const employeeId = assignment.employeeId || assignment.system?.employeeId;
-      const employee = assignment.employee || assignment.system?.employee ||
+      const employee =
+        assignment.employee ||
+        assignment.system?.employee ||
         employees.find((item) => item.id === employeeId);
 
       // A component in an unassigned computer has no employee custodian yet.
@@ -649,8 +651,8 @@ export default function Dashboard() {
     if (activity.action === 'TRANSFERRED') {
       return (
         <>
-          <b className="font-medium">{activity.assetName}</b> transferred from {activity.fromValue} to{' '}
-          {activity.toValue}
+          <b className="font-medium">{activity.assetName}</b> transferred from {activity.fromValue}{' '}
+          to {activity.toValue}
         </>
       );
     }
@@ -718,7 +720,10 @@ export default function Dashboard() {
           Four figures that answer "how are we doing?" at a glance.
       ====================================================== */}
 
-      <section aria-label="Headline numbers" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section
+        aria-label="Headline numbers"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
         <StatCard
           label="Total assets"
           value={totalAssets}
@@ -755,12 +760,25 @@ export default function Dashboard() {
         />
       </section>
 
-      <section aria-label="Secondary numbers" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MiniStat label="Employees" value={employees.length} icon={Users} to="/employees" />
+      <section
+        aria-label="Secondary numbers"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        <MiniStat label="Team" value={employees.length} icon={Users} to="/employees" />
 
-        <MiniStat label="Hardware items" value={hardwareAssets.length} icon={Laptop} to="/inventory?kind=HARDWARE" />
+        <MiniStat
+          label="Hardware items"
+          value={hardwareAssets.length}
+          icon={Laptop}
+          to="/inventory?kind=HARDWARE"
+        />
 
-        <MiniStat label="Software items" value={softwareAssets.length} icon={AppWindow} to="/software" />
+        <MiniStat
+          label="Software items"
+          value={softwareAssets.length}
+          icon={AppWindow}
+          to="/software"
+        />
 
         <MiniStat
           label="Expiring licences"
@@ -852,7 +870,10 @@ export default function Dashboard() {
                       <span className="flex shrink-0 items-center gap-2">
                         <Badge tone={item.tone}>{item.count}</Badge>
 
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                        <ChevronRight
+                          className="h-4 w-4 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                       </span>
                     </Link>
                   </li>
@@ -863,107 +884,107 @@ export default function Dashboard() {
 
           {/* UPCOMING — licences and warranties in the next 90 days. */}
 
-        <Card className="p-5">
-          <div className="mb-5 flex items-center justify-between">
+          <Card className="p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Licenses and warranties expiring in the next 90 days.
+                </p>
+              </div>
+
+              <Clock3 className="h-4 w-4 text-muted-foreground" />
+            </div>
+
+            {/* LICENSES */}
+
+            <div className="mb-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  License expirations
+                </p>
+
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {licenseExpirations.length}
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {licenseExpirations.slice(0, 5).map((asset) => {
+                  const expiryDate = asset.license?.expiryDate;
+
+                  if (!expiryDate) return null;
+
+                  const daysLeft = getDaysUntil(expiryDate, today);
+
+                  return (
+                    <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="truncate text-foreground">{asset.name}</p>
+
+                        {asset.assetTag && (
+                          <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
+                        )}
+                      </div>
+
+                      <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                        {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
+                      </Badge>
+                    </div>
+                  );
+                })}
+
+                {licenseExpirations.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+                )}
+              </div>
+            </div>
+
+            {/* WARRANTIES */}
+
             <div>
-              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Warranty expirations
+                </p>
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                Licenses and warranties expiring in the next 90 days.
-              </p>
-            </div>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {warrantyExpirations.length}
+                </span>
+              </div>
 
-            <Clock3 className="h-4 w-4 text-muted-foreground" />
-          </div>
+              <div className="space-y-2.5">
+                {warrantyExpirations.slice(0, 5).map((asset) => {
+                  const expiryDate = asset.warrantyExpiry;
 
-          {/* LICENSES */}
+                  if (!expiryDate) return null;
 
-          <div className="mb-6">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                License expirations
-              </p>
+                  const daysLeft = getDaysUntil(expiryDate, today);
 
-              <span className="text-xs tabular-nums text-muted-foreground">
-                {licenseExpirations.length}
-              </span>
-            </div>
+                  return (
+                    <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="truncate text-foreground">{asset.name}</p>
 
-            <div className="space-y-2.5">
-              {licenseExpirations.slice(0, 5).map((asset) => {
-                const expiryDate = asset.license?.expiryDate;
+                        {asset.assetTag && (
+                          <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
+                        )}
+                      </div>
 
-                if (!expiryDate) return null;
-
-                const daysLeft = getDaysUntil(expiryDate, today);
-
-                return (
-                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
-                    <div className="min-w-0">
-                      <p className="truncate text-foreground">{asset.name}</p>
-
-                      {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
-                      )}
+                      <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
+                        {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
+                      </Badge>
                     </div>
+                  );
+                })}
 
-                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
-                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
-                    </Badge>
-                  </div>
-                );
-              })}
-
-              {licenseExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
-              )}
+                {warrantyExpirations.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* WARRANTIES */}
-
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Warranty expirations
-              </p>
-
-              <span className="text-xs tabular-nums text-muted-foreground">
-                {warrantyExpirations.length}
-              </span>
-            </div>
-
-            <div className="space-y-2.5">
-              {warrantyExpirations.slice(0, 5).map((asset) => {
-                const expiryDate = asset.warrantyExpiry;
-
-                if (!expiryDate) return null;
-
-                const daysLeft = getDaysUntil(expiryDate, today);
-
-                return (
-                  <div key={asset.id} className="flex items-center justify-between gap-3 text-sm">
-                    <div className="min-w-0">
-                      <p className="truncate text-foreground">{asset.name}</p>
-
-                      {asset.assetTag && (
-                        <p className="text-xs text-muted-foreground">{asset.assetTag}</p>
-                      )}
-                    </div>
-
-                    <Badge tone={daysLeft <= 30 ? 'danger' : 'warn'}>
-                      {daysLeft <= 0 ? 'Today' : `${daysLeft}d`}
-                    </Badge>
-                  </div>
-                );
-              })}
-
-              {warrantyExpirations.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing expiring soon.</p>
-              )}
-            </div>
-          </div>
-        </Card>
+          </Card>
         </div>
       </div>
 
@@ -1208,7 +1229,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-sm font-semibold text-foreground">Asset Assignments</h2>
 
-              <p className="mt-1 text-xs text-muted-foreground">Employees with assigned assets.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Team with assigned assets.</p>
             </div>
 
             <Users className="h-4 w-4 text-muted-foreground" />

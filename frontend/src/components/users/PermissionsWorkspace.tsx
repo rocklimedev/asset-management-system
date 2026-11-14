@@ -304,47 +304,47 @@ export default function PermissionsWorkspace({ canManage }: { canManage: boolean
                 </TableRow>
               </TableHeader>
               <TableBody>
-            {roles
-              .filter((role) =>
-                `${role.name} ${role.description}`.toLowerCase().includes(search.toLowerCase()),
-              )
-              .map((role) => (
-                <TableRow key={role.id}>
-                  <TableCell className="align-top">
-                    <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">{role.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="min-w-48 max-w-xs whitespace-normal align-top text-muted-foreground">
-                    {role.description || 'No description'}
-                  </TableCell>
-                  <TableCell className="min-w-64 max-w-xl whitespace-normal align-top">
-                  <p className="mb-2 text-xs font-medium">
-                    {role.permissions?.length || 0} permissions enabled
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {(role.permissions || []).map((p) => (
-                      <span key={p.id} className="rounded bg-muted px-2 py-1 text-xs">
-                        {p.key || p.name || p.id}
-                      </span>
-                    ))}
-                  </div>
-                  </TableCell>
-                  {canManage && (
-                    <TableCell className="text-right align-top">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!permissions.length}
-                      onClick={() => setEditor({ role })}
-                    >
-                      Configure permissions
-                    </Button>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
+                {roles
+                  .filter((role) =>
+                    `${role.name} ${role.description}`.toLowerCase().includes(search.toLowerCase()),
+                  )
+                  .map((role) => (
+                    <TableRow key={role.id}>
+                      <TableCell className="align-top">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">{role.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="min-w-48 max-w-xs whitespace-normal align-top text-muted-foreground">
+                        {role.description || 'No description'}
+                      </TableCell>
+                      <TableCell className="min-w-64 max-w-xl whitespace-normal align-top">
+                        <p className="mb-2 text-xs font-medium">
+                          {role.permissions?.length || 0} permissions enabled
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {(role.permissions || []).map((p) => (
+                            <span key={p.id} className="rounded bg-muted px-2 py-1 text-xs">
+                              {p.key || p.name || p.id}
+                            </span>
+                          ))}
+                        </div>
+                      </TableCell>
+                      {canManage && (
+                        <TableCell className="text-right align-top">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!permissions.length}
+                            onClick={() => setEditor({ role })}
+                          >
+                            Configure permissions
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>

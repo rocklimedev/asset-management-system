@@ -1,5 +1,8 @@
 import {
   Archive,
+  Network,
+  Building2,
+  Wrench,
   Tags,
   Boxes,
   BarChart3,
@@ -9,6 +12,7 @@ import {
   Users,
   ShieldCheck,
   History,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -61,10 +65,22 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Archive,
       },
       {
+        to: '/repair-maintenance',
+        label: 'Repair & Maintenance',
+        description: 'Track repairs and maintain equipment',
+        icon: Wrench,
+      },
+      {
         to: '/asset-manager',
         label: 'Asset Manager',
         description: 'People, computers and the equipment they hold',
         icon: Boxes,
+      },
+      {
+        to: '/asset-categories',
+        label: 'Categories',
+        description: 'Manage hardware and software categories',
+        icon: Tags,
       },
       {
         to: '/software',
@@ -75,11 +91,41 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'People',
+    label: 'Network',
     items: [
       {
+        to: '/network/racks',
+        label: 'Racks',
+        description: 'Manage racks and their equipment',
+        icon: Boxes,
+      },
+      {
+        to: '/network/areas',
+        label: 'Areas',
+        description: 'Manage physical network areas',
+        icon: Building2,
+      },
+      {
+        to: '/network',
+        label: 'Network Map',
+        description: 'Office racks and network connections',
+        icon: Network,
+        end: true,
+      },
+    ],
+  },
+  {
+    label: 'People',
+    items: [
+      // {
+      //   to: '/communication',
+      //   label: 'Communication',
+      //   description: 'Zoho accounts, channels and employee onboarding',
+      //   icon: MessageSquare,
+      // },
+      {
         to: '/employees',
-        label: 'Employees',
+        label: 'Team',
         description: 'People who can receive assets',
         icon: UserSquare2,
       },
@@ -89,13 +135,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Administration',
     items: [
       {
-        to: '/asset-categories',
-        label: 'Asset Categories',
-        description: 'Manage hardware and software categories',
-        icon: Tags,
-      },
-      {
-        to: '/users-roles',
+        to: '/users',
         label: 'Users',
         description: 'Who can sign in and what they can do',
         icon: Users,
@@ -124,4 +164,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   '': 'Dashboard',
   ...Object.fromEntries(NAV_ITEMS.map((item) => [item.to.replace(/^\//, ''), item.label])),
   settings: 'Settings',
+  connectors: 'Connectors',
+  racks: 'Racks',
+  areas: 'Areas',
 };

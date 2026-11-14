@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Plus, Search, Tags } from 'lucide-react';
+import { Pencil, Plus, Search, Tags } from 'lucide-react';
 import {
   useGetAssetCategoriesQuery,
   useCreateAssetCategoryMutation,
@@ -138,7 +138,7 @@ export default function AssetCategories() {
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-5 px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
-        title="Asset Categories"
+        title="Categories"
         description="Manage the categories used to organise hardware and software assets."
         actions={
           <Button onClick={() => edit(null)} disabled={busy}>
@@ -241,7 +241,13 @@ export default function AssetCategories() {
                   <td className="px-4 py-3">
                     <RowActions
                       recordName={category.name}
-                      primary={{ label: 'Edit', onClick: () => edit(category), disabled: busy }}
+                      primary={{
+                        label: 'Edit',
+                        icon: Pencil,
+                        iconOnly: true,
+                        onClick: () => edit(category),
+                        disabled: busy,
+                      }}
                       items={[
                         {
                           label: category.isActive === false ? 'Activate' : 'Deactivate',

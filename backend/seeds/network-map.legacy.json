@@ -1,0 +1,556 @@
+{
+  "racks": [
+    {
+      "uid": "UGG",
+      "n": "UG Gigabyte PoE Switch",
+      "s": "Core · Upper Ground",
+      "t": "core",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "uid": "UG",
+      "n": "Upper Ground Rack",
+      "s": "9-pot PoE",
+      "t": "rack",
+      "x": -360,
+      "y": -190
+    },
+    {
+      "uid": "FF",
+      "n": "First Floor Rack",
+      "s": "9-pot PoE",
+      "t": "rack",
+      "x": 360,
+      "y": -190
+    },
+    {
+      "uid": "AJ",
+      "n": "Ajay Sir Cabin Rack",
+      "s": "10-pot PoE",
+      "t": "rack",
+      "x": -360,
+      "y": 230
+    },
+    {
+      "uid": "CM",
+      "n": "CM Counter Rack",
+      "s": "9-pot PoE",
+      "t": "rack",
+      "x": 360,
+      "y": 230
+    },
+    {
+      "uid": "SO",
+      "n": "Staff Office Rack",
+      "s": "10-pot PoE",
+      "t": "rack",
+      "x": -760,
+      "y": 230
+    },
+    {
+      "uid": "EM",
+      "n": "Embark Showroom Rack",
+      "s": "9-pot PoE",
+      "t": "rack",
+      "x": 760,
+      "y": 230
+    },
+    {
+      "uid": "RR",
+      "n": "UG Router (right side)",
+      "s": "UGR",
+      "t": "rtr",
+      "x": -200,
+      "y": 40
+    }
+  ],
+  "leaves": [
+    {
+      "uid": "UGG_NETL",
+      "p": "UGG",
+      "c": "NETL",
+      "n": "Network Router (left side)",
+      "t": "rtr",
+      "notes": "",
+      "x": -149.7014476325449,
+      "y": -90.65219938188105
+    },
+    {
+      "uid": "UGG_NVR",
+      "p": "UGG",
+      "c": "NVR",
+      "n": "Network Video Recorder (Upper Ground)",
+      "t": "nvr",
+      "notes": "",
+      "x": 175.00026407823057,
+      "y": 0
+    },
+    {
+      "uid": "UGG_NETG2",
+      "p": "UGG",
+      "c": "NETG2",
+      "n": "UG Rack Port 1 · Gigabyte WiFi",
+      "t": "wifi",
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": -175.00026407823057
+    },
+    {
+      "uid": "UGG_DSUPL",
+      "p": "UGG",
+      "c": "DSUPL",
+      "n": "Office Area WiFi LAN · 14 active seats",
+      "t": "place",
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": 175.00026407823057
+    },
+    {
+      "uid": "UGG_GSUPL",
+      "p": "UGG",
+      "c": "GSUPL",
+      "n": "Grohe Premium Area",
+      "t": "place",
+      "notes": "",
+      "x": -107.09433721942644,
+      "y": -138.40818478941225
+    },
+    {
+      "uid": "UG_MECAM1",
+      "p": "UG",
+      "c": "MECAM1",
+      "n": "Main Entry Gate · Camera 1",
+      "t": "cam",
+      "notes": "",
+      "x": -481.72852193838054,
+      "y": -64.25272230599592
+    },
+    {
+      "uid": "UG_CCAM1",
+      "p": "UG",
+      "c": "CCAM1",
+      "n": "Colston Basin Area 1",
+      "t": "cam",
+      "notes": "",
+      "x": -518.8212589870263,
+      "y": -116.40400115052327
+    },
+    {
+      "uid": "UG_CCAM2",
+      "p": "UG",
+      "c": "CCAM2",
+      "n": "Colston Basin Area 2",
+      "t": "cam",
+      "notes": "",
+      "x": -534.6782420646327,
+      "y": -178.40458950296048
+    },
+    {
+      "uid": "UG_CCAM3",
+      "p": "UG",
+      "c": "CCAM3",
+      "n": "Colston Basin Area 3",
+      "t": "cam",
+      "notes": "",
+      "x": -527.1893029151295,
+      "y": -241.96084788268166
+    },
+    {
+      "uid": "UG_CCAM4",
+      "p": "UG",
+      "c": "CCAM4",
+      "n": "Colston Basin Mixer Area",
+      "t": "cam",
+      "notes": "",
+      "x": -497.34179642084524,
+      "y": -298.570498081151
+    },
+    {
+      "uid": "UG_CCAM5",
+      "p": "UG",
+      "c": "CCAM5",
+      "n": "Colston Live Area",
+      "t": "cam",
+      "notes": "",
+      "x": -449.14138851087273,
+      "y": -340.66991710097705
+    },
+    {
+      "uid": "UG_CCAM6",
+      "p": "UG",
+      "c": "CCAM6",
+      "n": "Colston Mockup Area",
+      "t": "cam",
+      "notes": "",
+      "x": -389.0239146923496,
+      "y": -362.61750957500664
+    },
+    {
+      "uid": "UG_SCCAM1",
+      "p": "UG",
+      "c": "SCCAM1",
+      "n": "Sumit Sir Cabin",
+      "t": "cam",
+      "notes": "",
+      "x": -325.03391059994976,
+      "y": -361.48641441780484
+    },
+    {
+      "uid": "FF_FFENCAM1",
+      "p": "FF",
+      "c": "FFENCAM1",
+      "n": "First Floor Entry Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 356.85810938982087,
+      "y": -364.97890004532604
+    },
+    {
+      "uid": "FF_FTSACAM2",
+      "p": "FF",
+      "c": "FTSACAM2",
+      "n": "First Floor Tile Selection Area",
+      "t": "cam",
+      "notes": "",
+      "x": 419.98036943904,
+      "y": -354.4228810380655
+    },
+    {
+      "uid": "FF_FFSACAM3",
+      "p": "FF",
+      "c": "FFSACAM3",
+      "n": "First Floor Store Area",
+      "t": "cam",
+      "notes": "",
+      "x": 475.08364505815894,
+      "y": -321.8737966976223
+    },
+    {
+      "uid": "FF_FNTACAM4",
+      "p": "FF",
+      "c": "FNTACAM4",
+      "n": "First Floor Nexion Area",
+      "t": "cam",
+      "notes": "",
+      "x": 514.8013216283222,
+      "y": -271.69091115559564
+    },
+    {
+      "uid": "FF_SBSCAM5",
+      "p": "FF",
+      "c": "SBSCAM5",
+      "n": "Second Building Store Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 533.8135699773109,
+      "y": -210.5812691835167
+    },
+    {
+      "uid": "FF_MECAM2",
+      "p": "FF",
+      "c": "MECAM2",
+      "n": "Main Entry Gate · Camera 2",
+      "t": "cam",
+      "notes": "",
+      "x": 529.5855280623613,
+      "y": -146.72171065879718
+    },
+    {
+      "uid": "FF_SFSACAM6",
+      "p": "FF",
+      "c": "SFSACAM6",
+      "n": "Second Floor Store Area",
+      "t": "cam",
+      "notes": "",
+      "x": 502.6756702917006,
+      "y": -88.65399540528638
+    },
+    {
+      "uid": "CM_CACAM1",
+      "p": "CM",
+      "c": "CACAM1",
+      "n": "Chemical Area Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 532.5664905411599,
+      "y": 200.91031523853079
+    },
+    {
+      "uid": "CM_CAENCAM2",
+      "p": "CM",
+      "c": "CAENCAM2",
+      "n": "Chemical Area Entry Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 531.4886247085691,
+      "y": 264.9011168116666
+    },
+    {
+      "uid": "CM_CMCACAM3",
+      "p": "CM",
+      "c": "CMCACAM3",
+      "n": "CM Counter Area Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 507.4725725661468,
+      "y": 324.22407961452006
+    },
+    {
+      "uid": "CM_EMPKCAM4",
+      "p": "CM",
+      "c": "EMPKCAM4",
+      "n": "Embark Parking Camera (Left)",
+      "t": "cam",
+      "notes": "",
+      "x": 463.7338370010709,
+      "y": 370.9457399983472
+    },
+    {
+      "uid": "CM_SGCAM5",
+      "p": "CM",
+      "c": "SGCAM5",
+      "n": "Storage Godown Camera",
+      "t": "cam",
+      "notes": "",
+      "x": 406.1201647221085,
+      "y": 398.8144458623142
+    },
+    {
+      "uid": "EM_ESSACAM1",
+      "p": "EM",
+      "c": "ESSACAM1",
+      "n": "Embark Showroom WC Area",
+      "t": "cam",
+      "notes": "",
+      "x": 901.8005642599546,
+      "y": 127.43942286916264
+    },
+    {
+      "uid": "EM_ESDACAM2",
+      "p": "EM",
+      "c": "ESDACAM2",
+      "n": "Embark Showroom Discussion Area",
+      "t": "cam",
+      "notes": "",
+      "x": 929.1990250076494,
+      "y": 185.2777464632913
+    },
+    {
+      "uid": "EM_EMPKCAM3",
+      "p": "EM",
+      "c": "EMPKCAM3",
+      "n": "Embark Parking Camera (Right)",
+      "t": "cam",
+      "notes": "",
+      "x": 933.9660333661828,
+      "y": 249.09949453405872
+    },
+    {
+      "uid": "EM_ESMACAM4",
+      "p": "EM",
+      "c": "ESMACAM4",
+      "n": "Embark Showroom Main Area",
+      "t": "cam",
+      "notes": "",
+      "x": 915.4687446839949,
+      "y": 310.3677475832128
+    },
+    {
+      "uid": "EM_ESLACAM5",
+      "p": "EM",
+      "c": "ESLACAM5",
+      "n": "Embark Showroom Live Area",
+      "t": "cam",
+      "notes": "",
+      "x": 876.1758744935358,
+      "y": 360.8854779977331
+    },
+    {
+      "uid": "EM_WIFI",
+      "p": "EM",
+      "c": "WIFI",
+      "n": "Embark WiFi",
+      "t": "wifi",
+      "notes": "",
+      "x": 821.3476031883362,
+      "y": 393.89851581135184
+    },
+    {
+      "uid": "AJ_ACOACAM1",
+      "p": "AJ",
+      "c": "ACOACAM1",
+      "n": "Ajay Sir Cabin Office Area",
+      "t": "cam",
+      "notes": "",
+      "x": -436.08821562660313,
+      "y": 387.59348895608906
+    },
+    {
+      "uid": "AJ_AJOF",
+      "p": "AJ",
+      "c": "AJOF",
+      "n": "Ajay Sir Office WiFi (Port 2)",
+      "t": "wifi",
+      "notes": "",
+      "x": -487.6631197986807,
+      "y": 349.698562126068
+    },
+    {
+      "uid": "AJ_TV",
+      "p": "AJ",
+      "c": "TV",
+      "n": "TV",
+      "t": "tv",
+      "notes": "",
+      "x": -522.16228950848,
+      "y": 295.79304581704264
+    },
+    {
+      "uid": "AJ_NVR",
+      "p": "AJ",
+      "c": "NVR",
+      "n": "Network Video Recorder (Ajay Sir Cabin)",
+      "t": "nvr",
+      "notes": "",
+      "x": -534.9736473985457,
+      "y": 233.08842789290048
+    },
+    {
+      "uid": "SO_ACECAM",
+      "p": "SO",
+      "c": "ACECAM",
+      "n": "Ajay Sir Cabin Entry",
+      "t": "cam",
+      "notes": "",
+      "x": -758.1919844119275,
+      "y": 405.00554842744
+    },
+    {
+      "uid": "SO_DARCAM",
+      "p": "SO",
+      "c": "DARCAM",
+      "n": "Dining Area Right",
+      "t": "cam",
+      "notes": "",
+      "x": -821.2330378494454,
+      "y": 393.98499452268396
+    },
+    {
+      "uid": "SO_SOACAM",
+      "p": "SO",
+      "c": "SOACAM",
+      "n": "Staff Office Area",
+      "t": "cam",
+      "notes": "",
+      "x": -876.0929676542991,
+      "y": 361.0319222808063
+    },
+    {
+      "uid": "SO_DALCAM",
+      "p": "SO",
+      "c": "DALCAM",
+      "n": "Dining Area Left",
+      "t": "cam",
+      "notes": "",
+      "x": -915.4411254667262,
+      "y": 310.56208311340686
+    },
+    {
+      "uid": "SO_BS1",
+      "p": "SO",
+      "c": "BS1",
+      "n": "Office Entry Area",
+      "t": "cam",
+      "notes": "",
+      "x": -934.0033857894255,
+      "y": 249.31693121358913
+    },
+    {
+      "uid": "SO_BS2",
+      "p": "SO",
+      "c": "BS2",
+      "n": "SP Fitting Storage Camera 1",
+      "t": "cam",
+      "notes": "",
+      "x": -929.3122580209889,
+      "y": 185.49190693035962
+    },
+    {
+      "uid": "SO_BS3",
+      "p": "SO",
+      "c": "BS3",
+      "n": "SP Fitting Storage Camera 2",
+      "t": "cam",
+      "notes": "",
+      "x": -901.9797883737936,
+      "y": 127.62357727836407
+    },
+    {
+      "uid": "SO_BS4",
+      "p": "SO",
+      "c": "BS4",
+      "n": "Staff Office Area Camera",
+      "t": "cam",
+      "notes": "",
+      "x": -855.6704799806694,
+      "y": 83.44838111410786
+    }
+  ],
+  "links": [
+    {
+      "uid": "k0",
+      "a": "UG",
+      "b": "UGG",
+      "c": "UPL",
+      "assume": false
+    },
+    {
+      "uid": "k1",
+      "a": "FF",
+      "b": "UGG",
+      "c": "UPUPL · FFUPL",
+      "assume": false
+    },
+    {
+      "uid": "k2",
+      "a": "FF",
+      "b": "CM",
+      "c": "FFUPLP9 · CMCAUPL",
+      "assume": false
+    },
+    {
+      "uid": "k3",
+      "a": "CM",
+      "b": "EM",
+      "c": "EMUPL · CMCAUPL",
+      "assume": false
+    },
+    {
+      "uid": "k4",
+      "a": "AJ",
+      "b": "SO",
+      "c": "SOAUPL",
+      "assume": false
+    },
+    {
+      "uid": "k5",
+      "a": "AJ",
+      "b": "RR",
+      "c": "UGR",
+      "assume": false
+    },
+    {
+      "uid": "k6",
+      "a": "RR",
+      "b": "UGG",
+      "c": "assumed link",
+      "assume": true
+    }
+  ],
+  "xlinks": [],
+  "dims": [],
+  "settings": {
+    "unitsPerMeter": 100
+  }
+}

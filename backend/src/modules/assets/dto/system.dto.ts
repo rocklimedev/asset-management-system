@@ -3,6 +3,11 @@ import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-valid
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateSystemDto {
+  @IsOptional() @IsString() @MaxLength(5000)
+  computerParts?: string | null;
+  @IsOptional() @IsString() @MaxLength(5000)
+  accessories?: string | null;
+
   @IsUUID()
   categoryId!: string;
 

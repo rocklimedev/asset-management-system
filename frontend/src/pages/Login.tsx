@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LockKeyhole, Mail } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
+import { toast } from '../components/ui/toast';
 import { useAuth } from '../services/context/AuthContext';
 
 export default function LoginPage() {
@@ -36,8 +37,11 @@ export default function LoginPage() {
       // intent clear and leaves room for a "redirect to
       // originally requested page" feature later.)
       navigate('/', { replace: true });
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Invalid email or password.');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error && err.message ? err.message : 'Login failed. Please try again.';
+      setError(message);
+      toast.add({ title: 'Sign-in failed', description: message, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -114,7 +118,10 @@ export default function LoginPage() {
 
         {/* Error */}
         {error && (
-          <div className="rounded-lg border border-destructive-border bg-destructive-muted px-3 py-2.5 text-sm text-destructive-strong">
+          <div
+            role="alert"
+            className="rounded-lg border border-destructive-border bg-destructive-muted px-3 py-2.5 text-sm text-destructive-strong"
+          >
             {error}
           </div>
         )}

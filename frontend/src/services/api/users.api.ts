@@ -12,6 +12,15 @@ export interface UserRole {
   description?: string | null;
 }
 
+export interface UserEmployee {
+  id: string;
+  name: string;
+  employeeCode: string;
+  email?: string | null;
+  status: string;
+  linkedUserId?: string | null;
+}
+
 export interface User {
   id: string;
 
@@ -19,6 +28,7 @@ export interface User {
   email: string;
 
   employeeId?: string | null;
+  employee?: UserEmployee | null;
 
   roleId: string;
 
@@ -138,6 +148,11 @@ export const usersApi = createApi({
   tagTypes: ['User'],
 
   endpoints: (builder) => ({
+    getUserEmployeeOptions: builder.query<UserEmployee[], void>({
+      query: () => '/users/employee-options',
+      providesTags: [{ type: 'User', id: 'LIST' }],
+      keepUnusedDataFor: 0,
+    }),
     // ============================================================
     // GET ALL USERS
     // GET /users
@@ -295,6 +310,7 @@ export const usersApi = createApi({
 
 export const {
   useGetUsersQuery,
+  useGetUserEmployeeOptionsQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,

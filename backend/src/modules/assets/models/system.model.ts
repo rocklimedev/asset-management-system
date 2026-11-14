@@ -46,6 +46,13 @@ export class System extends Model<System> {
   })
   name!: string;
 
+  @Column({ type: DataType.JSON, allowNull: true })
+  attachments!: import('../record-attachments.service').RecordAttachment[] | null;
+  @Column({ type: DataType.TEXT, allowNull: true })
+  computerParts!: string | null;
+  @Column({ type: DataType.TEXT, allowNull: true })
+  accessories!: string | null;
+
   @Index
   @ForeignKey(() => AssetCategory)
   @Column({ type: DataType.CHAR(36), allowNull: true, field: 'category_id' })

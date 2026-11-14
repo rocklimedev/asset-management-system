@@ -1,0 +1,2517 @@
+{
+  "version": 2,
+  "areas": [
+    {
+      "id": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "name": "Upper Ground",
+      "parentId": null,
+      "notes": "",
+      "x": 0,
+      "y": -150
+    },
+    {
+      "id": "5d7ed7e2-1512-5784-a091-e5ee2a03f3ce",
+      "name": "First Floor",
+      "parentId": null,
+      "notes": "",
+      "x": 360,
+      "y": -340
+    },
+    {
+      "id": "49035fa1-6a31-579a-a8f0-2de8cdd6ec54",
+      "name": "Ajay Sir Cabin",
+      "parentId": null,
+      "notes": "",
+      "x": -360,
+      "y": 80
+    },
+    {
+      "id": "d6c7e6b9-708f-54f9-a3ec-cca9060335e5",
+      "name": "CM Counter",
+      "parentId": null,
+      "notes": "",
+      "x": 360,
+      "y": 80
+    },
+    {
+      "id": "e8662662-6a49-5519-bd9a-d244f1d8c410",
+      "name": "Staff Office",
+      "parentId": null,
+      "notes": "",
+      "x": -760,
+      "y": 80
+    },
+    {
+      "id": "947ec305-fc52-5f09-8910-240c0546bba9",
+      "name": "Embark Showroom",
+      "parentId": null,
+      "notes": "",
+      "x": 760,
+      "y": 80
+    },
+    {
+      "id": "0b823bef-a355-5eca-8eeb-d66cebbbffc0",
+      "name": "Network Router (left side)",
+      "parentId": null,
+      "notes": "",
+      "x": -149.7014476325449,
+      "y": -160.65219938188105
+    },
+    {
+      "id": "5fbd87f9-30ad-51f3-92f5-82a3fd1bf86a",
+      "name": "Network Video Recorder (Upper Ground)",
+      "parentId": null,
+      "notes": "",
+      "x": 175.00026407823057,
+      "y": -70
+    },
+    {
+      "id": "11ed8156-4458-55f1-8286-981698c87259",
+      "name": "UG Rack Port 1 · Gigabyte WiFi",
+      "parentId": null,
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": -245.00026407823057
+    },
+    {
+      "id": "9edd52fd-3bff-576b-b6a3-96e5ec68534e",
+      "name": "Office Area WiFi LAN · 14 active seats",
+      "parentId": null,
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": 105.00026407823057
+    },
+    {
+      "id": "f7deefbc-f8e1-5348-a88a-9e526666cfaf",
+      "name": "Grohe Premium Area",
+      "parentId": null,
+      "notes": "",
+      "x": -107.09433721942644,
+      "y": -208.40818478941225
+    },
+    {
+      "id": "c5e5e90b-eeb9-5138-b0de-e79218a03b7a",
+      "name": "Main Entry Gate · Camera 1",
+      "parentId": null,
+      "notes": "",
+      "x": -481.72852193838054,
+      "y": -134.25272230599592
+    },
+    {
+      "id": "d8d12e76-716b-5002-9cc5-2a0be796829b",
+      "name": "Colston Basin Area 1",
+      "parentId": null,
+      "notes": "",
+      "x": -518.8212589870263,
+      "y": -186.40400115052327
+    },
+    {
+      "id": "8de89a76-c157-5dd4-96bc-3f6eda2fbdd3",
+      "name": "Colston Basin Area 2",
+      "parentId": null,
+      "notes": "",
+      "x": -534.6782420646327,
+      "y": -248.40458950296048
+    },
+    {
+      "id": "772db69e-6b95-5d5f-b8cc-335143fadf34",
+      "name": "Colston Basin Area 3",
+      "parentId": null,
+      "notes": "",
+      "x": -527.1893029151295,
+      "y": -311.96084788268166
+    },
+    {
+      "id": "ce8720a4-ae10-5fa9-92a3-2209a79ba598",
+      "name": "Colston Basin Mixer Area",
+      "parentId": null,
+      "notes": "",
+      "x": -497.34179642084524,
+      "y": -368.570498081151
+    },
+    {
+      "id": "dc23e086-cbb4-5bfa-a394-5674a452094a",
+      "name": "Colston Live Area",
+      "parentId": null,
+      "notes": "",
+      "x": -449.14138851087273,
+      "y": -410.66991710097705
+    },
+    {
+      "id": "f4133f47-6176-5255-892d-3f11ff874614",
+      "name": "Colston Mockup Area",
+      "parentId": null,
+      "notes": "",
+      "x": -389.0239146923496,
+      "y": -432.61750957500664
+    },
+    {
+      "id": "ee668430-65a3-5746-bd82-4a4cfdd9eb89",
+      "name": "Sumit Sir Cabin",
+      "parentId": null,
+      "notes": "",
+      "x": -325.03391059994976,
+      "y": -431.48641441780484
+    },
+    {
+      "id": "76a4234b-b60e-5b43-acf1-c7318afcefc2",
+      "name": "First Floor Entry Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 356.85810938982087,
+      "y": -434.97890004532604
+    },
+    {
+      "id": "342ea5f8-ee3d-5b26-ab53-fb6b28bc905e",
+      "name": "First Floor Tile Selection Area",
+      "parentId": null,
+      "notes": "",
+      "x": 419.98036943904,
+      "y": -424.4228810380655
+    },
+    {
+      "id": "596cf66e-b8ed-5d01-a34e-fd50d81b4232",
+      "name": "First Floor Store Area",
+      "parentId": null,
+      "notes": "",
+      "x": 475.08364505815894,
+      "y": -391.8737966976223
+    },
+    {
+      "id": "7069a152-360a-54cc-9b3b-c70cb881a48d",
+      "name": "First Floor Nexion Area",
+      "parentId": null,
+      "notes": "",
+      "x": 514.8013216283222,
+      "y": -341.69091115559564
+    },
+    {
+      "id": "b27ecbfb-db10-5028-8d34-4961d77dc28c",
+      "name": "Second Building Store Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 533.8135699773109,
+      "y": -280.5812691835167
+    },
+    {
+      "id": "b0d19b45-8a79-588d-90fd-e96db745a1ae",
+      "name": "Main Entry Gate · Camera 2",
+      "parentId": null,
+      "notes": "",
+      "x": 529.5855280623613,
+      "y": -216.72171065879718
+    },
+    {
+      "id": "ad3593d2-1dda-5058-ab65-2249c161a592",
+      "name": "Second Floor Store Area",
+      "parentId": null,
+      "notes": "",
+      "x": 502.6756702917006,
+      "y": -158.65399540528637
+    },
+    {
+      "id": "fe8e3ff8-f1c4-5009-9d97-c4d703926307",
+      "name": "Chemical Area Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 532.5664905411599,
+      "y": 130.91031523853079
+    },
+    {
+      "id": "a8801f04-ad15-5b37-8c5c-a80605d55db1",
+      "name": "Chemical Area Entry Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 531.4886247085691,
+      "y": 194.9011168116666
+    },
+    {
+      "id": "74562e9c-4071-59e3-9a58-529dcbdfc2c9",
+      "name": "CM Counter Area Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 507.4725725661468,
+      "y": 254.22407961452006
+    },
+    {
+      "id": "66c3f212-7926-5293-b179-d08a37e6811b",
+      "name": "Embark Parking Camera (Left)",
+      "parentId": null,
+      "notes": "",
+      "x": 463.7338370010709,
+      "y": 300.9457399983472
+    },
+    {
+      "id": "93fdda56-3a1d-5d7a-838a-fb28ad6ad982",
+      "name": "Storage Godown Camera",
+      "parentId": null,
+      "notes": "",
+      "x": 406.1201647221085,
+      "y": 328.8144458623142
+    },
+    {
+      "id": "03f220d3-0953-58e5-be03-231ad89be5bf",
+      "name": "Embark Showroom WC Area",
+      "parentId": null,
+      "notes": "",
+      "x": 901.8005642599546,
+      "y": 57.43942286916264
+    },
+    {
+      "id": "9917bfd4-a023-592a-be57-fcbc02f45604",
+      "name": "Embark Showroom Discussion Area",
+      "parentId": null,
+      "notes": "",
+      "x": 929.1990250076494,
+      "y": 115.2777464632913
+    },
+    {
+      "id": "e7a54b0e-3eb6-5f22-bdcf-09c439d51928",
+      "name": "Embark Parking Camera (Right)",
+      "parentId": null,
+      "notes": "",
+      "x": 933.9660333661828,
+      "y": 179.09949453405872
+    },
+    {
+      "id": "5c55be44-c825-5d05-9e31-af987dddfc30",
+      "name": "Embark Showroom Main Area",
+      "parentId": null,
+      "notes": "",
+      "x": 915.4687446839949,
+      "y": 240.3677475832128
+    },
+    {
+      "id": "4e211fb8-1765-5a40-9d60-7e108b8adb8c",
+      "name": "Embark Showroom Live Area",
+      "parentId": null,
+      "notes": "",
+      "x": 876.1758744935358,
+      "y": 290.8854779977331
+    },
+    {
+      "id": "42669003-f7d5-5eb4-976f-06673f7f3917",
+      "name": "Embark WiFi",
+      "parentId": null,
+      "notes": "",
+      "x": 821.3476031883362,
+      "y": 323.89851581135184
+    },
+    {
+      "id": "b6492217-6a72-57b4-9184-6147653dc5c2",
+      "name": "Ajay Sir Cabin Office Area",
+      "parentId": null,
+      "notes": "",
+      "x": -436.08821562660313,
+      "y": 317.59348895608906
+    },
+    {
+      "id": "259d1dd8-ce1d-5278-a4ed-d41378b1bf8a",
+      "name": "Ajay Sir Office WiFi (Port 2)",
+      "parentId": null,
+      "notes": "",
+      "x": -487.6631197986807,
+      "y": 279.698562126068
+    },
+    {
+      "id": "3fcaa198-66dd-512b-8aaf-7d0891dfb3ff",
+      "name": "TV",
+      "parentId": null,
+      "notes": "",
+      "x": -522.16228950848,
+      "y": 225.79304581704264
+    },
+    {
+      "id": "a8fabcbb-e7d7-5043-834d-eb10998bd316",
+      "name": "Network Video Recorder (Ajay Sir Cabin)",
+      "parentId": null,
+      "notes": "",
+      "x": -534.9736473985457,
+      "y": 163.08842789290048
+    },
+    {
+      "id": "2994ca7b-11de-56e5-819a-6ec15f0ac4db",
+      "name": "Ajay Sir Cabin Entry",
+      "parentId": null,
+      "notes": "",
+      "x": -758.1919844119275,
+      "y": 335.00554842744
+    },
+    {
+      "id": "20f82e0d-1304-5616-a04b-55522ebda3bb",
+      "name": "Dining Area Right",
+      "parentId": null,
+      "notes": "",
+      "x": -821.2330378494454,
+      "y": 323.98499452268396
+    },
+    {
+      "id": "0a49f8c4-ae26-5dc5-9094-8093c603d45b",
+      "name": "Staff Office Area",
+      "parentId": null,
+      "notes": "",
+      "x": -876.0929676542991,
+      "y": 291.0319222808063
+    },
+    {
+      "id": "baa3833b-f720-582b-9e57-2d6913b16fc3",
+      "name": "Dining Area Left",
+      "parentId": null,
+      "notes": "",
+      "x": -915.4411254667262,
+      "y": 240.56208311340686
+    },
+    {
+      "id": "18d0332a-9406-51fc-ba30-8a8f7186ab6b",
+      "name": "Office Entry Area",
+      "parentId": null,
+      "notes": "",
+      "x": -934.0033857894255,
+      "y": 179.31693121358913
+    },
+    {
+      "id": "73661108-8d96-5178-9d37-02149e8968b0",
+      "name": "SP Fitting Storage Camera 1",
+      "parentId": null,
+      "notes": "",
+      "x": -929.3122580209889,
+      "y": 115.49190693035962
+    },
+    {
+      "id": "2e0532d4-96ae-502d-ba32-161d7eeee53d",
+      "name": "SP Fitting Storage Camera 2",
+      "parentId": null,
+      "notes": "",
+      "x": -901.9797883737936,
+      "y": 57.62357727836407
+    },
+    {
+      "id": "b84d0f70-b4ba-5a2e-84a6-42fc29501406",
+      "name": "Staff Office Area Camera",
+      "parentId": null,
+      "notes": "",
+      "x": -855.6704799806694,
+      "y": 13.44838111410786
+    }
+  ],
+  "racks": [
+    {
+      "id": "497df82e-9b18-5983-bcb6-d77ceb1d8ff9",
+      "name": "UG Gigabyte PoE Switch",
+      "areaId": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "notes": "Core · Upper Ground",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "15beb9f4-9c81-5fb6-aede-14e0c2d9f7ca",
+      "name": "Upper Ground Rack",
+      "areaId": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "notes": "9-pot PoE",
+      "x": -360,
+      "y": -190
+    },
+    {
+      "id": "8dc6368b-a8a3-5489-8138-19ecb62674e6",
+      "name": "First Floor Rack",
+      "areaId": "5d7ed7e2-1512-5784-a091-e5ee2a03f3ce",
+      "notes": "9-pot PoE",
+      "x": 360,
+      "y": -190
+    },
+    {
+      "id": "d1e2025d-535e-5811-9021-a5e4aaafbb35",
+      "name": "Ajay Sir Cabin Rack",
+      "areaId": "49035fa1-6a31-579a-a8f0-2de8cdd6ec54",
+      "notes": "10-pot PoE",
+      "x": -360,
+      "y": 230
+    },
+    {
+      "id": "62deddfb-af7e-534d-818b-d7fb7a05d399",
+      "name": "CM Counter Rack",
+      "areaId": "d6c7e6b9-708f-54f9-a3ec-cca9060335e5",
+      "notes": "9-pot PoE",
+      "x": 360,
+      "y": 230
+    },
+    {
+      "id": "5537e68c-f692-549e-933a-0e01e05efe26",
+      "name": "Staff Office Rack",
+      "areaId": "e8662662-6a49-5519-bd9a-d244f1d8c410",
+      "notes": "10-pot PoE",
+      "x": -760,
+      "y": 230
+    },
+    {
+      "id": "7a6c8409-5000-5288-b10f-7cb3671bc15a",
+      "name": "Embark Showroom Rack",
+      "areaId": "947ec305-fc52-5f09-8910-240c0546bba9",
+      "notes": "9-pot PoE",
+      "x": 760,
+      "y": 230
+    }
+  ],
+  "devices": [
+    {
+      "id": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "name": "UG Gigabyte PoE Switch",
+      "code": "UGG",
+      "kind": "core",
+      "areaId": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "rackId": "497df82e-9b18-5983-bcb6-d77ceb1d8ff9",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "Core · Upper Ground",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "name": "Upper Ground Rack",
+      "code": "UG",
+      "kind": "switch",
+      "areaId": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "rackId": "15beb9f4-9c81-5fb6-aede-14e0c2d9f7ca",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "9-pot PoE",
+      "x": -360,
+      "y": -190
+    },
+    {
+      "id": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "name": "First Floor Rack",
+      "code": "FF",
+      "kind": "switch",
+      "areaId": "5d7ed7e2-1512-5784-a091-e5ee2a03f3ce",
+      "rackId": "8dc6368b-a8a3-5489-8138-19ecb62674e6",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "9-pot PoE",
+      "x": 360,
+      "y": -190
+    },
+    {
+      "id": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "name": "Ajay Sir Cabin Rack",
+      "code": "AJ",
+      "kind": "switch",
+      "areaId": "49035fa1-6a31-579a-a8f0-2de8cdd6ec54",
+      "rackId": "d1e2025d-535e-5811-9021-a5e4aaafbb35",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "10-pot PoE",
+      "x": -360,
+      "y": 230
+    },
+    {
+      "id": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "name": "CM Counter Rack",
+      "code": "CM",
+      "kind": "switch",
+      "areaId": "d6c7e6b9-708f-54f9-a3ec-cca9060335e5",
+      "rackId": "62deddfb-af7e-534d-818b-d7fb7a05d399",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "9-pot PoE",
+      "x": 360,
+      "y": 230
+    },
+    {
+      "id": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "name": "Staff Office Rack",
+      "code": "SO",
+      "kind": "switch",
+      "areaId": "e8662662-6a49-5519-bd9a-d244f1d8c410",
+      "rackId": "5537e68c-f692-549e-933a-0e01e05efe26",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "10-pot PoE",
+      "x": -760,
+      "y": 230
+    },
+    {
+      "id": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "name": "Embark Showroom Rack",
+      "code": "EM",
+      "kind": "switch",
+      "areaId": "947ec305-fc52-5f09-8910-240c0546bba9",
+      "rackId": "7a6c8409-5000-5288-b10f-7cb3671bc15a",
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "9-pot PoE",
+      "x": 760,
+      "y": 230
+    },
+    {
+      "id": "dacd4742-1a1d-5c79-869b-4db162da43a5",
+      "name": "UG Router (right side)",
+      "code": "RR",
+      "kind": "router",
+      "areaId": "fa73577b-f92d-56e0-abe4-d4e1b89d8ea4",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "UGR",
+      "x": -200,
+      "y": 40
+    },
+    {
+      "id": "2f742d0f-f35d-5e46-a3db-8dbdc378ca81",
+      "name": "Network Router (left side)",
+      "code": "NETL",
+      "kind": "router",
+      "areaId": "0b823bef-a355-5eca-8eeb-d66cebbbffc0",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -149.7014476325449,
+      "y": -90.65219938188105
+    },
+    {
+      "id": "87bc2007-50d6-5a48-809b-460500eeac23",
+      "name": "Network Video Recorder (Upper Ground)",
+      "code": "NVR",
+      "kind": "nvr",
+      "areaId": "5fbd87f9-30ad-51f3-92f5-82a3fd1bf86a",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 175.00026407823057,
+      "y": 0
+    },
+    {
+      "id": "715e6a9c-3fd6-5b27-9eca-77990153aa6a",
+      "name": "UG Rack Port 1 · Gigabyte WiFi",
+      "code": "NETG2",
+      "kind": "wifi",
+      "areaId": "11ed8156-4458-55f1-8286-981698c87259",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": -175.00026407823057
+    },
+    {
+      "id": "a149dfaa-ea8e-544a-ac2c-2dde23e547b5",
+      "name": "Office Area WiFi LAN · 14 active seats",
+      "code": "DSUPL",
+      "kind": "outlet",
+      "areaId": "9edd52fd-3bff-576b-b6a3-96e5ec68534e",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 1.0715675662667323e-14,
+      "y": 175.00026407823057
+    },
+    {
+      "id": "a3b9cb5c-f623-5c5d-8820-a1bcf8c188b8",
+      "name": "Grohe Premium Area",
+      "code": "GSUPL",
+      "kind": "outlet",
+      "areaId": "f7deefbc-f8e1-5348-a88a-9e526666cfaf",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -107.09433721942644,
+      "y": -138.40818478941225
+    },
+    {
+      "id": "5d7c9bbb-6db0-5cc5-a0a7-23b2478ded66",
+      "name": "Main Entry Gate · Camera 1",
+      "code": "MECAM1",
+      "kind": "camera",
+      "areaId": "c5e5e90b-eeb9-5138-b0de-e79218a03b7a",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -481.72852193838054,
+      "y": -64.25272230599592
+    },
+    {
+      "id": "aa869dfc-0387-5a28-aeff-d2a9fb3a4a78",
+      "name": "Colston Basin Area 1",
+      "code": "CCAM1",
+      "kind": "camera",
+      "areaId": "d8d12e76-716b-5002-9cc5-2a0be796829b",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -518.8212589870263,
+      "y": -116.40400115052327
+    },
+    {
+      "id": "fb082eda-97e5-5c76-b3a6-1d28e39894c1",
+      "name": "Colston Basin Area 2",
+      "code": "CCAM2",
+      "kind": "camera",
+      "areaId": "8de89a76-c157-5dd4-96bc-3f6eda2fbdd3",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -534.6782420646327,
+      "y": -178.40458950296048
+    },
+    {
+      "id": "28ac1f18-d783-5924-9773-b71382586793",
+      "name": "Colston Basin Area 3",
+      "code": "CCAM3",
+      "kind": "camera",
+      "areaId": "772db69e-6b95-5d5f-b8cc-335143fadf34",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -527.1893029151295,
+      "y": -241.96084788268166
+    },
+    {
+      "id": "ec71b6cc-daed-59b7-a87e-2cd61913baec",
+      "name": "Colston Basin Mixer Area",
+      "code": "CCAM4",
+      "kind": "camera",
+      "areaId": "ce8720a4-ae10-5fa9-92a3-2209a79ba598",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -497.34179642084524,
+      "y": -298.570498081151
+    },
+    {
+      "id": "0aaaba1e-6c39-538d-820e-ae8debb876da",
+      "name": "Colston Live Area",
+      "code": "CCAM5",
+      "kind": "camera",
+      "areaId": "dc23e086-cbb4-5bfa-a394-5674a452094a",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -449.14138851087273,
+      "y": -340.66991710097705
+    },
+    {
+      "id": "817dfc9e-26d6-5529-877a-8bb48a0506ab",
+      "name": "Colston Mockup Area",
+      "code": "CCAM6",
+      "kind": "camera",
+      "areaId": "f4133f47-6176-5255-892d-3f11ff874614",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -389.0239146923496,
+      "y": -362.61750957500664
+    },
+    {
+      "id": "5267480c-0aef-5975-aeda-db394ed6a43c",
+      "name": "Sumit Sir Cabin",
+      "code": "SCCAM1",
+      "kind": "camera",
+      "areaId": "ee668430-65a3-5746-bd82-4a4cfdd9eb89",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -325.03391059994976,
+      "y": -361.48641441780484
+    },
+    {
+      "id": "e84e640d-b5a0-57a4-a9db-e90d321df3e8",
+      "name": "First Floor Entry Camera",
+      "code": "FFENCAM1",
+      "kind": "camera",
+      "areaId": "76a4234b-b60e-5b43-acf1-c7318afcefc2",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 356.85810938982087,
+      "y": -364.97890004532604
+    },
+    {
+      "id": "d89a43c2-d853-5377-8955-e820c34d2cd0",
+      "name": "First Floor Tile Selection Area",
+      "code": "FTSACAM2",
+      "kind": "camera",
+      "areaId": "342ea5f8-ee3d-5b26-ab53-fb6b28bc905e",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 419.98036943904,
+      "y": -354.4228810380655
+    },
+    {
+      "id": "2a10cce7-85f5-5343-94ed-688cd562261d",
+      "name": "First Floor Store Area",
+      "code": "FFSACAM3",
+      "kind": "camera",
+      "areaId": "596cf66e-b8ed-5d01-a34e-fd50d81b4232",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 475.08364505815894,
+      "y": -321.8737966976223
+    },
+    {
+      "id": "14b8bf5b-920d-578a-ad0e-70a023d7df93",
+      "name": "First Floor Nexion Area",
+      "code": "FNTACAM4",
+      "kind": "camera",
+      "areaId": "7069a152-360a-54cc-9b3b-c70cb881a48d",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 514.8013216283222,
+      "y": -271.69091115559564
+    },
+    {
+      "id": "b7e2f8da-f7f5-56d2-9518-cfa863d80856",
+      "name": "Second Building Store Camera",
+      "code": "SBSCAM5",
+      "kind": "camera",
+      "areaId": "b27ecbfb-db10-5028-8d34-4961d77dc28c",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 533.8135699773109,
+      "y": -210.5812691835167
+    },
+    {
+      "id": "58fe0a94-a04b-541e-bea5-5b1a42633dc1",
+      "name": "Main Entry Gate · Camera 2",
+      "code": "MECAM2",
+      "kind": "camera",
+      "areaId": "b0d19b45-8a79-588d-90fd-e96db745a1ae",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 529.5855280623613,
+      "y": -146.72171065879718
+    },
+    {
+      "id": "be7a6a02-0980-54fc-b26e-fd8fb665da73",
+      "name": "Second Floor Store Area",
+      "code": "SFSACAM6",
+      "kind": "camera",
+      "areaId": "ad3593d2-1dda-5058-ab65-2249c161a592",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 502.6756702917006,
+      "y": -88.65399540528638
+    },
+    {
+      "id": "7e5fbf88-377f-52c1-b171-9de496e9dc54",
+      "name": "Chemical Area Camera",
+      "code": "CACAM1",
+      "kind": "camera",
+      "areaId": "fe8e3ff8-f1c4-5009-9d97-c4d703926307",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 532.5664905411599,
+      "y": 200.91031523853079
+    },
+    {
+      "id": "223a1d04-1728-5e27-9785-c823e92d8b3b",
+      "name": "Chemical Area Entry Camera",
+      "code": "CAENCAM2",
+      "kind": "camera",
+      "areaId": "a8801f04-ad15-5b37-8c5c-a80605d55db1",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 531.4886247085691,
+      "y": 264.9011168116666
+    },
+    {
+      "id": "22c8de4c-d9e4-5d9e-8c21-57cda1790173",
+      "name": "CM Counter Area Camera",
+      "code": "CMCACAM3",
+      "kind": "camera",
+      "areaId": "74562e9c-4071-59e3-9a58-529dcbdfc2c9",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 507.4725725661468,
+      "y": 324.22407961452006
+    },
+    {
+      "id": "2ae2a565-e68c-54be-841c-8dfbd32d50f2",
+      "name": "Embark Parking Camera (Left)",
+      "code": "EMPKCAM4",
+      "kind": "camera",
+      "areaId": "66c3f212-7926-5293-b179-d08a37e6811b",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 463.7338370010709,
+      "y": 370.9457399983472
+    },
+    {
+      "id": "0f177ace-1cb2-5668-bd15-47e57d60cc99",
+      "name": "Storage Godown Camera",
+      "code": "SGCAM5",
+      "kind": "camera",
+      "areaId": "93fdda56-3a1d-5d7a-838a-fb28ad6ad982",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 406.1201647221085,
+      "y": 398.8144458623142
+    },
+    {
+      "id": "f454cecb-3c5a-56f6-b67f-8cb9dd349b9f",
+      "name": "Embark Showroom WC Area",
+      "code": "ESSACAM1",
+      "kind": "camera",
+      "areaId": "03f220d3-0953-58e5-be03-231ad89be5bf",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 901.8005642599546,
+      "y": 127.43942286916264
+    },
+    {
+      "id": "ab030e3b-5e91-530b-abfa-ccaf607e7d27",
+      "name": "Embark Showroom Discussion Area",
+      "code": "ESDACAM2",
+      "kind": "camera",
+      "areaId": "9917bfd4-a023-592a-be57-fcbc02f45604",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 929.1990250076494,
+      "y": 185.2777464632913
+    },
+    {
+      "id": "0aa3a8c5-eedf-5124-9aee-6f3a9bcbc3b0",
+      "name": "Embark Parking Camera (Right)",
+      "code": "EMPKCAM3",
+      "kind": "camera",
+      "areaId": "e7a54b0e-3eb6-5f22-bdcf-09c439d51928",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 933.9660333661828,
+      "y": 249.09949453405872
+    },
+    {
+      "id": "aefa3509-9960-54a8-8dd8-f4d94dd53ae9",
+      "name": "Embark Showroom Main Area",
+      "code": "ESMACAM4",
+      "kind": "camera",
+      "areaId": "5c55be44-c825-5d05-9e31-af987dddfc30",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 915.4687446839949,
+      "y": 310.3677475832128
+    },
+    {
+      "id": "8aeb7b67-a1aa-51bc-9ffe-c98c972b1a0a",
+      "name": "Embark Showroom Live Area",
+      "code": "ESLACAM5",
+      "kind": "camera",
+      "areaId": "4e211fb8-1765-5a40-9d60-7e108b8adb8c",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 876.1758744935358,
+      "y": 360.8854779977331
+    },
+    {
+      "id": "2b4240b2-e494-5636-9e69-6c3233acdd8d",
+      "name": "Embark WiFi",
+      "code": "WIFI",
+      "kind": "wifi",
+      "areaId": "42669003-f7d5-5eb4-976f-06673f7f3917",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": 821.3476031883362,
+      "y": 393.89851581135184
+    },
+    {
+      "id": "6bcc8215-9153-5340-b94f-8bd6432915ff",
+      "name": "Ajay Sir Cabin Office Area",
+      "code": "ACOACAM1",
+      "kind": "camera",
+      "areaId": "b6492217-6a72-57b4-9184-6147653dc5c2",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -436.08821562660313,
+      "y": 387.59348895608906
+    },
+    {
+      "id": "3f00a7d8-cf14-529b-b7fe-662755364b63",
+      "name": "Ajay Sir Office WiFi (Port 2)",
+      "code": "AJOF",
+      "kind": "wifi",
+      "areaId": "259d1dd8-ce1d-5278-a4ed-d41378b1bf8a",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -487.6631197986807,
+      "y": 349.698562126068
+    },
+    {
+      "id": "abbfc726-54e4-553b-aa1a-a00bff9db1c7",
+      "name": "TV",
+      "code": "TV",
+      "kind": "tv",
+      "areaId": "3fcaa198-66dd-512b-8aaf-7d0891dfb3ff",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -522.16228950848,
+      "y": 295.79304581704264
+    },
+    {
+      "id": "0b5eb2f9-b369-5d09-a242-ee26e5da3f9f",
+      "name": "Network Video Recorder (Ajay Sir Cabin)",
+      "code": "NVR",
+      "kind": "nvr",
+      "areaId": "a8fabcbb-e7d7-5043-834d-eb10998bd316",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -534.9736473985457,
+      "y": 233.08842789290048
+    },
+    {
+      "id": "27049896-ac9c-57e9-825b-9454c3dfcbbc",
+      "name": "Ajay Sir Cabin Entry",
+      "code": "ACECAM",
+      "kind": "camera",
+      "areaId": "2994ca7b-11de-56e5-819a-6ec15f0ac4db",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -758.1919844119275,
+      "y": 405.00554842744
+    },
+    {
+      "id": "4fc60210-917d-56c7-aac4-1534affc087b",
+      "name": "Dining Area Right",
+      "code": "DARCAM",
+      "kind": "camera",
+      "areaId": "20f82e0d-1304-5616-a04b-55522ebda3bb",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -821.2330378494454,
+      "y": 393.98499452268396
+    },
+    {
+      "id": "6450e461-32d1-5f3c-8c68-9811dd0b0fc3",
+      "name": "Staff Office Area",
+      "code": "SOACAM",
+      "kind": "camera",
+      "areaId": "0a49f8c4-ae26-5dc5-9094-8093c603d45b",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -876.0929676542991,
+      "y": 361.0319222808063
+    },
+    {
+      "id": "6248d99f-813d-5e18-9524-faee7538b91c",
+      "name": "Dining Area Left",
+      "code": "DALCAM",
+      "kind": "camera",
+      "areaId": "baa3833b-f720-582b-9e57-2d6913b16fc3",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -915.4411254667262,
+      "y": 310.56208311340686
+    },
+    {
+      "id": "0183d913-c37a-5c75-a0bb-670042573996",
+      "name": "Office Entry Area",
+      "code": "BS1",
+      "kind": "camera",
+      "areaId": "18d0332a-9406-51fc-ba30-8a8f7186ab6b",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -934.0033857894255,
+      "y": 249.31693121358913
+    },
+    {
+      "id": "525fb28c-9f25-57d9-8489-83069accbb82",
+      "name": "SP Fitting Storage Camera 1",
+      "code": "BS2",
+      "kind": "camera",
+      "areaId": "73661108-8d96-5178-9d37-02149e8968b0",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -929.3122580209889,
+      "y": 185.49190693035962
+    },
+    {
+      "id": "4a0259bf-4fec-595e-a633-d50d1af1a317",
+      "name": "SP Fitting Storage Camera 2",
+      "code": "BS3",
+      "kind": "camera",
+      "areaId": "2e0532d4-96ae-502d-ba32-161d7eeee53d",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -901.9797883737936,
+      "y": 127.62357727836407
+    },
+    {
+      "id": "5a296f6d-60dd-5214-ac25-5e687a51be81",
+      "name": "Staff Office Area Camera",
+      "code": "BS4",
+      "kind": "camera",
+      "areaId": "b84d0f70-b4ba-5a2e-84a6-42fc29501406",
+      "rackId": null,
+      "model": "",
+      "ip": "",
+      "mac": "",
+      "notes": "",
+      "x": -855.6704799806694,
+      "y": 83.44838111410786
+    }
+  ],
+  "ports": [
+    {
+      "id": "83e3aacd-88aa-549d-89d3-4ead777983d4",
+      "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "cc16f7ce-84bf-576e-8b2e-693016d62139",
+      "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "01aba491-058e-58ea-a436-53e2c294f29d",
+      "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "41e3d51e-84fe-596d-bf6e-30eaf0ca5f00",
+      "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "be1c3c1d-76c0-553b-a29e-39ba37f4d2e4",
+      "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "7ff34539-db04-5ddf-9ca4-7eec5fea7d54",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "185b8c09-e320-528a-8d4c-168c6eede590",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "14e6a27b-b20e-56a6-8b64-449e61527f83",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "6843a93b-41a8-5959-8502-082be8586795",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "46ad02ba-dc69-5be2-a665-53e38173843e",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "d9138158-7f84-597b-b207-f06a64a5ac22",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "b00dfef5-0c56-58b2-bad5-2aded1273a81",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "1604361a-6887-561e-a7be-42e5f56f8d01",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "f3f73c32-7e49-54de-b780-37b1634aff92",
+      "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "d5a1893e-cb70-50b0-9870-325df323fade",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "9503b04b-7ca9-58dd-b931-d9220506afeb",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "c2ec5933-dbdc-5735-a751-465ac2cd3af1",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "446ddc78-f27f-53f8-87a5-7fdf0403a1c3",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "6e1a4538-fba9-5bf6-93bb-571a9d75d69b",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "0c541e26-7c74-582d-9efd-ef7a040ec0e3",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "c752e4a1-ad4e-53d0-83df-ec18bbc593d3",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "0447f3e9-1906-563e-a838-0d4feebababd",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "236dc1fa-c7af-50c8-a839-d750e4402582",
+      "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "80bebbae-f384-56da-a172-c1f4f435cdff",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "54665343-2d8d-5f87-b812-b349275ec0a9",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "7dc43603-3781-518e-a92b-03ee4da386f1",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "a98c1311-3320-5c67-bed5-a222b3b3e4e3",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "5e9eb388-b99c-5ecf-a718-01c71f215d09",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "00dfac3d-4aaa-569b-94da-4cba9d07f8a0",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "bd10cb61-5216-5531-85fe-c8fb837225d4",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "dac3906b-ea0b-53c5-8af5-583e93dc5a5a",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "6f034fa8-f29a-57fd-93fb-acec528f480d",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "2e783902-af9c-5b66-8d6d-7f15d7e04a22",
+      "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+      "label": "10",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "595e7e17-d55d-5c37-bd15-5978e2c47896",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "8facbf63-2fef-5428-8fa0-0fa6e4ac4df3",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "3c3ffaa4-400e-5f56-b976-db906d77e986",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "1f09044c-ba17-5d51-9608-dd07d6c527c4",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "a1a2f62e-4e85-5629-a745-f7f97d12abd1",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "fd29044d-b7a5-5307-9196-2ee2b8609e9d",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "ad29f6cb-f27e-5a4c-813c-5d38abec875a",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "ee9788fe-4bcb-5004-acc2-d683a803d765",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "647751cb-6daa-58d1-933a-e62b7209f113",
+      "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "aab9d6a6-54a3-5909-b906-f9c6174d8c8c",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "1bc2b92e-360e-59a5-8a18-0fed96f17759",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "73605ed9-14d1-50f4-aab5-031f3d769bf7",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "b3a59f3a-2350-5446-9ca9-e1dc09c4ee4e",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "7f6c66cc-8158-5506-93da-0c753d93d497",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "95768bd9-d195-5f83-a9ce-1deca38be238",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "81394ec1-0f23-584c-91ee-da5eb6eca15e",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "07f221b6-ac06-5a56-b73d-ab2417dc3f8d",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "1a7bd2cf-f493-587c-981d-cad2c5a3ebe7",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "31f194e7-2d2d-57bf-9e10-830496f2073c",
+      "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+      "label": "10",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "67e39f5d-0bfc-51a2-b624-77544222d1b2",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "1",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "9731845b-735e-548c-ba59-80c71cd13c06",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "2",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "07b62a5c-4df5-5f87-af4a-3d84c78e8615",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "3",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "267cba87-bff5-5643-acf8-fdd33a4dab7f",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "4",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "2b4dbbc8-5317-5879-97ae-20f8830213cb",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "5",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "9ec36ab5-0288-546e-af0b-4c8ff39b4103",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "6",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "9e75621a-039c-55e8-b0e2-cfd848084051",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "7",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "4cdd05a5-b427-5b88-933b-c3abd596cce3",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "8",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    },
+    {
+      "id": "b23346a5-2c97-5d4f-8cad-e612fdf73954",
+      "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+      "label": "9",
+      "medium": "copper",
+      "poe": true,
+      "notes": "Numbered port from the source map."
+    }
+  ],
+  "connections": [
+    {
+      "id": "88c26183-2564-5ff5-9a2b-1e20477ce5bf",
+      "source": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": "83e3aacd-88aa-549d-89d3-4ead777983d4"
+      },
+      "target": {
+        "deviceId": "2f742d0f-f35d-5e46-a3db-8dbdc378ca81",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "NETL",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "08202c9f-3b71-5d7f-b37f-748a5161cdc4",
+      "source": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": "cc16f7ce-84bf-576e-8b2e-693016d62139"
+      },
+      "target": {
+        "deviceId": "87bc2007-50d6-5a48-809b-460500eeac23",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "NVR",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "17c85b1e-9213-532a-b22b-66d59bd84d9e",
+      "source": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": "01aba491-058e-58ea-a436-53e2c294f29d"
+      },
+      "target": {
+        "deviceId": "715e6a9c-3fd6-5b27-9eca-77990153aa6a",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "NETG2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "e3886299-1ca6-5a7b-9364-0063781b96e5",
+      "source": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": "41e3d51e-84fe-596d-bf6e-30eaf0ca5f00"
+      },
+      "target": {
+        "deviceId": "a149dfaa-ea8e-544a-ac2c-2dde23e547b5",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "DSUPL",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "6c38ce75-b82a-5729-8323-5c4d02455ca0",
+      "source": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": "be1c3c1d-76c0-553b-a29e-39ba37f4d2e4"
+      },
+      "target": {
+        "deviceId": "a3b9cb5c-f623-5c5d-8820-a1bcf8c188b8",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "GSUPL",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "91e4ae04-d98e-5780-887b-1a6e927def61",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "7ff34539-db04-5ddf-9ca4-7eec5fea7d54"
+      },
+      "target": {
+        "deviceId": "5d7c9bbb-6db0-5cc5-a0a7-23b2478ded66",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "MECAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "a915aae6-37fd-50e0-bbd5-d71bc1c143f6",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "185b8c09-e320-528a-8d4c-168c6eede590"
+      },
+      "target": {
+        "deviceId": "aa869dfc-0387-5a28-aeff-d2a9fb3a4a78",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f887913a-7d4a-5f1d-93f2-47c279235e9e",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "14e6a27b-b20e-56a6-8b64-449e61527f83"
+      },
+      "target": {
+        "deviceId": "fb082eda-97e5-5c76-b3a6-1d28e39894c1",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "3db00ff2-ace1-5015-8c9e-a386517f836e",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "6843a93b-41a8-5959-8502-082be8586795"
+      },
+      "target": {
+        "deviceId": "28ac1f18-d783-5924-9773-b71382586793",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM3",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "69647a86-367a-5a82-b6a5-65349df3f17d",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "46ad02ba-dc69-5be2-a665-53e38173843e"
+      },
+      "target": {
+        "deviceId": "ec71b6cc-daed-59b7-a87e-2cd61913baec",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM4",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "e93bf5f2-4983-586a-b5f6-300123e0df10",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "d9138158-7f84-597b-b207-f06a64a5ac22"
+      },
+      "target": {
+        "deviceId": "0aaaba1e-6c39-538d-820e-ae8debb876da",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM5",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "ed705cb6-9f89-5b47-9623-c8a188290f59",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "b00dfef5-0c56-58b2-bad5-2aded1273a81"
+      },
+      "target": {
+        "deviceId": "817dfc9e-26d6-5529-877a-8bb48a0506ab",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CCAM6",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "1976a7a4-f3a2-543b-a5d4-9e1eba465ab2",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": "1604361a-6887-561e-a7be-42e5f56f8d01"
+      },
+      "target": {
+        "deviceId": "5267480c-0aef-5975-aeda-db394ed6a43c",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "SCCAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f893bc01-0600-5c91-9968-1a7383d7b76f",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "d5a1893e-cb70-50b0-9870-325df323fade"
+      },
+      "target": {
+        "deviceId": "e84e640d-b5a0-57a4-a9db-e90d321df3e8",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "FFENCAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "65085c28-58d4-56e7-a3d6-320347c27a51",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "9503b04b-7ca9-58dd-b931-d9220506afeb"
+      },
+      "target": {
+        "deviceId": "d89a43c2-d853-5377-8955-e820c34d2cd0",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "FTSACAM2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "943619ca-0bd1-5c2a-b68f-36ac8c71f9af",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "c2ec5933-dbdc-5735-a751-465ac2cd3af1"
+      },
+      "target": {
+        "deviceId": "2a10cce7-85f5-5343-94ed-688cd562261d",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "FFSACAM3",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "28b10015-4f1e-576b-b6a6-cc27df778819",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "446ddc78-f27f-53f8-87a5-7fdf0403a1c3"
+      },
+      "target": {
+        "deviceId": "14b8bf5b-920d-578a-ad0e-70a023d7df93",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "FNTACAM4",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "02b5b097-fc9f-5d60-a2cc-5a0f10746b61",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "6e1a4538-fba9-5bf6-93bb-571a9d75d69b"
+      },
+      "target": {
+        "deviceId": "b7e2f8da-f7f5-56d2-9518-cfa863d80856",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "SBSCAM5",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "acdabcd3-e701-5b66-b1e7-a7d53943a955",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "0c541e26-7c74-582d-9efd-ef7a040ec0e3"
+      },
+      "target": {
+        "deviceId": "58fe0a94-a04b-541e-bea5-5b1a42633dc1",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "MECAM2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "db37c518-0c90-5eff-aa6a-eff5f1c193e1",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": "c752e4a1-ad4e-53d0-83df-ec18bbc593d3"
+      },
+      "target": {
+        "deviceId": "be7a6a02-0980-54fc-b26e-fd8fb665da73",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "SFSACAM6",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "55f9c0a0-c139-5cce-b103-ad9b1c44b823",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": "595e7e17-d55d-5c37-bd15-5978e2c47896"
+      },
+      "target": {
+        "deviceId": "7e5fbf88-377f-52c1-b171-9de496e9dc54",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CACAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "b0e240cf-cd82-5f60-8c38-c9c331f7685d",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": "8facbf63-2fef-5428-8fa0-0fa6e4ac4df3"
+      },
+      "target": {
+        "deviceId": "223a1d04-1728-5e27-9785-c823e92d8b3b",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CAENCAM2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "49007a53-1e27-59eb-85cd-4b05ee36620f",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": "3c3ffaa4-400e-5f56-b976-db906d77e986"
+      },
+      "target": {
+        "deviceId": "22c8de4c-d9e4-5d9e-8c21-57cda1790173",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "CMCACAM3",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "06f9a925-bd1e-5071-9eca-9c4892f7957a",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": "1f09044c-ba17-5d51-9608-dd07d6c527c4"
+      },
+      "target": {
+        "deviceId": "2ae2a565-e68c-54be-841c-8dfbd32d50f2",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "EMPKCAM4",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "ad3a0f9d-0dae-50f8-8f45-cc2a0c98de05",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": "a1a2f62e-4e85-5629-a745-f7f97d12abd1"
+      },
+      "target": {
+        "deviceId": "0f177ace-1cb2-5668-bd15-47e57d60cc99",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "SGCAM5",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "7a94fc1a-0a0a-5260-9f53-55ed43745536",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "67e39f5d-0bfc-51a2-b624-77544222d1b2"
+      },
+      "target": {
+        "deviceId": "f454cecb-3c5a-56f6-b67f-8cb9dd349b9f",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ESSACAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "86615254-3bb6-5f61-a5ef-3840b7acd9eb",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "9731845b-735e-548c-ba59-80c71cd13c06"
+      },
+      "target": {
+        "deviceId": "ab030e3b-5e91-530b-abfa-ccaf607e7d27",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ESDACAM2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "154a0528-9406-54ff-9965-f4d9c34d82a5",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "07b62a5c-4df5-5f87-af4a-3d84c78e8615"
+      },
+      "target": {
+        "deviceId": "0aa3a8c5-eedf-5124-9aee-6f3a9bcbc3b0",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "EMPKCAM3",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "3722a921-697a-5443-a955-8a02828d1f34",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "267cba87-bff5-5643-acf8-fdd33a4dab7f"
+      },
+      "target": {
+        "deviceId": "aefa3509-9960-54a8-8dd8-f4d94dd53ae9",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ESMACAM4",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "32f3470f-ff9f-55f0-b36a-3188da7b5700",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "2b4dbbc8-5317-5879-97ae-20f8830213cb"
+      },
+      "target": {
+        "deviceId": "8aeb7b67-a1aa-51bc-9ffe-c98c972b1a0a",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ESLACAM5",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "024d3583-0193-56bb-a691-52ba642bfeba",
+      "source": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": "9ec36ab5-0288-546e-af0b-4c8ff39b4103"
+      },
+      "target": {
+        "deviceId": "2b4240b2-e494-5636-9e69-6c3233acdd8d",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "WIFI",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "082c2e9e-88b8-5ea9-9290-c702364589ca",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": "80bebbae-f384-56da-a172-c1f4f435cdff"
+      },
+      "target": {
+        "deviceId": "6bcc8215-9153-5340-b94f-8bd6432915ff",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ACOACAM1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "366289c5-f698-5a7b-9afb-e5d43c743f3b",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": "54665343-2d8d-5f87-b812-b349275ec0a9"
+      },
+      "target": {
+        "deviceId": "3f00a7d8-cf14-529b-b7fe-662755364b63",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "AJOF",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f184792f-0664-5580-9d1b-0f1576dea59d",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": "7dc43603-3781-518e-a92b-03ee4da386f1"
+      },
+      "target": {
+        "deviceId": "abbfc726-54e4-553b-aa1a-a00bff9db1c7",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "TV",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "62ac0a45-af19-5dac-b062-7674dc7d5427",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": "a98c1311-3320-5c67-bed5-a222b3b3e4e3"
+      },
+      "target": {
+        "deviceId": "0b5eb2f9-b369-5d09-a242-ee26e5da3f9f",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "NVR",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "4d9dd20a-dae1-5fec-a95a-a6dbe29b2359",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "aab9d6a6-54a3-5909-b906-f9c6174d8c8c"
+      },
+      "target": {
+        "deviceId": "27049896-ac9c-57e9-825b-9454c3dfcbbc",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "ACECAM",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "82c2f27b-53df-57eb-beda-848abc07ba4e",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "1bc2b92e-360e-59a5-8a18-0fed96f17759"
+      },
+      "target": {
+        "deviceId": "4fc60210-917d-56c7-aac4-1534affc087b",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "DARCAM",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f8dc66e7-8b79-5b50-908f-e36b5677b7f2",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "73605ed9-14d1-50f4-aab5-031f3d769bf7"
+      },
+      "target": {
+        "deviceId": "6450e461-32d1-5f3c-8c68-9811dd0b0fc3",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "SOACAM",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f6ebadf5-1763-52ed-8bd9-5a2e1970fb37",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "b3a59f3a-2350-5446-9ca9-e1dc09c4ee4e"
+      },
+      "target": {
+        "deviceId": "6248d99f-813d-5e18-9524-faee7538b91c",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "DALCAM",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "f446ae5f-0134-5826-9328-3019ac56300e",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "7f6c66cc-8158-5506-93da-0c753d93d497"
+      },
+      "target": {
+        "deviceId": "0183d913-c37a-5c75-a0bb-670042573996",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "BS1",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "4762f7c3-bfbe-580c-a72d-7967a53287b5",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "95768bd9-d195-5f83-a9ce-1deca38be238"
+      },
+      "target": {
+        "deviceId": "525fb28c-9f25-57d9-8489-83069accbb82",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "BS2",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "0c508e56-7bae-5672-a40f-6ff8a6ca77de",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "81394ec1-0f23-584c-91ee-da5eb6eca15e"
+      },
+      "target": {
+        "deviceId": "4a0259bf-4fec-595e-a633-d50d1af1a317",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "BS3",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "bcfdb61f-f19e-5c80-be1f-04f89c92fa23",
+      "source": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": "07f221b6-ac06-5a56-b73d-ab2417dc3f8d"
+      },
+      "target": {
+        "deviceId": "5a296f6d-60dd-5214-ac25-5e687a51be81",
+        "portId": null
+      },
+      "kind": "access",
+      "cableCode": "BS4",
+      "medium": "copper",
+      "status": "unknown",
+      "verification": "confirmed",
+      "notes": "Source switch port confirmed from the HTML. Destination port and live status were not recorded."
+    },
+    {
+      "id": "adfe1ad2-e5b0-510b-9cdc-73117009e2af",
+      "source": {
+        "deviceId": "96eaeb6d-05c6-5d06-b584-9cdadd26dc02",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "UPL",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "e18d754a-aa2e-5533-ac1a-24102fb196bf",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "UPUPL · FFUPL",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "33482bad-a526-52c0-b239-39e60b994edd",
+      "source": {
+        "deviceId": "0877bd8c-b728-5fd4-a01d-5c4ef5a837d3",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "FFUPLP9 · CMCAUPL",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "aa0f90c0-c687-5fcc-8984-4dc322ea5fd2",
+      "source": {
+        "deviceId": "2594b8b8-2df7-58cc-a956-5ff1ca57f2b8",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "d49c7735-c6fc-5253-8849-f2da1a6bbde3",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "EMUPL · CMCAUPL",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "e94c8826-ff51-5361-8555-d63748edf9d4",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "b3355bf4-419b-5ccf-808c-50abccd5becd",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "SOAUPL",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "7c4fcd92-e031-5b3b-9dce-d7ca8bdf2e9b",
+      "source": {
+        "deviceId": "9a5ed8a7-fa2e-54d1-9507-faf9935c97d1",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "dacd4742-1a1d-5c79-869b-4db162da43a5",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "UGR",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "unverified",
+      "notes": "Physical ports were not specified in the original map."
+    },
+    {
+      "id": "fbd16a12-f31a-5bba-98f4-5cd06977471b",
+      "source": {
+        "deviceId": "dacd4742-1a1d-5c79-869b-4db162da43a5",
+        "portId": null
+      },
+      "target": {
+        "deviceId": "66bda398-97c1-5662-b8cc-ffb811c8b0b4",
+        "portId": null
+      },
+      "kind": "uplink",
+      "cableCode": "assumed link",
+      "medium": "unknown",
+      "status": "unknown",
+      "verification": "assumed",
+      "notes": "Physical ports were not specified in the original map."
+    }
+  ],
+  "dims": [],
+  "settings": {
+    "unitsPerMeter": 100
+  }
+}

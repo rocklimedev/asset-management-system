@@ -2,7 +2,11 @@ import { OverlayRoot } from '@/components/ui/overlay-root';
 import { useEffect, useState } from 'react';
 import { X, UserPlus, Save } from 'lucide-react';
 
-import { useCreateUserMutation, useUpdateUserMutation } from '../../services/api/users.api';
+import {
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useGetUserEmployeeOptionsQuery,
+} from '../../services/api/users.api';
 
 import { useGetRolesQuery } from '../../services/api/role.api';
 
@@ -56,12 +60,26 @@ export default function AddUserModal({ open, onClose, user }: AddUserModalProps)
   const [form, setForm] = useState<FormState>(emptyForm);
 
   const [error, setError] = useState('');
+  const [employeeSearch, setEmployeeSearch] = useState('');
 
   // ==========================================================
   // API
   // ==========================================================
 
   const { data: rolesData, isLoading: rolesLoading } = useGetRolesQuery();
+  const {
+    data: employees = [],
+    isLoading: employeesLoading,
+    isError: employeesError,
+    refetch: reloadEmployees,
+  } = useGetUserEmployeeOptionsQuery(undefined, { skip: !open, refetchOnMountOrArgChange: true });
+  const visibleEmployees = employees.filter(
+    (employee) =>
+      employee.id === form.employeeId ||
+      `${employee.name} ${employee.employeeCode} ${employee.email || ''}`
+        .toLowerCase()
+        .includes(employeeSearch.trim().toLowerCase()),
+  );
 
   const [createUser, { isLoading: creating }] = useCreateUserMutation();
 
@@ -87,6 +105,7 @@ export default function AddUserModal({ open, onClose, user }: AddUserModalProps)
     setError('');
 
     if (user) {
+      setEmployeeSearch('');
       setForm({
         name: user.name || '',
         email: user.email || '',
@@ -99,6 +118,7 @@ export default function AddUserModal({ open, onClose, user }: AddUserModalProps)
     }
 
     setForm(emptyForm);
+    setEmployeeSearch('');
   }, [open, user]);
 
   // ==========================================================
@@ -250,7 +270,7 @@ export default function AddUserModal({ open, onClose, user }: AddUserModalProps)
 
       {/* MODAL */}
 
-      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card shadow-xl">
         {/* ====================================================
             HEADER
         ==================================================== */}
@@ -359,18 +379,63 @@ export default function AddUserModal({ open, onClose, user }: AddUserModalProps)
           {/* EMPLOYEE */}
 
           <div className="space-y-2">
-            <Label htmlFor="user-employee">
-              Employee ID
+            <Label htmlFor="user-team member">
+              Linked employee
               <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
             </Label>
 
             <Input
-              id="user-employee"
+              aria-label="Search team members"
+              value={employeeSearch}
+              onChange={(event) => setEmployeeSearch(event.target.value)}
+              placeholder="Search team member name, code or email"
+              disabled={submitting || employeesLoading || employeesError}
+            />
+            <select
+              id="user-team member"
               value={form.employeeId}
               onChange={(event) => handleChange('employeeId', event.target.value)}
-              placeholder="Employee UUID"
-              disabled={submitting}
-            />
+              disabled={submitting || employeesLoading || employeesError}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">
+                {employeesLoading ? 'Loading team members…' : 'No linked team member'}
+              </option>
+              {form.employeeId &&
+                !employees.some((employee) => employee.id === form.employeeId) && (
+                  <option value={form.employeeId}>
+                    {user?.employee?.name || 'Currently linked team member'}
+                    {user?.employee?.employeeCode ? ` (${user.employee.employeeCode})` : ''}
+                  </option>
+                )}
+              {visibleEmployees.map((employee) => (
+                <option
+                  key={employee.id}
+                  value={employee.id}
+                  disabled={Boolean(employee.linkedUserId && employee.linkedUserId !== user?.id)}
+                >
+                  {employee.name} ({employee.employeeCode})
+                  {employee.linkedUserId && employee.linkedUserId !== user?.id
+                    ? ' — already linked'
+                    : ''}
+                </option>
+              ))}
+            </select>
+            {employeesError ? (
+              <p role="alert" className="text-xs text-destructive">
+                Unable to load employees.{' '}
+                <button type="button" className="underline" onClick={() => reloadEmployees()}>
+                  Retry
+                </button>
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Each employee can be linked to one user. Select “No linked employee” to unlink.
+              </p>
+            )}
+            {!employeesLoading && !employeesError && visibleEmployees.length === 0 && (
+              <p className="text-xs text-muted-foreground">No employees match your search.</p>
+            )}
           </div>
 
           {/* ROLE */}

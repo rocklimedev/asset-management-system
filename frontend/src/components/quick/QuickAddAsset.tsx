@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { AttachmentFields, usePendingAttachments } from '../attachments/RecordAttachments';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppWindow, ArrowLeft, ArrowRight, Laptop } from 'lucide-react';
 
 import {
@@ -56,6 +57,7 @@ function errorText(error: unknown) {
 }
 
 export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetProps) {
+  const attachments = usePendingAttachments(open);
   const [step, setStep] = useState<Step>(1);
   const [name, setName] = useState('');
   const [kind, setKind] = useState<AssetKind>('HARDWARE');
@@ -67,7 +69,13 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
   const [manufacturer, setManufacturer] = useState('');
   const [model, setModel] = useState('');
 
-  const [createAsset, { isLoading: saving }] = useCreateAssetMutation();
+  const savedId = useRef<string>();
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    savedId.current = undefined;
+  }, [open]);
+  const [createAsset] = useCreateAssetMutation();
 
   const { data: categoriesData } = useGetAssetCategoriesQuery({ isActive: true }, { skip: !open });
 
@@ -111,6 +119,9 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
         : true;
 
   async function save() {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
     // Each physical item needs a unit record. Codes are generated so the
     // user never has to type them.
     const stamp = Date.now().toString(36).slice(-4).toUpperCase();
@@ -143,7 +154,16 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
     } as unknown as CreateAssetRequest;
 
     try {
-      await createAsset(payload).unwrap();
+      if (!savedId.current) {
+        const result = (await createAsset(payload).unwrap()) as {
+          id?: string;
+          data?: { id?: string };
+        };
+        savedId.current = result.data?.id || result.id;
+        if (!savedId.current)
+          throw new Error('Asset saved without an ID. Reopen the record to upload files.');
+      }
+      await attachments.save('assets', savedId.current);
       toast.add({
         type: 'success',
         title: 'Added to Inventory',
@@ -154,8 +174,13 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
       toast.add({
         type: 'error',
         title: "Couldn't add this item",
-        description: errorText(error),
+        description:
+          errorText(error) +
+          (savedId.current ? ' The asset is saved. Retry to finish uploading files.' : ''),
       });
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }
 
@@ -394,6 +419,15 @@ export function QuickAddAsset({ open, onClose, onOpenFullForm }: QuickAddAssetPr
           )}
         </div>
 
+        {step === 3 && (
+          <div className="px-6 pb-4">
+            <AttachmentFields
+              files={attachments.files}
+              setFiles={attachments.setFiles}
+              disabled={saving}
+            />
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border bg-card px-6 py-4">
           <Button
             type="button"

@@ -46,7 +46,7 @@ const custodyCache: Middleware = (api) => (next) => (action) => {
   ) {
     // Employee responses embed asset custody and asset details. Refresh both
     // the board and individual employee views, including initial assignments.
-    api.dispatch(employeesApi.util.invalidateTags(['Employee']));
+    api.dispatch(employeesApi.util.invalidateTags(['Team member']));
 
     api.dispatch(
       dashboardApi.util.invalidateTags([

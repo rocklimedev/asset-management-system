@@ -1,3 +1,5 @@
+import { RecordAttachmentsService } from './record-attachments.service';
+import { RecordAttachmentsController } from './record-attachments.controller';
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
@@ -90,6 +92,7 @@ import { CdnModule } from '@/modules/cdn/cdn.module';
   ],
 
   providers: [
+    RecordAttachmentsService,
     SystemsService,
     AssetsService,
     AssetCategoryService,
@@ -99,6 +102,7 @@ import { CdnModule } from '@/modules/cdn/cdn.module';
   ],
 
   controllers: [
+    RecordAttachmentsController,
     SystemsController,
     AssetsController,
     AssetCategoryController,

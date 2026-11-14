@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AssetPoolQueryDto } from './dto/asset-pool-query.dto';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { AssetUnitsService } from './asset-units.service';
+import { DisposeAssetDto } from './dto/dispose-asset.dto';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -37,6 +38,12 @@ export class AssetsController {
   // ============================================================
   // GET ALL ASSETS
   // ============================================================
+
+  @Post(':id/dispose')
+  @RequirePermissions('assets:write')
+  dispose(@Param('id', ParseUUIDPipe) id: string, @Body() dto: DisposeAssetDto, @CurrentUser() user: AuthUser) {
+    return this.service.dispose(id, dto, user);
+  }
 
   @Get()
   findAll(@Query() query: Record<string, string>) {
@@ -171,7 +178,7 @@ export class AssetsController {
   // ============================================================
 
   @Post(':id/image')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
   setImage(
     @Param('id') id: string,
     @UploadedFile() file: CdnUploadFile | undefined,

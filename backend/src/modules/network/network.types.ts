@@ -1,0 +1,10 @@
+export type Position = { x: number; y: number };
+export type Area = Position & { id: string; name: string; parentId: string | null; notes: string };
+export type Rack = Position & { id: string; name: string; areaId: string; notes: string };
+export type DeviceKind = 'core' | 'switch' | 'router' | 'nvr' | 'wifi' | 'tv' | 'camera' | 'outlet';
+export type Device = Position & { id: string; name: string; code: string; kind: DeviceKind; areaId: string; rackId: string | null; model: string; ip: string; mac: string; notes: string };
+export type Port = { id: string; deviceId: string; label: string; medium: 'copper' | 'fiber' | 'wireless' | 'unknown'; poe: boolean; notes: string };
+export type ConnectionEnd = { deviceId: string; portId: string | null };
+export type Connection = { id: string; source: ConnectionEnd; target: ConnectionEnd; kind: 'access' | 'uplink' | 'crosslink'; cableCode: string; medium: Port['medium']; status: 'active' | 'planned' | 'unknown'; verification: 'confirmed' | 'unverified' | 'assumed'; notes: string };
+export type Dimension = { uid: string; a: [number,number]; b: [number,number]; off: number };
+export type NetworkDocument = { version: 2; areas: Area[]; racks: Rack[]; devices: Device[]; ports: Port[]; connections: Connection[]; dims: Dimension[]; settings: { unitsPerMeter: number } };
