@@ -15,6 +15,18 @@ export interface Profile {
   isActive: boolean | number;
   channelIds: string[];
 }
+export interface Bot {
+  id: string;
+  name: string;
+  uniqueName?: string;
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
+  scope?: string;
+  executionType?: string;
+  channelParticipation: string[];
+  subscriberCount: number;
+}
 export type ProfileInput = Omit<Profile, 'id' | 'isActive'> & { isActive: boolean };
 export interface PlanInput {
   profileId?: string;
@@ -99,6 +111,10 @@ export const communicationApi = api.injectEndpoints({
       query: (id) => ({ url: `/communication/profiles/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Communication'],
     }),
+    communicationBots: builder.query<{ items: Bot[] }, void>({
+      query: () => '/communication/bots',
+      providesTags: ['Communication'],
+    }),
     communicationChannels: builder.query<{ items: Channel[] }, void>({
       query: () => '/communication/channels',
       providesTags: ['Communication'],
@@ -182,6 +198,7 @@ export const {
   useSaveCommunicationProfileMutation,
   useDeleteCommunicationProfileMutation,
   useCommunicationChannelsQuery,
+  useCommunicationBotsQuery,
   useSyncCommunicationChannelsMutation,
   useCommunicationChannelDetailsQuery,
   useCommunicationChannelMembersQuery,

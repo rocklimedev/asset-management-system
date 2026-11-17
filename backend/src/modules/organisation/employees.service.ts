@@ -295,7 +295,7 @@ export class EmployeesService {
                 },
                 {
                   model: SoftwareLicense,
-                  as: 'license',
+                  as: 'licenses',
                 },
               ],
             },

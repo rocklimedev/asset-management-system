@@ -29,20 +29,23 @@ export function AttachmentFields({
   files,
   setFiles,
   disabled = false,
+  purpose: selectedPurpose,
 }: {
   files: Pending[];
   setFiles: React.Dispatch<React.SetStateAction<Pending[]>>;
   disabled?: boolean;
+  purpose?: 'image' | 'invoice';
 }) {
   const [error, setError] = useState('');
   return (
     <section className="space-y-3 rounded-lg border p-4">
-      <h3 className="text-sm font-medium">Images & invoices</h3>
+      <h3 className="text-sm font-medium">{selectedPurpose === 'image' ? 'Images' : selectedPurpose === 'invoice' ? 'Invoices' : 'Images & invoices'}</h3>
       <p className="text-xs text-muted-foreground">
-        Images: JPEG, PNG or WebP, up to 5 MB. Invoices: PDF or image, up to 10 MB. Selected files
-        upload when you save.
+        {selectedPurpose !== 'invoice' && 'Images: JPEG, PNG or WebP, up to 5 MB. '}
+        {selectedPurpose !== 'image' && 'Invoices: PDF or image, up to 10 MB. '}
+        Selected files upload when you save.
       </p>
-      {(['image', 'invoice'] as const).map((purpose) => (
+      {(['image', 'invoice'] as const).filter(purpose => !selectedPurpose || purpose === selectedPurpose).map((purpose) => (
         <label key={purpose} className="block space-y-1 text-sm">
           <span>{purpose === 'image' ? 'Upload images' : 'Upload invoices'}</span>
           <Input
@@ -107,11 +110,13 @@ export function RecordAttachments({
   id,
   disabled = false,
   readOnly = false,
+  purpose,
 }: {
   resource: 'assets' | 'systems';
   id: string;
   disabled?: boolean;
   readOnly?: boolean;
+  purpose?: 'image' | 'invoice';
 }) {
   const { data = [], isLoading, isError } = useGetRecordAttachmentsQuery({ resource, id });
   const pending = usePendingAttachments(true, id);
@@ -126,7 +131,7 @@ export function RecordAttachments({
         </p>
       )}
       <div className="flex flex-wrap gap-3">
-        {data.map((file) => (
+        {data.filter(file => !purpose || file.purpose === purpose).map((file) => (
           <a
             key={file.id}
             href={file.url}
@@ -153,6 +158,7 @@ export function RecordAttachments({
           files={pending.files}
           setFiles={pending.setFiles}
           disabled={disabled || saving}
+          purpose={purpose}
         />
       )}
       {!readOnly && pending.files.length > 0 && (

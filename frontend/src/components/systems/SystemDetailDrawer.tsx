@@ -1,5 +1,5 @@
 import { RecordAttachments } from '../attachments/RecordAttachments';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
   Monitor,
@@ -16,6 +16,8 @@ import {
   X,
   AppWindow,
   Trash,
+  Image,
+  FileText,
 } from 'lucide-react';
 
 import {
@@ -33,6 +35,8 @@ import {
 
 import { RowActions } from '../ui/row-actions';
 import { AssetPool } from '../asset-manager/AssetPool';
+import { AssetDetailDrawer } from '../asset-manager/AssetDetailDrawer';
+import { CreateAssetModal } from '../asset-manager/CreateAssetModal';
 import { useGetEmployeeQuery, type Employee } from '../../services/api/employees.api';
 import { Button } from '../../components/ui/button';
 import { toast } from '../../components/ui/toast';
@@ -75,6 +79,12 @@ export function SystemDetailDrawer({
   onShowHistory,
 }: Props) {
   const [assetPoolOpen, setAssetPoolOpen] = useState(false);
+  const [peripheralAsset, setPeripheralAsset] = useState<Asset | null>(null);
+  const [editingPeripheral, setEditingPeripheral] = useState<Asset | null>(null);
+  useEffect(() => {
+    setPeripheralAsset(null);
+    setEditingPeripheral(null);
+  }, [system?.id]);
   const [reclassify, reclassifyState] = useTransferAssetMutation();
   const { currentData: employeeResponse } = useGetEmployeeQuery(system?.employeeId ?? '', {
     skip: !system?.employeeId,
@@ -358,9 +368,6 @@ export function SystemDetailDrawer({
             </div>
           </div>
 
-          <div className="p-5">
-            <RecordAttachments resource="systems" id={system.id} disabled={busy} />
-          </div>
           <Tabs.Root key={system.id} defaultValue="specifications" className="min-w-0">
             <Tabs.List
               aria-label="Work station details"
@@ -373,6 +380,8 @@ export function SystemDetailDrawer({
                 { value: 'software', label: 'Software', icon: AppWindow },
                 { value: 'computerParts', label: 'Computer Parts', icon: Cpu },
                 { value: 'accessories', label: 'Accessories', icon: Package },
+                { value: 'images', label: 'Images', icon: Image },
+                { value: 'invoices', label: 'Invoices', icon: FileText },
               ].map(({ value, label, icon: Icon }) => (
                 <Tabs.Trigger
                   key={value}
@@ -384,6 +393,13 @@ export function SystemDetailDrawer({
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
+
+            <Tabs.Content value="images" forceMount className="p-5 data-[state=inactive]:hidden">
+              <RecordAttachments resource="systems" id={system.id} disabled={busy} purpose="image" />
+            </Tabs.Content>
+            <Tabs.Content value="invoices" forceMount className="p-5 data-[state=inactive]:hidden">
+              <RecordAttachments resource="systems" id={system.id} disabled={busy} purpose="invoice" />
+            </Tabs.Content>
 
             {/* ============================================================
               SPECIFICATIONS
@@ -693,9 +709,16 @@ export function SystemDetailDrawer({
                     key={assignment.id}
                     className="flex flex-wrap items-center gap-3 rounded-lg border p-3"
                   >
-                    <Package className="h-5 w-5 text-muted-foreground" />
+                    <button
+                      type="button"
+                      disabled={!assignment.asset}
+                      onClick={() => setPeripheralAsset(assignment.asset ?? null)}
+                      aria-label={`View details for ${assignment.asset?.name ?? 'peripheral'}`}
+                      className="mr-auto flex min-w-0 flex-1 items-center gap-3 rounded-md text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                    <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
 
-                    <div className="mr-auto">
+                    <div className="min-w-0">
                       <p className="text-sm font-medium">{assignment.asset?.name}</p>
 
                       <p className="text-xs text-muted-foreground">
@@ -703,7 +726,19 @@ export function SystemDetailDrawer({
                         {assignment.asset?.category?.name ?? assignment.asset?.kind} ·{' '}
                         {assignment.asset?.status}
                       </p>
+                      <p className="break-all text-xs text-muted-foreground">
+                        Serial number: {assignment.assetUnit?.serialNumber ||
+                          (!assignment.assetUnitId ? assignment.asset?.serialNumber : null) || 'Not recorded'}
+                      </p>
+                      {(assignment.assetUnit?.cellularIdentities ?? [])
+                        .filter(identity => identity.imei?.trim())
+                        .map((identity, index, identities) => (
+                          <p key={index} className="break-all text-xs text-muted-foreground">
+                            IMEI{identities.length > 1 ? ` ${index + 1}` : ''}: {identity.imei}
+                          </p>
+                        ))}
                     </div>
+                    </button>
 
                     <RowActions
                       recordName={assignment.asset?.name ?? 'Component'}
@@ -847,6 +882,23 @@ export function SystemDetailDrawer({
           SOFTWARE ASSIGN MODAL
       ============================================================ */}
 
+      <AssetDetailDrawer
+        asset={peripheralAsset}
+        onClose={() => setPeripheralAsset(null)}
+        onEdit={(asset) => {
+          setPeripheralAsset(null);
+          setEditingPeripheral(asset);
+        }}
+        onTransfer={(asset) => {
+          setPeripheralAsset(null);
+          setTransferTarget({ id: asset.id, name: asset.name, kind: 'component' });
+        }}
+      />
+      <CreateAssetModal
+        open={Boolean(editingPeripheral)}
+        asset={editingPeripheral}
+        onClose={() => setEditingPeripheral(null)}
+      />
       <AssetPool
         open={assetPoolOpen && Boolean(system.employeeId)}
         employee={employee}

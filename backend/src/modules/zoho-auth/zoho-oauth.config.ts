@@ -4,10 +4,12 @@ export const REQUIRED_SCOPES = [
   'ZohoMail.organization.accounts.READ',
   'ZohoMail.organization.accounts.CREATE',
   'ZohoMail.accounts.READ',
+  'ZohoMail.messages.CREATE',
   'ZohoCliq.Users.READ',
   'ZohoCliq.Users.CREATE',
   'ZohoCliq.Channels.READ',
   'ZohoCliq.Channels.UPDATE',
+  'ZohoCliq.Bots.READ',
 ];
 const CENTERS: Record<string, string> = {
   us: 'zoho.com',

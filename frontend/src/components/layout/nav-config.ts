@@ -117,17 +117,17 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'People',
     items: [
-      // {
-      //   to: '/communication',
-      //   label: 'Communication',
-      //   description: 'Zoho accounts, channels and employee onboarding',
-      //   icon: MessageSquare,
-      // },
       {
         to: '/employees',
         label: 'Team',
         description: 'People who can receive assets',
         icon: UserSquare2,
+      },
+      {
+        to: '/communication',
+        label: 'Communication',
+        description: 'Zoho accounts, channels and employee onboarding',
+        icon: MessageSquare,
       },
     ],
   },
@@ -142,7 +142,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         to: '/roles-permissions',
-        label: 'Roles & Permissions',
+        label: 'Role Permissions Matrix',
         description: 'Manage roles and access permissions',
         icon: ShieldCheck,
       },

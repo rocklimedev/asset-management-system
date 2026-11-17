@@ -21,6 +21,37 @@ const ActivityLogs = lazy(() => import('../pages/ActivityLogs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
 const ConnectorsPage = lazy(() => import('../pages/Connectors'));
 const Communication = lazy(() => import('../pages/Communication'));
+const CommunicationOverview = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({
+    default: m.OverviewPage,
+  })),
+);
+const CommunicationNewHire = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({
+    default: m.NewHirePage,
+  })),
+);
+const CommunicationOnboarding = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({
+    default: m.OnboardingPage,
+  })),
+);
+const CommunicationChannels = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({
+    default: m.ChannelsPage,
+  })),
+);
+const CommunicationBots = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({ default: m.BotsPage })),
+);
+const CommunicationProfiles = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({
+    default: m.ProfilesPage,
+  })),
+);
+const CommunicationSetup = lazy(() =>
+  import('../components/communication/CommunicationPages').then((m) => ({ default: m.SetupPage })),
+);
 const SoftwareList = lazy(() => import('../pages/SoftwareList'));
 const Network = lazy(() => import('../pages/Network'));
 const NetworkDirectory = lazy(() => import('../pages/NetworkDirectory'));
@@ -96,7 +127,15 @@ export default function AppRoutes() {
           />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/connectors" element={<ConnectorsPage />} />
-          <Route path="/communication" element={<Communication />} />
+          <Route path="/communication" element={<Communication />}>
+            <Route index element={<CommunicationOverview />} />
+            <Route path="new-hire" element={<CommunicationNewHire />} />
+            <Route path="onboarding" element={<CommunicationOnboarding />} />
+            <Route path="channels" element={<CommunicationChannels />} />
+            <Route path="bots" element={<CommunicationBots />} />
+            <Route path="profiles" element={<CommunicationProfiles />} />
+            <Route path="setup" element={<CommunicationSetup />} />
+          </Route>
         </Route>
       </Route>
 

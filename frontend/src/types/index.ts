@@ -132,6 +132,7 @@ export interface AssetHistoryEntry {
 export type AssetHistory = AssetHistoryEntry;
 
 export interface SystemRecord {
+  organisationId?: string | null;
   attachments?: import('../services/api/asset.api').RecordAttachment[] | null;
   computerParts?: string | null;
   accessories?: string | null;

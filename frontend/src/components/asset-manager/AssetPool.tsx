@@ -1,4 +1,5 @@
 import { TablePagination } from '../list/TablePagination';
+import { AddSearchAsset } from '../quick/AddSearchAsset';
 import { useEffect, useState } from 'react';
 import { Package, Search } from 'lucide-react';
 
@@ -6,6 +7,7 @@ import {
   useGetAssetPoolQuery,
   useGetAssetCategoriesQuery,
   useAssignAssetMutation,
+  useGetAssetsQuery,
 } from '../../services/api/asset.api';
 
 import { toast } from '../ui/toast';
@@ -77,7 +79,7 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
     if (!open) setPicked(null);
   }, [open]);
 
-  const { data, isLoading, isFetching, isError, refetch } = useGetAssetPoolQuery(
+  const { currentData: data, isLoading, isFetching, isError, refetch } = useGetAssetPoolQuery(
     {
       search: search || undefined,
       categoryId: categoryId || undefined,
@@ -93,6 +95,11 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
   const items = data?.items ?? [];
+  const { currentData: catalogue, isFetching: checkingCatalogue, isError: catalogueError } = useGetAssetsQuery(
+    { search: search.trim(), kind: kind || undefined, categoryId: categoryId || undefined, pageSize: 1 },
+    { skip: !open || !search.trim() || !data || items.length > 0 || isFetching || isError },
+  );
+  const selectedCategory = categories.find(category => category.id === categoryId);
   const recipient = system?.name ?? employee?.name ?? 'this person';
 
   // ============================================================
@@ -256,18 +263,31 @@ export function AssetPool({ open, employee, system, onClose }: AssetPoolProps) {
         ================================================== */}
 
         <div className="min-h-0 flex-1 overflow-y-auto bg-background px-6 py-4">
-          {isLoading ? (
+          {isLoading || (isFetching && !data) ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <SkeletonCard key={index} />
               ))}
             </div>
           ) : items.length === 0 ? (
+            <div>
             <EmptyState
               icon={Package}
               title="Nothing in stock"
-              description="Nothing matches this search. Try a different word, or add new equipment from Inventory."
+              description={catalogue?.total ? 'Matching equipment already exists in Inventory but is not available in this pool.' : 'Nothing matches this search.'}
             />
+            {!isError && !isFetching && !checkingCatalogue && !catalogueError && catalogue?.total === 0 && (
+              <AddSearchAsset
+                name={search}
+                kind={kind || selectedCategory?.type || 'HARDWARE'}
+                categoryId={categoryId || undefined}
+                categoryName={selectedCategory?.name}
+                organisationId={system?.organisationId || employee?.organisationId || undefined}
+                locationId={employee?.locationId || undefined}
+                onAdded={() => { setPage(1); setPicked(null); }}
+              />
+            )}
+            </div>
           ) : (
             <ul
               className={[

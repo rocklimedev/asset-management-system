@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CdnService, CdnUploadFile, CDN_MAX_FILE_SIZE } from './cdn.service';
 import { CdnUploadDto, CdnDeleteDto } from './cdn-upload.dto';

@@ -22,6 +22,7 @@ import {
 import {
   useGetAssetsQuery,
   useGetAssetQuery,
+  useUpdateAssetMutation,
   useDeleteAssetMutation,
   useDisposeAssetMutation,
   useGetAssetCategoriesQuery,
@@ -337,6 +338,27 @@ export default function Inventory() {
     setRecipient('');
   }
   const [deleteAsset, { isLoading: isDeleting }] = useDeleteAssetMutation();
+  const [updateAssetStatus] = useUpdateAssetMutation();
+  const [savingStatusId, setSavingStatusId] = useState<string | null>(null);
+  const statusSaving = useRef(false);
+
+  async function changeAssetStatus(asset: Asset, nextStatus: AssetStatus) {
+    if (statusSaving.current || nextStatus === asset.status) return;
+    statusSaving.current = true;
+    setSavingStatusId(asset.id);
+    try {
+      await updateAssetStatus({ id: asset.id, body: { status: nextStatus } }).unwrap();
+      toast.add({ type: 'success', title: 'Status updated',
+        description: `${asset.name}: ${formatStatus(nextStatus)}.` });
+    } catch (error) {
+      const message = (error as { data?: { message?: string | string[] } }).data?.message;
+      toast.add({ type: 'error', title: 'Could not update status',
+        description: Array.isArray(message) ? message.join(' ') : message || 'Please try again.' });
+    } finally {
+      statusSaving.current = false;
+      setSavingStatusId(null);
+    }
+  }
 
   const [assignAsset, { isLoading: isAssigning }] = useAssignAssetMutation();
 
@@ -1170,10 +1192,35 @@ export default function Inventory() {
 
                       {/* Status */}
 
-                      <td className="whitespace-nowrap px-4 py-2.5">
-                        <Badge variant={getStatusBadgeVariant(asset.status)}>
-                          {formatStatus(asset.status)}
-                        </Badge>
+                      <td className="whitespace-nowrap px-4 py-2.5" onClick={(event) => event.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              disabled={savingStatusId !== null}
+                              aria-label={`Change status for ${asset.name}: ${formatStatus(asset.status)}`}
+                              className="inline-flex items-center gap-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                            >
+                              <Badge variant={getStatusBadgeVariant(asset.status)}>
+                                {savingStatusId === asset.id ? 'Saving…' : formatStatus(asset.status)}
+                              </Badge>
+                              {savingStatusId === asset.id
+                                ? <Loader2 className="h-3 w-3 animate-spin" />
+                                : <Pencil className="h-3 w-3 text-muted-foreground" />}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" onClick={(event) => event.stopPropagation()}>
+                            {STATUS_OPTIONS.map((value) => (
+                              <DropdownMenuItem
+                                key={value}
+                                disabled={savingStatusId !== null || value === asset.status}
+                                onSelect={() => void changeAssetStatus(asset, value)}
+                              >
+                                <Badge variant={getStatusBadgeVariant(value)}>{formatStatus(value)}</Badge>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
 
                       {/* Condition */}

@@ -1,5 +1,30 @@
 # Zoho integration and employee communication
 
+## Welcome email setup
+
+Full onboarding now runs MAIL, CLIQ, CHANNELS, WELCOME, then ACTIVATION. WELCOME
+sends plaintext sign-in guidance and assigned channel names to the employee's company
+mailbox. Passwords are never included; IT must deliver initial credentials separately.
+Activation remains a separate administrator attestation. Existing completed tasks are
+preserved; the next provisioning run adds the WELCOME task. No new schema migration
+is needed beyond migration 011.
+
+Configure `ZOHO_WELCOME_ACCOUNT_ID` and `ZOHO_WELCOME_FROM` for the sender mailbox
+owned by the OAuth-authenticated account. Reconnect Zoho to grant the newly required
+`ZohoMail.messages.CREATE` scope. The sender must match that authenticated account,
+as specified by https://www.zoho.com/mail/help/api/post-send-an-email.html.
+Use the existing Communication page to assign a profile, review channels and run
+full onboarding. Configure and test against a test employee before live rollout.
+
+Successful welcome sends are checkpointed and skipped on retries. An attempted send
+without a confirmed response is blocked with `WELCOME_DELIVERY_REQUIRES_RECONCILIATION`
+on retry. An administrator must inspect the sender's Sent folder/provider records.
+If sent, mark the employee's `WELCOME_DELIVERY` integration log as COMPLETED and retry
+WELCOME. Only after verifying that it was never sent should an administrator remove
+that delivery marker and retry. Do not clear markers solely because of a timeout.
+Task completion means Zoho accepted the message, not that the recipient read it or
+that final delivery is guaranteed. No welcome messages are sent during deployment.
+
 ## Existing architecture and implementation choices
 
 The backend is NestJS 10 / TypeScript, Sequelize 6 (`sequelize-typescript`) and MySQL.
@@ -77,6 +102,7 @@ Scopes (no `.ALL` grants requested):
 | `ZohoCliq.Users.CREATE` | Optional Cliq invitation / provisioning |
 | `ZohoCliq.Channels.READ` | Channel directory and membership verification |
 | `ZohoCliq.Channels.UPDATE` | Add or explicitly remove channel members |
+| `ZohoCliq.Bots.READ` | List and inspect Cliq bots (v3 `GET /api/v3/bots`) |
 
 `ZOHO_ADDITIONAL_SCOPES` appends future comma-separated scopes. Reconnect after adding scopes.
 The status response reports required, granted and missing scopes. If an OAuth exchange
@@ -172,13 +198,15 @@ IDs in paths are internal UUIDs; external Zoho IDs are stored separately.
 | POST `communication/channels/sync` | `communication:channels:manage` | Import accessible channels, mark absent mappings inactive |
 | GET `communication/channels/:id` | `communication:read` | Remote channel details |
 | GET `communication/channels/:id/members` | `communication:read` | `{items:[...]}` from Zoho |
+| GET `communication/bots` | `communication:read` | `{items:[...]}` of Cliq v3 bots (`id`, `name`, `uniqueName`, `isActive`, `scope`, `channelParticipation`, `subscriberCount`) |
+| GET `communication/bots/:id` | `communication:read` | One bot summary plus handler types; numeric Cliq bot ID only |
 | POST `communication/employees/:employeeId/preview` | `communication:read` | Assignment body below; resolves desired channels without writes |
 | POST `communication/employees/:employeeId/assign-profile` | `communication:employees:manage` | Save assignment snapshot and reset channel task |
 | POST `communication/employees/:employeeId/provision-email` | `communication:employees:provision` | Provision body; run through Mail verification |
 | POST `communication/employees/:employeeId/provision-cliq` | `communication:employees:provision` | Provision body; run through active Cliq verification |
 | POST `communication/employees/:employeeId/onboard` | `communication:employees:provision` | Provision body; run all steps |
 | POST `communication/employees/:employeeId/sync-channels` | `communication:employees:manage` | Provision body; reverify channel memberships; requires Mail/Cliq tasks complete |
-| POST `communication/employees/:employeeId/retry` | `communication:employees:provision` | Provision body plus optional `step`: MAIL / CLIQ / CHANNELS / ACTIVATION |
+| POST `communication/employees/:employeeId/retry` | `communication:employees:provision` | Provision body plus optional `step`: MAIL / CLIQ / CHANNELS / WELCOME / ACTIVATION |
 | GET `communication/employees/:employeeId/status` | `communication:read` | Account, workflow, tasks, plan and assignments |
 | GET `communication/employees/:employeeId/logs` | `communication:read` | Last 200 safe audit events |
 | DELETE `communication/employees/:employeeId/channels/:channelId` | `communication:employees:manage` | Explicit verified removal; first remove channel from employee's plan |
@@ -254,7 +282,7 @@ State response shape (fields shown selectively):
 
 Step failures return persisted workflow state so the frontend can show successful and
 failed steps together; HTTP success does **not** mean provisioning is complete. Inspect
-`workflow.status` and each task. Only all four verified/attested steps produce COMPLETED.
+`workflow.status` and each task. Only all five verified/attested steps produce COMPLETED.
 Input/auth errors use existing Nest HTTP exceptions; connector failures return
 `{statusCode,message,retryable}` without remote response bodies. No token values are ever
 returned. Integration SQL and HTTP errors never expose submitted credentials.
@@ -372,6 +400,14 @@ Manual acceptance:
 12. Remove a channel from the plan, explicitly remove membership and verify absence.
     Reconnect, test safe disconnect, and confirm encrypted tokens are cleared only
     after remote revocation. Confirm audit history and successful task checkpoints remain.
+
+## Bots (Cliq v3)
+
+Bots are read from Cliq's v3 Bots API. The list is cursor paginated (`next_token`, 50 per
+page) and calls stop on an empty page or missing token. Responses are validated before use.
+Webhook URLs, handler scripts and tokens are never returned. Reconnect Zoho after deploying
+so `ZohoCliq.Bots.READ` is granted. Zoho's rate limit for bot listing is 30 requests per
+minute per user; the UI loads the list once per visit.
 
 ## Changed files
 
