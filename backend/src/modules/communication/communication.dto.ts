@@ -50,7 +50,7 @@ export class ProvisionDto {
   @IsString() @Matches(/^[A-Za-z0-9_-]{8,100}$/) idempotencyKey!: string;
 }
 export class RetryDto extends ProvisionDto {
-  @IsOptional() @IsIn(['MAIL', 'CLIQ', 'CHANNELS', 'ACTIVATION']) step?: string;
+  @IsOptional() @IsIn(['MAIL', 'CLIQ', 'CHANNELS', 'WELCOME', 'ACTIVATION']) step?: string;
 }
 export class ActivationDto {
   @IsString() @MinLength(10) @MaxLength(500) confirmation!: string;

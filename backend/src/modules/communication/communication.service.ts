@@ -18,6 +18,26 @@ import {
 } from './communication.dto';
 import { availableEmail } from './email-policy';
 
+/** Only the fields the Communication UI needs: no tokens, handler scripts or webhook URLs. */
+function botSummary(raw: Record<string, any>) {
+  return {
+    id: String(raw.id),
+    name: String(raw.name ?? ''),
+    uniqueName: typeof raw.unique_name === 'string' ? raw.unique_name : undefined,
+    description: typeof raw.description === 'string' ? raw.description : undefined,
+    isActive: raw.status === 'enabled',
+    isDefault: raw.default === true,
+    scope: typeof raw.scope === 'string' ? raw.scope : undefined,
+    executionType: typeof raw.execution_type === 'string' ? raw.execution_type : undefined,
+    channelParticipation: Array.isArray(raw.channel_participation)
+      ? raw.channel_participation.filter((v: unknown): v is string => typeof v === 'string')
+      : [],
+    subscriberCount: Number.isFinite(Number(raw.subscriber_count))
+      ? Number(raw.subscriber_count)
+      : 0,
+  };
+}
+
 @Injectable()
 export class CommunicationService {
   constructor(
@@ -144,6 +164,28 @@ export class CommunicationService {
   async details(id: string) {
     return this.registry.cliq.details((await this.channel(id)).externalChannelId);
   }
+  async bots() {
+    const bots = await this.registry.cliq.bots();
+    return bots.map(botSummary);
+  }
+  async bot(id: string) {
+    if (!/^\d{1,30}$/.test(id)) throw new BadRequestException('Invalid bot ID');
+    try {
+      const raw = await this.registry.cliq.bot(id);
+      return {
+        ...botSummary(raw),
+        calls: typeof raw.calls === 'string' ? raw.calls : undefined,
+        handlers: (Array.isArray(raw.handlers) ? raw.handlers : []).map((handler: any) => ({
+          type: String(handler?.type ?? 'unknown'),
+          name: typeof handler?.name === 'string' ? handler.name : undefined,
+        })),
+      };
+    } catch (error) {
+      if (error instanceof ZohoFailure && error.code === 'NOT_FOUND')
+        throw new NotFoundException('Bot not found');
+      throw error;
+    }
+  }
   async resolvePlan(dto: AssignProfileDto) {
     const profile = dto.profileId ? await this.profile(dto.profileId) : undefined;
     if (profile && !profile.isActive) throw new BadRequestException('Profile is inactive');
@@ -239,7 +281,7 @@ export class CommunicationService {
       VALUES (:id,:employeeId,'PENDING',:actorId,NOW())`,
       { id: randomUUID(), employeeId, actorId },
     );
-    for (const [index, type] of ['MAIL', 'CLIQ', 'CHANNELS', 'ACTIVATION'].entries()) {
+    for (const [index, type] of ['MAIL', 'CLIQ', 'CHANNELS', 'WELCOME', 'ACTIVATION'].entries()) {
       await this.store.run(
         `INSERT IGNORE INTO onboarding_tasks (id,employeeId,taskType,taskOrder,status,attemptCount)
         VALUES (:id,:employeeId,:type,:index,'PENDING',0)`,
@@ -342,6 +384,7 @@ export class CommunicationService {
             MAIL: [],
             CLIQ: ['MAIL'],
             CHANNELS: ['MAIL', 'CLIQ'],
+            WELCOME: ['MAIL', 'CLIQ', 'CHANNELS'],
             ACTIVATION: ['MAIL'],
           };
           const completed = await this.store.rows(
@@ -375,6 +418,14 @@ export class CommunicationService {
           )
             return this.status(employeeId);
         }
+        if (!onlyStep || onlyStep === 'WELCOME') {
+          if (
+            !(await this.task(employeeId, 'WELCOME', actorId, () =>
+              this.welcome(employee, actorId),
+            ))
+          )
+            return this.status(employeeId);
+        }
         if (!onlyStep || onlyStep === 'ACTIVATION') {
           await this.task(employeeId, 'ACTIVATION', actorId, async () => {
             const account = await this.account(employeeId);
@@ -393,6 +444,37 @@ export class CommunicationService {
     );
     if (!account) throw new ZohoFailure('MAIL_ACCOUNT_REQUIRED');
     return account;
+  }
+  private async welcome(employee: Record<string, any>, actorId: string) {
+    const prior = await this.store.one(
+      "SELECT status FROM integration_logs WHERE entityId=:employeeId AND operation='WELCOME_DELIVERY' LIMIT 1",
+      { employeeId: employee.id },
+    );
+    if (prior?.status === 'COMPLETED') return;
+    if (prior) throw new ZohoFailure('WELCOME_DELIVERY_REQUIRES_RECONCILIATION');
+    // Validate configuration before recording a potentially irreversible send.
+    if (
+      !/^\d+$/.test(process.env.ZOHO_WELCOME_ACCOUNT_ID || '') ||
+      !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(process.env.ZOHO_WELCOME_FROM || '')
+    )
+      throw new ZohoFailure('WELCOME_SENDER_NOT_CONFIGURED');
+    const account = await this.account(employee.id);
+    const channels = await this.store.rows(
+      `SELECT c.channelName FROM employee_communication_assignments a
+       JOIN communication_channels c ON c.id=a.channelId WHERE a.employeeId=:employeeId AND a.status='COMPLETED'`,
+      { employeeId: employee.id },
+    );
+    // A timeout or process crash must not cause a duplicate welcome email on retry.
+    await this.store.log('WELCOME_DELIVERY', employee.id, 'IN_PROGRESS', actorId);
+    await this.registry.mail.sendWelcome(
+      account.email,
+      employee.name,
+      channels.map((c) => c.channelName),
+    );
+    await this.store.run(
+      "UPDATE integration_logs SET status='COMPLETED' WHERE entityId=:employeeId AND operation='WELCOME_DELIVERY'",
+      { employeeId: employee.id },
+    );
   }
   private async provisionMail(employee: Record<string, any>, dto: ProvisionDto) {
     let account = await this.store.one(
@@ -560,7 +642,7 @@ export class CommunicationService {
       'SELECT status FROM onboarding_tasks WHERE employeeId=:employeeId',
       { employeeId },
     );
-    const completed = tasks.length === 4 && tasks.every((t) => t.status === 'COMPLETED');
+    const completed = tasks.length === 5 && tasks.every((t) => t.status === 'COMPLETED');
     const status = completed
       ? 'COMPLETED'
       : tasks.find((t) => ['FAILED', 'RETRY_REQUIRED', 'REQUIRES_MANUAL_ACTION'].includes(t.status))

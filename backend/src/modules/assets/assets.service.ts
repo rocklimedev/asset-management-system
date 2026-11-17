@@ -21,6 +21,8 @@ import { CdnUploadFile } from '../cdn/cdn.service';
 import { CdnService } from '../cdn/cdn.service';
 
 import { CreateAssetDto, CreateAssetUnitInputDto } from './dto/create-asset.dto';
+import { QuickCreateAssetDto } from './dto/quick-create-asset.dto';
+import { createHash } from 'node:crypto';
 import { DisposeAssetDto } from './dto/dispose-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssignAssetDto } from './dto/assign-asset.dto';
@@ -33,7 +35,7 @@ import { InventoryHistory, InventoryChangeType } from './models/inventory-histor
 import { Asset, AssetStatus, AssetCondition } from './models/asset.model';
 import { AssetUnit, AssetUnitStatus, AssetUnitCondition } from './models/asset-unit.model';
 
-import { AssetCategory } from './models/asset-category.model';
+import { AssetCategory, AssetKind } from './models/asset-category.model';
 import { AssetHistory } from './models/asset-history.model';
 
 import { AssetAssignment, AssignmentStatus } from './models/asset-assignment.model';
@@ -723,6 +725,37 @@ export class AssetsService {
   // CREATE
   // ============================================================
 
+  async quickCreate(dto: QuickCreateAssetDto, actor: AuthUser) {
+    const name = dto.name.trim();
+    if (!name || name.length > 150) throw new BadRequestException('Enter an asset name of up to 150 characters.');
+    let category = dto.categoryId ? await this.assetCategoryModel.findByPk(dto.categoryId) : null;
+    if (dto.categoryId && !category) throw new NotFoundException('Asset category not found.');
+    const kind = dto.kind ?? category?.type ?? AssetKind.HARDWARE;
+    if (category && category.type !== kind) throw new BadRequestException('Category does not match the selected asset type.');
+    const organisationId = dto.organisationId ?? category?.organisationId ?? undefined;
+    if (organisationId && !await this.organisationModel.findByPk(organisationId)) {
+      throw new NotFoundException('Organisation not found.');
+    }
+    // Search the entire catalogue, including items absent from the available pool.
+    const existing = await this.assetModel.findOne({ where: {
+      name, kind, organisationId: organisationId ?? null,
+      ...(dto.categoryId ? { categoryId: dto.categoryId } : {}),
+    } });
+    if (existing) throw new ConflictException('This asset already exists in Inventory. Update its stock instead.');
+    if (!category) {
+      // A stable primary key also makes simultaneous first-time default creation safe.
+      const hex = createHash('sha256').update(`quick-asset-category:${kind}:${organisationId ?? 'global'}`).digest('hex');
+      const id = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+      [category] = await this.assetCategoryModel.findOrCreate({ where: { id }, defaults: {
+        id, name: kind === 'HARDWARE' ? 'General Hardware' : 'General Software',
+        type: kind, organisationId: organisationId ?? null, isActive: true,
+      } });
+    }
+    return this.create({ name, kind, categoryId: category.id, organisationId,
+      locationId: dto.locationId, quantity: 1, status: AssetStatus.AVAILABLE,
+      condition: AssetCondition.GOOD }, actor);
+  }
+
   async create(dto: CreateAssetDto, actor: AuthUser) {
     // ASSET TAG
 
@@ -1155,6 +1188,12 @@ export class AssetsService {
       }
 
       if (dto.status !== undefined) {
+        // Serialize inventory status changes with assignment operations on this asset.
+        const lockedAsset = await this.assetModel.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
+        if (!lockedAsset) throw new NotFoundException('Asset not found.');
+        const units = await this.assetUnitModel.findAll({
+          where: { assetId: id }, transaction: t, lock: t.LOCK.UPDATE,
+        });
         const active = await this.assetAssignmentModel.count({
           where: {
             assetId: id,
@@ -1167,12 +1206,27 @@ export class AssetsService {
           throw new BadRequestException('Use assignment to mark an asset assigned.');
         }
 
-        if (dto.status === AssetStatus.AVAILABLE && active) {
+        if (dto.status !== AssetStatus.ASSIGNED && (active || units.some(unit => unit.status === AssetUnitStatus.ASSIGNED))) {
           throw new BadRequestException(
-            'Return the current assignment before marking this asset available.',
+            'Return the current assignment before changing this asset to another status.',
           );
         }
 
+        // Maintenance and stock availability read physical units, not the catalogue status.
+        // An inventory-row status change applies to all units of that inventory item.
+        if (dto.status !== AssetStatus.ASSIGNED && dto.status !== lockedAsset.status) {
+          for (const unit of units) {
+            if (unit.status === String(dto.status)) continue;
+            const previousStatus = unit.status;
+            await unit.update({ status: dto.status as unknown as AssetUnitStatus }, { transaction: t });
+            await this.assetHistoryModel.create({
+              assetId: id, assetUnitId: unit.id, action: 'UNIT_STATUS_CHANGED',
+              performedBy: actor.name, fromValue: previousStatus, toValue: dto.status,
+              notes: 'Status updated from Inventory.',
+            } as AssetHistory, { transaction: t });
+          }
+          updateData.quantityAssigned = 0;
+        }
         updateData.status = dto.status;
       }
 

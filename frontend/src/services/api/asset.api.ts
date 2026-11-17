@@ -322,6 +322,15 @@ export const assetApi = createApi({
       ...CACHE_CONFIG,
     }),
 
+    quickCreateAsset: builder.mutation<Asset, {
+      name: string; kind?: AssetKind; categoryId?: string; organisationId?: string; locationId?: string;
+    }>({
+      query: (body) => ({ url: '/assets/quick-create', method: 'POST', body }),
+      invalidatesTags: [
+        { type: 'Asset', id: 'LIST' }, { type: 'Asset', id: 'POOL' }, 'AssetCategory',
+      ],
+    }),
+
     createAsset: builder.mutation<AssetResponse, AssetInput>({
       query: (body) => ({
         url: '/assets',
@@ -346,6 +355,8 @@ export const assetApi = createApi({
         { type: 'Asset', id },
         { type: 'Asset', id: 'LIST' },
         { type: 'Asset', id: 'POOL' },
+        { type: 'AssetUnit' },
+        { type: 'AssetHistory', id },
       ],
     }),
 
@@ -1049,6 +1060,7 @@ export const {
   useUploadRecordAttachmentMutation,
   useGetSoftwareAssetsQuery,
   useGetAssetPoolQuery,
+  useQuickCreateAssetMutation,
   useAssignAssetMutation,
   useTransferAssetMutation,
   useReturnAssetMutation,

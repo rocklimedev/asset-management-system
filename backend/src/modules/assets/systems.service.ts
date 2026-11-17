@@ -14,6 +14,7 @@ import { SystemSpecs } from './models/system-specs.model';
 import { AssetAssignment, AssignmentStatus } from './models/asset-assignment.model';
 
 import { Asset } from './models/asset.model';
+import { AssetUnit } from './models/asset-unit.model';
 import { AssetKind } from './models/asset-category.model';
 import { Transaction } from 'sequelize';
 import { AssetCategory } from './models/asset-category.model';
@@ -69,6 +70,12 @@ export class SystemsService {
         },
         required: false,
         include: [
+          {
+            model: AssetUnit,
+            as: 'assetUnit',
+            attributes: ['id', 'unitCode', 'serialNumber', 'status', 'cellularIdentities'],
+            required: false,
+          },
           {
             model: Asset,
             include: [AssetCategory],

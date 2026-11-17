@@ -29,10 +29,29 @@ export class ZohoMailConnector implements Connector {
     private readonly store: IntegrationStore,
   ) {}
   getCapabilities() {
-    return ['mail.lookup', 'mail.create'] as const;
+    return ['mail.lookup', 'mail.create', 'mail.send'] as const;
   }
   connect(actorId: string) {
     return this.auth.authorize(actorId);
+  }
+  async sendWelcome(email: string, name: string, channels: string[]) {
+    const accountId = process.env.ZOHO_WELCOME_ACCOUNT_ID || '';
+    const fromAddress = process.env.ZOHO_WELCOME_FROM || '';
+    if (!/^\d+$/.test(accountId) || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(fromAddress))
+      throw new ZohoFailure('WELCOME_SENDER_NOT_CONFIGURED');
+    const result = await this.http.request(
+      this.provider,
+      `/api/accounts/${accountId}/messages`,
+      'POST',
+      {
+        fromAddress,
+        toAddress: email,
+        subject: 'Welcome to the team',
+        mailFormat: 'plaintext',
+        content: `Hi ${name},\n\nWelcome to the team! Your company email is ${email}.\n\nSign in to Zoho Mail at ${zohoConfig().mail} and Zoho Cliq at ${zohoConfig().cliq}.\n${channels.length ? `\nYour team channels: ${channels.join(', ')}.\n` : ''}\nIT will share your initial sign-in details through a separate secure channel. Change your temporary password on first sign-in and set up multi-factor authentication.\n\nIf you need help, contact your manager or IT team.`,
+      },
+    );
+    if (!result.data?.messageId) throw new ZohoFailure('WELCOME_DELIVERY_UNCONFIRMED');
   }
   disconnect(actorId: string) {
     return this.auth.disconnect(actorId);
@@ -103,6 +122,17 @@ export class ZohoMailConnector implements Connector {
   }
 }
 
+function validBot(value: any): any {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    (typeof value.id !== 'string' && typeof value.id !== 'number') ||
+    typeof value.name !== 'string'
+  )
+    throw new ZohoFailure('INVALID_BOT_RESPONSE');
+  return value;
+}
+
 @Injectable()
 export class ZohoCliqConnector implements Connector {
   readonly provider = 'zoho-cliq';
@@ -118,6 +148,8 @@ export class ZohoCliqConnector implements Connector {
       'channels.members',
       'channels.add',
       'channels.remove',
+      'bots.list',
+      'bots.details',
     ] as const;
   }
   connect(actorId: string) {
@@ -192,6 +224,33 @@ export class ZohoCliqConnector implements Connector {
     );
     if ((await this.members(channelId)).some((m) => String(m.user_id) === userId))
       throw new ZohoFailure('REMOVAL_VERIFICATION_PENDING', true);
+  }
+  /** Cliq v3 Bots API: GET /api/v3/bots, cursor paginated with next_token (scope ZohoCliq.Bots.READ). */
+  async bots(): Promise<any[]> {
+    const items: any[] = [];
+    const seen = new Set<string>();
+    let next: string | undefined;
+    for (let page = 0; page < 100; page++) {
+      const query = new URLSearchParams({ limit: '50' });
+      if (next) query.set('next_token', next);
+      const response = await this.http.request(this.provider, `/api/v3/bots?${query}`);
+      if (!Array.isArray(response.data)) throw new ZohoFailure('INVALID_BOT_RESPONSE');
+      for (const bot of response.data) items.push(validBot(bot));
+      if (!response.data.length || typeof response.next_token !== 'string' || !response.next_token)
+        return items;
+      if (seen.has(response.next_token)) throw new ZohoFailure('INVALID_PAGINATION');
+      seen.add(response.next_token);
+      next = response.next_token;
+    }
+    throw new ZohoFailure('PAGINATION_LIMIT');
+  }
+  /** Cliq v3: GET /api/v3/bots/{BOT_ID}. The id must be the numeric Cliq bot id. */
+  async bot(id: string): Promise<any> {
+    const response = await this.http.request(
+      this.provider,
+      `/api/v3/bots/${encodeURIComponent(id)}`,
+    );
+    return validBot(response.data);
   }
   async testConnection() {
     await this.http.request(this.provider, '/api/v2/channels?limit=1');

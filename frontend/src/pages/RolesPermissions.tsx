@@ -16,8 +16,8 @@ export default function RolesPermissions() {
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
-        title="Roles & Permissions"
-        description="Manage roles and choose what each role can access."
+        title="Role Permissions Matrix"
+        description="Compare roles and manage permission grants across your organisation."
       />
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading access…</p>

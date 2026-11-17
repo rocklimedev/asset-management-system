@@ -65,6 +65,12 @@ export class CommunicationController {
   @Get('channels/:id/members') members(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.members(id);
   }
+  @Get('bots') async bots() {
+    return { items: await this.service.bots() };
+  }
+  @Get('bots/:id') bot(@Param('id') id: string) {
+    return this.service.bot(id);
+  }
   @Post('employees/:employeeId/preview')
   preview(@Param('employeeId', ParseUUIDPipe) id: string, @Body() dto: AssignProfileDto) {
     return this.service.preview(id, dto);

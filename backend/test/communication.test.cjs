@@ -14,6 +14,56 @@ const { emailStem, availableEmail } = require('../dist/modules/communication/ema
 const { REQUIRED_SCOPES, zohoConfig } = require('../dist/modules/zoho-auth/zoho-oauth.config');
 const originalFetch = global.fetch;
 afterEach(() => { global.fetch = originalFetch; });
+
+test('welcome uses authenticated sender, plaintext guidance and no credentials', async () => {
+  process.env.ZOHO_WELCOME_ACCOUNT_ID = '987';
+  process.env.ZOHO_WELCOME_FROM = 'it@company.test';
+  let request;
+  const connector = new ZohoMailConnector({ request: async (...args) => {
+    request = args; return { data: { messageId: 'message-1' } };
+  } }, {}, {});
+  await connector.sendWelcome('new@company.test', 'New Employee', ['Engineering']);
+  assert.equal(request[1], '/api/accounts/987/messages');
+  assert.equal(request[3].fromAddress, 'it@company.test');
+  assert.equal(request[3].toAddress, 'new@company.test');
+  assert.equal(request[3].mailFormat, 'plaintext');
+  assert.match(request[3].content, /Engineering/);
+  assert.match(request[3].content, /separate secure channel/);
+  delete process.env.ZOHO_WELCOME_ACCOUNT_ID;
+  delete process.env.ZOHO_WELCOME_FROM;
+  await assert.rejects(connector.sendWelcome('new@company.test', 'New', []), /WELCOME_SENDER/);
+});
+
+test('welcome checkpoints prevent duplicate sends after success or ambiguous delivery', async () => {
+  process.env.ZOHO_WELCOME_ACCOUNT_ID = '987';
+  process.env.ZOHO_WELCOME_FROM = 'it@company.test';
+  let delivery, sends = 0, ambiguous = false;
+  const store = {
+    one: async () => delivery ? { status: delivery } : null,
+    rows: async () => [{ channelName: 'Engineering' }],
+    log: async () => { delivery = 'IN_PROGRESS'; },
+    run: async () => { delivery = 'COMPLETED'; },
+  };
+  const service = new CommunicationService(store, { mail: { sendWelcome: async () => {
+    sends++;
+    if (ambiguous) throw new ZohoFailure('API_UNAVAILABLE_OR_AMBIGUOUS', true);
+  } } });
+  service.account = async () => ({ email: 'new@company.test' });
+  const employee = { id: 'employee', name: 'New Employee' };
+  try {
+    await service.welcome(employee, 'admin');
+    await service.welcome(employee, 'admin');
+    assert.equal(sends, 1);
+    delivery = undefined;
+    ambiguous = true;
+    await assert.rejects(service.welcome(employee, 'admin'), /AMBIGUOUS/);
+    await assert.rejects(service.welcome(employee, 'admin'), /RECONCILIATION/);
+    assert.equal(sends, 2);
+  } finally {
+    delete process.env.ZOHO_WELCOME_ACCOUNT_ID;
+    delete process.env.ZOHO_WELCOME_FROM;
+  }
+});
 Object.assign(process.env, { ZOHO_DATA_CENTER: 'in', ZOHO_CLIENT_ID: 'client', ZOHO_CLIENT_SECRET: 'secret',
   ZOHO_REDIRECT_URI: 'https://example.test/api/integrations/zoho/auth/callback', ZOHO_ORGANIZATION_ID: '123',
   ZOHO_TOKEN_ENCRYPTION_KEY: 'ab'.repeat(32), COMMUNICATION_COMPANY_DOMAINS: 'company.test' });
@@ -205,6 +255,7 @@ test('partial onboarding failure persists successful tasks; retry resumes failed
   service.employee = async id => ({ id, name: 'Rahul Sharma' });
   service.provisionMail = async () => { mailCreates++; };
   service.provisionCliq = async () => { cliqCreates++; };
+  service.welcome = async () => {};
   service.assignChannels = async () => { if (++channelAttempts === 1) throw new ZohoFailure('RATE_LIMITED', true); };
   service.account = async () => ({ activationStatus: 'COMPLETED' });
   service.status = async () => ({ statuses: { ...statuses } });
@@ -337,4 +388,36 @@ test('Canada uses the official zohocloud.ca origins', () => {
     assert.equal(zohoConfig().mail, 'https://mail.zohocloud.ca');
     assert.equal(zohoConfig().cliq, 'https://cliq.zohocloud.ca');
   } finally { process.env.ZOHO_DATA_CENTER = old; }
+});
+
+test('bots use v3 cursor pagination, validate responses and expose only safe fields', async () => {
+  const paths = [];
+  const pages = [
+    { type: 'bot', next_token: 'page-2', data: [{ id: '1', name: 'Support Bot', unique_name: 'supportbot', status: 'enabled', scope: 'organization', channel_participation: ['send_message', 3], subscriber_count: 3, execution_type: 'deluge', default: false, handlers: [], webhook_secret: 'never-returned' }] },
+    { type: 'bot', data: [{ id: 2, name: 'CI Bot', status: 'disabled' }] },
+  ];
+  const provider = new ZohoCliqConnector({ request: async (_provider, path) => {
+    paths.push(path);
+    return pages[paths.length - 1];
+  } }, {});
+  const service = new CommunicationService({}, { cliq: provider });
+  const items = await service.bots();
+  assert.deepEqual(paths, ['/api/v3/bots?limit=50', '/api/v3/bots?limit=50&next_token=page-2']);
+  assert.equal(items.length, 2);
+  assert.equal(items[0].isActive, true);
+  assert.equal(items[0].uniqueName, 'supportbot');
+  assert.deepEqual(items[0].channelParticipation, ['send_message']);
+  assert.equal(items[1].id, '2');
+  assert.equal(items[1].isActive, false);
+  assert.ok(!JSON.stringify(items).includes('never-returned'));
+  await assert.rejects(
+    new ZohoCliqConnector({ request: async () => ({ data: {} }) }, {}).bots(),
+    /INVALID_BOT_RESPONSE/,
+  );
+  await assert.rejects(service.bot('../secret'), /Invalid bot ID/);
+  await assert.rejects(
+    new CommunicationService({}, { cliq: { bot: async () => { throw new ZohoFailure('NOT_FOUND'); } } }).bot('123'),
+    /Bot not found/,
+  );
+  assert.ok(REQUIRED_SCOPES.includes('ZohoCliq.Bots.READ'));
 });

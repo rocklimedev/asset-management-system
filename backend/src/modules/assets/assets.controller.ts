@@ -19,6 +19,7 @@ import { AssetUnitsService } from './asset-units.service';
 import { DisposeAssetDto } from './dto/dispose-asset.dto';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
+import { QuickCreateAssetDto } from './dto/quick-create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssignAssetDto } from './dto/assign-asset.dto';
 import { TransferAssetDto } from './dto/transfer-asset.dto';
@@ -131,6 +132,12 @@ export class AssetsController {
   @Post()
   create(@Body() dto: CreateAssetDto, @CurrentUser() user: AuthUser) {
     return this.service.create(dto, user);
+  }
+
+  @Post('quick-create')
+  @RequirePermissions('assets:write')
+  quickCreate(@Body() dto: QuickCreateAssetDto, @CurrentUser() user: AuthUser) {
+    return this.service.quickCreate(dto, user);
   }
 
   // ============================================================

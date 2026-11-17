@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useGetEmployeesQuery } from '../../services/api/employees.api';
 import { useGetAssetsQuery, useGetSystemsQuery } from '../../services/api/asset.api';
+import { AddSearchAsset } from '../quick/AddSearchAsset';
 
 // ============================================================
 // TYPES
@@ -42,7 +43,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   // ASSETS
   // ==========================================================
 
-  const { data: assetsResponse, isFetching: assetsLoading } = useGetAssetsQuery(
+  const { currentData: assetsResponse, isFetching: assetsLoading, isError: assetsError } = useGetAssetsQuery(
     query
       ? {
           search: query,
@@ -271,8 +272,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               NO RESULTS
           ================================================== */}
 
+          {query.trim() && !isLoading && !assetsError && assetsResponse && assets.length === 0 && (
+            <AddSearchAsset name={query} onAdded={(asset) => handleAssetClick(asset.id)} />
+          )}
+
           {query.length > 0 &&
-            !isLoading &&
+            !isLoading && !assetsError &&
             employees.length === 0 &&
             assets.length === 0 &&
             systems.length === 0 && (
